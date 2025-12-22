@@ -804,7 +804,7 @@ async def save_yoco_settings(data: dict, admin: UserResponse = Depends(get_curre
 
 @admin_router.post("/yoco-settings/test", response_model=dict)
 async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_admin)):
-    """Test Yoco API connection"""
+    """Test Yoco API connection by attempting to create a minimal checkout"""
     try:
         import os
         import httpx
@@ -820,38 +820,73 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
         if not secret_key:
             return {"success": False, "detail": "Yoco secret key not configured"}
         
-        # Test API call to Yoco
+        # Test API by creating a minimal checkout request
+        # This validates the API key without actually charging anything
         async with httpx.AsyncClient() as client:
-            response = await client.get(
+            response = await client.post(
                 "https://payments.yoco.com/api/checkouts",
                 headers={
                     "Authorization": f"Bearer {secret_key}",
                     "Content-Type": "application/json"
                 },
-                timeout=10
+                json={
+                    "amount": 100,  # Minimum amount in cents (R1.00)
+                    "currency": "ZAR",
+                    "metadata": {"test": "connection_test"}
+                },
+                timeout=15
             )
             
-            if response.status_code in [200, 401]:
-                # 401 means key is valid but no checkouts - that's OK for a test
-                is_connected = response.status_code == 200 or "Unauthorized" not in response.text
-                
-                # Update status in database
+            response_data = response.json() if response.content else {}
+            
+            # Check response
+            if response.status_code == 200 or response.status_code == 201:
+                # Success - checkout was created (we won't use it, it will expire)
                 await db.platform_settings.update_one(
                     {"key": "yoco"},
                     {"$set": {
                         "status": {
-                            "connected": is_connected,
+                            "connected": True,
                             "last_checked": datetime.now(timezone.utc).isoformat()
                         }
                     }}
                 )
-                
-                if is_connected or response.status_code == 200:
-                    return {"success": True, "message": "Yoco connection successful"}
-                else:
-                    return {"success": False, "detail": "Invalid API key"}
+                return {"success": True, "message": "Yoco API key is valid! Connection successful."}
+            
+            elif response.status_code == 401 or response.status_code == 403:
+                # Invalid or expired API key
+                await db.platform_settings.update_one(
+                    {"key": "yoco"},
+                    {"$set": {
+                        "status": {
+                            "connected": False,
+                            "error": "Invalid API key",
+                            "last_checked": datetime.now(timezone.utc).isoformat()
+                        }
+                    }}
+                )
+                return {"success": False, "detail": "Invalid or expired API key. Please check your credentials."}
+            
+            elif response.status_code == 400:
+                # Bad request but key might be valid - check error message
+                error_msg = response_data.get("message", response_data.get("error", "Unknown error"))
+                if "amount" in str(error_msg).lower() or "currency" in str(error_msg).lower():
+                    # Key is valid, just a validation error
+                    await db.platform_settings.update_one(
+                        {"key": "yoco"},
+                        {"$set": {
+                            "status": {
+                                "connected": True,
+                                "last_checked": datetime.now(timezone.utc).isoformat()
+                            }
+                        }}
+                    )
+                    return {"success": True, "message": "Yoco API key is valid!"}
+                return {"success": False, "detail": f"Validation error: {error_msg}"}
+            
             else:
-                return {"success": False, "detail": f"Yoco API error: {response.status_code}"}
+                error_msg = response_data.get("message", response_data.get("error", f"HTTP {response.status_code}"))
+                return {"success": False, "detail": f"Yoco API error: {error_msg}"}
                 
     except httpx.TimeoutException:
         return {"success": False, "detail": "Connection timeout - please try again"}

@@ -714,3 +714,148 @@ async def create_super_admin(
     except Exception as e:
         logger.error(f"Error creating admin: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============= YOCO PAYMENT SETTINGS =============
+
+@admin_router.get("/yoco-settings", response_model=dict)
+async def get_yoco_settings(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get platform Yoco payment settings"""
+    try:
+        import os
+        
+        # Get from database or environment
+        settings = await db.platform_settings.find_one({"key": "yoco"}, {"_id": 0})
+        
+        if settings:
+            return {
+                "public_key": settings.get("public_key", ""),
+                "secret_key": "••••••••" + settings.get("secret_key", "")[-8:] if settings.get("secret_key") else "",
+                "webhook_secret": "••••••••" if settings.get("webhook_secret") else "",
+                "is_test_mode": settings.get("is_test_mode", True),
+                "status": settings.get("status", {"connected": False})
+            }
+        
+        # Fall back to environment variables
+        public_key = os.environ.get("YOCO_PUBLIC_KEY", "")
+        secret_key = os.environ.get("YOCO_SECRET_KEY", "")
+        
+        return {
+            "public_key": public_key,
+            "secret_key": "••••••••" + secret_key[-8:] if secret_key else "",
+            "webhook_secret": "",
+            "is_test_mode": public_key.startswith("pk_test") if public_key else True,
+            "status": {"connected": bool(public_key and secret_key)}
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching Yoco settings: {str(e)}")
+        return {"public_key": "", "secret_key": "", "webhook_secret": "", "is_test_mode": True, "status": None}
+
+
+@admin_router.post("/yoco-settings", response_model=dict)
+async def save_yoco_settings(data: dict, admin: UserResponse = Depends(get_current_super_admin)):
+    """Save platform Yoco payment settings"""
+    try:
+        import os
+        
+        # Get existing settings to preserve secret if masked
+        existing = await db.platform_settings.find_one({"key": "yoco"}, {"_id": 0})
+        
+        secret_key = data.get("secret_key", "")
+        webhook_secret = data.get("webhook_secret", "")
+        
+        # If secret is masked (••••), keep the existing one
+        if secret_key.startswith("••••") and existing:
+            secret_key = existing.get("secret_key", "")
+        if webhook_secret.startswith("••••") and existing:
+            webhook_secret = existing.get("webhook_secret", "")
+        
+        settings = {
+            "key": "yoco",
+            "public_key": data.get("public_key", ""),
+            "secret_key": secret_key,
+            "webhook_secret": webhook_secret,
+            "is_test_mode": data.get("is_test_mode", True),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_by": admin.id
+        }
+        
+        await db.platform_settings.update_one(
+            {"key": "yoco"},
+            {"$set": settings},
+            upsert=True
+        )
+        
+        # Also update environment variables for immediate use
+        if settings["public_key"]:
+            os.environ["YOCO_PUBLIC_KEY"] = settings["public_key"]
+        if secret_key:
+            os.environ["YOCO_SECRET_KEY"] = secret_key
+        
+        logger.info(f"Yoco settings updated by admin {admin.email}")
+        
+        return {"success": True, "message": "Yoco settings saved successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error saving Yoco settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/yoco-settings/test", response_model=dict)
+async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_admin)):
+    """Test Yoco API connection"""
+    try:
+        import os
+        import httpx
+        
+        # Get settings from database or environment
+        settings = await db.platform_settings.find_one({"key": "yoco"}, {"_id": 0})
+        
+        if settings:
+            secret_key = settings.get("secret_key", "")
+        else:
+            secret_key = os.environ.get("YOCO_SECRET_KEY", "")
+        
+        if not secret_key:
+            return {"success": False, "detail": "Yoco secret key not configured"}
+        
+        # Test API call to Yoco
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://payments.yoco.com/api/checkouts",
+                headers={
+                    "Authorization": f"Bearer {secret_key}",
+                    "Content-Type": "application/json"
+                },
+                timeout=10
+            )
+            
+            if response.status_code in [200, 401]:
+                # 401 means key is valid but no checkouts - that's OK for a test
+                is_connected = response.status_code == 200 or "Unauthorized" not in response.text
+                
+                # Update status in database
+                await db.platform_settings.update_one(
+                    {"key": "yoco"},
+                    {"$set": {
+                        "status": {
+                            "connected": is_connected,
+                            "last_checked": datetime.now(timezone.utc).isoformat()
+                        }
+                    }}
+                )
+                
+                if is_connected or response.status_code == 200:
+                    return {"success": True, "message": "Yoco connection successful"}
+                else:
+                    return {"success": False, "detail": "Invalid API key"}
+            else:
+                return {"success": False, "detail": f"Yoco API error: {response.status_code}"}
+                
+    except httpx.TimeoutException:
+        return {"success": False, "detail": "Connection timeout - please try again"}
+    except Exception as e:
+        logger.error(f"Error testing Yoco connection: {str(e)}")
+        return {"success": False, "detail": str(e)}
+

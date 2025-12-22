@@ -175,6 +175,34 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* LinkedIn Tools Promotion */}
+        <Card className="mb-8 border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Linkedin className="h-7 w-7 text-blue-600" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-gray-900">AI LinkedIn Tools</h3>
+                    <Badge className="bg-blue-500 text-white">NEW</Badge>
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    Convert your LinkedIn to a resume, create a new profile, or enhance your existing profile with AI.
+                  </p>
+                </div>
+              </div>
+              <Link to="/linkedin-tools">
+                <Button className="bg-[#0A66C2] hover:bg-[#004182] text-white whitespace-nowrap">
+                  Open LinkedIn Tools
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">

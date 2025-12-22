@@ -662,17 +662,17 @@ const ResellerSettings = () => {
                                 size="sm"
                                 onClick={() => handlePayInvoice(invoice.id)}
                                 disabled={payingInvoice === invoice.id}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 bg-[#00B0FF] hover:bg-[#0091EA] text-white"
                               >
                                 {payingInvoice === invoice.id ? (
                                   <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Processing...
+                                    Connecting to Yoco...
                                   </>
                                 ) : (
                                   <>
                                     <CreditCard className="h-4 w-4" />
-                                    Pay Now
+                                    Pay with Yoco
                                   </>
                                 )}
                               </Button>

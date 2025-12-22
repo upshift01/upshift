@@ -11,6 +11,8 @@ import { Loader2, Download, Sparkles, FileText, Copy } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 
 const CoverLetterGenerator = () => {
+  const navigate = useNavigate();
+  const { user, hasTier } = useAuth();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedLetter, setGeneratedLetter] = useState('');

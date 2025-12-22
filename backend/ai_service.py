@@ -159,9 +159,9 @@ Return ONLY the cover letter text without any subject line or additional explana
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id="job_match",
-                system_message="You are an expert recruitment analyst. Compare resumes to job descriptions and provide match scores."
+                system_message="You are an expert recruitment analyst specializing in ATS systems. Compare resumes to job descriptions, focusing on ATS keyword matching, skills alignment, and provide specific ATS-friendly recommendations."
             )
-            chat.with_model("openai", "gpt-4.1")
+            chat.with_model("openai", "gpt-5.2")
             
             prompt = f"""Compare the following resume to the job description and provide a match analysis:
 

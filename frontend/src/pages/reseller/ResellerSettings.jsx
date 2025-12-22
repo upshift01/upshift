@@ -367,8 +367,88 @@ const ResellerSettings = () => {
     }
   };
 
+  // Platform Billing/Subscription Functions
+  const fetchPlatformInvoices = async () => {
+    setLoadingInvoices(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/invoices`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPlatformInvoices(data.invoices || []);
+      }
+    } catch (error) {
+      console.error('Error fetching platform invoices:', error);
+    } finally {
+      setLoadingInvoices(false);
+    }
+  };
+
+  const handlePayInvoice = async (invoiceId) => {
+    setPayingInvoice(invoiceId);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/reseller/invoices/${invoiceId}/pay`,
+        {
+          method: 'POST',
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.redirect_url) {
+          localStorage.setItem('pending_invoice_payment', JSON.stringify({
+            invoiceId: invoiceId,
+            checkoutId: data.checkout_id
+          }));
+          window.location.href = data.redirect_url;
+        }
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to initiate payment' });
+      }
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      setMessage({ type: 'error', text: 'Failed to initiate payment. Please try again.' });
+    } finally {
+      setPayingInvoice(null);
+    }
+  };
+
+  const isOverdue = (dueDate) => {
+    return new Date(dueDate) < new Date();
+  };
+
+  const getStatusBadge = (status, dueDate) => {
+    const actualStatus = status === 'pending' && isOverdue(dueDate) ? 'overdue' : status;
+    const styles = {
+      paid: 'bg-green-100 text-green-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      overdue: 'bg-red-100 text-red-800'
+    };
+    const icons = {
+      paid: CheckCircle,
+      pending: Clock,
+      overdue: AlertTriangle
+    };
+    const Icon = icons[actualStatus] || Clock;
+    
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[actualStatus] || styles.pending}`}>
+        <Icon className="h-3 w-3" />
+        {actualStatus.charAt(0).toUpperCase() + actualStatus.slice(1)}
+      </span>
+    );
+  };
+
   const tabs = [
     { id: 'profile', label: 'Profile', icon: Settings },
+    { id: 'billing', label: 'My Subscription', icon: Receipt },
     { id: 'email', label: 'Email Settings', icon: Mail },
     { id: 'yoco', label: 'Yoco Payments', icon: CreditCard },
     { id: 'chatgpt', label: 'ChatGPT', icon: Bot },

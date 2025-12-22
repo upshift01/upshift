@@ -79,6 +79,9 @@ const ResellerSettings = () => {
     if (activeTab === 'yoco') {
       fetchYocoSettings();
     }
+    if (activeTab === 'billing') {
+      fetchPlatformInvoices();
+    }
   }, [activeTab]);
 
   const fetchProfile = async () => {

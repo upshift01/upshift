@@ -650,3 +650,165 @@ async def verify_invoice_payment(
     except Exception as e:
         logger.error(f"Error verifying invoice payment: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+# ==================== Reseller Email Settings ====================
+
+class ResellerEmailSettings(BaseModel):
+    smtp_host: str = "smtp.office365.com"
+    smtp_port: int = 587
+    smtp_user: str
+    smtp_password: str
+    from_email: Optional[str] = None
+    from_name: str = "UpShift"
+
+
+@reseller_router.get("/email-settings", response_model=dict)
+async def get_reseller_email_settings(context: dict = Depends(get_current_reseller_admin)):
+    """Get reseller's email settings"""
+    try:
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_email_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if settings:
+            # Mask password
+            if settings.get("smtp_password"):
+                settings["smtp_password"] = "********"
+            return settings
+        
+        return {
+            "reseller_id": reseller["id"],
+            "smtp_host": "smtp.office365.com",
+            "smtp_port": 587,
+            "smtp_user": "",
+            "smtp_password": "",
+            "from_email": "",
+            "from_name": reseller.get("brand_name", "UpShift"),
+            "is_configured": False
+        }
+    except Exception as e:
+        logger.error(f"Error getting email settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/email-settings", response_model=dict)
+async def save_reseller_email_settings(
+    settings: ResellerEmailSettings,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Save reseller's email settings"""
+    try:
+        reseller = context["reseller"]
+        
+        # Get existing settings to preserve password if not changed
+        existing = await db.reseller_email_settings.find_one({"reseller_id": reseller["id"]})
+        
+        settings_dict = settings.dict()
+        settings_dict["reseller_id"] = reseller["id"]
+        settings_dict["is_configured"] = True
+        settings_dict["updated_at"] = datetime.now(timezone.utc)
+        
+        # If password is masked, keep the old one
+        if settings.smtp_password == "********" and existing:
+            settings_dict["smtp_password"] = existing.get("smtp_password", "")
+        
+        await db.reseller_email_settings.update_one(
+            {"reseller_id": reseller["id"]},
+            {"$set": settings_dict},
+            upsert=True
+        )
+        
+        logger.info(f"Email settings updated for reseller: {reseller['id']}")
+        
+        return {"success": True, "message": "Email settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving email settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/email-settings/test", response_model=dict)
+async def test_reseller_email_connection(context: dict = Depends(get_current_reseller_admin)):
+    """Test reseller's email connection"""
+    try:
+        import smtplib
+        
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_email_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not settings or not settings.get("smtp_user"):
+            return {"success": False, "error": "Email settings not configured"}
+        
+        try:
+            with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
+                server.starttls()
+                server.login(settings["smtp_user"], settings["smtp_password"])
+            return {"success": True, "message": "SMTP connection successful"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@reseller_router.post("/email-settings/send-test", response_model=dict)
+async def send_reseller_test_email(
+    to_email: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Send a test email using reseller's SMTP settings"""
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_email_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not settings or not settings.get("smtp_user"):
+            raise HTTPException(status_code=400, detail="Email settings not configured")
+        
+        from_email = settings.get("from_email") or settings["smtp_user"]
+        from_name = settings.get("from_name", reseller.get("brand_name", "UpShift"))
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"{from_name} - Test Email"
+        msg['From'] = f"{from_name} <{from_email}>"
+        msg['To'] = to_email
+        
+        html_body = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e40af;">Test Email from {from_name}</h2>
+            <p>This is a test email to verify your SMTP configuration.</p>
+            <p>If you received this email, your email settings are working correctly!</p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+            <p style="color: #6b7280; font-size: 12px;">This is an automated test message.</p>
+        </div>
+        """
+        
+        msg.attach(MIMEText(html_body, 'html'))
+        
+        with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"]) as server:
+            server.starttls()
+            server.login(settings["smtp_user"], settings["smtp_password"])
+            server.sendmail(from_email, [to_email], msg.as_string())
+        
+        logger.info(f"Test email sent by reseller {reseller['id']} to {to_email}")
+        
+        return {"success": True, "message": f"Test email sent to {to_email}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending test email: {str(e)}")
+        return {"success": False, "error": str(e)}

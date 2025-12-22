@@ -59,10 +59,12 @@ const PricingCard = ({ tier, onSelect, isSelected }) => {
         </div>
         
         <div className="pt-4 border-t border-gray-200 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Turnaround:</span>
-            <span className="font-semibold text-gray-900">{tier.turnaround}</span>
-          </div>
+          {tier.id === 'tier-3' && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Turnaround:</span>
+              <span className="font-semibold text-gray-900">{tier.turnaround}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Support:</span>
             <span className="font-semibold text-gray-900">{tier.support}</span>

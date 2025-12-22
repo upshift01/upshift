@@ -9,7 +9,7 @@ import { Badge } from '../../components/ui/badge';
 
 const ResellerSettings = () => {
   const { token } = useAuth();
-  const { theme } = useTheme();
+  const { theme, formatPrice } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
   const [profile, setProfile] = useState({
     company_name: '',

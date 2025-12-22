@@ -73,6 +73,8 @@ async def get_whitelabel_config(request: Request):
                 "secondary_color": "#7c3aed",
                 "favicon_url": None,
                 "contact_email": "support@upshift.co.za",
+                "contact_phone": "+27 (0) 11 234 5678",
+                "contact_address": "123 Main Street, Sandton, Johannesburg, 2196, South Africa",
                 "terms_url": "/terms",
                 "privacy_url": "/privacy",
                 "pricing": {

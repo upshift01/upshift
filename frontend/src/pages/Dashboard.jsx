@@ -130,6 +130,13 @@ const Dashboard = () => {
                   Generate Cover Letter
                 </Button>
               </Link>
+              <Link to="/linkedin-tools">
+                <Button variant="outline" className="w-full justify-start border-blue-200 hover:bg-blue-50 hover:border-blue-300">
+                  <Linkedin className="mr-2 h-4 w-4 text-blue-600" />
+                  LinkedIn Tools
+                  <Badge className="ml-auto bg-blue-100 text-blue-700 text-xs">NEW</Badge>
+                </Button>
+              </Link>
               <Link to="/pricing">
                 <Button variant="outline" className="w-full justify-start">
                   <CreditCard className="mr-2 h-4 w-4" />

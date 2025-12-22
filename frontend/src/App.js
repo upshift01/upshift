@@ -91,6 +91,9 @@ const AppContent = () => {
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/popia-compliance" element={<POPIACompliance />} />
+        <Route path="/white-label" element={<WhiteLabelPage />} />
+        <Route path="/reseller" element={<WhiteLabelPage />} />
+        <Route path="/partners" element={<WhiteLabelPage />} />
         
         {/* Protected Tools Routes (with Navbar) */}
         <Route path="/builder" element={<PrivateRoute><ResumeBuilder /></PrivateRoute>} />

@@ -113,7 +113,7 @@ async def save_email_settings(
 
 
 @scheduler_router.post("/email-settings/test")
-async def test_email_settings(request, admin = Depends(get_current_super_admin)):
+async def test_email_settings(admin = Depends(get_current_super_admin)):
     """Test email connection"""
     try:
         # Load settings from DB
@@ -132,7 +132,6 @@ async def test_email_settings(request, admin = Depends(get_current_super_admin))
 
 @scheduler_router.post("/email-settings/send-test")
 async def send_test_email(
-    request,
     to_email: str,
     admin = Depends(get_current_super_admin)
 ):
@@ -165,7 +164,7 @@ async def send_test_email(
 # ==================== Reminder Schedules ====================
 
 @scheduler_router.get("/reminder-schedules")
-async def get_reminder_schedules(request, admin = Depends(get_current_super_admin)):
+async def get_reminder_schedules(admin = Depends(get_current_super_admin)):
     """Get all reminder schedules"""
     schedules = await db.reminder_schedules.find({}, {"_id": 0}).to_list(100)
     
@@ -193,7 +192,6 @@ async def get_reminder_schedules(request, admin = Depends(get_current_super_admi
 @scheduler_router.post("/reminder-schedules")
 async def create_reminder_schedule(
     schedule: ReminderSchedule,
-    request,
     admin = Depends(get_current_super_admin)
 ):
     """Create a new reminder schedule"""
@@ -214,7 +212,6 @@ async def create_reminder_schedule(
 async def update_reminder_schedule(
     schedule_id: str,
     schedule: ReminderSchedule,
-    request,
     admin = Depends(get_current_super_admin)
 ):
     """Update a reminder schedule"""
@@ -242,7 +239,6 @@ async def update_reminder_schedule(
 @scheduler_router.delete("/reminder-schedules/{schedule_id}")
 async def delete_reminder_schedule(
     schedule_id: str,
-    request,
     admin = Depends(get_current_super_admin)
 ):
     """Delete a reminder schedule"""
@@ -263,7 +259,6 @@ async def delete_reminder_schedule(
 
 @scheduler_router.post("/send-reminders")
 async def send_payment_reminders(
-    request,
     background_tasks: BackgroundTasks,
     admin = Depends(get_current_super_admin)
 ):
@@ -354,7 +349,6 @@ async def send_payment_reminders(
 @scheduler_router.post("/send-reminder/{invoice_id}")
 async def send_single_reminder(
     invoice_id: str,
-    request,
     admin = Depends(get_current_super_admin)
 ):
     """Send reminder for a specific invoice"""
@@ -418,7 +412,6 @@ async def send_single_reminder(
 
 @scheduler_router.post("/generate-monthly-invoices")
 async def generate_monthly_invoices_job(
-    request,
     admin = Depends(get_current_super_admin)
 ):
     """Generate monthly invoices and send notifications"""
@@ -513,7 +506,6 @@ async def generate_monthly_invoices_job(
 
 @scheduler_router.get("/email-logs")
 async def get_email_logs(
-    request,
     limit: int = 50,
     admin = Depends(get_current_super_admin)
 ):

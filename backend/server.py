@@ -475,7 +475,7 @@ async def generate_resume_pdf(resume_data: ResumeCreate):
 @api_router.post("/ai/improve-section")
 async def improve_resume_section(
     data: dict,
-    current_user: UserResponse = Depends(check_user_has_tier(['tier-1', 'tier-2', 'tier-3']))
+    current_user: UserResponse = Depends(check_tier_dep(['tier-1', 'tier-2', 'tier-3']))
 ):
     """Improve a specific section of resume using AI (Requires paid tier)"""
     try:

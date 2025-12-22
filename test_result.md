@@ -591,3 +591,16 @@ frontend:
         - working: true
         - agent: "testing"
         - comment: "✅ Reseller Email Settings UI fully functional. All 3 tabs (Profile, Email Settings, Legal Pages) present. SMTP Email Configuration form with same fields as admin version. Email Use Cases section shows 4 use cases: welcome emails, password reset notifications, payment confirmation emails, and resume delivery. All buttons (Save Email Settings, Test Connection, Send Test) present and functional. Form properly branded with reseller information (Acme Careers)."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 3
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "ATS Resume Checker (FREE endpoint)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"

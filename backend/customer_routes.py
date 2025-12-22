@@ -60,7 +60,7 @@ class InterviewPracticeRequest(BaseModel):
 
 # Dashboard Stats
 @router.get("/dashboard-stats")
-async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
+async def get_dashboard_stats(current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     
     # Get document count
@@ -88,7 +88,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
 # Recent Activity
 @router.get("/recent-activity")
-async def get_recent_activity(current_user: dict = Depends(get_current_user)):
+async def get_recent_activity(current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     activities = []
     
@@ -125,7 +125,7 @@ async def get_recent_activity(current_user: dict = Depends(get_current_user)):
 
 # Documents
 @router.get("/documents")
-async def get_documents(current_user: dict = Depends(get_current_user)):
+async def get_documents(current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     documents = await db.documents.find(
         {"user_id": user_id},
@@ -135,7 +135,7 @@ async def get_documents(current_user: dict = Depends(get_current_user)):
     return {"documents": documents}
 
 @router.delete("/documents/{doc_id}")
-async def delete_document(doc_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_document(doc_id: str, current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     result = await db.documents.delete_one({"id": doc_id, "user_id": user_id})
     if result.deleted_count == 0:
@@ -144,7 +144,7 @@ async def delete_document(doc_id: str, current_user: dict = Depends(get_current_
 
 # Job Applications
 @router.get("/jobs")
-async def get_jobs(current_user: dict = Depends(get_current_user)):
+async def get_jobs(current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     jobs = await db.job_applications.find(
         {"user_id": user_id},
@@ -154,7 +154,7 @@ async def get_jobs(current_user: dict = Depends(get_current_user)):
     return {"jobs": jobs}
 
 @router.post("/jobs")
-async def create_job(job: JobApplication, current_user: dict = Depends(get_current_user)):
+async def create_job(job: JobApplication, current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     
     new_job = {
@@ -174,7 +174,7 @@ async def create_job(job: JobApplication, current_user: dict = Depends(get_curre
     return {"job": {k: v for k, v in new_job.items() if k != "_id"}}
 
 @router.put("/jobs/{job_id}")
-async def update_job(job_id: str, job_update: JobUpdate, current_user: dict = Depends(get_current_user)):
+async def update_job(job_id: str, job_update: JobUpdate, current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     
     update_data = {k: v for k, v in job_update.dict().items() if v is not None}
@@ -191,7 +191,7 @@ async def update_job(job_id: str, job_update: JobUpdate, current_user: dict = De
     return {"success": True}
 
 @router.delete("/jobs/{job_id}")
-async def delete_job(job_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_job(job_id: str, current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     result = await db.job_applications.delete_one({"id": job_id, "user_id": user_id})
     if result.deleted_count == 0:
@@ -200,7 +200,7 @@ async def delete_job(job_id: str, current_user: dict = Depends(get_current_user)
 
 # Profile
 @router.get("/profile")
-async def get_profile(current_user: dict = Depends(get_current_user)):
+async def get_profile(current_user = Depends(get_current_customer)):
     return {
         "full_name": current_user.get("full_name", ""),
         "email": current_user.get("email", ""),
@@ -208,7 +208,7 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
     }
 
 @router.put("/profile")
-async def update_profile(profile: ProfileUpdate, current_user: dict = Depends(get_current_user)):
+async def update_profile(profile: ProfileUpdate, current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     
     update_data = {k: v for k, v in profile.dict().items() if v is not None}
@@ -223,7 +223,7 @@ async def update_profile(profile: ProfileUpdate, current_user: dict = Depends(ge
 
 # Password Change
 @router.post("/change-password")
-async def change_password(data: PasswordChange, current_user: dict = Depends(get_current_user)):
+async def change_password(data: PasswordChange, current_user = Depends(get_current_customer)):
     import bcrypt
     user_id = current_user["id"]
     
@@ -248,7 +248,7 @@ async def change_password(data: PasswordChange, current_user: dict = Depends(get
 
 # Notifications
 @router.get("/notifications")
-async def get_notification_preferences(current_user: dict = Depends(get_current_user)):
+async def get_notification_preferences(current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     prefs = await db.notification_preferences.find_one({"user_id": user_id}, {"_id": 0})
     
@@ -260,7 +260,7 @@ async def get_notification_preferences(current_user: dict = Depends(get_current_
 @router.put("/notifications")
 async def update_notification_preferences(
     prefs: NotificationPreferences, 
-    current_user: dict = Depends(get_current_user)
+    current_user = Depends(get_current_customer)
 ):
     user_id = current_user["id"]
     
@@ -280,7 +280,7 @@ async def update_notification_preferences(
 
 # Analytics
 @router.get("/analytics")
-async def get_analytics(current_user: dict = Depends(get_current_user)):
+async def get_analytics(current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     
     # Get counts
@@ -326,7 +326,7 @@ async def get_analytics(current_user: dict = Depends(get_current_user)):
 
 # ATS History
 @router.get("/ats-history")
-async def get_ats_history(current_user: dict = Depends(get_current_user)):
+async def get_ats_history(current_user = Depends(get_current_customer)):
     user_id = current_user["id"]
     
     history = await db.ats_results.find(
@@ -340,7 +340,7 @@ async def get_ats_history(current_user: dict = Depends(get_current_user)):
 @router.post("/interview-feedback")
 async def get_interview_feedback(
     request: InterviewPracticeRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user = Depends(get_current_customer)
 ):
     try:
         from emergentintegrations.llm.chat import chat, LlmModel

@@ -61,12 +61,13 @@ import CustomerSettings from "./pages/customer/CustomerSettings";
 import JobTracker from "./pages/customer/JobTracker";
 import InterviewPrep from "./pages/customer/InterviewPrep";
 
-// Wrapper to conditionally show Navbar
+// Wrapper to conditionally show Navbar and Footer
 const AppContent = () => {
   const location = useLocation();
   const hideNavbar = location.pathname.startsWith('/super-admin') || 
                      location.pathname.startsWith('/reseller-dashboard') ||
                      location.pathname.startsWith('/dashboard');
+  const hideFooter = hideNavbar; // Hide footer on same pages as navbar
 
   return (
     <>
@@ -82,6 +83,13 @@ const AppContent = () => {
         <Route path="/book-strategy-call" element={<StrategyCallBooking />} />
         <Route path="/ats-checker" element={<ATSChecker />} />
         <Route path="/contact" element={<Contact />} />
+        
+        {/* Legal Pages */}
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/popia-compliance" element={<POPIACompliance />} />
         
         {/* Protected Tools Routes (with Navbar) */}
         <Route path="/builder" element={<PrivateRoute><ResumeBuilder /></PrivateRoute>} />

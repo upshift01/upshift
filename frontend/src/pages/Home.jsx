@@ -237,6 +237,135 @@ const Home = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-gray-600">
+              Everything you need to know about UpShift's CV and career services
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            {/* ATS Questions */}
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">What is ATS and why is it important?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                ATS (Applicant Tracking System) is software used by over 90% of large companies in South Africa to automatically scan and filter resumes before a human recruiter sees them. If your CV isn't ATS-optimized, it may never reach a hiring manager—even if you're perfectly qualified. Our AI ensures your CV passes these systems.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">How does the free ATS checker work?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                Simply upload your CV and our AI analyzes it against common ATS requirements. You'll receive a compatibility score (0-100) and specific recommendations to improve your CV's chances of passing automated screening systems. The basic check is completely free!
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">How long does it take to create a CV with UpShift?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                With our AI-powered tools, you can create a professional, ATS-optimized CV in as little as 15-30 minutes. Our pre-built templates and intelligent suggestions make the process quick and easy—no design skills required.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">What file formats can I download my CV in?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                You can download your CV in PDF, Word (DOCX), and plain text formats. PDF is recommended for most job applications as it preserves formatting across all devices. Word format is useful when recruiters specifically request it.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">What's the difference between your pricing plans?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                <strong>ATS Optimize (R899):</strong> Professional CV rewrite, tailored cover letter, and full ATS optimization.<br/><br/>
+                <strong>Professional Package (R1,500):</strong> Everything in ATS Optimize plus LinkedIn profile review and interview preparation materials.<br/><br/>
+                <strong>Executive Elite (R3,000):</strong> Our premium service with 1-on-1 consultation, unlimited revisions, priority support, and 12-hour turnaround.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">Can I use my LinkedIn profile to create a CV?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                Yes! Our AI-powered LinkedIn tools can instantly convert your LinkedIn profile into a professionally formatted CV. You can also use our tools to create a new LinkedIn profile from scratch or enhance your existing one with AI-generated improvements.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">Do you offer a money-back guarantee?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                Absolutely! We offer a 7-day money-back guarantee on all our services. If you're not completely satisfied with your CV or cover letter, contact us within 7 days for a full refund—no questions asked.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">What payment methods do you accept?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                We accept all major South African credit and debit cards through Yoco, our trusted payment partner. This includes Visa, Mastercard, and local bank cards. For enterprise clients, we also offer EFT payment options.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">Is my personal information secure?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                Your privacy and security are our top priorities. We use industry-standard SSL encryption to protect all data transfers. Your personal information and documents are stored securely and are never shared with third parties. You can delete your data at any time from your account settings.
+              </div>
+            </details>
+
+            <details className="group bg-gray-50 rounded-xl overflow-hidden">
+              <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-100 transition-colors">
+                <h3 className="font-semibold text-gray-900">Do you offer services for businesses?</h3>
+                <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="px-5 pb-5 text-gray-600">
+                Yes! We offer white-label solutions for recruitment agencies, HR departments, career centers, and educational institutions. Our reseller program allows you to brand our platform as your own with custom pricing. Contact us at support@upshift.works to learn about partnership opportunities.
+              </div>
+            </details>
+          </div>
+
+          <div className="text-center mt-10">
+            <p className="text-gray-600 mb-4">Still have questions?</p>
+            <Link to="/contact">
+              <Button variant="outline" className="border-2">
+                Contact Our Support Team
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
         <div className="max-w-4xl mx-auto text-center">

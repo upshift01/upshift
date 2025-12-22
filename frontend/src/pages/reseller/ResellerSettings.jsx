@@ -211,6 +211,73 @@ const ResellerSettings = () => {
     }
   };
 
+  // ChatGPT Settings Functions
+  const fetchChatGPTSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/chatgpt-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setChatgptSettings({
+          openai_api_key: data.openai_api_key || '',
+          model: data.model || 'gpt-4o',
+          use_custom_key: data.use_custom_key || false
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching ChatGPT settings:', error);
+    }
+  };
+
+  const handleSaveChatGPTSettings = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/chatgpt-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(chatgptSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'ChatGPT settings saved successfully!' });
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save ChatGPT settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving ChatGPT settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestChatGPT = async () => {
+    setTestingChatGPT(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/chatgpt-settings/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: 'ChatGPT API connection successful! ' + (data.message || '') });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Connection failed' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error testing ChatGPT connection' });
+    } finally {
+      setTestingChatGPT(false);
+    }
+  };
+
   const tabs = [
     { id: 'profile', label: 'Profile', icon: Settings },
     { id: 'email', label: 'Email Settings', icon: Mail },

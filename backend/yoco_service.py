@@ -65,6 +65,8 @@ class YocoService:
                     "Content-Type": "application/json"
                 }
                 
+                logger.info(f"Creating Yoco checkout with key: {self.secret_key[:10]}...{self.secret_key[-4:] if self.secret_key else 'NONE'}")
+                
                 response = await client.post(
                     self.base_url,
                     json=payload,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Settings, Save, Globe, Mail, FileText } from 'lucide-react';
+import { Settings, Save, Globe, Mail, FileText, Send, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -9,6 +9,7 @@ import { Input } from '../../components/ui/input';
 const ResellerSettings = () => {
   const { token } = useAuth();
   const { theme } = useTheme();
+  const [activeTab, setActiveTab] = useState('profile');
   const [profile, setProfile] = useState({
     company_name: '',
     brand_name: '',
@@ -25,11 +26,29 @@ const ResellerSettings = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Email Settings State
+  const [emailSettings, setEmailSettings] = useState({
+    smtp_host: 'smtp.office365.com',
+    smtp_port: 587,
+    smtp_user: '',
+    smtp_password: '',
+    from_email: '',
+    from_name: ''
+  });
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState('');
 
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'email') {
+      fetchEmailSettings();
+    }
+  }, [activeTab]);
 
   const fetchProfile = async () => {
     try {
@@ -45,6 +64,11 @@ const ResellerSettings = () => {
           contact_info: data.contact_info || { email: '', phone: '', address: '' },
           legal: data.legal || { terms_url: '', privacy_url: '' }
         });
+        // Set default from name from profile
+        setEmailSettings(prev => ({
+          ...prev,
+          from_name: data.brand_name || data.company_name || 'UpShift'
+        }));
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -53,9 +77,32 @@ const ResellerSettings = () => {
     }
   };
 
+  const fetchEmailSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/email-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.is_configured) {
+          setEmailSettings({
+            smtp_host: data.smtp_host || 'smtp.office365.com',
+            smtp_port: data.smtp_port || 587,
+            smtp_user: data.smtp_user || '',
+            smtp_password: data.smtp_password || '',
+            from_email: data.from_email || '',
+            from_name: data.from_name || profile.brand_name || 'UpShift'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching email settings:', error);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
-    setMessage('');
+    setMessage({ type: '', text: '' });
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/profile`, {
         method: 'PUT',
@@ -66,16 +113,96 @@ const ResellerSettings = () => {
         body: JSON.stringify(profile)
       });
       if (response.ok) {
-        setMessage('Settings saved successfully!');
+        setMessage({ type: 'success', text: 'Settings saved successfully!' });
       } else {
-        setMessage('Failed to save settings');
+        setMessage({ type: 'error', text: 'Failed to save settings' });
       }
     } catch (error) {
-      setMessage('Error saving settings');
+      setMessage({ type: 'error', text: 'Error saving settings' });
     } finally {
       setSaving(false);
     }
   };
+
+  const handleSaveEmailSettings = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/email-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(emailSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Email settings saved successfully!' });
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save email settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving email settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setTestingEmail(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/email-settings/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: 'SMTP connection successful!' });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Connection failed' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error testing connection' });
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmailAddress) {
+      setMessage({ type: 'error', text: 'Please enter a test email address' });
+      return;
+    }
+    
+    setTestingEmail(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/email-settings/send-test?to_email=${encodeURIComponent(testEmailAddress)}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: `Test email sent to ${testEmailAddress}` });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to send test email' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error sending test email' });
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: Settings },
+    { id: 'email', label: 'Email Settings', icon: Mail },
+    { id: 'legal', label: 'Legal Pages', icon: FileText }
+  ];
 
   if (loading) {
     return (
@@ -92,153 +219,317 @@ const ResellerSettings = () => {
         <p className="text-gray-600">Manage your reseller account settings</p>
       </div>
 
-      {message && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          message.includes('success') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 border-b">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-4 py-2 -mb-px border-b-2 transition-colors ${
+              activeTab === tab.id 
+                ? 'border-blue-600 text-blue-600' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {message.text && (
+        <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
+          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
         }`}>
-          {message}
+          {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+          {message.text}
         </div>
       )}
 
-      <div className="space-y-6">
-        {/* Company Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Company Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Company Name</label>
-                <Input
-                  value={profile.company_name}
-                  onChange={(e) => setProfile({ ...profile, company_name: e.target.value })}
-                />
+      {/* Profile Tab */}
+      {activeTab === 'profile' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Company Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Company Name</label>
+                  <Input
+                    value={profile.company_name}
+                    onChange={(e) => setProfile({ ...profile, company_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Brand Name</label>
+                  <Input
+                    value={profile.brand_name}
+                    onChange={(e) => setProfile({ ...profile, brand_name: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Shown to your customers</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Brand Name</label>
-                <Input
-                  value={profile.brand_name}
-                  onChange={(e) => setProfile({ ...profile, brand_name: e.target.value })}
-                />
-                <p className="text-xs text-gray-500 mt-1">Shown to your customers</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Domain Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Domain Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div>
-              <label className="block text-sm font-medium mb-1">Custom Domain</label>
-              <Input
-                value={profile.custom_domain}
-                onChange={(e) => setProfile({ ...profile, custom_domain: e.target.value })}
-                placeholder="cv.yourdomain.com"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Point your domain's CNAME record to: reseller.upshift.co.za
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Domain Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <label className="block text-sm font-medium mb-1">Custom Domain</label>
+                <Input
+                  value={profile.custom_domain}
+                  onChange={(e) => setProfile({ ...profile, custom_domain: e.target.value })}
+                  placeholder="cv.yourdomain.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Point your domain's CNAME record to: reseller.upshift.co.za
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Contact Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Support Email</label>
+                  <Input
+                    type="email"
+                    value={profile.contact_info?.email || ''}
+                    onChange={(e) => setProfile({ 
+                      ...profile, 
+                      contact_info: { ...profile.contact_info, email: e.target.value }
+                    })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
+                  <Input
+                    value={profile.contact_info?.phone || ''}
+                    onChange={(e) => setProfile({ 
+                      ...profile, 
+                      contact_info: { ...profile.contact_info, phone: e.target.value }
+                    })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Address</label>
+                <Input
+                  value={profile.contact_info?.address || ''}
+                  onChange={(e) => setProfile({ 
+                    ...profile, 
+                    contact_info: { ...profile.contact_info, address: e.target.value }
+                  })}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Saving...' : 'Save Settings'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Email Settings Tab */}
+      {activeTab === 'email' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                SMTP Email Configuration
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Configure your own SMTP settings to send emails to your customers with your brand. 
+                This is useful for sending notifications, password resets, and marketing emails.
               </p>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Contact Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              Contact Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">SMTP Host</label>
+                  <Input
+                    value={emailSettings.smtp_host}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, smtp_host: e.target.value })}
+                    placeholder="smtp.office365.com"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">For Office365: smtp.office365.com</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">SMTP Port</label>
+                  <Input
+                    type="number"
+                    value={emailSettings.smtp_port}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, smtp_port: parseInt(e.target.value) })}
+                    placeholder="587"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Common ports: 587 (TLS), 465 (SSL)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">SMTP Username (Email)</label>
+                  <Input
+                    type="email"
+                    value={emailSettings.smtp_user}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, smtp_user: e.target.value })}
+                    placeholder="noreply@yourdomain.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">SMTP Password</label>
+                  <Input
+                    type="password"
+                    value={emailSettings.smtp_password}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, smtp_password: e.target.value })}
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">From Email (optional)</label>
+                  <Input
+                    type="email"
+                    value={emailSettings.from_email}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, from_email: e.target.value })}
+                    placeholder="Same as SMTP username if empty"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">From Name</label>
+                  <Input
+                    value={emailSettings.from_name}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, from_name: e.target.value })}
+                    placeholder={profile.brand_name || 'Your Brand Name'}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button onClick={handleSaveEmailSettings} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Email Settings'}
+                </Button>
+                <Button variant="outline" onClick={handleTestConnection} disabled={testingEmail}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${testingEmail ? 'animate-spin' : ''}`} />
+                  Test Connection
+                </Button>
+              </div>
+
+              <div className="pt-4 border-t">
+                <label className="block text-sm font-medium mb-2">Send Test Email</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={testEmailAddress}
+                    onChange={(e) => setTestEmailAddress(e.target.value)}
+                    placeholder="test@example.com"
+                    className="flex-1"
+                  />
+                  <Button variant="outline" onClick={handleSendTestEmail} disabled={testingEmail}>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Test
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Email Use Cases</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Send welcome emails to new customers
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Password reset notifications
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Payment confirmation emails
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Resume and cover letter delivery
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Legal Tab */}
+      {activeTab === 'legal' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Legal Pages
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Provide links to your legal documents. These will be displayed to your customers during registration and checkout.
+              </p>
               <div>
-                <label className="block text-sm font-medium mb-1">Support Email</label>
+                <label className="block text-sm font-medium mb-1">Terms & Conditions URL</label>
                 <Input
-                  type="email"
-                  value={profile.contact_info?.email || ''}
+                  value={profile.legal?.terms_url || ''}
                   onChange={(e) => setProfile({ 
                     ...profile, 
-                    contact_info: { ...profile.contact_info, email: e.target.value }
+                    legal: { ...profile.legal, terms_url: e.target.value }
                   })}
+                  placeholder="https://yourdomain.com/terms"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Phone</label>
+                <label className="block text-sm font-medium mb-1">Privacy Policy URL</label>
                 <Input
-                  value={profile.contact_info?.phone || ''}
+                  value={profile.legal?.privacy_url || ''}
                   onChange={(e) => setProfile({ 
                     ...profile, 
-                    contact_info: { ...profile.contact_info, phone: e.target.value }
+                    legal: { ...profile.legal, privacy_url: e.target.value }
                   })}
+                  placeholder="https://yourdomain.com/privacy"
                 />
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Address</label>
-              <Input
-                value={profile.contact_info?.address || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  contact_info: { ...profile.contact_info, address: e.target.value }
-                })}
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Legal */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Legal Pages
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Terms & Conditions URL</label>
-              <Input
-                value={profile.legal?.terms_url || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  legal: { ...profile.legal, terms_url: e.target.value }
-                })}
-                placeholder="https://yourdomain.com/terms"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Privacy Policy URL</label>
-              <Input
-                value={profile.legal?.privacy_url || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  legal: { ...profile.legal, privacy_url: e.target.value }
-                })}
-                placeholder="https://yourdomain.com/privacy"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex justify-end mt-6">
-        <Button onClick={handleSave} disabled={saving}>
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? 'Saving...' : 'Save Settings'}
-        </Button>
-      </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Saving...' : 'Save Settings'}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

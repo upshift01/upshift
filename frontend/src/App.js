@@ -135,6 +135,7 @@ const AppContent = () => {
           <Route path="email-templates" element={<EmailTemplates />} />
         </Route>
       </Routes>
+      {!hideFooter && <Footer />}
       <Toaster />
     </>
   );

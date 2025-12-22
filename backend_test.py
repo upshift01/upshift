@@ -315,14 +315,14 @@ class APITester:
         
         # Test admin endpoint without token
         response, error = self.make_request("GET", "/admin/analytics", expected_status=401)
-        if error and "401" in error:
+        if response is None and error and "401" in error:
             self.log_test("Admin Auth Required", True, "Correctly rejected unauthorized request")
         else:
             self.log_test("Admin Auth Required", False, "Should require authentication")
         
         # Test reseller endpoint without token
         response, error = self.make_request("GET", "/reseller/profile", expected_status=401)
-        if error and "401" in error:
+        if response is None and error and "401" in error:
             self.log_test("Reseller Auth Required", True, "Correctly rejected unauthorized request")
         else:
             self.log_test("Reseller Auth Required", False, "Should require authentication")
@@ -331,7 +331,7 @@ class APITester:
         if self.reseller_admin_token:
             headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
             response, error = self.make_request("GET", "/admin/analytics", headers=headers, expected_status=403)
-            if error and "403" in error:
+            if response is None and error and "403" in error:
                 self.log_test("Role-Based Access Control", True, "Reseller correctly denied admin access")
             else:
                 self.log_test("Role-Based Access Control", False, "Should deny cross-role access")

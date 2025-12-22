@@ -20,6 +20,7 @@ import PaymentCancel from "./pages/PaymentCancel";
 import Dashboard from "./pages/Dashboard";
 import ATSChecker from "./pages/ATSChecker";
 import Contact from "./pages/Contact";
+import LinkedInTools from "./pages/LinkedInTools";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages

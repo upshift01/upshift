@@ -70,6 +70,8 @@ class APITester:
                 response = requests.post(url, headers=headers, json=data, timeout=30)
             elif method.upper() == "PUT":
                 response = requests.put(url, headers=headers, json=data, timeout=30)
+            elif method.upper() == "DELETE":
+                response = requests.delete(url, headers=headers, timeout=30)
             else:
                 return None, f"Unsupported method: {method}"
             

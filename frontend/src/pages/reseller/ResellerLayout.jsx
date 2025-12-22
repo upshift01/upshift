@@ -37,11 +37,6 @@ const ResellerLayout = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Check if user is reseller admin
-  if (!user || user.role !== 'reseller_admin') {
-    return <Navigate to="/login" replace />;
-  }
-
   useEffect(() => {
     fetchNotifications();
     // Toggle dark mode class on body
@@ -51,6 +46,11 @@ const ResellerLayout = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
+
+  // Check if user is reseller admin
+  if (!user || user.role !== 'reseller_admin') {
+    return <Navigate to="/login" replace />;
+  }
 
   const fetchNotifications = async () => {
     try {

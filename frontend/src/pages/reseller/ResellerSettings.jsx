@@ -58,6 +58,9 @@ const ResellerSettings = () => {
     if (activeTab === 'email') {
       fetchEmailSettings();
     }
+    if (activeTab === 'chatgpt') {
+      fetchChatGPTSettings();
+    }
   }, [activeTab]);
 
   const fetchProfile = async () => {

@@ -986,3 +986,122 @@ async def test_reseller_chatgpt_connection(context: dict = Depends(get_current_r
     except Exception as e:
         logger.error(f"Error testing ChatGPT connection: {str(e)}")
         return {"success": False, "error": str(e)}
+
+
+# Yoco Payment Settings Endpoints
+@reseller_router.get("/yoco-settings", response_model=dict)
+async def get_reseller_yoco_settings(context: dict = Depends(get_current_reseller_admin)):
+    """Get Yoco payment settings for a reseller"""
+    try:
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_yoco_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if settings:
+            # Mask the secret key for security (show only last 4 chars)
+            if settings.get("yoco_secret_key"):
+                key = settings["yoco_secret_key"]
+                settings["yoco_secret_key"] = "sk_..." + key[-4:] if len(key) > 4 else ""
+            if settings.get("yoco_public_key"):
+                pub_key = settings["yoco_public_key"]
+                settings["yoco_public_key"] = "pk_..." + pub_key[-4:] if len(pub_key) > 4 else ""
+            return settings
+        
+        return {
+            "yoco_public_key": "",
+            "yoco_secret_key": "",
+            "use_custom_keys": False,
+            "is_live_mode": False
+        }
+    except Exception as e:
+        logger.error(f"Error fetching Yoco settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@reseller_router.post("/yoco-settings", response_model=dict)
+async def save_reseller_yoco_settings(
+    settings: dict,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Save Yoco payment settings for a reseller"""
+    try:
+        reseller = context["reseller"]
+        
+        # Check if we need to update or preserve existing keys
+        existing = await db.reseller_yoco_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        # Handle masked keys - preserve existing if masked pattern detected
+        secret_key = settings.get("yoco_secret_key", "")
+        public_key = settings.get("yoco_public_key", "")
+        
+        if secret_key.startswith("sk_...") and existing:
+            secret_key = existing.get("yoco_secret_key", "")
+        if public_key.startswith("pk_...") and existing:
+            public_key = existing.get("yoco_public_key", "")
+        
+        # Determine if live or test mode based on key prefix
+        is_live_mode = secret_key.startswith("sk_live_") if secret_key else False
+        
+        update_data = {
+            "reseller_id": reseller["id"],
+            "yoco_public_key": public_key,
+            "yoco_secret_key": secret_key,
+            "use_custom_keys": settings.get("use_custom_keys", False),
+            "is_live_mode": is_live_mode,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.reseller_yoco_settings.update_one(
+            {"reseller_id": reseller["id"]},
+            {"$set": update_data},
+            upsert=True
+        )
+        
+        logger.info(f"Yoco settings saved for reseller {reseller['id']}")
+        
+        return {"success": True, "message": "Yoco settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving Yoco settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@reseller_router.post("/yoco-settings/test", response_model=dict)
+async def test_reseller_yoco_connection(context: dict = Depends(get_current_reseller_admin)):
+    """Test the Yoco API connection using reseller's credentials"""
+    try:
+        from yoco_service import YocoService
+        
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_yoco_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not settings or not settings.get("yoco_secret_key"):
+            raise HTTPException(status_code=400, detail="Yoco credentials not configured")
+        
+        # Create a Yoco service with reseller credentials
+        yoco = YocoService(
+            secret_key=settings["yoco_secret_key"],
+            public_key=settings.get("yoco_public_key")
+        )
+        
+        result = await yoco.test_connection()
+        
+        if result["success"]:
+            mode = "Live" if settings.get("is_live_mode") else "Test"
+            logger.info(f"Yoco test successful for reseller {reseller['id']} ({mode} mode)")
+            return {"success": True, "message": f"Connection successful! Mode: {mode}"}
+        else:
+            return result
+                
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error testing Yoco connection: {str(e)}")
+        return {"success": False, "error": str(e)}

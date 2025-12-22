@@ -1,21 +1,30 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Depends, status
 from fastapi.responses import StreamingResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 import io
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
+from datetime import datetime
+import uuid
 
 from models import Resume, ResumeCreate, CoverLetter, CoverLetterCreate, ResumeAnalysisResult
 from ai_service import ai_service
 from odoo_integration import odoo_integration
+from auth import (
+    Token, UserRegister, UserLogin, UserResponse, UserInDB,
+    get_password_hash, verify_password, create_access_token,
+    get_current_user, get_current_active_user, check_user_has_tier
+)
+from yoco_service import yoco_service
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')

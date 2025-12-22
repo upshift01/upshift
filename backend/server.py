@@ -318,7 +318,7 @@ async def verify_payment_status(
 
 @api_router.get("/payments/history")
 async def get_payment_history(
-    current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))
+    current_user: UserResponse = Depends(get_current_user_dep)
 ):
     """Get user's payment history"""
     try:

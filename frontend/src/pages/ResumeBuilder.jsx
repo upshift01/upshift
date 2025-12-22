@@ -200,6 +200,69 @@ const ResumeBuilder = () => {
           </p>
         </div>
 
+        {/* Selected Template Display */}
+        {selectedTemplate && (
+          <Card className="mb-8 border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-20 rounded overflow-hidden border border-blue-200 flex-shrink-0">
+                  <img 
+                    src={selectedTemplate.image} 
+                    alt={selectedTemplate.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=100&h=140&fit=crop';
+                    }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
+                      Selected Template
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900">{selectedTemplate.name}</h3>
+                  <p className="text-sm text-gray-600">{selectedTemplate.category} • {selectedTemplate.industry}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/templates')}
+                    className="text-blue-600 border-blue-300"
+                  >
+                    Change Template
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={clearTemplate}
+                    className="text-gray-500"
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* No Template Selected - Prompt to choose */}
+        {!selectedTemplate && (
+          <Card className="mb-8 border-dashed border-2 border-gray-300 bg-gray-50">
+            <CardContent className="p-6 text-center">
+              <p className="text-gray-600 mb-3">No template selected. Choose a template to get started with a professional design.</p>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/templates')}
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                Browse Templates
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>

@@ -18,6 +18,7 @@ const ResumeBuilder = () => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -34,6 +35,28 @@ const ResumeBuilder = () => {
     skills: [''],
     languages: [{ language: '', proficiency: '' }],
   });
+
+  // Load selected template from localStorage on mount
+  React.useEffect(() => {
+    const storedTemplate = localStorage.getItem('selectedTemplate');
+    if (storedTemplate) {
+      try {
+        const template = JSON.parse(storedTemplate);
+        setSelectedTemplate(template);
+        // Pre-fill industry if template has one
+        if (template.industry) {
+          setFormData(prev => ({ ...prev, industry: template.industry }));
+        }
+      } catch (e) {
+        console.error('Error parsing template:', e);
+      }
+    }
+  }, []);
+
+  const clearTemplate = () => {
+    setSelectedTemplate(null);
+    localStorage.removeItem('selectedTemplate');
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

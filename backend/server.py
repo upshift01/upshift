@@ -191,7 +191,7 @@ async def get_current_user_info(current_user: UserResponse = Depends(get_current
 @api_router.post("/payments/create-checkout")
 async def create_payment_checkout(
     tier_id: str,
-    current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))
+    current_user: UserResponse = Depends(get_current_user_dep)
 ):
     """Create a Yoco checkout session for payment"""
     try:

@@ -40,6 +40,11 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Set DB for route modules
+set_reseller_db(db)
+set_admin_db(db)
+set_whitelabel_db(db)
+
 # Create the main app without a prefix
 app = FastAPI(title="UpShift API", description="AI-Powered Resume and Cover Letter Platform")
 

@@ -112,6 +112,22 @@ ${formData.phone}`;
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
       <div className="max-w-5xl mx-auto">
+        {/* Upgrade Notice */}
+        {(!user?.active_tier || !['tier-2', 'tier-3'].includes(user.active_tier)) && (
+          <div className="mb-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg p-6 text-center">
+            <h3 className="text-xl font-bold mb-2">🔒 Premium Feature</h3>
+            <p className="mb-4">
+              AI cover letter generation requires Professional Package or Executive Elite plan.
+            </p>
+            <Button
+              onClick={() => navigate('/pricing')}
+              className="bg-white text-purple-600 hover:bg-gray-100"
+            >
+              Upgrade Now
+            </Button>
+          </div>
+        )}
+
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
             <Sparkles className="mr-1 h-3 w-3" />

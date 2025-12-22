@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Users, Search, Eye, Mail, Phone } from 'lucide-react';
+import { Users, Search, Eye, Mail, Phone, Edit, Save, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
+import { Button } from '../../components/ui/button';
 
 const ResellerCustomers = () => {
   const { token } = useAuth();
@@ -12,6 +13,7 @@ const ResellerCustomers = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [editingCustomer, setEditingCustomer] = useState(null);
 
   useEffect(() => {
     fetchCustomers();
@@ -45,6 +47,18 @@ const ResellerCustomers = () => {
     } catch (error) {
       console.error('Error fetching customer detail:', error);
     }
+  };
+
+  const handleEditCustomer = (customer) => {
+    setEditingCustomer({
+      id: customer.id,
+      full_name: customer.full_name || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      active_tier: customer.active_tier || '',
+      is_active: customer.is_active !== false
+    });
+    setSelectedCustomer(null);
   };
 
   const filteredCustomers = customers.filter(c =>
@@ -110,6 +124,7 @@ const ResellerCustomers = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Customer</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Email</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Plan</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Joined</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
                   </tr>
@@ -129,16 +144,33 @@ const ResellerCustomers = () => {
                       </td>
                       <td className="py-3 px-4 text-gray-600">{customer.email}</td>
                       <td className="py-3 px-4">{getTierBadge(customer.active_tier)}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          customer.is_active !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {customer.is_active !== false ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
                       <td className="py-3 px-4 text-gray-500">
                         {new Date(customer.created_at).toLocaleDateString()}
                       </td>
                       <td className="py-3 px-4">
-                        <button
-                          onClick={() => fetchCustomerDetail(customer.id)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => fetchCustomerDetail(customer.id)}
+                            className="text-blue-600 hover:text-blue-800 p-1"
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEditCustomer(customer)}
+                            className="text-green-600 hover:text-green-800 p-1"
+                            title="Edit Customer"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -166,12 +198,23 @@ const ResellerCustomers = () => {
                     {getTierBadge(selectedCustomer.customer?.active_tier)}
                   </div>
                 </div>
-                <button
-                  onClick={() => setSelectedCustomer(null)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-                >
-                  ×
-                </button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleEditCustomer(selectedCustomer.customer);
+                    }}
+                  >
+                    <Edit className="h-4 w-4 mr-1" /> Edit
+                  </Button>
+                  <button
+                    onClick={() => setSelectedCustomer(null)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             </div>
             <div className="p-6 space-y-6">
@@ -189,6 +232,15 @@ const ResellerCustomers = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium mb-3">Account Status</h3>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  selectedCustomer.customer?.is_active !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {selectedCustomer.customer?.is_active !== false ? 'Active' : 'Inactive'}
+                </span>
               </div>
 
               <div>
@@ -220,6 +272,142 @@ const ResellerCustomers = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Customer Modal */}
+      {editingCustomer && (
+        <EditCustomerModal
+          customer={editingCustomer}
+          onClose={() => setEditingCustomer(null)}
+          onSuccess={() => {
+            setEditingCustomer(null);
+            fetchCustomers();
+          }}
+          token={token}
+        />
+      )}
+    </div>
+  );
+};
+
+const EditCustomerModal = ({ customer, onClose, onSuccess, token }) => {
+  const [formData, setFormData] = useState({
+    full_name: customer.full_name || '',
+    email: customer.email || '',
+    phone: customer.phone || '',
+    active_tier: customer.active_tier || '',
+    is_active: customer.is_active !== false
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/customers/${customer.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        onSuccess();
+      } else {
+        const data = await response.json();
+        setError(data.detail || 'Failed to update customer');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b flex justify-between items-center">
+          <h2 className="text-xl font-bold">Edit Customer</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">{error}</div>
+          )}
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Full Name *</label>
+            <Input
+              required
+              value={formData.full_name}
+              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Email *</label>
+            <Input
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Phone</label>
+            <Input
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="+27 XX XXX XXXX"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Active Plan</label>
+            <select
+              value={formData.active_tier}
+              onChange={(e) => setFormData({ ...formData, active_tier: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
+            >
+              <option value="">No Plan</option>
+              <option value="tier-1">ATS Optimize</option>
+              <option value="tier-2">Professional Package</option>
+              <option value="tier-3">Executive Elite</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.is_active}
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+            <span className="text-sm font-medium text-gray-700">Account Active</span>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="flex-1">
+              <Save className="h-4 w-4 mr-2" />
+              {loading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

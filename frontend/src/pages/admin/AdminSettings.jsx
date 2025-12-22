@@ -66,6 +66,9 @@ const AdminSettings = () => {
       fetchReminderSchedules();
       fetchEmailLogs();
     }
+    if (activeTab === 'payments') {
+      fetchYocoSettings();
+    }
   }, [activeTab]);
 
   const fetchEmailSettings = async () => {

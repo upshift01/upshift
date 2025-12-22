@@ -362,6 +362,7 @@ const ResellerSettings = () => {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: Settings },
     { id: 'email', label: 'Email Settings', icon: Mail },
+    { id: 'yoco', label: 'Yoco Payments', icon: CreditCard },
     { id: 'chatgpt', label: 'ChatGPT', icon: Bot },
     { id: 'legal', label: 'Legal Pages', icon: FileText }
   ];

@@ -71,6 +71,9 @@ const ResellerSettings = () => {
     if (activeTab === 'chatgpt') {
       fetchChatGPTSettings();
     }
+    if (activeTab === 'yoco') {
+      fetchYocoSettings();
+    }
   }, [activeTab]);
 
   const fetchProfile = async () => {

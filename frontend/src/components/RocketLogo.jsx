@@ -1,6 +1,6 @@
 import React from 'react';
 
-const RocketLogo = ({ className = "h-8 w-8" }) => {
+const RocketLogo = ({ className = "h-8 w-8", useGradient = true }) => {
   return (
     <svg 
       viewBox="0 0 100 100" 
@@ -14,53 +14,63 @@ const RocketLogo = ({ className = "h-8 w-8" }) => {
         </linearGradient>
       </defs>
       
-      {/* Main rocket body - tilted diagonally */}
-      <path
-        d="M65 8 
-           C80 12, 92 28, 88 48
-           C86 58, 78 68, 65 75
-           L50 82
-           C42 78, 35 70, 32 60
-           C28 45, 35 25, 50 15
-           C55 11, 60 8, 65 8
-           Z"
-        fill="url(#rocketGradient)"
-      />
+      <g transform="rotate(25 50 50)">
+        {/* Main rocket body - bulbous rounded shape */}
+        <path
+          d="M50 8
+             C65 8, 78 20, 78 40
+             C78 55, 70 70, 58 78
+             L50 82
+             L42 78
+             C30 70, 22 55, 22 40
+             C22 20, 35 8, 50 8
+             Z"
+          fill="url(#rocketGradient)"
+        />
+        
+        {/* Left fin/wing protrusion */}
+        <ellipse
+          cx="20"
+          cy="70"
+          rx="14"
+          ry="12"
+          fill="url(#rocketGradient)"
+        />
+        
+        {/* Right fin/wing protrusion */}
+        <ellipse
+          cx="80"
+          cy="70"
+          rx="14"
+          ry="12"
+          fill="url(#rocketGradient)"
+        />
+        
+        {/* Bottom exhaust connection */}
+        <ellipse
+          cx="50"
+          cy="85"
+          rx="12"
+          ry="10"
+          fill="url(#rocketGradient)"
+        />
+        
+        {/* Porthole - circular window */}
+        <circle
+          cx="50"
+          cy="42"
+          r="12"
+          fill="#1a1a2e"
+        />
+      </g>
       
-      {/* Rocket window/porthole - matches original */}
-      <circle
-        cx="58"
-        cy="42"
-        r="10"
-        fill="#1a1a2e"
-      />
-      
-      {/* Left fin/exhaust */}
+      {/* Secondary exhaust puff - bottom left detached */}
       <ellipse
-        cx="28"
-        cy="78"
-        rx="12"
-        ry="10"
-        fill="url(#rocketGradient)"
-      />
-      
-      {/* Bottom fin/exhaust */}
-      <ellipse
-        cx="55"
-        cy="92"
+        cx="18"
+        cy="88"
         rx="10"
         ry="8"
         fill="url(#rocketGradient)"
-      />
-      
-      {/* Top accent fin */}
-      <ellipse
-        cx="78"
-        cy="22"
-        rx="8"
-        ry="10"
-        fill="url(#rocketGradient)"
-        transform="rotate(-30 78 22)"
       />
     </svg>
   );

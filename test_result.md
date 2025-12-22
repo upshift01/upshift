@@ -6,6 +6,7 @@ Test the white-label SaaS functionality including:
 2. Reseller Dashboard - login, dashboard, branding, pricing, customers, settings
 3. White-Label API - config endpoint returns correct data
 4. Authentication - role-based redirects after login
+5. **NEW: Email & Scheduling System**
 
 ## Test Credentials
 - Super Admin: admin@upshift.co.za / admin123
@@ -20,6 +21,11 @@ Test the white-label SaaS functionality including:
 6. Reseller can update pricing
 7. Reseller can view customers and revenue
 8. White-label config API returns reseller branding
+9. **NEW: Super Admin can configure SMTP email settings**
+10. **NEW: Super Admin can manage payment reminder schedules**
+11. **NEW: Super Admin can manually trigger invoice generation**
+12. **NEW: Super Admin can manually send payment reminders**
+13. **NEW: Reseller can configure their own SMTP email settings**
 
 ## Backend API Endpoints to Test
 - POST /api/auth/login - with different roles
@@ -31,6 +37,20 @@ Test the white-label SaaS functionality including:
 - PUT /api/reseller/branding
 - PUT /api/reseller/pricing
 - GET /api/white-label/config
+- **NEW: GET /api/scheduler/email-settings**
+- **NEW: POST /api/scheduler/email-settings**
+- **NEW: POST /api/scheduler/email-settings/test**
+- **NEW: GET /api/scheduler/reminder-schedules**
+- **NEW: POST /api/scheduler/reminder-schedules**
+- **NEW: PUT /api/scheduler/reminder-schedules/{id}**
+- **NEW: DELETE /api/scheduler/reminder-schedules/{id}**
+- **NEW: POST /api/scheduler/send-reminders**
+- **NEW: POST /api/scheduler/generate-monthly-invoices**
+- **NEW: GET /api/scheduler/email-logs**
+- **NEW: GET /api/reseller/email-settings**
+- **NEW: POST /api/reseller/email-settings**
+- **NEW: POST /api/reseller/email-settings/test**
+- **NEW: POST /api/reseller/email-settings/send-test**
 
 ## Previous Test Results
 - Initial implementation complete

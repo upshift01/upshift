@@ -196,5 +196,132 @@ Return ONLY valid JSON."""
             logger.error(f"Error calculating job match: {str(e)}")
             raise
 
+    async def ats_resume_check(self, resume_text: str) -> Dict:
+        """
+        Comprehensive ATS Resume Check - analyzes resume for ATS compliance and provides detailed feedback.
+        """
+        try:
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id="ats_check",
+                system_message="""You are an expert ATS (Applicant Tracking System) analyst with deep knowledge of how modern ATS software parses and scores resumes. Your analysis must be thorough and actionable, helping job seekers optimize their resumes for maximum ATS compatibility."""
+            )
+            chat.with_model("openai", "gpt-5.2")
+            
+            prompt = f"""Perform a comprehensive ATS (Applicant Tracking System) analysis on the following resume:
+
+{resume_text}
+
+Analyze the resume across these key ATS criteria and provide a detailed assessment:
+
+1. **Format Compatibility** (0-100): Check for ATS-friendly formatting
+   - Simple, clean layout
+   - Standard section headings
+   - No tables, graphics, or complex formatting
+   - Proper use of bullet points
+   - Standard fonts
+
+2. **Contact Information** (0-100): Verify presence and format
+   - Full name clearly visible
+   - Email address present
+   - Phone number present
+   - Location/City
+   - LinkedIn profile (optional but recommended)
+
+3. **Keywords & Skills** (0-100): Industry-relevant keywords
+   - Technical skills mentioned
+   - Soft skills present
+   - Industry-specific terminology
+   - Action verbs used
+
+4. **Work Experience** (0-100): Professional experience section
+   - Clear job titles
+   - Company names included
+   - Dates of employment
+   - Quantifiable achievements
+   - Relevant responsibilities
+
+5. **Education** (0-100): Educational background
+   - Degrees listed
+   - Institution names
+   - Graduation dates
+   - Relevant certifications
+
+6. **Overall Structure** (0-100): Document organization
+   - Logical section order
+   - Consistent formatting
+   - Appropriate length
+   - Clear hierarchy
+
+Provide your analysis in the following JSON format:
+{{
+  "overall_score": <weighted average 0-100>,
+  "summary": "Brief 2-3 sentence summary of the resume's ATS readiness",
+  "categories": {{
+    "format_compatibility": {{
+      "score": <0-100>,
+      "status": "pass|warning|fail",
+      "findings": ["list of specific findings"]
+    }},
+    "contact_information": {{
+      "score": <0-100>,
+      "status": "pass|warning|fail",
+      "findings": ["list of specific findings"]
+    }},
+    "keywords_skills": {{
+      "score": <0-100>,
+      "status": "pass|warning|fail",
+      "findings": ["list of specific findings"],
+      "detected_skills": ["list of detected skills"]
+    }},
+    "work_experience": {{
+      "score": <0-100>,
+      "status": "pass|warning|fail",
+      "findings": ["list of specific findings"]
+    }},
+    "education": {{
+      "score": <0-100>,
+      "status": "pass|warning|fail",
+      "findings": ["list of specific findings"]
+    }},
+    "overall_structure": {{
+      "score": <0-100>,
+      "status": "pass|warning|fail",
+      "findings": ["list of specific findings"]
+    }}
+  }},
+  "checklist": [
+    {{
+      "item": "Issue description",
+      "status": "pass|fail|warning",
+      "priority": "high|medium|low",
+      "recommendation": "How to fix this issue",
+      "impact": "Expected improvement (e.g., +10% ATS Score)"
+    }}
+  ],
+  "strengths": ["List of resume strengths"],
+  "critical_issues": ["List of critical issues that must be fixed"],
+  "recommendations": ["Top recommendations for improvement"]
+}}
+
+Return ONLY valid JSON without any markdown formatting."""
+            
+            user_message = UserMessage(text=prompt)
+            response = await chat.send_message(user_message)
+            
+            import json
+            clean_response = response.strip()
+            if clean_response.startswith('```json'):
+                clean_response = clean_response[7:]
+            if clean_response.startswith('```'):
+                clean_response = clean_response[3:]
+            if clean_response.endswith('```'):
+                clean_response = clean_response[:-3]
+            
+            return json.loads(clean_response.strip())
+        except Exception as e:
+            logger.error(f"Error performing ATS check: {str(e)}")
+            raise
+
 # Initialize AI service
 ai_service = AIService()

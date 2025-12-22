@@ -14,7 +14,8 @@ const Navbar = () => {
     { name: 'AI Resume Builder', path: '/builder' },
     { name: 'Improve Resume', path: '/improve' },
     { name: 'Cover Letter', path: '/cover-letter' },
-    { name: 'Templates', path: '/templates' }
+    { name: 'Templates', path: '/templates' },
+    { name: 'ATS Checker', path: '/ats-checker' }
   ];
 
   const handleLogout = () => {

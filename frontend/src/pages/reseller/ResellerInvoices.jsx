@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Receipt, CheckCircle, Clock, AlertTriangle, CreditCard, ExternalLink, Loader2, Search, Filter, Download, Send, Eye, Plus } from 'lucide-react';
+import { Receipt, CheckCircle, Clock, AlertTriangle, CreditCard, ExternalLink, Loader2, Search, Filter, Download, Send, Eye, Plus, X, Link2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -11,14 +11,26 @@ const ResellerInvoices = () => {
   const { token } = useAuth();
   const { formatPrice, theme } = useTheme();
   const [invoices, setInvoices] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(null);
+  const [newInvoice, setNewInvoice] = useState({
+    customer_id: '',
+    customer_name: '',
+    customer_email: '',
+    plan_name: '',
+    amount: '',
+    due_date: ''
+  });
 
   useEffect(() => {
     fetchCustomerInvoices();
+    fetchCustomers();
   }, []);
 
   const fetchCustomerInvoices = async () => {
@@ -34,6 +46,112 @@ const ResellerInvoices = () => {
       console.error('Error fetching customer invoices:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/customers-list`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCustomers(data.customers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+  };
+
+  const handleCreateInvoice = async () => {
+    if (!newInvoice.customer_name || !newInvoice.customer_email || !newInvoice.amount) {
+      alert('Please fill in customer name, email, and amount');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/reseller/customer-invoices/create`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            ...newInvoice,
+            amount: parseFloat(newInvoice.amount)
+          })
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setInvoices([data.invoice, ...invoices]);
+        setShowCreateModal(false);
+        setNewInvoice({
+          customer_id: '',
+          customer_name: '',
+          customer_email: '',
+          plan_name: '',
+          amount: '',
+          due_date: ''
+        });
+        alert('Invoice created successfully!');
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Failed to create invoice');
+      }
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+      alert('Error creating invoice');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleGeneratePaymentLink = async (invoiceId) => {
+    setGeneratingLink(invoiceId);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/reseller/customer-invoices/${invoiceId}/create-payment-link`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Update invoice in state with payment URL
+        setInvoices(invoices.map(inv => 
+          inv.id === invoiceId ? { ...inv, payment_url: data.payment_url } : inv
+        ));
+        // Copy to clipboard
+        navigator.clipboard.writeText(data.payment_url);
+        alert('Payment link created and copied to clipboard!');
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Failed to generate payment link');
+      }
+    } catch (error) {
+      console.error('Error generating payment link:', error);
+      alert('Error generating payment link');
+    } finally {
+      setGeneratingLink(null);
+    }
+  };
+
+  const handleCustomerSelect = (customerId) => {
+    const customer = customers.find(c => c.id === customerId);
+    if (customer) {
+      setNewInvoice({
+        ...newInvoice,
+        customer_id: customer.id,
+        customer_name: customer.full_name || '',
+        customer_email: customer.email || ''
+      });
     }
   };
 

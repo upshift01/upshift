@@ -136,6 +136,8 @@ async def register(user_data: UserRegister):
                 email=user_data.email,
                 full_name=user_data.full_name,
                 phone=user_data.phone,
+                role="customer",
+                reseller_id=None,
                 active_tier=None,
                 tier_activation_date=None,
                 created_at=new_user["created_at"]

@@ -173,7 +173,7 @@ backend:
         - comment: "✅ Authorization security working correctly: Admin endpoints return 401 without auth, reseller endpoints return 401 without auth, role-based access control returns 403 when reseller tries admin endpoints."
 
 ### Test Environment Details
-- **Backend URL**: https://cvcloud-hub.preview.emergentagent.com/api
+- **Backend URL**: https://cvbooster-app.preview.emergentagent.com/api
 - **Test Files Created**: 
   - `/app/backend_test.py` (basic test runner)
   - `/app/backend/tests/test_white_label_saas.py` (comprehensive test suite)

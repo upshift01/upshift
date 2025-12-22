@@ -1,0 +1,544 @@
+import React, { useState } from 'react';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { useToast } from '../hooks/use-toast';
+import { Loader2, Download, Plus, Trash2, Sparkles } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { industries } from '../mockData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+
+const ResumeBuilder = () => {
+  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState('');
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    idNumber: '',
+    address: '',
+    city: '',
+    province: '',
+    postalCode: '',
+    industry: '',
+    summary: '',
+    experiences: [{ title: '', company: '', duration: '', description: '', achievements: '' }],
+    education: [{ degree: '', institution: '', year: '', location: '' }],
+    skills: [''],
+    languages: [{ language: '', proficiency: '' }],
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleExperienceChange = (index, field, value) => {
+    const newExperiences = [...formData.experiences];
+    newExperiences[index][field] = value;
+    setFormData({ ...formData, experiences: newExperiences });
+  };
+
+  const handleEducationChange = (index, field, value) => {
+    const newEducation = [...formData.education];
+    newEducation[index][field] = value;
+    setFormData({ ...formData, education: newEducation });
+  };
+
+  const handleSkillChange = (index, value) => {
+    const newSkills = [...formData.skills];
+    newSkills[index] = value;
+    setFormData({ ...formData, skills: newSkills });
+  };
+
+  const handleLanguageChange = (index, field, value) => {
+    const newLanguages = [...formData.languages];
+    newLanguages[index][field] = value;
+    setFormData({ ...formData, languages: newLanguages });
+  };
+
+  const addExperience = () => {
+    setFormData({
+      ...formData,
+      experiences: [...formData.experiences, { title: '', company: '', duration: '', description: '', achievements: '' }],
+    });
+  };
+
+  const removeExperience = (index) => {
+    const newExperiences = formData.experiences.filter((_, i) => i !== index);
+    setFormData({ ...formData, experiences: newExperiences });
+  };
+
+  const addEducation = () => {
+    setFormData({
+      ...formData,
+      education: [...formData.education, { degree: '', institution: '', year: '', location: '' }],
+    });
+  };
+
+  const removeEducation = (index) => {
+    const newEducation = formData.education.filter((_, i) => i !== index);
+    setFormData({ ...formData, education: newEducation });
+  };
+
+  const addSkill = () => {
+    setFormData({ ...formData, skills: [...formData.skills, ''] });
+  };
+
+  const removeSkill = (index) => {
+    const newSkills = formData.skills.filter((_, i) => i !== index);
+    setFormData({ ...formData, skills: newSkills });
+  };
+
+  const addLanguage = () => {
+    setFormData({ ...formData, languages: [...formData.languages, { language: '', proficiency: '' }] });
+  };
+
+  const removeLanguage = (index) => {
+    const newLanguages = formData.languages.filter((_, i) => i !== index);
+    setFormData({ ...formData, languages: newLanguages });
+  };
+
+  const getAiSuggestion = async (field) => {
+    setAiSuggestion('Getting AI suggestion...');
+    // Mock AI suggestion - will be replaced with actual API call
+    setTimeout(() => {
+      setAiSuggestion('AI suggests: Add specific metrics and quantify your achievements for better impact.');
+    }, 1500);
+  };
+
+  const generateCV = async () => {
+    if (!formData.fullName) {
+      toast({
+        title: "Name Required",
+        description: "Please enter your full name to generate CV.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    // Mock generation - will be replaced with actual API call
+    setTimeout(() => {
+      setIsGenerating(false);
+      toast({
+        title: "CV Generated Successfully!",
+        description: "Your professional CV has been created and is ready for download.",
+      });
+    }, 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-8">
+          <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
+            <Sparkles className="mr-1 h-3 w-3" />
+            AI-Powered Resume Builder
+          </Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Build Your Professional CV
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Create a standout CV with AI assistance tailored for the South African job market. Get real-time suggestions as you type.
+          </p>
+        </div>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Personal Information</CardTitle>
+            <CardDescription>Tell us about yourself - all fields are important for SA employers</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fullName">Full Name *</Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="John Doe"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="john.doe@example.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+27 82 123 4567"
+                />
+              </div>
+              <div>
+                <Label htmlFor="idNumber">South African ID Number</Label>
+                <Input
+                  id="idNumber"
+                  name="idNumber"
+                  value={formData.idNumber}
+                  onChange={handleChange}
+                  placeholder="9001015009087"
+                />
+              </div>
+              <div>
+                <Label htmlFor="address">Street Address</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="123 Main Street"
+                />
+              </div>
+              <div>
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder="Johannesburg"
+                />
+              </div>
+              <div>
+                <Label htmlFor="province">Province</Label>
+                <Input
+                  id="province"
+                  name="province"
+                  value={formData.province}
+                  onChange={handleChange}
+                  placeholder="Gauteng"
+                />
+              </div>
+              <div>
+                <Label htmlFor="postalCode">Postal Code</Label>
+                <Input
+                  id="postalCode"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={handleChange}
+                  placeholder="2000"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="industry">Target Industry</Label>
+              <Select value={formData.industry} onValueChange={(value) => setFormData({ ...formData, industry: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((industry) => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Professional Summary</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => getAiSuggestion('summary')}
+                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+              >
+                <Sparkles className="mr-1 h-4 w-4" />
+                AI Assist
+              </Button>
+            </CardTitle>
+            <CardDescription>Write a compelling summary that highlights your expertise</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              name="summary"
+              value={formData.summary}
+              onChange={handleChange}
+              placeholder="E.g., Results-driven Software Developer with 5+ years of experience in building scalable web applications..."
+              rows={5}
+            />
+            {aiSuggestion && (
+              <div className="p-4 bg-blue-50 border-l-4 border-blue-600 rounded">
+                <p className="text-sm text-blue-900">{aiSuggestion}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Work Experience</CardTitle>
+                <CardDescription>List your most recent positions first</CardDescription>
+              </div>
+              <Button onClick={addExperience} variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Experience
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {formData.experiences.map((exp, index) => (
+              <Card key={index} className="bg-gray-50 border-gray-200">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-medium text-gray-900">Position {index + 1}</h4>
+                    {formData.experiences.length > 1 && (
+                      <Button
+                        onClick={() => removeExperience(index)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Job Title</Label>
+                      <Input
+                        value={exp.title}
+                        onChange={(e) => handleExperienceChange(index, 'title', e.target.value)}
+                        placeholder="Software Developer"
+                      />
+                    </div>
+                    <div>
+                      <Label>Company</Label>
+                      <Input
+                        value={exp.company}
+                        onChange={(e) => handleExperienceChange(index, 'company', e.target.value)}
+                        placeholder="Tech Corp (Pty) Ltd"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Duration</Label>
+                    <Input
+                      value={exp.duration}
+                      onChange={(e) => handleExperienceChange(index, 'duration', e.target.value)}
+                      placeholder="Jan 2020 - Present"
+                    />
+                  </div>
+                  <div>
+                    <Label>Description & Responsibilities</Label>
+                    <Textarea
+                      value={exp.description}
+                      onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
+                      placeholder="Describe your role and key responsibilities..."
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label>Key Achievements (Use numbers and metrics)</Label>
+                    <Textarea
+                      value={exp.achievements}
+                      onChange={(e) => handleExperienceChange(index, 'achievements', e.target.value)}
+                      placeholder="- Increased sales by 30% through strategic initiatives\n- Led team of 5 developers\n- Reduced costs by R50,000 annually"
+                      rows={3}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Education</CardTitle>
+                <CardDescription>Include your academic qualifications</CardDescription>
+              </div>
+              <Button onClick={addEducation} variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Education
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {formData.education.map((edu, index) => (
+              <Card key={index} className="bg-gray-50 border-gray-200">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-medium text-gray-900">Qualification {index + 1}</h4>
+                    {formData.education.length > 1 && (
+                      <Button
+                        onClick={() => removeEducation(index)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Degree/Certificate</Label>
+                      <Input
+                        value={edu.degree}
+                        onChange={(e) => handleEducationChange(index, 'degree', e.target.value)}
+                        placeholder="Bachelor of Science in Computer Science"
+                      />
+                    </div>
+                    <div>
+                      <Label>Institution</Label>
+                      <Input
+                        value={edu.institution}
+                        onChange={(e) => handleEducationChange(index, 'institution', e.target.value)}
+                        placeholder="University of Johannesburg"
+                      />
+                    </div>
+                    <div>
+                      <Label>Year</Label>
+                      <Input
+                        value={edu.year}
+                        onChange={(e) => handleEducationChange(index, 'year', e.target.value)}
+                        placeholder="2016 - 2020"
+                      />
+                    </div>
+                    <div>
+                      <Label>Location</Label>
+                      <Input
+                        value={edu.location}
+                        onChange={(e) => handleEducationChange(index, 'location', e.target.value)}
+                        placeholder="Johannesburg, South Africa"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Skills</CardTitle>
+                <Button onClick={addSkill} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {formData.skills.map((skill, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={skill}
+                    onChange={(e) => handleSkillChange(index, e.target.value)}
+                    placeholder="e.g., Project Management, Python, Excel"
+                  />
+                  {formData.skills.length > 1 && (
+                    <Button
+                      onClick={() => removeSkill(index)}
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Languages</CardTitle>
+                <Button onClick={addLanguage} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {formData.languages.map((lang, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={lang.language}
+                    onChange={(e) => handleLanguageChange(index, 'language', e.target.value)}
+                    placeholder="e.g., English"
+                    className="flex-1"
+                  />
+                  <Input
+                    value={lang.proficiency}
+                    onChange={(e) => handleLanguageChange(index, 'proficiency', e.target.value)}
+                    placeholder="Fluent"
+                    className="flex-1"
+                  />
+                  {formData.languages.length > 1 && (
+                    <Button
+                      onClick={() => removeLanguage(index)}
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex gap-4">
+          <Button
+            onClick={generateCV}
+            disabled={isGenerating || !formData.fullName}
+            className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+            size="lg"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Generating with AI...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-5 w-5" />
+                Generate & Download CV (PDF)
+              </>
+            )}
+          </Button>
+        </div>
+
+        {!formData.fullName && (
+          <p className="text-sm text-red-600 mt-3 text-center">
+            Please enter your full name to generate CV
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ResumeBuilder;

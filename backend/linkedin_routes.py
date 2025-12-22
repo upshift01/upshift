@@ -156,7 +156,7 @@ async def create_linkedin_profile(
 @router.post("/enhance-profile")
 async def enhance_linkedin_profile(
     request: EnhanceProfileRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_dep)
 ):
     """
     Analyze and enhance existing LinkedIn profile sections.

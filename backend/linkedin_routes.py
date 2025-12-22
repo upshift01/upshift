@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from typing import Dict, List, Optional
-from auth import get_current_user
+from auth import get_current_user, oauth2_scheme
 from linkedin_service import linkedin_oauth_service
 from linkedin_ai_service import linkedin_ai_service
 import logging
@@ -10,6 +10,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/linkedin", tags=["linkedin"])
+
+# Database will be set by the main server
+db = None
+
+def set_db(database):
+    """Set the database connection"""
+    global db
+    db = database
+
+# Dependency to get current user with db access
+async def get_current_user_dep(token: str = Depends(oauth2_scheme)):
+    """Dependency to get current user"""
+    return await get_current_user(token, db)
 
 # Request Models
 class LinkedInProfileData(BaseModel):

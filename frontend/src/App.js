@@ -55,6 +55,7 @@ const AppContent = () => {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/templates" element={<Templates />} />
         <Route path="/cover-letter-templates" element={<CoverLetterTemplates />} />
+        <Route path="/book-strategy-call" element={<StrategyCallBooking />} />
         
         {/* Protected Customer Routes */}
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

@@ -533,6 +533,129 @@ const ResellerInvoices = () => {
           </Card>
         </div>
       )}
+
+      {/* Create Invoice Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Create New Invoice</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowCreateModal(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Customer Selection */}
+              {customers.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">Select Existing Customer</label>
+                  <select
+                    value={newInvoice.customer_id}
+                    onChange={(e) => handleCustomerSelect(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  >
+                    <option value="">-- Select a customer or enter new --</option>
+                    {customers.map(customer => (
+                      <option key={customer.id} value={customer.id}>
+                        {customer.full_name} ({customer.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="border-t pt-4">
+                <p className="text-sm text-gray-500 mb-3">Or enter customer details manually:</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Customer Name *</label>
+                <Input
+                  value={newInvoice.customer_name}
+                  onChange={(e) => setNewInvoice({...newInvoice, customer_name: e.target.value})}
+                  placeholder="John Smith"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Customer Email *</label>
+                <Input
+                  type="email"
+                  value={newInvoice.customer_email}
+                  onChange={(e) => setNewInvoice({...newInvoice, customer_email: e.target.value})}
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Plan/Service Name</label>
+                <select
+                  value={newInvoice.plan_name}
+                  onChange={(e) => setNewInvoice({...newInvoice, plan_name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                >
+                  <option value="">Select a plan</option>
+                  <option value="ATS Optimize">ATS Optimize</option>
+                  <option value="Professional Package">Professional Package</option>
+                  <option value="Executive Elite">Executive Elite</option>
+                  <option value="Custom Service">Custom Service</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Amount (ZAR) *</label>
+                <Input
+                  type="number"
+                  value={newInvoice.amount}
+                  onChange={(e) => setNewInvoice({...newInvoice, amount: e.target.value})}
+                  placeholder="899.00"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Due Date</label>
+                <Input
+                  type="date"
+                  value={newInvoice.due_date}
+                  onChange={(e) => setNewInvoice({...newInvoice, due_date: e.target.value})}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                <p className="text-xs text-gray-500 mt-1">Leave empty for default (45 days from now)</p>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreateInvoice}
+                  disabled={creating}
+                  className="flex-1"
+                  style={{ backgroundColor: theme.primaryColor }}
+                >
+                  {creating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Invoice
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

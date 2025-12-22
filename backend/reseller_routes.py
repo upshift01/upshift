@@ -1105,3 +1105,150 @@ async def test_reseller_yoco_connection(context: dict = Depends(get_current_rese
     except Exception as e:
         logger.error(f"Error testing Yoco connection: {str(e)}")
         return {"success": False, "error": str(e)}
+
+
+# Customer Invoices Endpoints
+@reseller_router.get("/customer-invoices", response_model=dict)
+async def get_customer_invoices(context: dict = Depends(get_current_reseller_admin)):
+    """Get all customer invoices for this reseller"""
+    try:
+        reseller = context["reseller"]
+        
+        # Get all invoices for customers belonging to this reseller
+        invoices = await db.customer_invoices.find(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(500)
+        
+        return {"invoices": invoices}
+    except Exception as e:
+        logger.error(f"Error fetching customer invoices: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@reseller_router.post("/customer-invoices/{invoice_id}/send-reminder", response_model=dict)
+async def send_customer_invoice_reminder(
+    invoice_id: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Send payment reminder email to customer"""
+    try:
+        from email_service import email_service
+        
+        reseller = context["reseller"]
+        
+        # Get the invoice
+        invoice = await db.customer_invoices.find_one(
+            {"id": invoice_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        # Send reminder email
+        email_sent = await email_service.send_invoice_reminder(
+            to_email=invoice["customer_email"],
+            customer_name=invoice["customer_name"],
+            invoice_number=invoice["invoice_number"],
+            amount=invoice["amount"],
+            due_date=invoice["due_date"],
+            reseller_name=reseller.get("company_name", "UpShift")
+        )
+        
+        if email_sent:
+            # Update invoice with reminder sent timestamp
+            await db.customer_invoices.update_one(
+                {"id": invoice_id},
+                {"$set": {"last_reminder_sent": datetime.utcnow().isoformat()}}
+            )
+            return {"success": True, "message": "Reminder sent successfully"}
+        else:
+            return {"success": False, "error": "Failed to send email"}
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending invoice reminder: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@reseller_router.post("/customer-invoices/{invoice_id}/mark-paid", response_model=dict)
+async def mark_customer_invoice_paid(
+    invoice_id: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Manually mark a customer invoice as paid"""
+    try:
+        reseller = context["reseller"]
+        
+        # Get the invoice
+        invoice = await db.customer_invoices.find_one(
+            {"id": invoice_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        if invoice["status"] == "paid":
+            raise HTTPException(status_code=400, detail="Invoice already paid")
+        
+        # Update invoice status
+        await db.customer_invoices.update_one(
+            {"id": invoice_id},
+            {
+                "$set": {
+                    "status": "paid",
+                    "paid_date": datetime.utcnow().isoformat(),
+                    "payment_method": "manual",
+                    "updated_at": datetime.utcnow().isoformat()
+                }
+            }
+        )
+        
+        logger.info(f"Invoice {invoice_id} marked as paid by reseller {reseller['id']}")
+        
+        return {"success": True, "message": "Invoice marked as paid"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error marking invoice as paid: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@reseller_router.post("/customer-invoices/create", response_model=dict)
+async def create_customer_invoice(
+    invoice_data: dict,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Create a new customer invoice"""
+    try:
+        reseller = context["reseller"]
+        
+        invoice_id = str(uuid.uuid4())
+        invoice_number = f"INV-{datetime.utcnow().strftime('%Y%m')}-{invoice_id[:8].upper()}"
+        
+        invoice = {
+            "id": invoice_id,
+            "reseller_id": reseller["id"],
+            "invoice_number": invoice_number,
+            "customer_id": invoice_data.get("customer_id"),
+            "customer_name": invoice_data.get("customer_name"),
+            "customer_email": invoice_data.get("customer_email"),
+            "plan_name": invoice_data.get("plan_name"),
+            "amount": invoice_data.get("amount", 0),
+            "currency": "ZAR",
+            "due_date": invoice_data.get("due_date", (datetime.utcnow().replace(day=1) + timedelta(days=45)).isoformat()),
+            "status": "pending",
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.customer_invoices.insert_one(invoice)
+        
+        logger.info(f"Customer invoice {invoice_number} created by reseller {reseller['id']}")
+        
+        return {"success": True, "invoice": invoice}
+        
+    except Exception as e:
+        logger.error(f"Error creating customer invoice: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e)}

@@ -39,6 +39,17 @@ const ResumeImprover = () => {
   const analyzeResume = async () => {
     if (!file) return;
 
+    // Check if user has paid tier
+    if (!user?.active_tier) {
+      toast({
+        title: "Upgrade Required",
+        description: "Please purchase a plan to use AI analysis.",
+        variant: "destructive",
+      });
+      navigate('/pricing');
+      return;
+    }
+
     setIsAnalyzing(true);
     // Mock analysis - will be replaced with actual API call
     setTimeout(() => {

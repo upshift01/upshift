@@ -67,6 +67,7 @@ const AppContent = () => {
         <Route path="/builder" element={<PrivateRoute><ResumeBuilder /></PrivateRoute>} />
         <Route path="/improve" element={<PrivateRoute><ResumeImprover /></PrivateRoute>} />
         <Route path="/cover-letter" element={<PrivateRoute><CoverLetterGenerator /></PrivateRoute>} />
+        <Route path="/linkedin-tools" element={<PrivateRoute><LinkedInTools /></PrivateRoute>} />
         
         {/* Payment Routes */}
         <Route path="/payment/success" element={<PrivateRoute><PaymentSuccess /></PrivateRoute>} />

@@ -547,6 +547,178 @@ class APITester:
                 self.log_test("Test Reseller SMTP Connection", True, f"Reseller SMTP test responded: {response.get('error', 'No error')}")
         
         return True
+    
+    def test_ats_resume_checker(self):
+        """Test ATS Resume Checker endpoint (FREE - no authentication required)"""
+        print("\n📄 Testing ATS Resume Checker...")
+        
+        # Sample resume content from review request
+        sample_resume_content = """John Smith
+Email: john.smith@email.com
+Phone: (555) 123-4567
+Location: New York, NY
+LinkedIn: linkedin.com/in/johnsmith
+
+PROFESSIONAL SUMMARY
+Experienced software engineer with 5 years of experience in full-stack development.
+
+WORK EXPERIENCE
+Senior Software Engineer
+ABC Tech Company | Jan 2020 - Present
+- Developed web applications using React and Node.js
+- Led a team of 3 developers
+- Improved application performance by 40%
+
+Software Developer
+XYZ Corp | Jun 2018 - Dec 2019
+- Built REST APIs using Python and Flask
+- Collaborated with cross-functional teams
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology | 2018
+
+SKILLS
+Python, JavaScript, React, Node.js, SQL, Git, AWS"""
+        
+        # Create a temporary text file with the resume content
+        import tempfile
+        import os
+        
+        try:
+            # Create temporary file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
+                temp_file.write(sample_resume_content)
+                temp_file_path = temp_file.name
+            
+            # Prepare file for upload
+            url = f"{BACKEND_URL}/ats-check"
+            
+            with open(temp_file_path, 'rb') as file:
+                files = {'file': ('sample_resume.txt', file, 'text/plain')}
+                
+                try:
+                    response = requests.post(url, files=files, timeout=30)
+                    
+                    if response.status_code == 200:
+                        try:
+                            data = response.json()
+                            
+                            # Validate response structure
+                            required_fields = ["success", "filename", "analysis"]
+                            missing_fields = [f for f in required_fields if f not in data]
+                            
+                            if missing_fields:
+                                self.log_test("ATS Resume Checker - Response Structure", False, 
+                                            f"Missing fields: {missing_fields}")
+                                return False
+                            
+                            # Check success flag
+                            if not data.get("success"):
+                                self.log_test("ATS Resume Checker - Success Flag", False, 
+                                            "Success flag is False")
+                                return False
+                            
+                            # Check filename
+                            if not data.get("filename"):
+                                self.log_test("ATS Resume Checker - Filename", False, 
+                                            "Filename not returned")
+                                return False
+                            
+                            # Validate analysis structure
+                            analysis = data.get("analysis", {})
+                            required_analysis_fields = [
+                                "overall_score", "summary", "categories", 
+                                "checklist", "strengths", "recommendations"
+                            ]
+                            missing_analysis_fields = [f for f in required_analysis_fields if f not in analysis]
+                            
+                            if missing_analysis_fields:
+                                self.log_test("ATS Resume Checker - Analysis Structure", False, 
+                                            f"Missing analysis fields: {missing_analysis_fields}")
+                                return False
+                            
+                            # Validate overall_score is a number between 0-100
+                            overall_score = analysis.get("overall_score")
+                            if not isinstance(overall_score, (int, float)) or not (0 <= overall_score <= 100):
+                                self.log_test("ATS Resume Checker - Overall Score", False, 
+                                            f"Invalid overall_score: {overall_score} (should be 0-100)")
+                                return False
+                            
+                            # Validate categories structure
+                            categories = analysis.get("categories", {})
+                            expected_categories = [
+                                "format_compatibility", "contact_information", "keywords_skills",
+                                "work_experience", "education", "overall_structure"
+                            ]
+                            missing_categories = [c for c in expected_categories if c not in categories]
+                            
+                            if missing_categories:
+                                self.log_test("ATS Resume Checker - Categories", False, 
+                                            f"Missing categories: {missing_categories}")
+                                return False
+                            
+                            # Validate arrays
+                            checklist = analysis.get("checklist", [])
+                            strengths = analysis.get("strengths", [])
+                            recommendations = analysis.get("recommendations", [])
+                            
+                            if not isinstance(checklist, list):
+                                self.log_test("ATS Resume Checker - Checklist", False, 
+                                            "Checklist is not an array")
+                                return False
+                            
+                            if not isinstance(strengths, list):
+                                self.log_test("ATS Resume Checker - Strengths", False, 
+                                            "Strengths is not an array")
+                                return False
+                            
+                            if not isinstance(recommendations, list):
+                                self.log_test("ATS Resume Checker - Recommendations", False, 
+                                            "Recommendations is not an array")
+                                return False
+                            
+                            # All validations passed
+                            self.log_test("ATS Resume Checker", True, 
+                                        f"Score: {overall_score}/100, Categories: {len(categories)}, "
+                                        f"Checklist: {len(checklist)} items, Strengths: {len(strengths)}, "
+                                        f"Recommendations: {len(recommendations)}")
+                            
+                            return True
+                            
+                        except json.JSONDecodeError as e:
+                            self.log_test("ATS Resume Checker", False, f"Invalid JSON response: {str(e)}")
+                            return False
+                    else:
+                        error_msg = f"Status {response.status_code}"
+                        try:
+                            error_detail = response.json()
+                            error_msg += f" - {error_detail.get('detail', 'No detail')}"
+                        except:
+                            error_msg += f" - {response.text[:200]}"
+                        
+                        self.log_test("ATS Resume Checker", False, error_msg)
+                        return False
+                        
+                except requests.exceptions.Timeout:
+                    self.log_test("ATS Resume Checker", False, "Request timeout (30s)")
+                    return False
+                except requests.exceptions.ConnectionError:
+                    self.log_test("ATS Resume Checker", False, "Connection error - backend may be down")
+                    return False
+                except Exception as e:
+                    self.log_test("ATS Resume Checker", False, f"Request error: {str(e)}")
+                    return False
+        
+        finally:
+            # Clean up temporary file
+            try:
+                if 'temp_file_path' in locals():
+                    os.unlink(temp_file_path)
+            except:
+                pass
+        
+        return False
 
     def run_all_tests(self):
         """Run all test suites"""

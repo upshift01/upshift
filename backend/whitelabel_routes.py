@@ -96,6 +96,8 @@ async def get_whitelabel_config(request: Request):
             "secondary_color": branding.get("secondary_color", "#7c3aed"),
             "favicon_url": branding.get("favicon_url"),
             "contact_email": contact.get("email", ""),
+            "contact_phone": contact.get("phone", ""),
+            "contact_address": contact.get("address", ""),
             "terms_url": legal.get("terms_url", "/terms"),
             "privacy_url": legal.get("privacy_url", "/privacy"),
             "pricing": {

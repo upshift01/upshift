@@ -42,14 +42,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className=\"min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4\">
-      <div className=\"max-w-7xl mx-auto\">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className=\"mb-8\">
-          <h1 className=\"text-3xl md:text-4xl font-bold text-gray-900 mb-2\">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Welcome back, {user?.full_name}!
           </h1>
-          <p className=\"text-gray-600\">Manage your career documents and services</p>
+          <p className="text-gray-600">Manage your career documents and services</p>
         </div>
 
         {/* Active Tier Card */}

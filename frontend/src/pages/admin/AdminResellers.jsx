@@ -196,7 +196,10 @@ const AdminResellers = () => {
                       <td className="py-3 px-4">
                         <div className="relative">
                           <button
-                            onClick={() => setActionMenu(actionMenu === reseller.id ? null : reseller.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActionMenu(actionMenu === reseller.id ? null : reseller.id);
+                            }}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                           >
                             <MoreVertical className="h-4 w-4" />

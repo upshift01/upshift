@@ -107,6 +107,8 @@ async def register(user_data: UserRegister):
             "full_name": user_data.full_name,
             "phone": user_data.phone,
             "hashed_password": hashed_password,
+            "role": "customer",
+            "reseller_id": None,
             "active_tier": None,
             "tier_activation_date": None,
             "created_at": datetime.utcnow(),

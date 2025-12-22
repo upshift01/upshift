@@ -534,3 +534,119 @@ async def get_invoice_detail(
     except Exception as e:
         logger.error(f"Error getting invoice: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/invoices/{invoice_id}/pay", response_model=dict)
+async def pay_invoice(
+    invoice_id: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Create a payment checkout for an invoice"""
+    try:
+        from yoco_service import yoco_service
+        import os
+        
+        reseller = context["reseller"]
+        user = context["user"]
+        
+        # Get the invoice
+        invoice = await db.reseller_invoices.find_one(
+            {"id": invoice_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        if invoice["status"] == "paid":
+            raise HTTPException(status_code=400, detail="Invoice already paid")
+        
+        # Create Yoco checkout
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+        
+        checkout = await yoco_service.create_checkout(
+            amount_cents=invoice["amount"],
+            email=user.email,
+            metadata={
+                "invoice_id": invoice_id,
+                "invoice_number": invoice["invoice_number"],
+                "reseller_id": reseller["id"],
+                "reseller_name": reseller["company_name"],
+                "type": "reseller_subscription"
+            }
+        )
+        
+        # Store checkout ID in invoice
+        await db.reseller_invoices.update_one(
+            {"id": invoice_id},
+            {"$set": {"yoco_checkout_id": checkout.get("id")}}
+        )
+        
+        logger.info(f"Payment checkout created for invoice {invoice_id}")
+        
+        return {
+            "checkout_id": checkout.get("id"),
+            "redirect_url": checkout.get("redirectUrl"),
+            "invoice_id": invoice_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating invoice payment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/invoices/{invoice_id}/verify-payment", response_model=dict)
+async def verify_invoice_payment(
+    invoice_id: str,
+    checkout_id: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Verify payment and update invoice status"""
+    try:
+        from yoco_service import yoco_service
+        
+        reseller = context["reseller"]
+        
+        # Get the invoice
+        invoice = await db.reseller_invoices.find_one(
+            {"id": invoice_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        # Verify with Yoco
+        is_successful = await yoco_service.verify_payment(checkout_id)
+        
+        if not is_successful:
+            return {
+                "success": False,
+                "message": "Payment verification failed or payment not completed"
+            }
+        
+        # Update invoice status
+        await db.reseller_invoices.update_one(
+            {"id": invoice_id},
+            {
+                "$set": {
+                    "status": "paid",
+                    "paid_date": datetime.now(timezone.utc),
+                    "payment_method": "yoco"
+                }
+            }
+        )
+        
+        logger.info(f"Invoice {invoice_id} marked as paid via Yoco")
+        
+        return {
+            "success": True,
+            "message": "Payment successful! Invoice marked as paid.",
+            "invoice_id": invoice_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying invoice payment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

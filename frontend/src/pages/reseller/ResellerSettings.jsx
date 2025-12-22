@@ -564,6 +564,156 @@ const ResellerSettings = () => {
         </div>
       )}
 
+      {/* ChatGPT Settings Tab */}
+      {activeTab === 'chatgpt' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="h-5 w-5" />
+                ChatGPT / OpenAI Configuration
+                {chatgptSettings.use_custom_key && chatgptSettings.openai_api_key && (
+                  <Badge className="ml-2 bg-green-100 text-green-700">Custom Key Active</Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Configure your own OpenAI API key to use ChatGPT features with your own account. 
+                This allows you to control costs and usage limits for your customers.
+              </p>
+
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-800 mb-2">Why use your own API key?</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Full control over your OpenAI costs and billing</li>
+                  <li>• Set your own usage limits and rate limits</li>
+                  <li>• Access to your organization's fine-tuned models</li>
+                  <li>• Independent from platform-wide usage quotas</li>
+                </ul>
+              </div>
+
+              <div className="flex items-center gap-3 pt-4">
+                <input
+                  type="checkbox"
+                  id="use_custom_key"
+                  checked={chatgptSettings.use_custom_key}
+                  onChange={(e) => setChatgptSettings({ ...chatgptSettings, use_custom_key: e.target.checked })}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                />
+                <label htmlFor="use_custom_key" className="text-sm font-medium">
+                  Use my own OpenAI API key
+                </label>
+              </div>
+
+              {chatgptSettings.use_custom_key && (
+                <div className="space-y-4 pt-4 border-t">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">OpenAI API Key</label>
+                    <div className="relative">
+                      <Input
+                        type={showApiKey ? 'text' : 'password'}
+                        value={chatgptSettings.openai_api_key}
+                        onChange={(e) => setChatgptSettings({ ...chatgptSettings, openai_api_key: e.target.value })}
+                        placeholder="sk-..."
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">platform.openai.com/api-keys</a>
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Preferred Model</label>
+                    <select
+                      value={chatgptSettings.model}
+                      onChange={(e) => setChatgptSettings({ ...chatgptSettings, model: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="gpt-4o">GPT-4o (Recommended)</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini (Cost-effective)</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Budget)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select the model to use for AI features. GPT-4o provides the best results.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button onClick={handleSaveChatGPTSettings} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save ChatGPT Settings'}
+                </Button>
+                {chatgptSettings.use_custom_key && chatgptSettings.openai_api_key && (
+                  <Button variant="outline" onClick={handleTestChatGPT} disabled={testingChatGPT}>
+                    <RefreshCw className={`h-4 w-4 mr-2 ${testingChatGPT ? 'animate-spin' : ''}`} />
+                    Test Connection
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Features Using ChatGPT</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  AI Resume Building and Optimization
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Cover Letter Generation
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  ATS Resume Checking and Scoring
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  LinkedIn Profile Tools
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Resume Enhancement Suggestions
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {!chatgptSettings.use_custom_key && (
+            <Card className="border-yellow-200 bg-yellow-50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Key className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-yellow-800">Using Platform Default</h4>
+                    <p className="text-sm text-yellow-700">
+                      Your customers are currently using the platform's shared ChatGPT resources. 
+                      Enable your own API key for better control and potentially lower costs at scale.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
       {/* Legal Tab */}
       {activeTab === 'legal' && (
         <div className="space-y-6">

@@ -33,6 +33,17 @@ const CoverLetterGenerator = () => {
   };
 
   const generateCoverLetter = async () => {
+    // Check if user has tier 2 or 3
+    if (!user?.active_tier || !['tier-2', 'tier-3'].includes(user.active_tier)) {
+      toast({
+        title: "Upgrade Required",
+        description: "Cover letter generation requires Professional Package or higher.",
+        variant: "destructive",
+      });
+      navigate('/pricing');
+      return;
+    }
+
     if (!formData.fullName || !formData.companyName || !formData.jobTitle) {
       toast({
         title: "Missing Information",

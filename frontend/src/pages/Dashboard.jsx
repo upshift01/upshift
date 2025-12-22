@@ -105,6 +105,13 @@ const Dashboard = () => {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
+              <Link to="/ats-checker">
+                <Button variant="outline" className="w-full justify-start border-green-200 hover:bg-green-50 hover:border-green-300">
+                  <Target className="mr-2 h-4 w-4 text-green-600" />
+                  ATS Resume Checker
+                  <Badge className="ml-auto bg-green-100 text-green-700 text-xs">FREE</Badge>
+                </Button>
+              </Link>
               <Link to="/builder">
                 <Button variant="outline" className="w-full justify-start">
                   <FileText className="mr-2 h-4 w-4" />
@@ -132,6 +139,34 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* ATS Checker Promotion */}
+        <Card className="mb-8 border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <Target className="h-7 w-7 text-green-600" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-gray-900">Free ATS Resume Checker</h3>
+                    <Badge className="bg-green-500 text-white">FREE</Badge>
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    Check if your CV is optimized for Applicant Tracking Systems. Get a detailed score and actionable recommendations.
+                  </p>
+                </div>
+              </div>
+              <Link to="/ats-checker">
+                <Button className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap">
+                  Check Your CV Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

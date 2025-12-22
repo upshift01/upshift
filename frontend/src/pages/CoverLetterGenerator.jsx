@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -16,6 +16,7 @@ const CoverLetterGenerator = () => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedLetter, setGeneratedLetter] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -27,6 +28,24 @@ const CoverLetterGenerator = () => {
     keySkills: '',
     whyInterested: '',
   });
+
+  // Load selected template from localStorage on mount
+  useEffect(() => {
+    const storedTemplate = localStorage.getItem('selectedCoverLetterTemplate');
+    if (storedTemplate) {
+      try {
+        const template = JSON.parse(storedTemplate);
+        setSelectedTemplate(template);
+      } catch (e) {
+        console.error('Error parsing template:', e);
+      }
+    }
+  }, []);
+
+  const clearTemplate = () => {
+    setSelectedTemplate(null);
+    localStorage.removeItem('selectedCoverLetterTemplate');
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

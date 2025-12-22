@@ -298,6 +298,12 @@ async def create_payment_checkout(
         }
     except Exception as e:
         logger.error(f"Error creating checkout: {str(e)}")
+        error_msg = str(e)
+        if "403" in error_msg or "Forbidden" in error_msg or "key is required" in error_msg.lower():
+            raise HTTPException(
+                status_code=400, 
+                detail="Yoco payment is not configured. Please contact support or configure valid Yoco API keys."
+            )
         raise HTTPException(status_code=500, detail=str(e))
 
 

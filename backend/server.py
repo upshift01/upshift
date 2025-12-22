@@ -251,7 +251,7 @@ async def create_payment_checkout(
 @api_router.post("/payments/verify/{checkout_id}")
 async def verify_payment_status(
     checkout_id: str,
-    current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))
+    current_user: UserResponse = Depends(get_current_user_dep)
 ):
     """Verify payment status and activate tier"""
     try:

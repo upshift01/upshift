@@ -9,6 +9,8 @@ import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 
 const ResumeImprover = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [file, setFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);

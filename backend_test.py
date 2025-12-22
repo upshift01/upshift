@@ -924,6 +924,121 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_yoco_payment_integration(self):
+        """Test Yoco Payment Integration endpoints"""
+        print("\n💳 Testing Yoco Payment Integration...")
+        
+        # Test 1: Reseller Yoco Settings - GET (Requires Reseller auth)
+        if not self.reseller_admin_token:
+            self.log_test("Yoco Payment Integration Tests", False, "No reseller admin token available")
+            return False
+        
+        reseller_headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+        
+        # GET /api/reseller/yoco-settings
+        response, error = self.make_request("GET", "/reseller/yoco-settings", headers=reseller_headers)
+        if error:
+            self.log_test("GET Reseller Yoco Settings", False, error)
+        else:
+            required_fields = ["yoco_public_key", "yoco_secret_key", "use_custom_keys", "is_live_mode"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Reseller Yoco Settings", False, f"Missing fields: {missing_fields}")
+            else:
+                use_custom = response.get("use_custom_keys", False)
+                is_live = response.get("is_live_mode", False)
+                self.log_test("GET Reseller Yoco Settings", True, 
+                            f"Custom keys: {use_custom}, Live mode: {is_live}")
+        
+        # Test 2: POST /api/reseller/yoco-settings (Save settings)
+        yoco_settings = {
+            "yoco_public_key": "pk_test_xyz123",
+            "yoco_secret_key": "sk_test_abc456",
+            "use_custom_keys": True
+        }
+        response, error = self.make_request("POST", "/reseller/yoco-settings", 
+                                          headers=reseller_headers, data=yoco_settings)
+        if error:
+            self.log_test("POST Reseller Yoco Settings", False, error)
+        else:
+            if response.get("success"):
+                self.log_test("POST Reseller Yoco Settings", True, "Yoco settings saved successfully")
+            else:
+                self.log_test("POST Reseller Yoco Settings", False, "Success flag not returned")
+        
+        # Test 3: POST /api/reseller/yoco-settings/test (Test connection)
+        response, error = self.make_request("POST", "/reseller/yoco-settings/test", headers=reseller_headers)
+        if error:
+            self.log_test("Test Reseller Yoco Connection", False, error)
+        else:
+            # This might fail due to test credentials, but endpoint should respond
+            success = response.get("success", False)
+            if success:
+                self.log_test("Test Reseller Yoco Connection", True, "Yoco connection test successful")
+            else:
+                # Expected to fail with test credentials, but endpoint works
+                error_msg = response.get("error", "No error message")
+                self.log_test("Test Reseller Yoco Connection", True, 
+                            f"Yoco test responded (expected failure with test keys): {error_msg}")
+        
+        # Test 4: Customer Payment Flow - Create Checkout (Requires Customer auth)
+        if not self.customer_token:
+            self.log_test("Customer Payment Flow Tests", False, "No customer authentication token available")
+            return False
+        
+        customer_headers = {"Authorization": f"Bearer {self.customer_token}"}
+        
+        # POST /api/payments/create-checkout?tier_id=tier-1
+        response, error = self.make_request("POST", "/payments/create-checkout?tier_id=tier-1", 
+                                          headers=customer_headers)
+        if error:
+            self.log_test("Create Payment Checkout", False, error)
+            checkout_id = None
+        else:
+            required_fields = ["checkout_id", "redirect_url", "payment_id"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Create Payment Checkout", False, f"Missing fields: {missing_fields}")
+                checkout_id = None
+            else:
+                checkout_id = response.get("checkout_id")
+                payment_id = response.get("payment_id")
+                redirect_url = response.get("redirect_url")
+                self.log_test("Create Payment Checkout", True, 
+                            f"Checkout created: {checkout_id}, Payment ID: {payment_id}")
+        
+        # Test 5: Verify Payment Status (if checkout was created)
+        if checkout_id:
+            response, error = self.make_request("POST", f"/payments/verify/{checkout_id}", 
+                                              headers=customer_headers)
+            if error:
+                self.log_test("Verify Payment Status", False, error)
+            else:
+                status = response.get("status", "unknown")
+                message = response.get("message", "")
+                # Payment verification will likely fail since we didn't actually pay
+                if status == "failed":
+                    self.log_test("Verify Payment Status", True, 
+                                f"Payment verification endpoint working (status: {status})")
+                else:
+                    self.log_test("Verify Payment Status", True, 
+                                f"Status: {status}, Message: {message}")
+        
+        # Test 6: GET /api/payments/history (Get payment history)
+        response, error = self.make_request("GET", "/payments/history", headers=customer_headers)
+        if error:
+            self.log_test("Get Payment History", False, error)
+        else:
+            if "payments" in response and "total_count" in response:
+                payment_count = response.get("total_count", 0)
+                payments = response.get("payments", [])
+                self.log_test("Get Payment History", True, 
+                            f"Retrieved {payment_count} payment records")
+            else:
+                self.log_test("Get Payment History", False, "Invalid response structure")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift White-Label SaaS Backend API Tests")

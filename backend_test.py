@@ -33,6 +33,12 @@ RESELLER_ADMIN_CREDS = {
     "password": "acme123456"
 }
 
+# Test customer credentials for LinkedIn API testing
+TEST_CUSTOMER_CREDS = {
+    "email": "test@example.com",
+    "password": "testpass123"
+}
+
 class APITester:
     def __init__(self):
         self.super_admin_token = None

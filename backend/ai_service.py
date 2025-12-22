@@ -58,9 +58,9 @@ Return ONLY the improved text without any explanations."""
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id="resume_analysis",
-                system_message="You are an expert ATS and recruitment specialist for the South African job market. Analyze resumes and provide detailed, actionable feedback."
+                system_message="You are an expert ATS and recruitment specialist for the South African job market. All CVs MUST be ATS-friendly. Analyze resumes for ATS compatibility, keyword optimization, formatting issues, and provide detailed, actionable feedback that ensures maximum ATS pass-through rates."
             )
-            chat.with_model("openai", "gpt-4.1")
+            chat.with_model("openai", "gpt-5.2")
             
             prompt = f"""Analyze the following resume for a South African job seeker:
 

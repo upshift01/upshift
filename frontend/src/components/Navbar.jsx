@@ -15,7 +15,8 @@ const Navbar = () => {
     { name: 'Improve Resume', path: '/improve' },
     { name: 'Cover Letter', path: '/cover-letter' },
     { name: 'Templates', path: '/templates' },
-    { name: 'ATS Checker', path: '/ats-checker' }
+    { name: 'ATS Checker', path: '/ats-checker' },
+    { name: 'Contact', path: '/contact' }
   ];
 
   const handleLogout = () => {

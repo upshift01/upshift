@@ -193,43 +193,48 @@ const AdminResellers = () => {
                       <td className="py-3 px-4">{getStatusBadge(reseller.status)}</td>
                       <td className="py-3 px-4">{reseller.stats?.total_customers || 0}</td>
                       <td className="py-3 px-4">{formatCurrency(reseller.stats?.total_revenue || 0)}</td>
-                      <td className="py-3 px-4">
-                        <div className="relative">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActionMenu(actionMenu === reseller.id ? null : reseller.id);
-                            }}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                          {actionMenu === reseller.id && (
-                            <>
-                              {/* Backdrop to close menu */}
-                              <div 
-                                className="fixed inset-0 z-40" 
-                                onClick={() => setActionMenu(null)}
-                              />
-                              {/* Dropdown menu - positioned above or below based on available space */}
-                              <div className="absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-xl border z-50">
-                                <div className="py-1">
-                                  <button
-                                    onClick={() => {
-                                      setSelectedReseller(reseller);
-                                      setActionMenu(null);
-                                    }}
-                                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                                  >
-                                    <Eye className="h-4 w-4 text-gray-500" /> View Details
-                                  </button>
-                                  <button
-                                    onClick={() => handleEditReseller(reseller)}
-                                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 flex items-center gap-2 text-blue-600 transition-colors"
-                                  >
-                                    <Edit className="h-4 w-4" /> Edit Reseller
-                                  </button>
-                                  <div className="border-t my-1"></div>
+                      <td className="py-3 px-4 relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActionMenu(actionMenu === reseller.id ? null : reseller.id);
+                          }}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                        {actionMenu === reseller.id && (
+                          <>
+                            {/* Backdrop to close menu */}
+                            <div 
+                              className="fixed inset-0 z-40" 
+                              onClick={() => setActionMenu(null)}
+                            />
+                            {/* Dropdown menu */}
+                            <div className="fixed z-50 w-48 bg-white rounded-lg shadow-xl border" 
+                                 style={{
+                                   top: 'auto',
+                                   right: '20px',
+                                   transform: 'translateY(-100%)',
+                                   marginTop: '-10px'
+                                 }}>
+                              <div className="py-1">
+                                <button
+                                  onClick={() => {
+                                    setSelectedReseller(reseller);
+                                    setActionMenu(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                >
+                                  <Eye className="h-4 w-4 text-gray-500" /> View Details
+                                </button>
+                                <button
+                                  onClick={() => handleEditReseller(reseller)}
+                                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 flex items-center gap-2 text-blue-600 transition-colors"
+                                >
+                                  <Edit className="h-4 w-4" /> Edit Reseller
+                                </button>
+                                <div className="border-t my-1"></div>
                                   {reseller.status === 'pending' && (
                                     <button
                                       onClick={() => handleAction(reseller.id, 'approve')}

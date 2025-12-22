@@ -252,6 +252,87 @@ export const testimonials = [
     content: "As a recent graduate, UpShift helped me create a professional CV that got me noticed. Highly recommend!",
     rating: 5,
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop"
+  },
+  {
+    id: 4,
+    name: "Lerato Molefe",
+    role: "HR Director",
+    location: "Pretoria",
+    content: "After 6 months of job hunting, I used UpShift and got 5 interview calls in 2 weeks! The ATS optimization really works.",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=100&h=100&fit=crop"
+  },
+  {
+    id: 5,
+    name: "Johan Pretorius",
+    role: "Civil Engineer",
+    location: "Bloemfontein",
+    content: "The Executive Elite package was worth every cent. The strategy call helped me negotiate a 30% higher salary!",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+  },
+  {
+    id: 6,
+    name: "Nomvula Khumalo",
+    role: "Registered Nurse",
+    location: "East London",
+    content: "I was struggling to get past the ATS filters. UpShift's checker identified all the issues - now I'm working at my dream hospital!",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=100&h=100&fit=crop"
+  },
+  {
+    id: 7,
+    name: "Ahmed Patel",
+    role: "Chartered Accountant",
+    location: "Sandton",
+    content: "Switched from Big 4 to industry in just 3 weeks using UpShift. The LinkedIn optimization tips were game-changing.",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"
+  },
+  {
+    id: 8,
+    name: "Blessing Moyo",
+    role: "Data Scientist",
+    location: "Midrand",
+    content: "From Zimbabwe to landing a job at a top SA fintech - UpShift made my international experience shine on my CV.",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop"
+  },
+  {
+    id: 9,
+    name: "Chantel du Plessis",
+    role: "Operations Manager",
+    location: "Stellenbosch",
+    content: "The AI suggestions transformed my 5-page CV into a powerful 2-page document. Got promoted within 3 months of using it!",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop"
+  },
+  {
+    id: 10,
+    name: "Mpho Tau",
+    role: "Sales Executive",
+    location: "Polokwane",
+    content: "I was retrenched during COVID. UpShift helped me pivot my career - now earning 40% more in tech sales!",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop"
+  },
+  {
+    id: 11,
+    name: "Fatima Abrahams",
+    role: "UX Designer",
+    location: "Sea Point, Cape Town",
+    content: "The cover letter AI understood exactly what creative roles need. Landed a remote position at an international agency!",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop"
+  },
+  {
+    id: 12,
+    name: "Andile Nkosi",
+    role: "Project Manager (PMP)",
+    location: "Umhlanga, Durban",
+    content: "12 years experience but my CV was outdated. UpShift modernized it - hired as Senior PM at a construction giant!",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop"
   }
 ];
 

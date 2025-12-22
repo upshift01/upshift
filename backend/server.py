@@ -223,22 +223,43 @@ async def create_payment_checkout(
     tier_id: str,
     current_user: UserResponse = Depends(get_current_user_dep)
 ):
-    """Create a Yoco checkout session for payment"""
+    """Create a Yoco checkout session for payment using reseller's Yoco settings if available"""
+    from yoco_service import get_yoco_service_for_reseller
+    
     try:
-        # Define tiers
+        # Get user's reseller_id to use their Yoco settings
+        user_doc = await db.users.find_one({"id": current_user.id}, {"_id": 0, "reseller_id": 1})
+        reseller_id = user_doc.get("reseller_id") if user_doc else None
+        
+        # Get Yoco service with reseller credentials if available
+        yoco = await get_yoco_service_for_reseller(db, reseller_id)
+        
+        # Get pricing from reseller or use defaults
         tiers = {
             "tier-1": {"name": "ATS Optimize", "price_cents": 89900},
             "tier-2": {"name": "Professional Package", "price_cents": 150000},
             "tier-3": {"name": "Executive Elite", "price_cents": 300000}
         }
         
+        # If user belongs to a reseller, use reseller's pricing
+        if reseller_id:
+            reseller = await db.resellers.find_one({"id": reseller_id}, {"_id": 0, "pricing": 1})
+            if reseller and reseller.get("pricing"):
+                pricing = reseller["pricing"]
+                if pricing.get("tier1_price"):
+                    tiers["tier-1"]["price_cents"] = int(pricing["tier1_price"] * 100)
+                if pricing.get("tier2_price"):
+                    tiers["tier-2"]["price_cents"] = int(pricing["tier2_price"] * 100)
+                if pricing.get("tier3_price"):
+                    tiers["tier-3"]["price_cents"] = int(pricing["tier3_price"] * 100)
+        
         if tier_id not in tiers:
             raise HTTPException(status_code=400, detail="Invalid tier ID")
         
         tier = tiers[tier_id]
         
-        # Create checkout with Yoco
-        checkout = await yoco_service.create_checkout(
+        # Create checkout with Yoco (using reseller's credentials if configured)
+        checkout = await yoco.create_checkout(
             amount_cents=tier["price_cents"],
             email=current_user.email,
             metadata={
@@ -246,7 +267,8 @@ async def create_payment_checkout(
                 "user_email": current_user.email,
                 "user_name": current_user.full_name,
                 "tier_id": tier_id,
-                "tier_name": tier["name"]
+                "tier_name": tier["name"],
+                "reseller_id": reseller_id or "platform"
             }
         )
         
@@ -256,6 +278,7 @@ async def create_payment_checkout(
             "id": payment_id,
             "user_id": current_user.id,
             "user_email": current_user.email,
+            "reseller_id": reseller_id,
             "tier_id": tier_id,
             "tier_name": tier["name"],
             "amount_cents": tier["price_cents"],
@@ -266,7 +289,7 @@ async def create_payment_checkout(
             "updated_at": datetime.utcnow()
         })
         
-        logger.info(f"Checkout created for user {current_user.email}: {tier_id}")
+        logger.info(f"Checkout created for user {current_user.email}: {tier_id} (reseller: {reseller_id or 'platform'})")
         
         return {
             "checkout_id": checkout.get("id"),

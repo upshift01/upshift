@@ -27,7 +27,7 @@ const ResellerLayout = () => {
     { path: '/reseller-dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/reseller-dashboard/customers', icon: Users, label: 'Customers' },
     { path: '/reseller-dashboard/revenue', icon: BarChart3, label: 'Revenue' },
-    { path: '/reseller-dashboard/invoices', icon: Receipt, label: 'Invoices' },
+    { path: '/reseller-dashboard/invoices', icon: Receipt, label: 'Customer Invoices' },
     { path: '/reseller-dashboard/pricing', icon: DollarSign, label: 'Pricing' },
     { path: '/reseller-dashboard/branding', icon: Palette, label: 'Branding' },
     { path: '/reseller-dashboard/settings', icon: Settings, label: 'Settings' },

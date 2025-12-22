@@ -114,6 +114,17 @@ const ResumeBuilder = () => {
   };
 
   const generateCV = async () => {
+    // Check if user has paid tier
+    if (!user?.active_tier) {
+      toast({
+        title: "Upgrade Required",
+        description: "Please purchase a plan to generate your CV.",
+        variant: "destructive",
+      });
+      navigate('/pricing');
+      return;
+    }
+
     if (!formData.fullName) {
       toast({
         title: "Name Required",

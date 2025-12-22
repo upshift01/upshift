@@ -314,8 +314,79 @@ const AdminSettings = () => {
     setSaving(false);
   };
 
+  // Yoco Settings Functions
+  const fetchYocoSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/yoco-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setYocoSettings({
+          public_key: data.public_key || '',
+          secret_key: data.secret_key || '',
+          webhook_secret: data.webhook_secret || '',
+          is_test_mode: data.is_test_mode !== false
+        });
+        setYocoStatus(data.status || null);
+      }
+    } catch (error) {
+      console.error('Error fetching Yoco settings:', error);
+    }
+  };
+
+  const handleSaveYocoSettings = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/yoco-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(yocoSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Yoco settings saved successfully!' });
+        fetchYocoSettings();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save Yoco settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving Yoco settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestYocoConnection = async () => {
+    setTestingYoco(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/yoco-settings/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: 'Yoco connection successful!' });
+        setYocoStatus({ connected: true, last_checked: new Date().toISOString() });
+      } else {
+        setMessage({ type: 'error', text: data.detail || 'Yoco connection failed' });
+        setYocoStatus({ connected: false, error: data.detail });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error testing Yoco connection' });
+    } finally {
+      setTestingYoco(false);
+    }
+  };
+
   const tabs = [
     { id: 'general', label: 'General', icon: Globe },
+    { id: 'payments', label: 'Payments (Yoco)', icon: CreditCard },
     { id: 'email', label: 'Email & Reminders', icon: Mail },
     { id: 'security', label: 'Security', icon: Shield }
   ];

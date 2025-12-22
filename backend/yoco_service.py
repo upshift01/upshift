@@ -72,10 +72,16 @@ class YocoService:
                     timeout=30.0
                 )
                 
-                if response.status_code == 201:
+                # Yoco API returns 200 or 201 for successful checkout creation
+                if response.status_code in [200, 201]:
                     result = response.json()
-                    logger.info(f"Yoco checkout created: {result.get('id')}")
-                    return result
+                    # Verify we got a valid checkout response
+                    if result.get('id') and result.get('redirectUrl'):
+                        logger.info(f"Yoco checkout created: {result.get('id')}")
+                        return result
+                    else:
+                        logger.error(f"Invalid Yoco checkout response: {result}")
+                        raise Exception("Invalid checkout response from Yoco")
                 else:
                     logger.error(f"Yoco checkout creation failed: {response.status_code} - {response.text}")
                     raise Exception(f"Failed to create checkout: {response.text}")

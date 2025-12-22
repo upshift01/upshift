@@ -34,7 +34,15 @@ const Login = () => {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate(from, { replace: true });
+      // Redirect based on user role
+      const userRole = result.user?.role;
+      if (userRole === 'super_admin') {
+        navigate('/super-admin', { replace: true });
+      } else if (userRole === 'reseller_admin') {
+        navigate('/reseller-dashboard', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } else {
       setError(result.error);
     }

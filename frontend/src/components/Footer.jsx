@@ -33,6 +33,7 @@ const Footer = () => {
     { name: 'Cover Letter Templates', path: '/cover-letter-templates' },
     { name: 'LinkedIn Tools', path: '/linkedin-tools' },
     { name: 'Book Strategy Call', path: '/book-strategy-call' },
+    { name: 'White-Label Partners', path: '/white-label' },
     { name: 'Contact Us', path: '/contact' },
   ];
 

@@ -6,7 +6,8 @@ Test the white-label SaaS functionality including:
 2. Reseller Dashboard - login, dashboard, branding, pricing, customers, settings
 3. White-Label API - config endpoint returns correct data
 4. Authentication - role-based redirects after login
-5. **NEW: Email & Scheduling System**
+5. Email & Scheduling System
+6. **NEW: ATS Resume Checker (FREE)**
 
 ## Test Credentials
 - Super Admin: admin@upshift.co.za / admin123

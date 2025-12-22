@@ -49,6 +49,17 @@ const AdminSettings = () => {
   // Test Email State
   const [testEmailAddress, setTestEmailAddress] = useState('');
 
+  // Yoco Payment Settings State
+  const [yocoSettings, setYocoSettings] = useState({
+    public_key: '',
+    secret_key: '',
+    webhook_secret: '',
+    is_test_mode: true
+  });
+  const [showSecretKey, setShowSecretKey] = useState(false);
+  const [testingYoco, setTestingYoco] = useState(false);
+  const [yocoStatus, setYocoStatus] = useState(null);
+
   useEffect(() => {
     if (activeTab === 'email') {
       fetchEmailSettings();

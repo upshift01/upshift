@@ -124,14 +124,38 @@ export const cvTemplates = [
   },
   {
     id: 16,
+    name: "Professional Executive",
+    description: "Conservative professional format perfect for senior management and executive positions in South African corporates.",
+    image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Executive"
+  },
+  {
+    id: 17,
+    name: "Professional Finance",
+    description: "Traditional professional design ideal for banking, accounting, and financial services roles.",
+    image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Finance"
+  },
+  {
+    id: 18,
+    name: "Professional Corporate",
+    description: "Classic professional template for corporate environments and traditional industries.",
+    image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Corporate"
+  },
+  {
+    id: 19,
     name: "Modern Professional",
     description: "Contemporary design with subtle color accents while maintaining ATS compatibility.",
-    image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=500&fit=crop",
     category: "modern",
     industry: "Any"
   },
   {
-    id: 17,
+    id: 20,
     name: "Modern Tech",
     description: "Ideal for IT professionals with modern styling and ATS-safe formatting.",
     image: "https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=400&h=500&fit=crop",
@@ -139,12 +163,20 @@ export const cvTemplates = [
     industry: "Technology"
   },
   {
-    id: 18,
+    id: 21,
     name: "Creative Designer",
     description: "Stand out in creative industries with unique design while staying ATS-friendly.",
     image: "https://images.unsplash.com/photo-1554224311-beee460ae6fb?w=400&h=500&fit=crop",
     category: "creative",
     industry: "Creative"
+  },
+  {
+    id: 22,
+    name: "Creative Marketing",
+    description: "Bold and innovative design for marketing professionals and creative roles.",
+    image: "https://images.unsplash.com/photo-1542626991-cbc4e32524cc?w=400&h=500&fit=crop",
+    category: "creative",
+    industry: "Marketing"
   }
 ];
 

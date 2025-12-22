@@ -75,7 +75,7 @@ async def get_oauth_status():
     }
 
 @router.get("/oauth/authorize")
-async def authorize_linkedin(current_user: dict = Depends(get_current_user)):
+async def authorize_linkedin(current_user: dict = Depends(get_current_user_dep)):
     """Initiate LinkedIn OAuth flow"""
     if not linkedin_oauth_service.is_configured():
         raise HTTPException(
@@ -83,7 +83,7 @@ async def authorize_linkedin(current_user: dict = Depends(get_current_user)):
             detail="LinkedIn OAuth not configured. Please contact support."
         )
     
-    result = linkedin_oauth_service.get_authorization_url(current_user["id"])
+    result = linkedin_oauth_service.get_authorization_url(current_user.id)
     if "error" in result:
         raise HTTPException(status_code=503, detail=result["error"])
     

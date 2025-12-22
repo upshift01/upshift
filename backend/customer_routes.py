@@ -1,12 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone
 from uuid import uuid4
-from auth import get_current_user
-from database import db
 
 router = APIRouter(prefix="/api/customer", tags=["customer"])
+
+# Dependency to get DB - will be set from server.py
+db = None
+
+def set_db(database):
+    global db
+    db = database
+
+# Get current user helper
+async def get_current_customer(request: Request):
+    """Get current authenticated customer"""
+    from auth import get_current_user, oauth2_scheme
+    token = await oauth2_scheme(request)
+    user = await get_current_user(token, db)
+    return user
 
 # Pydantic Models
 class ProfileUpdate(BaseModel):

@@ -148,6 +148,22 @@ const ResumeBuilder = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
       <div className="max-w-5xl mx-auto">
+        {/* Upgrade Notice for users without tier */}
+        {!user?.active_tier && (
+          <div className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6 text-center">
+            <h3 className="text-xl font-bold mb-2">🔒 Premium Feature</h3>
+            <p className="mb-4">
+              CV generation with AI assistance requires a paid plan. Choose your package to get started!
+            </p>
+            <Button
+              onClick={() => navigate('/pricing')}
+              className="bg-white text-blue-600 hover:bg-gray-100"
+            >
+              View Pricing Plans
+            </Button>
+          </div>
+        )}
+
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
             <Sparkles className="mr-1 h-3 w-3" />

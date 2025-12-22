@@ -861,3 +861,128 @@ async def send_reseller_test_email(
     except Exception as e:
         logger.error(f"Error sending test email: {str(e)}")
         return {"success": False, "error": str(e)}
+
+
+
+# ChatGPT Settings Endpoints
+@reseller_router.get("/chatgpt-settings", response_model=dict)
+async def get_reseller_chatgpt_settings(context: dict = Depends(get_current_reseller_admin)):
+    """Get ChatGPT/OpenAI settings for a reseller"""
+    try:
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_chatgpt_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if settings:
+            # Mask the API key for security (show only last 4 chars)
+            if settings.get("openai_api_key"):
+                key = settings["openai_api_key"]
+                settings["openai_api_key"] = "sk-..." + key[-4:] if len(key) > 4 else ""
+            return settings
+        
+        return {
+            "openai_api_key": "",
+            "model": "gpt-4o",
+            "use_custom_key": False
+        }
+    except Exception as e:
+        logger.error(f"Error fetching ChatGPT settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@reseller_router.post("/chatgpt-settings", response_model=dict)
+async def save_reseller_chatgpt_settings(
+    settings: dict,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Save ChatGPT/OpenAI settings for a reseller"""
+    try:
+        reseller = context["reseller"]
+        
+        # Check if we need to update or preserve the existing key
+        existing = await db.reseller_chatgpt_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        # If the key looks masked (sk-...xxxx), preserve the existing key
+        api_key = settings.get("openai_api_key", "")
+        if api_key.startswith("sk-...") and existing:
+            api_key = existing.get("openai_api_key", "")
+        
+        update_data = {
+            "reseller_id": reseller["id"],
+            "openai_api_key": api_key,
+            "model": settings.get("model", "gpt-4o"),
+            "use_custom_key": settings.get("use_custom_key", False),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.reseller_chatgpt_settings.update_one(
+            {"reseller_id": reseller["id"]},
+            {"$set": update_data},
+            upsert=True
+        )
+        
+        logger.info(f"ChatGPT settings saved for reseller {reseller['id']}")
+        
+        return {"success": True, "message": "ChatGPT settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving ChatGPT settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@reseller_router.post("/chatgpt-settings/test", response_model=dict)
+async def test_reseller_chatgpt_connection(context: dict = Depends(get_current_reseller_admin)):
+    """Test the ChatGPT/OpenAI API connection using reseller's API key"""
+    try:
+        import httpx
+        
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_chatgpt_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not settings or not settings.get("openai_api_key"):
+            raise HTTPException(status_code=400, detail="OpenAI API key not configured")
+        
+        api_key = settings["openai_api_key"]
+        model = settings.get("model", "gpt-4o")
+        
+        # Test the API key with a simple request
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": "Say 'API connection successful' in 5 words or less."}],
+                    "max_tokens": 20
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                reply = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                logger.info(f"ChatGPT test successful for reseller {reseller['id']}")
+                return {"success": True, "message": f"Connection successful! Model: {model}"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid API key"}
+            elif response.status_code == 429:
+                return {"success": False, "error": "Rate limit exceeded. Please try again later."}
+            else:
+                error_data = response.json()
+                return {"success": False, "error": error_data.get("error", {}).get("message", "Unknown error")}
+                
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout. Please try again."}
+    except Exception as e:
+        logger.error(f"Error testing ChatGPT connection: {str(e)}")
+        return {"success": False, "error": str(e)}

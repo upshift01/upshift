@@ -631,7 +631,9 @@ frontend:
         - comment: "❌ Payment options section (Step 5) not displaying after analysis. The payment section with three pricing tiers (Career Starter R199, Professional Edge R399, Executive Elite R699) is implemented in the code (lines 524-654) but not appearing because the analysis result object is not being properly populated. This prevents users from seeing upgrade options and 'Select Plan' buttons that should redirect to /pricing page. Issue is in the conditional rendering logic that depends on successful analysis completion."
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "ATS Resume Checker Payment Options Integration"
+  stuck_tasks:
+    - "ATS Resume Checker Payment Options Integration"
   test_all: false
   test_priority: "high_first"

@@ -1064,6 +1064,9 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         # NEW: Test LinkedIn Tools API endpoints
         self.test_linkedin_tools_api()
         
+        # NEW: Test Yoco Payment Integration
+        self.test_yoco_payment_integration()
+        
         # Print summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY")

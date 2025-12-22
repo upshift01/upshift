@@ -37,6 +37,8 @@ class UserInDB(BaseModel):
     full_name: str
     phone: Optional[str] = None
     hashed_password: str
+    role: str = "customer"  # customer, reseller_admin, super_admin
+    reseller_id: Optional[str] = None  # For customers belonging to a reseller
     active_tier: Optional[str] = None
     tier_activation_date: Optional[datetime] = None
     created_at: datetime
@@ -47,6 +49,8 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     phone: Optional[str] = None
+    role: str = "customer"
+    reseller_id: Optional[str] = None
     active_tier: Optional[str] = None
     tier_activation_date: Optional[datetime] = None
     created_at: datetime

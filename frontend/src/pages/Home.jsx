@@ -204,15 +204,15 @@ const Home = () => {
           <div className="mt-8 flex items-center justify-center space-x-6 text-white/80 text-sm">
             <div className="flex items-center">
               <CheckCircle2 className="h-4 w-4 mr-2" />
-              No credit card required
+              Professional service
             </div>
             <div className="flex items-center">
               <CheckCircle2 className="h-4 w-4 mr-2" />
-              Free templates
+              ATS-optimized
             </div>
             <div className="flex items-center">
               <CheckCircle2 className="h-4 w-4 mr-2" />
-              Export to PDF
+              Expert AI assistance
             </div>
           </div>
         </div>

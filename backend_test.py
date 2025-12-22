@@ -598,7 +598,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
                 files = {'file': ('sample_resume.txt', file, 'text/plain')}
                 
                 try:
-                    response = requests.post(url, files=files, timeout=30)
+                    response = requests.post(url, files=files, timeout=60)
                     
                     if response.status_code == 200:
                         try:

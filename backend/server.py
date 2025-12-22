@@ -681,6 +681,11 @@ async def get_templates():
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include reseller and admin routers
+app.include_router(reseller_router)
+app.include_router(admin_router)
+app.include_router(whitelabel_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

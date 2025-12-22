@@ -390,6 +390,35 @@ const ResellerInvoices = () => {
                           <div className="flex items-center gap-2">
                             {invoice.status !== 'paid' && (
                               <>
+                                {invoice.payment_url ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(invoice.payment_url);
+                                      alert('Payment link copied to clipboard!');
+                                    }}
+                                    title="Copy Payment Link"
+                                    className="text-green-600 border-green-300"
+                                  >
+                                    <Link2 className="h-4 w-4" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleGeneratePaymentLink(invoice.id)}
+                                    disabled={generatingLink === invoice.id}
+                                    title="Generate Yoco Payment Link"
+                                    className="text-blue-600 border-blue-300"
+                                  >
+                                    {generatingLink === invoice.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <CreditCard className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                )}
                                 <Button
                                   size="sm"
                                   variant="outline"

@@ -530,8 +530,11 @@ async def calculate_job_match(
 # ==================== Cover Letter Endpoints ====================
 
 @api_router.post("/cover-letters/generate", response_model=CoverLetter)
-async def generate_cover_letter(data: CoverLetterCreate):
-    """Generate AI cover letter"""
+async def generate_cover_letter(
+    data: CoverLetterCreate,
+    current_user: UserResponse = Depends(check_user_has_tier(['tier-2', 'tier-3']))
+):
+    """Generate AI cover letter (Requires Professional or Elite tier)"""
     try:
         # Generate cover letter with AI
         generated_content = await ai_service.generate_cover_letter(data.dict())
@@ -541,10 +544,11 @@ async def generate_cover_letter(data: CoverLetterCreate):
             **data.dict(),
             generated_content=generated_content
         )
+        cover_letter.user_id = current_user.id
         
         # Save to MongoDB
         await db.cover_letters.insert_one(cover_letter.dict())
-        logger.info(f"Cover letter created with ID: {cover_letter.id}")
+        logger.info(f"Cover letter created for user {current_user.email}")
         
         # Placeholder: Sync to Odoo
         odoo_id = await odoo_integration.create_cover_letter_record(cover_letter.dict())
@@ -556,6 +560,8 @@ async def generate_cover_letter(data: CoverLetterCreate):
             )
         
         return cover_letter
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating cover letter: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

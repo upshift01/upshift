@@ -22,7 +22,8 @@ from odoo_integration import odoo_integration
 from auth import (
     Token, UserRegister, UserLogin, UserResponse, UserInDB,
     get_password_hash, verify_password, create_access_token,
-    get_current_user, get_current_active_user, check_user_has_tier
+    get_current_user, get_current_active_user, check_user_has_tier,
+    oauth2_scheme
 )
 from yoco_service import yoco_service
 

@@ -61,7 +61,7 @@ class InterviewPracticeRequest(BaseModel):
 # Dashboard Stats
 @router.get("/dashboard-stats")
 async def get_dashboard_stats(current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     # Get document count
     documents_count = await db.documents.count_documents({"user_id": user_id})
@@ -89,7 +89,7 @@ async def get_dashboard_stats(current_user = Depends(get_current_customer)):
 # Recent Activity
 @router.get("/recent-activity")
 async def get_recent_activity(current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     activities = []
     
     # Get recent ATS checks
@@ -126,7 +126,7 @@ async def get_recent_activity(current_user = Depends(get_current_customer)):
 # Documents
 @router.get("/documents")
 async def get_documents(current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     documents = await db.documents.find(
         {"user_id": user_id},
         {"_id": 0}
@@ -136,7 +136,7 @@ async def get_documents(current_user = Depends(get_current_customer)):
 
 @router.delete("/documents/{doc_id}")
 async def delete_document(doc_id: str, current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     result = await db.documents.delete_one({"id": doc_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -145,7 +145,7 @@ async def delete_document(doc_id: str, current_user = Depends(get_current_custom
 # Job Applications
 @router.get("/jobs")
 async def get_jobs(current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     jobs = await db.job_applications.find(
         {"user_id": user_id},
         {"_id": 0}
@@ -155,7 +155,7 @@ async def get_jobs(current_user = Depends(get_current_customer)):
 
 @router.post("/jobs")
 async def create_job(job: JobApplication, current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     new_job = {
         "id": str(uuid4()),
@@ -175,7 +175,7 @@ async def create_job(job: JobApplication, current_user = Depends(get_current_cus
 
 @router.put("/jobs/{job_id}")
 async def update_job(job_id: str, job_update: JobUpdate, current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     update_data = {k: v for k, v in job_update.dict().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -192,7 +192,7 @@ async def update_job(job_id: str, job_update: JobUpdate, current_user = Depends(
 
 @router.delete("/jobs/{job_id}")
 async def delete_job(job_id: str, current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     result = await db.job_applications.delete_one({"id": job_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -209,7 +209,7 @@ async def get_profile(current_user = Depends(get_current_customer)):
 
 @router.put("/profile")
 async def update_profile(profile: ProfileUpdate, current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     update_data = {k: v for k, v in profile.dict().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -225,7 +225,7 @@ async def update_profile(profile: ProfileUpdate, current_user = Depends(get_curr
 @router.post("/change-password")
 async def change_password(data: PasswordChange, current_user = Depends(get_current_customer)):
     import bcrypt
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     # Get user with password
     user = await db.users.find_one({"id": user_id})
@@ -249,7 +249,7 @@ async def change_password(data: PasswordChange, current_user = Depends(get_curre
 # Notifications
 @router.get("/notifications")
 async def get_notification_preferences(current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     prefs = await db.notification_preferences.find_one({"user_id": user_id}, {"_id": 0})
     
     if not prefs:
@@ -262,7 +262,7 @@ async def update_notification_preferences(
     prefs: NotificationPreferences, 
     current_user = Depends(get_current_customer)
 ):
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     await db.notification_preferences.update_one(
         {"user_id": user_id},
@@ -281,7 +281,7 @@ async def update_notification_preferences(
 # Analytics
 @router.get("/analytics")
 async def get_analytics(current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     # Get counts
     documents_count = await db.documents.count_documents({"user_id": user_id})
@@ -327,7 +327,7 @@ async def get_analytics(current_user = Depends(get_current_customer)):
 # ATS History
 @router.get("/ats-history")
 async def get_ats_history(current_user = Depends(get_current_customer)):
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     history = await db.ats_results.find(
         {"user_id": user_id},

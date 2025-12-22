@@ -44,7 +44,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Welcome back, {user?.full_name}!
@@ -52,48 +51,47 @@ const Dashboard = () => {
           <p className="text-gray-600">Manage your career documents and services</p>
         </div>
 
-        {/* Active Tier Card */}
-        <div className=\"grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8\">
-          <Card className=\"lg:col-span-2\">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className=\"flex items-center\">
-                <Zap className=\"mr-2 h-5 w-5 text-blue-600\" />
+              <CardTitle className="flex items-center">
+                <Zap className="mr-2 h-5 w-5 text-blue-600" />
                 Your Active Plan
               </CardTitle>
             </CardHeader>
             <CardContent>
               {user?.active_tier ? (
-                <div className=\"space-y-4\">
-                  <div className=\"flex items-center justify-between\">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h3 className=\"text-2xl font-bold text-gray-900\">
+                      <h3 className="text-2xl font-bold text-gray-900">
                         {getTierInfo(user.active_tier).name}
                       </h3>
-                      <p className=\"text-sm text-gray-600\">
+                      <p className="text-sm text-gray-600">
                         Activated on {new Date(user.tier_activation_date).toLocaleDateString()}
                       </p>
                     </div>
-                    <Badge className=\"bg-green-100 text-green-700 border-green-200\">
-                      <CheckCircle className=\"mr-1 h-3 w-3\" />
+                    <Badge className="bg-green-100 text-green-700 border-green-200">
+                      <CheckCircle className="mr-1 h-3 w-3" />
                       Active
                     </Badge>
                   </div>
-                  <div className=\"grid grid-cols-2 gap-4 pt-4 border-t\">
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                     <div>
-                      <p className=\"text-sm text-gray-600\">Documents Created</p>
-                      <p className=\"text-2xl font-bold text-gray-900\">0</p>
+                      <p className="text-sm text-gray-600">Documents Created</p>
+                      <p className="text-2xl font-bold text-gray-900">0</p>
                     </div>
                     <div>
-                      <p className=\"text-sm text-gray-600\">AI Improvements</p>
-                      <p className=\"text-2xl font-bold text-gray-900\">Unlimited</p>
+                      <p className="text-sm text-gray-600">AI Improvements</p>
+                      <p className="text-2xl font-bold text-gray-900">Unlimited</p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className=\"text-center py-8\">
-                  <p className=\"text-gray-600 mb-4\">No active plan. Upgrade to access AI features!</p>
-                  <Link to=\"/pricing\">
-                    <Button className=\"bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700\">
+                <div className="text-center py-8">
+                  <p className="text-gray-600 mb-4">No active plan. Upgrade to access AI features!</p>
+                  <Link to="/pricing">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                       View Pricing Plans
                     </Button>
                   </Link>
@@ -106,28 +104,28 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className=\"space-y-2\">
-              <Link to=\"/builder\">
-                <Button variant=\"outline\" className=\"w-full justify-start\">
-                  <FileText className=\"mr-2 h-4 w-4\" />
+            <CardContent className="space-y-2">
+              <Link to="/builder">
+                <Button variant="outline" className="w-full justify-start">
+                  <FileText className="mr-2 h-4 w-4" />
                   Build New CV
                 </Button>
               </Link>
-              <Link to=\"/improve\">
-                <Button variant=\"outline\" className=\"w-full justify-start\">
-                  <Zap className=\"mr-2 h-4 w-4\" />
+              <Link to="/improve">
+                <Button variant="outline" className="w-full justify-start">
+                  <Zap className="mr-2 h-4 w-4" />
                   Improve Existing CV
                 </Button>
               </Link>
-              <Link to=\"/cover-letter\">
-                <Button variant=\"outline\" className=\"w-full justify-start\">
-                  <Mail className=\"mr-2 h-4 w-4\" />
+              <Link to="/cover-letter">
+                <Button variant="outline" className="w-full justify-start">
+                  <Mail className="mr-2 h-4 w-4" />
                   Generate Cover Letter
                 </Button>
               </Link>
-              <Link to=\"/pricing\">
-                <Button variant=\"outline\" className=\"w-full justify-start\">
-                  <CreditCard className=\"mr-2 h-4 w-4\" />
+              <Link to="/pricing">
+                <Button variant="outline" className="w-full justify-start">
+                  <CreditCard className="mr-2 h-4 w-4" />
                   Upgrade Plan
                 </Button>
               </Link>
@@ -135,36 +133,35 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Payment History */}
         <Card>
           <CardHeader>
-            <CardTitle className=\"flex items-center\">
-              <CreditCard className=\"mr-2 h-5 w-5\" />
+            <CardTitle className="flex items-center">
+              <CreditCard className="mr-2 h-5 w-5" />
               Payment History
             </CardTitle>
             <CardDescription>View all your transactions</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className=\"text-center py-8 text-gray-600\">Loading...</div>
+              <div className="text-center py-8 text-gray-600">Loading...</div>
             ) : paymentHistory.length > 0 ? (
-              <div className=\"space-y-4\">
+              <div className="space-y-4">
                 {paymentHistory.map((payment) => (
-                  <div key={payment.id} className=\"flex items-center justify-between p-4 border rounded-lg\">
-                    <div className=\"flex items-center space-x-4\">
-                      <div className=\"w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center\">
-                        <CreditCard className=\"h-5 w-5 text-blue-600\" />
+                  <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <CreditCard className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className=\"font-medium text-gray-900\">{payment.tier_name}</p>
-                        <p className=\"text-sm text-gray-600\">
+                        <p className="font-medium text-gray-900">{payment.tier_name}</p>
+                        <p className="text-sm text-gray-600">
                           {new Date(payment.created_at).toLocaleDateString()} at{' '}
                           {new Date(payment.created_at).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
-                    <div className=\"text-right\">
-                      <p className=\"font-bold text-gray-900\">
+                    <div className="text-right">
+                      <p className="font-bold text-gray-900">
                         R{(payment.amount_cents / 100).toFixed(2)}
                       </p>
                       <Badge variant={payment.status === 'succeeded' ? 'default' : 'secondary'}>
@@ -175,9 +172,9 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className=\"text-center py-8\">
-                <Clock className=\"h-12 w-12 text-gray-400 mx-auto mb-4\" />
-                <p className=\"text-gray-600\">No payment history yet</p>
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No payment history yet</p>
               </div>
             )}
           </CardContent>

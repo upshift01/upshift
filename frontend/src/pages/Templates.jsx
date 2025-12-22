@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { resumeTemplates } from '../mockData';
+import { cvTemplates } from '../mockData';
 import TemplateCard from '../components/TemplateCard';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -13,8 +13,8 @@ const Templates = () => {
 
   const filteredTemplates =
     selectedCategory === 'all'
-      ? resumeTemplates
-      : resumeTemplates.filter((template) => template.category === selectedCategory);
+      ? cvTemplates
+      : cvTemplates.filter((template) => template.category === selectedCategory);
 
   const handleSelectTemplate = (template) => {
     toast({

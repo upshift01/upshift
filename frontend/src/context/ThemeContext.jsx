@@ -18,7 +18,7 @@ export const ThemeProvider = ({ children }) => {
     primaryColor: '#1e40af',
     secondaryColor: '#7c3aed',
     faviconUrl: null,
-    contactEmail: 'support@upshift.co.za',
+    contactEmail: 'support@upshift.works',
     termsUrl: '/terms',
     privacyUrl: '/privacy',
     pricing: {

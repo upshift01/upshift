@@ -28,7 +28,7 @@ BACKEND_URL = "https://upshift-pro.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {
-    "email": "admin@upshift.co.za",
+    "email": "admin@upshift.works",
     "password": "admin123"
 }
 

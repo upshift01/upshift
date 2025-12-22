@@ -544,7 +544,7 @@ const ResellerSettings = () => {
                   placeholder="cv.yourdomain.com"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Point your domain's CNAME record to: reseller.upshift.co.za
+                  Point your domain's CNAME record to: reseller.upshift.works
                 </p>
               </div>
             </CardContent>
@@ -749,7 +749,7 @@ const ResellerSettings = () => {
                 <div>
                   <h4 className="font-medium text-blue-800">Payment Queries</h4>
                   <p className="text-sm text-blue-700">
-                    Contact support@upshift.co.za for any billing questions or payment assistance.
+                    Contact support@upshift.works for any billing questions or payment assistance.
                   </p>
                 </div>
               </div>

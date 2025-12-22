@@ -139,7 +139,7 @@ const ResellerDashboard = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Subdomain</span>
-                <span className="font-medium">{profile?.subdomain}.upshift.co.za</span>
+                <span className="font-medium">{profile?.subdomain}.upshift.works</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Custom Domain</span>

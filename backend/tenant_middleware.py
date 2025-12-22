@@ -28,7 +28,7 @@ async def detect_tenant_middleware(request: Request, call_next, db):
     
     # Check if this is a custom domain
     # Skip for localhost and main domain
-    if host not in ["localhost", "127.0.0.1", "upshift.co.za", "www.upshift.co.za"]:
+    if host not in ["localhost", "127.0.0.1", "upshift.works", "www.upshift.works"]:
         # Look up reseller by custom domain
         reseller = await db.resellers.find_one({
             "custom_domain": host,

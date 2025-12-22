@@ -302,7 +302,7 @@ async def confirm_booking_payment(
         # In production, verify with Yoco API
         
         # Generate a meeting link (placeholder)
-        meeting_link = f"https://meet.upshift.co.za/strategy-call/{booking_id[:8]}"
+        meeting_link = f"https://meet.upshift.works/strategy-call/{booking_id[:8]}"
         
         await db.bookings.update_one(
             {"id": booking_id},

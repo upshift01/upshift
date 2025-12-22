@@ -186,7 +186,7 @@ const AdminResellers = () => {
                       </td>
                       <td className="py-3 px-4">{reseller.brand_name}</td>
                       <td className="py-3 px-4">
-                        <div className="text-sm">{reseller.subdomain}.upshift.co.za</div>
+                        <div className="text-sm">{reseller.subdomain}.upshift.works</div>
                         {reseller.custom_domain && (
                           <div className="text-xs text-gray-500">{reseller.custom_domain}</div>
                         )}
@@ -324,7 +324,7 @@ const AdminResellers = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Subdomain</p>
-                  <p className="font-medium">{selectedReseller.subdomain}.upshift.co.za</p>
+                  <p className="font-medium">{selectedReseller.subdomain}.upshift.works</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Custom Domain</p>
@@ -523,7 +523,7 @@ const EditResellerModal = ({ reseller, onClose, onSuccess, token }) => {
                   className="rounded-r-none"
                 />
                 <span className="bg-gray-100 border border-l-0 px-3 py-2 text-sm text-gray-500 rounded-r-lg">
-                  .upshift.co.za
+                  .upshift.works
                 </span>
               </div>
             </div>
@@ -783,7 +783,7 @@ const CreateResellerModal = ({ onClose, onSuccess, token }) => {
                   className="rounded-r-none"
                 />
                 <span className="bg-gray-100 border border-l-0 px-3 py-2 text-sm text-gray-500 rounded-r-lg">
-                  .upshift.co.za
+                  .upshift.works
                 </span>
               </div>
             </div>

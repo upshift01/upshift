@@ -9,7 +9,7 @@ This test suite validates all backend APIs for the white-label SaaS platform:
 4. White-Label Config API
 
 Test Credentials:
-- Super Admin: admin@upshift.co.za / admin123
+- Super Admin: admin@upshift.works / admin123
 - Reseller Admin: john@acmecareers.com / acme123456
 """
 
@@ -24,7 +24,7 @@ BACKEND_URL = "https://upshift-pro.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {
-    "email": "admin@upshift.co.za",
+    "email": "admin@upshift.works",
     "password": "admin123"
 }
 
@@ -415,9 +415,9 @@ class APITester:
         email_settings = {
             "smtp_host": "smtp.office365.com",
             "smtp_port": 587,
-            "smtp_user": "test@upshift.co.za",
+            "smtp_user": "test@upshift.works",
             "smtp_password": "testpassword123",
-            "from_email": "test@upshift.co.za",
+            "from_email": "test@upshift.works",
             "from_name": "UpShift Test"
         }
         response, error = self.make_request("POST", "/scheduler/email-settings", headers=headers, data=email_settings)

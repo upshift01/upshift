@@ -35,7 +35,7 @@ async def get_whitelabel_config(request: Request):
                 "primary_color": "#1e40af",
                 "secondary_color": "#7c3aed",
                 "favicon_url": None,
-                "contact_email": "support@upshift.co.za",
+                "contact_email": "support@upshift.works",
                 "contact_phone": "+27 (0) 11 234 5678",
                 "contact_address": "123 Main Street, Sandton, Johannesburg, 2196, South Africa",
                 "terms_url": "/terms",
@@ -55,9 +55,9 @@ async def get_whitelabel_config(request: Request):
         )
         
         if not reseller:
-            # Check by subdomain pattern (e.g., acme.upshift.co.za)
-            if host.endswith(".upshift.co.za"):
-                subdomain = host.replace(".upshift.co.za", "")
+            # Check by subdomain pattern (e.g., acme.upshift.works)
+            if host.endswith(".upshift.works"):
+                subdomain = host.replace(".upshift.works", "")
                 reseller = await db.resellers.find_one(
                     {"subdomain": subdomain, "status": "active"},
                     {"_id": 0}
@@ -72,7 +72,7 @@ async def get_whitelabel_config(request: Request):
                 "primary_color": "#1e40af",
                 "secondary_color": "#7c3aed",
                 "favicon_url": None,
-                "contact_email": "support@upshift.co.za",
+                "contact_email": "support@upshift.works",
                 "contact_phone": "+27 (0) 11 234 5678",
                 "contact_address": "123 Main Street, Sandton, Johannesburg, 2196, South Africa",
                 "terms_url": "/terms",

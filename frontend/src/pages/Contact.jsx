@@ -68,7 +68,7 @@ const Contact = () => {
   }
 
   const brandName = config?.brand_name || 'UpShift';
-  const contactEmail = config?.contact_email || 'support@upshift.co.za';
+  const contactEmail = config?.contact_email || 'support@upshift.works';
   const contactPhone = config?.contact_phone || '+27 (0) 11 234 5678';
   const contactAddress = config?.contact_address || '123 Main Street, Sandton, Johannesburg, 2196, South Africa';
   const primaryColor = config?.primary_color || '#1e40af';

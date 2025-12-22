@@ -814,7 +814,7 @@ async def startup_event():
         await db.reseller_invoices.create_index([("reseller_id", 1), ("period", 1)])
         
         # Create default super admin if not exists
-        default_admin_email = "admin@upshift.co.za"
+        default_admin_email = "admin@upshift.works"
         existing_admin = await db.users.find_one({"email": default_admin_email})
         
         if not existing_admin:

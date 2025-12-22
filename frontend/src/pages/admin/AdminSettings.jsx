@@ -16,7 +16,7 @@ const AdminSettings = () => {
   
   const [settings, setSettings] = useState({
     platformName: 'UpShift',
-    supportEmail: 'support@upshift.co.za',
+    supportEmail: 'support@upshift.works',
     defaultCurrency: 'ZAR',
     monthlyPlatformFee: 2500,
     emailNotifications: true,

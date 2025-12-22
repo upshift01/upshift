@@ -152,7 +152,7 @@ class EmailService:
                 </div>
                 <div class="footer">
                     <p>This is an automated message from UpShift Platform.</p>
-                    <p>If you have any questions, please contact support@upshift.co.za</p>
+                    <p>If you have any questions, please contact support@upshift.works</p>
                 </div>
             </div>
         </body>

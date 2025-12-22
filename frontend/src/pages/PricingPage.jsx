@@ -1,0 +1,94 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import PricingSection from '../components/PricingSection';
+import { Badge } from '../components/ui/badge';
+import { Zap } from 'lucide-react';
+import axios from 'axios';
+import { useToast } from '../hooks/use-toast';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
+const PricingPage = () => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, getAuthHeader } = useAuth();
+  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleTierSelect = async (tier) => {
+    if (!isAuthenticated) {
+      // Redirect to register if not logged in
+      navigate('/register', { state: { selectedTier: tier.id } });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Create checkout with backend
+      const response = await axios.post(
+        `${API_URL}/api/payments/create-checkout`,
+        { tier_id: tier.id },
+        { headers: getAuthHeader() }
+      );
+
+      const { redirect_url } = response.data;
+
+      // Redirect to Yoco payment page
+      window.location.href = redirect_url;
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: 'Payment Error',
+        description: error.response?.data?.detail || 'Failed to initiate payment. Please try again.',
+        variant: 'destructive'
+      });
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="max-w-7xl mx-auto py-12 px-4">
+        <div className="text-center mb-12">
+          <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
+            <Zap className="mr-1 h-3 w-3" />
+            Upgrade Your Career Today
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Choose Your Success Plan
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            One-time payment for professional, ATS-optimized career documents that land interviews
+          </p>
+        </div>
+
+        <PricingSection onTierSelect={handleTierSelect} />
+
+        {user?.active_tier && (
+          <div className="mt-12 max-w-2xl mx-auto">
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 text-center">
+              <h3 className="text-lg font-semibold text-green-900 mb-2">
+                Active Plan: {user.active_tier === 'tier-1' ? 'ATS Optimize' : user.active_tier === 'tier-2' ? 'Professional Package' : 'Executive Elite'}
+              </h3>
+              <p className="text-green-700">
+                You have full access to all features in your plan. Purchase additional services anytime!
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isProcessing && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-900 font-medium">Redirecting to payment...</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PricingPage;

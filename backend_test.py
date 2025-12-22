@@ -782,12 +782,12 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
                 self.log_test("LinkedIn OAuth Status", True, 
                             f"Configured: {configured}, Message: {message[:50]}...")
         
-        # For authenticated endpoints, we need a valid token
-        if not self.super_admin_token:
-            self.log_test("LinkedIn Tools Tests", False, "No authentication token available")
+        # For authenticated endpoints, we need a valid customer token
+        if not self.customer_token:
+            self.log_test("LinkedIn Tools Tests", False, "No customer authentication token available")
             return False
         
-        headers = {"Authorization": f"Bearer {self.super_admin_token}"}
+        headers = {"Authorization": f"Bearer {self.customer_token}"}
         
         # Test 2: POST /api/linkedin/convert-to-resume (Requires auth)
         linkedin_data = {

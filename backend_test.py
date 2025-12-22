@@ -739,6 +739,9 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         self.test_white_label_config()
         self.test_unauthorized_access()
         
+        # NEW: Test ATS Resume Checker (FREE endpoint)
+        self.test_ats_resume_checker()
+        
         # Print summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY")

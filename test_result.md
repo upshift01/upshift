@@ -51,7 +51,7 @@ Test the white-label SaaS functionality including:
 - **NEW: GET /api/reseller/email-settings**
 - **NEW: POST /api/reseller/email-settings**
 - **NEW: POST /api/reseller/email-settings/test**
-- **NEW: POST /api/reseller/email-settings/send-test**
+- **NEW: POST /api/ats-check** - FREE ATS Resume Checker (no authentication required)
 
 ## Previous Test Results
 - Initial implementation complete

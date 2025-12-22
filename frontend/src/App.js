@@ -42,6 +42,16 @@ import ResellerPricing from "./pages/reseller/ResellerPricing";
 import ResellerBranding from "./pages/reseller/ResellerBranding";
 import ResellerSettings from "./pages/reseller/ResellerSettings";
 
+// Customer Portal Pages
+import CustomerLayout from "./components/CustomerLayout";
+import CustomerDashboard from "./pages/customer/CustomerDashboard";
+import CustomerDocuments from "./pages/customer/CustomerDocuments";
+import CustomerAnalytics from "./pages/customer/CustomerAnalytics";
+import CustomerBilling from "./pages/customer/CustomerBilling";
+import CustomerSettings from "./pages/customer/CustomerSettings";
+import JobTracker from "./pages/customer/JobTracker";
+import InterviewPrep from "./pages/customer/InterviewPrep";
+
 // Wrapper to conditionally show Navbar
 const AppContent = () => {
   const location = useLocation();

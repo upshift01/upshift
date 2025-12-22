@@ -181,7 +181,7 @@ async def login(user_data: UserLogin):
 
 
 @api_router.get("/auth/me", response_model=UserResponse)
-async def get_current_user_info(current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))):
+async def get_current_user_info(current_user: UserResponse = Depends(get_current_user_dep)):
     """Get current user information"""
     return current_user
 

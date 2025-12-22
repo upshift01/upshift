@@ -119,9 +119,9 @@ Return ONLY valid JSON without any markdown formatting or explanations."""
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id="cover_letter_gen",
-                system_message="You are an expert cover letter writer specializing in the South African job market. Create compelling, professional cover letters that highlight the candidate's strengths."
+                system_message="You are an expert cover letter writer specializing in the South African job market. Create compelling, professional, ATS-friendly cover letters that highlight the candidate's strengths while incorporating relevant keywords for ATS systems."
             )
-            chat.with_model("openai", "gpt-4.1")
+            chat.with_model("openai", "gpt-5.2")
             
             prompt = f"""Generate a professional cover letter for a South African job application with the following details:
 

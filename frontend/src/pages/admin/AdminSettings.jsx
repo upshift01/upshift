@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Settings, Save, Shield, Bell, Globe, Database, Mail, Clock, Send, Plus, Trash2, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Settings, Save, Shield, Bell, Globe, Database, Mail, Clock, Send, Plus, Trash2, CheckCircle, XCircle, RefreshCw, CreditCard, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { Badge } from '../../components/ui/badge';
 
 const AdminSettings = () => {
   const { user, token } = useAuth();

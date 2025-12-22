@@ -166,7 +166,7 @@ export const cvTemplates = [
     id: 21,
     name: "Creative Designer",
     description: "Stand out in creative industries with unique design while staying ATS-friendly.",
-    image: "https://images.unsplash.com/photo-1554224311-beee460ae6fb?w=400&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=500&fit=crop",
     category: "creative",
     industry: "Creative"
   },

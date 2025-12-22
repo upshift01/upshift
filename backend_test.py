@@ -43,6 +43,7 @@ class APITester:
     def __init__(self):
         self.super_admin_token = None
         self.reseller_admin_token = None
+        self.customer_token = None
         self.test_results = []
         self.failed_tests = []
         

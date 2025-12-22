@@ -831,7 +831,7 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
                     "Content-Type": "application/json"
                 },
                 json={
-                    "amount": 100,
+                    "amount": 200,  # Minimum R2.00 required by Yoco
                     "currency": "ZAR"
                 },
                 timeout=15

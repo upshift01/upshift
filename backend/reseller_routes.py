@@ -1252,3 +1252,98 @@ async def create_customer_invoice(
     except Exception as e:
         logger.error(f"Error creating customer invoice: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/customer-invoices/{invoice_id}/create-payment-link", response_model=dict)
+async def create_invoice_payment_link(
+    invoice_id: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Create a Yoco payment link for an invoice using reseller's Yoco settings"""
+    from yoco_service import get_yoco_service_for_reseller
+    import os
+    
+    try:
+        reseller = context["reseller"]
+        
+        # Get the invoice
+        invoice = await db.customer_invoices.find_one({
+            "id": invoice_id,
+            "reseller_id": reseller["id"]
+        }, {"_id": 0})
+        
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        if invoice.get("status") == "paid":
+            raise HTTPException(status_code=400, detail="Invoice is already paid")
+        
+        # Get Yoco service with reseller's credentials
+        yoco = await get_yoco_service_for_reseller(db, reseller["id"])
+        
+        if not yoco.is_configured():
+            raise HTTPException(
+                status_code=400, 
+                detail="Yoco payment is not configured. Please set up your Yoco credentials in Settings."
+            )
+        
+        frontend_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:3000'))
+        
+        # Create checkout with Yoco
+        checkout = await yoco.create_checkout(
+            amount_cents=int(invoice["amount"] * 100),  # Convert to cents
+            email=invoice["customer_email"],
+            metadata={
+                "invoice_id": invoice_id,
+                "invoice_number": invoice["invoice_number"],
+                "customer_id": invoice.get("customer_id"),
+                "customer_email": invoice["customer_email"],
+                "reseller_id": reseller["id"],
+                "type": "customer_invoice"
+            },
+            success_url=f"{frontend_url}/payment/success?invoice={invoice_id}",
+            cancel_url=f"{frontend_url}/payment/cancel?invoice={invoice_id}"
+        )
+        
+        # Update invoice with payment link
+        payment_url = checkout.get("redirectUrl")
+        await db.customer_invoices.update_one(
+            {"id": invoice_id},
+            {"$set": {
+                "payment_url": payment_url,
+                "yoco_checkout_id": checkout.get("id"),
+                "updated_at": datetime.utcnow().isoformat()
+            }}
+        )
+        
+        logger.info(f"Payment link created for invoice {invoice['invoice_number']}")
+        
+        return {
+            "success": True,
+            "payment_url": payment_url,
+            "checkout_id": checkout.get("id")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating payment link: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.get("/customers-list", response_model=dict)
+async def get_customers_list(context: dict = Depends(get_current_reseller_admin)):
+    """Get list of customers for the reseller (for invoice creation dropdown)"""
+    try:
+        reseller = context["reseller"]
+        
+        customers = await db.users.find(
+            {"reseller_id": reseller["id"], "role": "customer"},
+            {"_id": 0, "id": 1, "full_name": 1, "email": 1, "active_tier": 1}
+        ).to_list(500)
+        
+        return {"customers": customers}
+        
+    except Exception as e:
+        logger.error(f"Error fetching customers list: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

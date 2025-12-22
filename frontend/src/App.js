@@ -40,6 +40,10 @@ import ResellerInvoices from "./pages/reseller/ResellerInvoices";
 import ResellerPricing from "./pages/reseller/ResellerPricing";
 import ResellerBranding from "./pages/reseller/ResellerBranding";
 import ResellerSettings from "./pages/reseller/ResellerSettings";
+import ActivityLog from "./pages/reseller/ActivityLog";
+import EmailCampaigns from "./pages/reseller/EmailCampaigns";
+import DomainSetup from "./pages/reseller/DomainSetup";
+import EmailTemplates from "./pages/reseller/EmailTemplates";
 
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";

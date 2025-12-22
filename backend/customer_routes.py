@@ -202,9 +202,9 @@ async def delete_job(job_id: str, current_user = Depends(get_current_customer)):
 @router.get("/profile")
 async def get_profile(current_user = Depends(get_current_customer)):
     return {
-        "full_name": current_user.get("full_name", ""),
-        "email": current_user.get("email", ""),
-        "phone": current_user.get("phone", "")
+        "full_name": current_user.full_name or "",
+        "email": current_user.email or "",
+        "phone": getattr(current_user, 'phone', "") or ""
     }
 
 @router.put("/profile")

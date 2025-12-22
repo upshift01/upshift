@@ -48,6 +48,268 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# ==================== Authentication Endpoints ====================
+
+@api_router.post("/auth/register", response_model=dict)
+async def register(user_data: UserRegister):
+    """Register a new user"""
+    try:
+        # Check if user already exists
+        existing_user = await db.users.find_one({"email": user_data.email})
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        
+        # Create user
+        user_id = str(uuid.uuid4())
+        hashed_password = get_password_hash(user_data.password)
+        
+        new_user = {
+            "id": user_id,
+            "email": user_data.email,
+            "full_name": user_data.full_name,
+            "phone": user_data.phone,
+            "hashed_password": hashed_password,
+            "active_tier": None,
+            "tier_activation_date": None,
+            "created_at": datetime.utcnow(),
+            "is_active": True,
+            "payment_history": []
+        }
+        
+        await db.users.insert_one(new_user)
+        logger.info(f"User registered: {user_data.email}")
+        
+        # Create access token
+        access_token = create_access_token(data={"sub": user_data.email})
+        
+        # Sync to Odoo (placeholder)
+        odoo_id = await odoo_integration.create_or_update_contact({
+            "email": user_data.email,
+            "name": user_data.full_name
+        })
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserResponse(
+                id=user_id,
+                email=user_data.email,
+                full_name=user_data.full_name,
+                phone=user_data.phone,
+                active_tier=None,
+                tier_activation_date=None,
+                created_at=new_user["created_at"]
+            )
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error registering user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/auth/login", response_model=dict)
+async def login(user_data: UserLogin):
+    """Login user"""
+    try:
+        # Find user
+        user = await db.users.find_one({"email": user_data.email})
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+        
+        # Verify password
+        if not verify_password(user_data.password, user["hashed_password"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+        
+        # Create access token
+        access_token = create_access_token(data={"sub": user_data.email})
+        
+        logger.info(f"User logged in: {user_data.email}")
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserResponse(
+                id=user["id"],
+                email=user["email"],
+                full_name=user["full_name"],
+                phone=user.get("phone"),
+                active_tier=user.get("active_tier"),
+                tier_activation_date=user.get("tier_activation_date"),
+                created_at=user["created_at"]
+            )
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error logging in: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))):
+    """Get current user information"""
+    return current_user
+
+
+# ==================== Payment Endpoints ====================
+
+@api_router.post("/payments/create-checkout")
+async def create_payment_checkout(
+    tier_id: str,
+    current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))
+):
+    """Create a Yoco checkout session for payment"""
+    try:
+        # Define tiers
+        tiers = {
+            "tier-1": {"name": "ATS Optimize", "price_cents": 89900},
+            "tier-2": {"name": "Professional Package", "price_cents": 150000},
+            "tier-3": {"name": "Executive Elite", "price_cents": 300000}
+        }
+        
+        if tier_id not in tiers:
+            raise HTTPException(status_code=400, detail="Invalid tier ID")
+        
+        tier = tiers[tier_id]
+        
+        # Create checkout with Yoco
+        checkout = await yoco_service.create_checkout(
+            amount_cents=tier["price_cents"],
+            email=current_user.email,
+            metadata={
+                "user_id": current_user.id,
+                "user_email": current_user.email,
+                "user_name": current_user.full_name,
+                "tier_id": tier_id,
+                "tier_name": tier["name"]
+            }
+        )
+        
+        # Save pending payment to database
+        payment_id = str(uuid.uuid4())
+        await db.payments.insert_one({
+            "id": payment_id,
+            "user_id": current_user.id,
+            "user_email": current_user.email,
+            "tier_id": tier_id,
+            "tier_name": tier["name"],
+            "amount_cents": tier["price_cents"],
+            "currency": "ZAR",
+            "yoco_checkout_id": checkout.get("id"),
+            "status": "pending",
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        })
+        
+        logger.info(f"Checkout created for user {current_user.email}: {tier_id}")
+        
+        return {
+            "checkout_id": checkout.get("id"),
+            "redirect_url": checkout.get("redirectUrl"),
+            "payment_id": payment_id
+        }
+    except Exception as e:
+        logger.error(f"Error creating checkout: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/payments/verify/{checkout_id}")
+async def verify_payment_status(
+    checkout_id: str,
+    current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))
+):
+    """Verify payment status and activate tier"""
+    try:
+        # Verify with Yoco
+        is_successful = await yoco_service.verify_payment(checkout_id)
+        
+        if not is_successful:
+            return {
+                "status": "failed",
+                "message": "Payment verification failed"
+            }
+        
+        # Get payment record
+        payment = await db.payments.find_one({"yoco_checkout_id": checkout_id})
+        if not payment:
+            raise HTTPException(status_code=404, detail="Payment record not found")
+        
+        # Update payment status
+        await db.payments.update_one(
+            {"yoco_checkout_id": checkout_id},
+            {
+                "$set": {
+                    "status": "succeeded",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Activate tier for user
+        await db.users.update_one(
+            {"id": current_user.id},
+            {
+                "$set": {
+                    "active_tier": payment["tier_id"],
+                    "tier_activation_date": datetime.utcnow()
+                },
+                "$push": {
+                    "payment_history": payment["id"]
+                }
+            }
+        )
+        
+        logger.info(f"Tier {payment['tier_id']} activated for user {current_user.email}")
+        
+        # Sync to Odoo (placeholder)
+        await odoo_integration.create_resume_record({
+            "user_email": current_user.email,
+            "tier": payment["tier_name"],
+            "amount": payment["amount_cents"]
+        })
+        
+        return {
+            "status": "success",
+            "message": f"Payment successful! {payment['tier_name']} activated.",
+            "tier_id": payment["tier_id"],
+            "tier_name": payment["tier_name"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying payment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/payments/history")
+async def get_payment_history(
+    current_user: UserResponse = Depends(lambda token=Depends(oauth2_scheme): get_current_user(token, db))
+):
+    """Get user's payment history"""
+    try:
+        payments = await db.payments.find(
+            {"user_id": current_user.id}
+        ).sort("created_at", -1).to_list(None)
+        
+        return {
+            "payments": payments,
+            "total_count": len(payments)
+        }
+    except Exception as e:
+        logger.error(f"Error getting payment history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Resume Endpoints ====================
 
 @api_router.post("/resumes", response_model=Resume)

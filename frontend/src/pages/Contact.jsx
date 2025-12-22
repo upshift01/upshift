@@ -290,22 +290,99 @@ const Contact = () => {
                 <CardTitle>Frequently Asked Questions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* ATS & Resume Questions */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">What is ATS and why does it matter?</h4>
+                  <p className="text-sm text-gray-600">
+                    ATS (Applicant Tracking System) is software used by 90% of large companies to filter resumes before a human sees them. Our AI optimizes your CV to pass these systems and get noticed.
+                  </p>
+                </div>
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">How long does it take to create a CV?</h4>
                   <p className="text-sm text-gray-600">
-                    With our AI-powered tools, you can create a professional CV in as little as 15 minutes.
+                    With our AI-powered tools, you can create a professional CV in as little as 15 minutes. Our templates and suggestions make the process quick and easy.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">What file formats can I download my CV in?</h4>
+                  <p className="text-sm text-gray-600">
+                    You can download your CV in PDF, Word (DOCX), and plain text formats. PDF is recommended for most job applications.
+                  </p>
+                </div>
+
+                {/* Pricing & Plans */}
+                <div className="pt-3 border-t">
+                  <h4 className="font-medium text-gray-900 mb-1">What's included in the free ATS checker?</h4>
+                  <p className="text-sm text-gray-600">
+                    Our free ATS checker analyzes your resume against common ATS requirements and provides a compatibility score with basic improvement tips.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">What's the difference between the pricing tiers?</h4>
+                  <p className="text-sm text-gray-600">
+                    <strong>ATS Optimize (R899):</strong> CV rewrite, cover letter, ATS optimization.<br/>
+                    <strong>Professional (R1,500):</strong> Everything in ATS Optimize plus LinkedIn review and interview prep.<br/>
+                    <strong>Executive Elite (R3,000):</strong> Full service with 1-on-1 consultation and unlimited revisions.
                   </p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Can I get a refund?</h4>
                   <p className="text-sm text-gray-600">
-                    Yes, we offer a 7-day money-back guarantee if you're not satisfied with our service.
+                    Yes, we offer a 7-day money-back guarantee if you're not satisfied with our service. No questions asked.
+                  </p>
+                </div>
+
+                {/* Payment & Security */}
+                <div className="pt-3 border-t">
+                  <h4 className="font-medium text-gray-900 mb-1">What payment methods do you accept?</h4>
+                  <p className="text-sm text-gray-600">
+                    We accept all major credit/debit cards through Yoco, South Africa's trusted payment gateway. EFT options are available for enterprise clients.
                   </p>
                 </div>
                 <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Is my personal information secure?</h4>
+                  <p className="text-sm text-gray-600">
+                    Absolutely. We use industry-standard encryption and never share your data with third parties. Your documents are stored securely and you can delete them anytime.
+                  </p>
+                </div>
+
+                {/* Features & Services */}
+                <div className="pt-3 border-t">
+                  <h4 className="font-medium text-gray-900 mb-1">Can I use my LinkedIn profile to create a CV?</h4>
+                  <p className="text-sm text-gray-600">
+                    Yes! Our AI-powered LinkedIn tools can convert your LinkedIn profile into a professional CV, create a new LinkedIn profile, or enhance your existing one.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Do you write cover letters too?</h4>
+                  <p className="text-sm text-gray-600">
+                    Yes, our AI generates tailored cover letters based on the job description you provide. Each cover letter is customized to highlight your relevant experience.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">How does the interview preparation work?</h4>
+                  <p className="text-sm text-gray-600">
+                    Our AI analyzes your target role and generates practice questions. You can practice answering and receive feedback on how to improve your responses.
+                  </p>
+                </div>
+
+                {/* Support & Business */}
+                <div className="pt-3 border-t">
                   <h4 className="font-medium text-gray-900 mb-1">Do you offer corporate packages?</h4>
                   <p className="text-sm text-gray-600">
-                    Yes! Contact us for custom enterprise solutions for recruitment agencies and HR departments.
+                    Yes! We offer white-label solutions for recruitment agencies, HR departments, and career services. Contact us for custom enterprise pricing.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">How do I contact support?</h4>
+                  <p className="text-sm text-gray-600">
+                    You can reach us via email at support@upshift.works, use the contact form on this page, or chat with us during business hours. We typically respond within 24 hours.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Can I become a reseller partner?</h4>
+                  <p className="text-sm text-gray-600">
+                    Yes! We offer a white-label reseller program where you can brand our platform as your own and set custom pricing. Contact us to learn more about partnership opportunities.
                   </p>
                 </div>
               </CardContent>

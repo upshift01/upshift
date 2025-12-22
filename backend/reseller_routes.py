@@ -367,6 +367,54 @@ async def get_customer_detail(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@reseller_router.put("/customers/{customer_id}", response_model=dict)
+async def update_customer(
+    customer_id: str,
+    data: dict,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Update customer details"""
+    try:
+        reseller = context["reseller"]
+        
+        # Verify customer belongs to this reseller
+        customer = await db.users.find_one(
+            {"id": customer_id, "reseller_id": reseller["id"]}
+        )
+        
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Build update data
+        update_data = {"updated_at": datetime.now(timezone.utc)}
+        
+        allowed_fields = ["full_name", "phone", "active_tier", "is_active"]
+        for field in allowed_fields:
+            if field in data:
+                update_data[field] = data[field]
+        
+        # Handle email update separately (need to check for duplicates)
+        if "email" in data and data["email"] != customer.get("email"):
+            existing = await db.users.find_one({"email": data["email"]})
+            if existing:
+                raise HTTPException(status_code=400, detail="Email already in use")
+            update_data["email"] = data["email"]
+        
+        await db.users.update_one(
+            {"id": customer_id},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"Customer {customer_id} updated by reseller {reseller['id']}")
+        
+        return {"success": True, "message": "Customer updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating customer: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Stats & Revenue ====================
 
 @reseller_router.get("/stats", response_model=dict)

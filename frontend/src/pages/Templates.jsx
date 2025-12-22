@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cvTemplates } from '../mockData';
 import TemplateCard from '../components/TemplateCard';
 import { Button } from '../components/ui/button';
@@ -6,10 +7,13 @@ import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useToast } from '../hooks/use-toast';
 import { Badge } from '../components/ui/badge';
 import { Sparkles } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Templates = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const filteredTemplates =
     selectedCategory === 'all'
@@ -17,10 +21,35 @@ const Templates = () => {
       : cvTemplates.filter((template) => template.category === selectedCategory);
 
   const handleSelectTemplate = (template) => {
+    // Store the selected template in localStorage
+    localStorage.setItem('selectedTemplate', JSON.stringify(template));
+    
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to start building your CV with this template.",
+      });
+      navigate('/login', { state: { from: '/builder', template: template.id } });
+      return;
+    }
+
+    // Check if user has an active tier
+    if (!user.active_tier) {
+      toast({
+        title: "Template Selected!",
+        description: `${template.name} selected. Choose a plan to start building your CV.`,
+      });
+      navigate('/pricing', { state: { template: template.id } });
+      return;
+    }
+
+    // User is logged in and has a plan - go to builder
     toast({
       title: "Template Selected!",
-      description: `${template.name} is ready to use. Start building your CV now.`,
+      description: `Starting CV builder with ${template.name}`,
     });
+    navigate('/builder');
   };
 
   return (

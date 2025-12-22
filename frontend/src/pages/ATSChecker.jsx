@@ -11,11 +11,21 @@ import { Button } from '../components/ui/button';
 import { pricingTiers } from '../pricingData';
 
 const ATSChecker = () => {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [expandedSections, setExpandedSections] = useState({});
+
+  const getTierIcon = (tierId) => {
+    switch (tierId) {
+      case 'tier-1': return Zap;
+      case 'tier-2': return Star;
+      case 'tier-3': return Crown;
+      default: return Zap;
+    }
+  };
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 0) {

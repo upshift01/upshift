@@ -758,6 +758,7 @@ app.include_router(admin_router)
 app.include_router(whitelabel_router)
 app.include_router(booking_router)
 app.include_router(scheduler_router)
+app.include_router(linkedin_router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -151,6 +151,42 @@ class APITester:
         self.reseller_admin_token = response["access_token"]
         self.log_test("Reseller Admin Login", True, f"Role: {user.get('role')}, Email: {user.get('email')}")
         
+        # Test Customer Login (for LinkedIn API tests)
+        response, error = self.make_request(
+            "POST", "/auth/login",
+            data=TEST_CUSTOMER_CREDS
+        )
+        
+        if error:
+            # Try to register the customer first
+            register_data = {
+                "email": TEST_CUSTOMER_CREDS["email"],
+                "password": TEST_CUSTOMER_CREDS["password"],
+                "full_name": "Test Customer",
+                "phone": "+27123456789"
+            }
+            
+            response, error = self.make_request(
+                "POST", "/auth/register",
+                data=register_data
+            )
+            
+            if error:
+                self.log_test("Customer Registration", False, error)
+            else:
+                if response.get("access_token"):
+                    self.customer_token = response["access_token"]
+                    self.log_test("Customer Registration", True, "Customer registered and logged in")
+                else:
+                    self.log_test("Customer Registration", False, "No access token returned")
+        else:
+            if not response.get("access_token"):
+                self.log_test("Customer Login", False, "No access token returned")
+            else:
+                user = response.get("user", {})
+                self.customer_token = response["access_token"]
+                self.log_test("Customer Login", True, f"Role: {user.get('role')}, Email: {user.get('email')}")
+        
         return True
     
     def test_super_admin_apis(self):

@@ -14,57 +14,53 @@ const RocketLogo = ({ className = "h-8 w-8" }) => {
         </linearGradient>
       </defs>
       
-      {/* Main rocket body */}
+      {/* Main rocket body - tilted diagonally */}
       <path
-        d="M55 10 
-           C70 10, 85 25, 85 45
-           C85 55, 80 65, 70 75
-           L60 85
-           C55 90, 45 90, 40 85
-           L30 75
-           C20 65, 15 55, 15 45
-           C15 25, 30 10, 45 10
+        d="M65 8 
+           C80 12, 92 28, 88 48
+           C86 58, 78 68, 65 75
+           L50 82
+           C42 78, 35 70, 32 60
+           C28 45, 35 25, 50 15
+           C55 11, 60 8, 65 8
            Z"
         fill="url(#rocketGradient)"
       />
       
-      {/* Rocket window/porthole */}
+      {/* Rocket window/porthole - matches original */}
       <circle
-        cx="50"
-        cy="45"
-        r="12"
-        fill="#ffffff"
-        opacity="0.9"
-      />
-      <circle
-        cx="50"
-        cy="45"
-        r="8"
-        fill="#1e293b"
+        cx="58"
+        cy="42"
+        r="10"
+        fill="#1a1a2e"
       />
       
-      {/* Left exhaust flame */}
+      {/* Left fin/exhaust */}
       <ellipse
-        cx="30"
-        cy="88"
+        cx="28"
+        cy="78"
+        rx="12"
+        ry="10"
+        fill="url(#rocketGradient)"
+      />
+      
+      {/* Bottom fin/exhaust */}
+      <ellipse
+        cx="55"
+        cy="92"
         rx="10"
         ry="8"
         fill="url(#rocketGradient)"
       />
       
-      {/* Right exhaust flame */}
+      {/* Top accent fin */}
       <ellipse
-        cx="70"
-        cy="88"
-        rx="10"
-        ry="8"
+        cx="78"
+        cy="22"
+        rx="8"
+        ry="10"
         fill="url(#rocketGradient)"
-      />
-      
-      {/* Connecting piece */}
-      <path
-        d="M35 80 Q50 95, 65 80"
-        fill="url(#rocketGradient)"
+        transform="rotate(-30 78 22)"
       />
     </svg>
   );

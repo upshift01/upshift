@@ -14,45 +14,38 @@ const RocketLogo = ({ className = "h-8 w-8" }) => {
         </linearGradient>
       </defs>
       
-      {/* Main rocket body - matches original tilted blob shape */}
+      {/* Unified rocket shape - organic blob with integrated exhaust */}
       <path
-        d="M68 8
-           C82 14, 92 32, 88 52
-           C85 68, 72 80, 55 86
-           L45 88
-           C32 84, 20 72, 16 55
-           C12 38, 20 20, 38 10
-           C48 5, 60 5, 68 8
+        d="M70 6
+           C85 12, 95 30, 92 50
+           C90 65, 80 78, 65 85
+           C60 87, 55 90, 52 95
+           C50 98, 48 98, 45 95
+           C42 90, 35 88, 28 85
+           C15 78, 5 62, 8 45
+           C10 30, 22 15, 40 8
+           C52 3, 62 3, 70 6
+           Z
+           M12 80
+           C5 85, 5 95, 15 98
+           C25 100, 30 92, 25 84
+           C22 80, 16 78, 12 80
+           Z
+           M85 78
+           C92 82, 96 92, 88 97
+           C80 100, 72 94, 76 85
+           C78 81, 82 78, 85 78
            Z"
         fill="url(#rocketGradient)"
+        fill-rule="evenodd"
       />
       
-      {/* Porthole - circular dark window, positioned upper-center */}
+      {/* Porthole - circular dark window */}
       <circle
-        cx="52"
-        cy="42"
-        r="14"
+        cx="50"
+        cy="45"
+        r="15"
         fill="#0f172a"
-      />
-      
-      {/* Left exhaust flame - larger, extending down-left */}
-      <path
-        d="M20 72
-           C8 78, 4 92, 15 98
-           C28 102, 38 92, 32 80
-           C28 74, 24 72, 20 72
-           Z"
-        fill="url(#rocketGradient)"
-      />
-      
-      {/* Right exhaust flame - extending down-right */}
-      <path
-        d="M75 75
-           C88 80, 95 92, 85 98
-           C75 102, 65 94, 68 82
-           C70 78, 72 75, 75 75
-           Z"
-        fill="url(#rocketGradient)"
       />
     </svg>
   );

@@ -557,7 +557,7 @@ async def calculate_job_match(
 @api_router.post("/cover-letters/generate", response_model=CoverLetter)
 async def generate_cover_letter(
     data: CoverLetterCreate,
-    current_user: UserResponse = Depends(check_user_has_tier(['tier-2', 'tier-3']))
+    current_user: UserResponse = Depends(check_tier_dep(['tier-2', 'tier-3']))
 ):
     """Generate AI cover letter (Requires Professional or Elite tier)"""
     try:

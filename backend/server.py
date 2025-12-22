@@ -37,7 +37,7 @@ from booking_routes import booking_router, set_db as set_booking_db
 from scheduler_routes import scheduler_router, set_db as set_scheduler_db
 from email_service import email_service
 from linkedin_routes import router as linkedin_router, set_db as set_linkedin_db
-from customer_routes import router as customer_router
+from customer_routes import router as customer_router, set_db as set_customer_db
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()

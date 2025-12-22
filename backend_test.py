@@ -903,6 +903,9 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         # NEW: Test ATS Resume Checker (FREE endpoint)
         self.test_ats_resume_checker()
         
+        # NEW: Test LinkedIn Tools API endpoints
+        self.test_linkedin_tools_api()
+        
         # Print summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY")

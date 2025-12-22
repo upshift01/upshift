@@ -203,8 +203,9 @@ class YocoService:
 async def get_yoco_service_for_reseller(db, reseller_id: Optional[str] = None) -> YocoService:
     """
     Get a YocoService instance with reseller-specific credentials if available.
-    Falls back to platform default credentials.
+    Falls back to platform default credentials from database, then environment.
     """
+    # First, check for reseller-specific keys
     if reseller_id:
         reseller_yoco = await db.reseller_yoco_settings.find_one(
             {"reseller_id": reseller_id, "use_custom_keys": True},
@@ -216,7 +217,15 @@ async def get_yoco_service_for_reseller(db, reseller_id: Optional[str] = None) -
                 public_key=reseller_yoco.get("yoco_public_key")
             )
     
-    # Return default service
+    # Check for platform-level Yoco settings in database
+    platform_settings = await db.platform_settings.find_one({"key": "yoco"}, {"_id": 0})
+    if platform_settings and platform_settings.get("secret_key"):
+        return YocoService(
+            secret_key=platform_settings["secret_key"],
+            public_key=platform_settings.get("public_key")
+        )
+    
+    # Return default service (uses environment variables)
     return YocoService()
 
 

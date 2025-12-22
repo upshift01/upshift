@@ -27,8 +27,8 @@ const PricingPage = () => {
     try {
       // Create checkout with backend
       const response = await axios.post(
-        `${API_URL}/api/payments/create-checkout`,
-        { tier_id: tier.id },
+        `${API_URL}/api/payments/create-checkout?tier_id=${tier.id}`,
+        {},
         { headers: getAuthHeader() }
       );
 

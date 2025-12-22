@@ -26,6 +26,7 @@ import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import POPIACompliance from "./pages/POPIACompliance";
+import WhiteLabelPage from "./pages/WhiteLabelPage";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages

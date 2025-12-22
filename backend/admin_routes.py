@@ -812,16 +812,17 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
         # Get settings from database or environment
         settings = await db.platform_settings.find_one({"key": "yoco"}, {"_id": 0})
         
-        if settings:
+        if settings and settings.get("secret_key"):
             secret_key = settings.get("secret_key", "")
         else:
             secret_key = os.environ.get("YOCO_SECRET_KEY", "")
         
         if not secret_key:
-            return {"success": False, "detail": "Yoco secret key not configured"}
+            return {"success": False, "detail": "Yoco secret key not configured. Please save your API keys first."}
+        
+        logger.info(f"Testing Yoco connection with key: {secret_key[:10]}...{secret_key[-5:]}")
         
         # Test API by creating a minimal checkout request
-        # This validates the API key without actually charging anything
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "https://payments.yoco.com/api/checkouts",
@@ -830,18 +831,23 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
                     "Content-Type": "application/json"
                 },
                 json={
-                    "amount": 100,  # Minimum amount in cents (R1.00)
-                    "currency": "ZAR",
-                    "metadata": {"test": "connection_test"}
+                    "amount": 100,
+                    "currency": "ZAR"
                 },
                 timeout=15
             )
             
-            response_data = response.json() if response.content else {}
+            logger.info(f"Yoco test response: {response.status_code} - {response.text[:200]}")
             
-            # Check response
-            if response.status_code == 200 or response.status_code == 201:
-                # Success - checkout was created (we won't use it, it will expire)
+            try:
+                response_data = response.json() if response.content else {}
+            except:
+                response_data = {}
+            
+            error_msg = response_data.get("message", response_data.get("error", ""))
+            
+            # Check for successful checkout creation (200 or 201)
+            if response.status_code in [200, 201]:
                 await db.platform_settings.update_one(
                     {"key": "yoco"},
                     {"$set": {
@@ -853,10 +859,8 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
                 )
                 return {"success": True, "message": "Yoco API key is valid! Connection successful."}
             
-            elif response.status_code == 401 or response.status_code == 403:
-                # Invalid or expired API key
-                error_msg = response_data.get("message", "")
-                
+            # Check for authentication errors (401, 403)
+            elif response.status_code in [401, 403]:
                 await db.platform_settings.update_one(
                     {"key": "yoco"},
                     {"$set": {
@@ -869,33 +873,18 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
                 )
                 
                 if "key is required" in error_msg.lower() or "not been specified" in error_msg.lower():
-                    return {"success": False, "detail": "API key is invalid or not recognized by Yoco. Please verify your keys are correct and not expired."}
-                return {"success": False, "detail": "Invalid or expired API key. Please check your credentials in the Yoco portal."}
+                    return {"success": False, "detail": "API key is not recognized by Yoco. The key may be invalid, expired, or revoked. Please generate new keys from your Yoco portal."}
+                elif "forbidden" in error_msg.lower():
+                    return {"success": False, "detail": "API key is forbidden. Please check that you're using the correct key type (test vs live)."}
+                return {"success": False, "detail": f"Authentication failed: {error_msg or 'Invalid API key'}"}
             
-            elif response.status_code == 400:
-                # Bad request but key might be valid - check error message
-                error_msg = response_data.get("message", response_data.get("error", "Unknown error"))
-                if "amount" in str(error_msg).lower() or "currency" in str(error_msg).lower():
-                    # Key is valid, just a validation error
-                    await db.platform_settings.update_one(
-                        {"key": "yoco"},
-                        {"$set": {
-                            "status": {
-                                "connected": True,
-                                "last_checked": datetime.now(timezone.utc).isoformat()
-                            }
-                        }}
-                    )
-                    return {"success": True, "message": "Yoco API key is valid!"}
-                return {"success": False, "detail": f"Validation error: {error_msg}"}
-            
+            # Handle other errors
             else:
-                error_msg = response_data.get("message", response_data.get("error", f"HTTP {response.status_code}"))
-                return {"success": False, "detail": f"Yoco API error: {error_msg}"}
+                return {"success": False, "detail": f"Yoco API returned status {response.status_code}: {error_msg or 'Unknown error'}"}
                 
     except httpx.TimeoutException:
-        return {"success": False, "detail": "Connection timeout - please try again"}
+        return {"success": False, "detail": "Connection timeout - Yoco API is not responding. Please try again."}
     except Exception as e:
         logger.error(f"Error testing Yoco connection: {str(e)}")
-        return {"success": False, "detail": str(e)}
+        return {"success": False, "detail": f"Error: {str(e)}"}
 

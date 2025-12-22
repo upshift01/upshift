@@ -646,6 +646,184 @@ const ResellerSettings = () => {
         </div>
       )}
 
+      {/* Yoco Payments Tab */}
+      {activeTab === 'yoco' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Yoco Payment Gateway
+                {yocoSettings.use_custom_keys && yocoSettings.yoco_secret_key && (
+                  <Badge className={`ml-2 ${yocoSettings.is_live_mode ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {yocoSettings.is_live_mode ? 'Live Mode' : 'Test Mode'}
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Connect your own Yoco Pay as You Go account to receive payments directly to your bank account. 
+                This enables you to process customer payments through your own merchant account.
+              </p>
+
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-800 mb-2">Why use your own Yoco account?</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Payments go directly to your bank account</li>
+                  <li>• Full control over your transaction fees and settlements</li>
+                  <li>• Access your own Yoco dashboard for payment reports</li>
+                  <li>• Build your own merchant history and relationship with Yoco</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-gray-50 rounded-lg border">
+                <h4 className="font-medium mb-2">How to get your Yoco API keys:</h4>
+                <ol className="text-sm text-gray-600 space-y-2">
+                  <li>1. Sign up for a <a href="https://www.yoco.com/za/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Yoco account</a> if you don't have one</li>
+                  <li>2. Log in to the <a href="https://portal.yoco.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Yoco Business Portal</a></li>
+                  <li>3. Navigate to Online Payments → Payment Gateway</li>
+                  <li>4. Copy your Public Key and Secret Key</li>
+                </ol>
+              </div>
+
+              <div className="flex items-center gap-3 pt-4">
+                <input
+                  type="checkbox"
+                  id="use_custom_yoco"
+                  checked={yocoSettings.use_custom_keys}
+                  onChange={(e) => setYocoSettings({ ...yocoSettings, use_custom_keys: e.target.checked })}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                />
+                <label htmlFor="use_custom_yoco" className="text-sm font-medium">
+                  Use my own Yoco account for payments
+                </label>
+              </div>
+
+              {yocoSettings.use_custom_keys && (
+                <div className="space-y-4 pt-4 border-t">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Public Key</label>
+                    <Input
+                      type="text"
+                      value={yocoSettings.yoco_public_key}
+                      onChange={(e) => setYocoSettings({ ...yocoSettings, yoco_public_key: e.target.value })}
+                      placeholder="pk_test_... or pk_live_..."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Starts with <code className="bg-gray-100 px-1 rounded">pk_test_</code> (test) or <code className="bg-gray-100 px-1 rounded">pk_live_</code> (live)
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Secret Key</label>
+                    <div className="relative">
+                      <Input
+                        type={showYocoSecretKey ? 'text' : 'password'}
+                        value={yocoSettings.yoco_secret_key}
+                        onChange={(e) => setYocoSettings({ ...yocoSettings, yoco_secret_key: e.target.value })}
+                        placeholder="sk_test_... or sk_live_..."
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowYocoSecretKey(!showYocoSecretKey)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showYocoSecretKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Starts with <code className="bg-gray-100 px-1 rounded">sk_test_</code> (test) or <code className="bg-gray-100 px-1 rounded">sk_live_</code> (live)
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="flex items-start gap-2">
+                      <Key className="h-4 w-4 text-yellow-600 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-yellow-800">Important Security Note</p>
+                        <p className="text-yellow-700">Your secret key is sensitive. Never share it publicly or commit it to version control.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button onClick={handleSaveYocoSettings} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Yoco Settings'}
+                </Button>
+                {yocoSettings.use_custom_keys && yocoSettings.yoco_secret_key && (
+                  <Button variant="outline" onClick={handleTestYoco} disabled={testingYoco}>
+                    <RefreshCw className={`h-4 w-4 mr-2 ${testingYoco ? 'animate-spin' : ''}`} />
+                    Test Connection
+                  </Button>
+                )}
+                <a 
+                  href="https://portal.yoco.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open Yoco Portal
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Features</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Accept credit and debit card payments
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Instant EFT payments
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Subscription plan purchases
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Secure PCI-compliant processing
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  South African Rand (ZAR) transactions
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {!yocoSettings.use_custom_keys && (
+            <Card className="border-yellow-200 bg-yellow-50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <CreditCard className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-yellow-800">Using Platform Default</h4>
+                    <p className="text-sm text-yellow-700">
+                      Your customers' payments are currently processed through the platform's Yoco account.
+                      Connect your own Yoco account to receive payments directly.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
       {/* ChatGPT Settings Tab */}
       {activeTab === 'chatgpt' && (
         <div className="space-y-6">

@@ -701,7 +701,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
                         return False
                         
                 except requests.exceptions.Timeout:
-                    self.log_test("ATS Resume Checker", False, "Request timeout (30s)")
+                    self.log_test("ATS Resume Checker", False, "Request timeout (60s)")
                     return False
                 except requests.exceptions.ConnectionError:
                     self.log_test("ATS Resume Checker", False, "Connection error - backend may be down")

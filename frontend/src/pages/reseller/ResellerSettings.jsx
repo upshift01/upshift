@@ -715,9 +715,12 @@ const ResellerSettings = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Payment Methods
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Payment Methods
+                </span>
+                <Badge className="bg-[#00B0FF] text-white">Powered by Yoco</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -727,9 +730,15 @@ const ResellerSettings = () => {
                 <div className="bg-gray-100 px-3 py-2 rounded-lg text-sm font-medium">American Express</div>
                 <div className="bg-gray-100 px-3 py-2 rounded-lg text-sm font-medium">Instant EFT</div>
               </div>
-              <p className="text-xs text-gray-500">
-                All payments are securely processed by Yoco. Your card details are never stored on our servers.
-              </p>
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="w-10 h-10 bg-[#00B0FF] rounded-lg flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Secure payments with Yoco</p>
+                  <p className="text-xs text-blue-700">Your card details are never stored on our servers</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 

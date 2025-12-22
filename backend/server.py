@@ -618,51 +618,51 @@ async def get_templates():
     templates = [
         {
             "id": 1,
-            "name": "Professional Executive",
-            "category": "professional",
-            "description": "Perfect for senior management and executive positions in South African corporates.",
-            "thumbnail": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=500&fit=crop",
+            "name": "ATS Classic Professional",
+            "category": "ats",
+            "description": "Clean, ATS-friendly format with clear section headers. Perfect for corporate roles and passing automated screening systems.",
+            "image": "https://images.unsplash.com/photo-1698047681432-006d2449c631?w=400&h=500&fit=crop",
             "industry": "Corporate"
         },
         {
             "id": 2,
-            "name": "Modern Tech",
-            "category": "modern",
-            "description": "Ideal for IT professionals, developers, and tech industry roles.",
-            "thumbnail": "https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=400&h=500&fit=crop",
-            "industry": "Technology"
-        },
-        {
-            "id": 3,
-            "name": "Creative Designer",
-            "category": "creative",
-            "description": "Stand out in creative industries like design, marketing, and media.",
-            "thumbnail": "https://images.unsplash.com/photo-1554224311-beee460ae6fb?w=400&h=500&fit=crop",
-            "industry": "Creative"
-        },
-        {
-            "id": 4,
-            "name": "ATS Optimized",
+            "name": "ATS Simple & Clean",
             "category": "ats",
-            "description": "Designed to pass Applicant Tracking Systems used by major SA companies.",
-            "thumbnail": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=500&fit=crop",
+            "description": "Minimalist ATS-optimized design with standard fonts and clear hierarchy. Ideal for all industries.",
+            "image": "https://images.unsplash.com/photo-1758518730327-98070967caab?w=400&h=500&fit=crop",
             "industry": "Any"
         },
         {
+            "id": 3,
+            "name": "ATS Executive Format",
+            "category": "ats",
+            "description": "Professional ATS-compatible template for senior management positions. Clear formatting with achievement focus.",
+            "image": "https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?w=400&h=500&fit=crop",
+            "industry": "Executive"
+        },
+        {
+            "id": 4,
+            "name": "ATS Tech Professional",
+            "category": "ats",
+            "description": "Technical skills-focused ATS template for IT and software roles. Clean sections for certifications and projects.",
+            "image": "https://images.pexels.com/photos/5989926/pexels-photo-5989926.jpeg?w=400&h=500&fit=crop",
+            "industry": "Technology"
+        },
+        {
             "id": 5,
-            "name": "Mining & Engineering",
-            "category": "professional",
-            "description": "Tailored for South Africa's mining and engineering sectors.",
-            "thumbnail": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=500&fit=crop",
-            "industry": "Mining"
+            "name": "ATS Finance & Banking",
+            "category": "ats",
+            "description": "Conservative ATS-friendly format for financial services. Emphasizes qualifications and achievements.",
+            "image": "https://images.unsplash.com/photo-1562564055-71e051d33c19?w=400&h=500&fit=crop",
+            "industry": "Finance"
         },
         {
             "id": 6,
-            "name": "Finance Professional",
-            "category": "professional",
-            "description": "Perfect for banking, accounting, and financial services roles.",
-            "thumbnail": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&h=500&fit=crop",
-            "industry": "Finance"
+            "name": "ATS Healthcare Professional",
+            "category": "ats",
+            "description": "Medical and healthcare optimized ATS template with sections for licenses and certifications.",
+            "image": "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?w=400&h=500&fit=crop",
+            "industry": "Healthcare"
         }
     ]
     return templates

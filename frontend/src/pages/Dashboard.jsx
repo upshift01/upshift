@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { FileText, Mail, CreditCard, Zap, Clock, CheckCircle } from 'lucide-react';
+import { FileText, Mail, CreditCard, Zap, Clock, CheckCircle, Target, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';

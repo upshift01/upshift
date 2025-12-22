@@ -287,3 +287,115 @@ export const sampleImprovements = [
     category: "Impact & Results"
   }
 ];
+
+// Cover Letter Templates
+export const coverLetterTemplates = [
+  {
+    id: 1,
+    name: "Professional Corporate",
+    description: "Formal and polished cover letter template ideal for corporate and executive positions. Clean structure with professional tone.",
+    image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Corporate",
+    tone: "Formal"
+  },
+  {
+    id: 2,
+    name: "Modern Professional",
+    description: "Contemporary design with a fresh approach while maintaining professionalism. Perfect for modern companies.",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=500&fit=crop",
+    category: "modern",
+    industry: "Any",
+    tone: "Professional"
+  },
+  {
+    id: 3,
+    name: "Tech Industry",
+    description: "Tailored for IT and tech roles with emphasis on skills and innovation. Direct and results-focused.",
+    image: "https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Technology",
+    tone: "Direct"
+  },
+  {
+    id: 4,
+    name: "Finance & Banking",
+    description: "Conservative and trustworthy format for financial services. Emphasizes reliability and achievements.",
+    image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Finance",
+    tone: "Formal"
+  },
+  {
+    id: 5,
+    name: "Creative Professional",
+    description: "Stand out in creative industries with a unique yet professional approach. Shows personality.",
+    image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=500&fit=crop",
+    category: "creative",
+    industry: "Creative",
+    tone: "Engaging"
+  },
+  {
+    id: 6,
+    name: "Entry Level / Graduate",
+    description: "Perfect for fresh graduates and career starters. Highlights education, potential, and enthusiasm.",
+    image: "https://images.pexels.com/photos/5705982/pexels-photo-5705982.jpeg?w=400&h=500&fit=crop",
+    category: "modern",
+    industry: "Entry Level",
+    tone: "Enthusiastic"
+  },
+  {
+    id: 7,
+    name: "Sales & Marketing",
+    description: "Results-driven template that showcases achievements and persuasive communication skills.",
+    image: "https://images.unsplash.com/photo-1542626991-cbc4e32524cc?w=400&h=500&fit=crop",
+    category: "modern",
+    industry: "Sales",
+    tone: "Persuasive"
+  },
+  {
+    id: 8,
+    name: "Healthcare Professional",
+    description: "Compassionate yet professional format for medical and healthcare positions.",
+    image: "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Healthcare",
+    tone: "Compassionate"
+  },
+  {
+    id: 9,
+    name: "Engineering & Technical",
+    description: "Clear and structured format for engineering and technical roles. Focus on projects and skills.",
+    image: "https://images.pexels.com/photos/7688374/pexels-photo-7688374.jpeg?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Engineering",
+    tone: "Technical"
+  },
+  {
+    id: 10,
+    name: "Executive Leadership",
+    description: "Premium template for C-suite and senior management positions. Emphasizes strategic vision and leadership.",
+    image: "https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Executive",
+    tone: "Strategic"
+  },
+  {
+    id: 11,
+    name: "Mining & Resources",
+    description: "Industry-specific template for South Africa's mining sector. Highlights safety and certifications.",
+    image: "https://images.unsplash.com/photo-1653038417332-6db0ff9d4bfb?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Mining",
+    tone: "Professional"
+  },
+  {
+    id: 12,
+    name: "Education & Training",
+    description: "Warm and knowledgeable tone perfect for educators and trainers.",
+    image: "https://images.pexels.com/photos/7641842/pexels-photo-7641842.jpeg?w=400&h=500&fit=crop",
+    category: "professional",
+    industry: "Education",
+    tone: "Warm"
+  }
+];

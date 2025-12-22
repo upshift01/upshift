@@ -291,6 +291,74 @@ const ResellerSettings = () => {
     }
   };
 
+  // Yoco Settings Functions
+  const fetchYocoSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/yoco-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setYocoSettings({
+          yoco_public_key: data.yoco_public_key || '',
+          yoco_secret_key: data.yoco_secret_key || '',
+          use_custom_keys: data.use_custom_keys || false,
+          is_live_mode: data.is_live_mode || false
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching Yoco settings:', error);
+    }
+  };
+
+  const handleSaveYocoSettings = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/yoco-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(yocoSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Yoco settings saved successfully!' });
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save Yoco settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving Yoco settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestYoco = async () => {
+    setTestingYoco(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/yoco-settings/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: 'Yoco API connection successful! ' + (data.message || '') });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Connection failed' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error testing Yoco connection' });
+    } finally {
+      setTestingYoco(false);
+    }
+  };
+
   const tabs = [
     { id: 'profile', label: 'Profile', icon: Settings },
     { id: 'email', label: 'Email Settings', icon: Mail },

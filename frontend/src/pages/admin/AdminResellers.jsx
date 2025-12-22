@@ -286,42 +286,6 @@ const AdminResellers = () => {
               </div>
             </>
           )}
-                                  {reseller.status === 'pending' && (
-                                    <button
-                                      onClick={() => handleAction(reseller.id, 'approve')}
-                                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-600 flex items-center gap-2 transition-colors"
-                                    >
-                                      <CheckCircle className="h-4 w-4" /> Approve
-                                    </button>
-                                  )}
-                                  {reseller.status === 'active' && (
-                                    <button
-                                      onClick={() => handleAction(reseller.id, 'suspend')}
-                                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2 transition-colors"
-                                    >
-                                      <AlertCircle className="h-4 w-4" /> Suspend
-                                    </button>
-                                  )}
-                                  {reseller.status === 'suspended' && (
-                                    <button
-                                      onClick={() => handleAction(reseller.id, 'activate')}
-                                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-600 flex items-center gap-2 transition-colors"
-                                    >
-                                      <CheckCircle className="h-4 w-4" /> Activate
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </CardContent>
       </Card>
 

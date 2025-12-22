@@ -60,6 +60,11 @@ const ResellerSettings = () => {
   const [showYocoSecretKey, setShowYocoSecretKey] = useState(false);
   const [testingYoco, setTestingYoco] = useState(false);
 
+  // Billing/Subscription Invoice State
+  const [platformInvoices, setPlatformInvoices] = useState([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
+  const [payingInvoice, setPayingInvoice] = useState(null);
+
   useEffect(() => {
     fetchProfile();
   }, []);

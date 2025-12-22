@@ -247,9 +247,9 @@ const Home = () => {
             Join thousands of South Africans who have landed their dream jobs with AI-powered CVs
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/builder">
+            <Link to="/ats-checker">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8">
-                Get Started for Free
+                Free ATS Checker
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>

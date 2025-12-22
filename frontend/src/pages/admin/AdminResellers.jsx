@@ -163,7 +163,7 @@ const AdminResellers = () => {
               <p className="text-gray-500">No resellers found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-visible">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
@@ -197,49 +197,63 @@ const AdminResellers = () => {
                         <div className="relative">
                           <button
                             onClick={() => setActionMenu(actionMenu === reseller.id ? null : reseller.id)}
-                            className="p-1 hover:bg-gray-100 rounded"
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                           >
                             <MoreVertical className="h-4 w-4" />
                           </button>
                           {actionMenu === reseller.id && (
-                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10">
-                              <button
-                                onClick={() => setSelectedReseller(reseller)}
-                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
-                              >
-                                <Eye className="h-4 w-4" /> View Details
-                              </button>
-                              <button
-                                onClick={() => handleEditReseller(reseller)}
-                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-blue-600"
-                              >
-                                <Edit className="h-4 w-4" /> Edit Reseller
-                              </button>
-                              {reseller.status === 'pending' && (
-                                <button
-                                  onClick={() => handleAction(reseller.id, 'approve')}
-                                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-green-600"
-                                >
-                                  Approve
-                                </button>
-                              )}
-                              {reseller.status === 'active' && (
-                                <button
-                                  onClick={() => handleAction(reseller.id, 'suspend')}
-                                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
-                                >
-                                  Suspend
-                                </button>
-                              )}
-                              {reseller.status === 'suspended' && (
-                                <button
-                                  onClick={() => handleAction(reseller.id, 'activate')}
-                                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-green-600"
-                                >
-                                  Activate
-                                </button>
-                              )}
-                            </div>
+                            <>
+                              {/* Backdrop to close menu */}
+                              <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setActionMenu(null)}
+                              />
+                              {/* Dropdown menu */}
+                              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border z-50">
+                                <div className="py-1">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedReseller(reseller);
+                                      setActionMenu(null);
+                                    }}
+                                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                  >
+                                    <Eye className="h-4 w-4 text-gray-500" /> View Details
+                                  </button>
+                                  <button
+                                    onClick={() => handleEditReseller(reseller)}
+                                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 flex items-center gap-2 text-blue-600 transition-colors"
+                                  >
+                                    <Edit className="h-4 w-4" /> Edit Reseller
+                                  </button>
+                                  <div className="border-t my-1"></div>
+                                  {reseller.status === 'pending' && (
+                                    <button
+                                      onClick={() => handleAction(reseller.id, 'approve')}
+                                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-600 flex items-center gap-2 transition-colors"
+                                    >
+                                      <CheckCircle className="h-4 w-4" /> Approve
+                                    </button>
+                                  )}
+                                  {reseller.status === 'active' && (
+                                    <button
+                                      onClick={() => handleAction(reseller.id, 'suspend')}
+                                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2 transition-colors"
+                                    >
+                                      <AlertCircle className="h-4 w-4" /> Suspend
+                                    </button>
+                                  )}
+                                  {reseller.status === 'suspended' && (
+                                    <button
+                                      onClick={() => handleAction(reseller.id, 'activate')}
+                                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-600 flex items-center gap-2 transition-colors"
+                                    >
+                                      <CheckCircle className="h-4 w-4" /> Activate
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </>
                           )}
                         </div>
                       </td>

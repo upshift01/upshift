@@ -160,6 +160,71 @@ ${formData.phone}`;
           </p>
         </div>
 
+        {/* Selected Template Display */}
+        {selectedTemplate && (
+          <Card className="mb-8 border-purple-200 bg-purple-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-20 rounded overflow-hidden border border-purple-200 flex-shrink-0">
+                  <img 
+                    src={selectedTemplate.image} 
+                    alt={selectedTemplate.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=100&h=140&fit=crop';
+                    }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-0.5 rounded">
+                      Selected Template
+                    </span>
+                    <span className="text-xs text-gray-500">Tone: {selectedTemplate.tone}</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900">{selectedTemplate.name}</h3>
+                  <p className="text-sm text-gray-600">{selectedTemplate.category} • {selectedTemplate.industry}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/cover-letter-templates')}
+                    className="text-purple-600 border-purple-300"
+                  >
+                    Change Template
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={clearTemplate}
+                    className="text-gray-500"
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* No Template Selected - Prompt to choose */}
+        {!selectedTemplate && (
+          <Card className="mb-8 border-dashed border-2 border-gray-300 bg-gray-50">
+            <CardContent className="p-6 text-center">
+              <p className="text-gray-600 mb-3">No template selected. Choose a template to match your industry and desired tone.</p>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/cover-letter-templates')}
+                className="border-purple-600 text-purple-600 hover:bg-purple-50"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Browse Cover Letter Templates
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Form */}
           <div className="space-y-6">

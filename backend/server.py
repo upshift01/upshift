@@ -49,6 +49,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# Dependency to get current user with db access
+async def get_current_user_dep(token: str = Depends(oauth2_scheme)):
+    """Dependency to get current user"""
+    return await get_current_user(token, db)
+
+
+# Dependency to check tier with db access
+def check_tier_dep(required_tiers: list):
+    """Dependency factory to check user tier"""
+    async def verify_tier(current_user: UserResponse = Depends(get_current_user_dep)):
+        if not current_user.active_tier:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="This feature requires a paid plan. Please upgrade to access AI features."
+            )
+        if current_user.active_tier not in required_tiers:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your current plan does not include this feature. Please upgrade."
+            )
+        return current_user
+    return verify_tier
+
+
 # ==================== Authentication Endpoints ====================
 
 @api_router.post("/auth/register", response_model=dict)

@@ -27,6 +27,11 @@ from auth import (
 )
 from yoco_service import yoco_service
 
+# Import reseller and admin routers
+from reseller_routes import reseller_router, set_db as set_reseller_db
+from admin_routes import admin_router, set_db as set_admin_db
+from whitelabel_routes import whitelabel_router, set_db as set_whitelabel_db
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 

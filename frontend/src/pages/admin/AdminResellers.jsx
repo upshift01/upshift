@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   Building2,
@@ -28,6 +28,7 @@ const AdminResellers = () => {
   const [selectedReseller, setSelectedReseller] = useState(null);
   const [editingReseller, setEditingReseller] = useState(null);
   const [actionMenu, setActionMenu] = useState(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
 
   useEffect(() => {
     fetchResellers();

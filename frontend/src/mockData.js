@@ -1,53 +1,150 @@
 // Mock data for UpShift
 
-export const resumeTemplates = [
+// Mock data for CV templates
+export const cvTemplates = [
   {
     id: 1,
-    name: "Professional Executive",
-    category: "professional",
-    description: "Perfect for senior management and executive positions in South African corporates.",
-    thumbnail: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=500&fit=crop",
+    name: "ATS Classic Professional",
+    description: "Clean, ATS-friendly format with clear section headers. Perfect for corporate roles and passing automated screening systems.",
+    image: "https://images.unsplash.com/photo-1698047681432-006d2449c631?w=400&h=500&fit=crop",
+    category: "ats",
     industry: "Corporate"
   },
   {
     id: 2,
-    name: "Modern Tech",
-    category: "modern",
-    description: "Ideal for IT professionals, developers, and tech industry roles.",
-    thumbnail: "https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=400&h=500&fit=crop",
-    industry: "Technology"
-  },
-  {
-    id: 3,
-    name: "Creative Designer",
-    category: "creative",
-    description: "Stand out in creative industries like design, marketing, and media.",
-    thumbnail: "https://images.unsplash.com/photo-1554224311-beee460ae6fb?w=400&h=500&fit=crop",
-    industry: "Creative"
-  },
-  {
-    id: 4,
-    name: "ATS Optimized",
+    name: "ATS Simple & Clean",
+    description: "Minimalist ATS-optimized design with standard fonts and clear hierarchy. Ideal for all industries.",
+    image: "https://images.unsplash.com/photo-1758518730327-98070967caab?w=400&h=500&fit=crop",
     category: "ats",
-    description: "Designed to pass Applicant Tracking Systems used by major SA companies.",
-    thumbnail: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=500&fit=crop",
     industry: "Any"
   },
   {
+    id: 3,
+    name: "ATS Executive Format",
+    description: "Professional ATS-compatible template for senior management positions. Clear formatting with achievement focus.",
+    image: "https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Executive"
+  },
+  {
+    id: 4,
+    name: "ATS Tech Professional",
+    description: "Technical skills-focused ATS template for IT and software roles. Clean sections for certifications and projects.",
+    image: "https://images.pexels.com/photos/5989926/pexels-photo-5989926.jpeg?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Technology"
+  },
+  {
     id: 5,
-    name: "Mining & Engineering",
-    category: "professional",
-    description: "Tailored for South Africa's mining and engineering sectors.",
-    thumbnail: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=500&fit=crop",
-    industry: "Mining"
+    name: "ATS Finance & Banking",
+    description: "Conservative ATS-friendly format for financial services. Emphasizes qualifications and achievements.",
+    image: "https://images.unsplash.com/photo-1562564055-71e051d33c19?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Finance"
   },
   {
     id: 6,
-    name: "Finance Professional",
-    category: "professional",
-    description: "Perfect for banking, accounting, and financial services roles.",
-    thumbnail: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&h=500&fit=crop",
-    industry: "Finance"
+    name: "ATS Healthcare Professional",
+    description: "Medical and healthcare optimized ATS template with sections for licenses and certifications.",
+    image: "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Healthcare"
+  },
+  {
+    id: 7,
+    name: "ATS Engineering Format",
+    description: "Perfect for engineers and technical professionals. ATS-compliant with clear project sections.",
+    image: "https://images.pexels.com/photos/7688374/pexels-photo-7688374.jpeg?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Engineering"
+  },
+  {
+    id: 8,
+    name: "ATS Education & Training",
+    description: "ATS-friendly template for educators and trainers with emphasis on qualifications and experience.",
+    image: "https://images.pexels.com/photos/7641842/pexels-photo-7641842.jpeg?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Education"
+  },
+  {
+    id: 9,
+    name: "ATS Legal Professional",
+    description: "Professional ATS template for legal sector with sections for bar admissions and case highlights.",
+    image: "https://images.unsplash.com/photo-1700887937204-69f8b8400ace?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Legal"
+  },
+  {
+    id: 10,
+    name: "ATS Sales & Marketing",
+    description: "Results-focused ATS template highlighting achievements and metrics. Perfect for sales professionals.",
+    image: "https://images.unsplash.com/photo-1700887944225-f148dd124305?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Sales"
+  },
+  {
+    id: 11,
+    name: "ATS Entry Level",
+    description: "Perfect for graduates and entry-level positions. ATS-optimized with education and skills focus.",
+    image: "https://images.pexels.com/photos/5705982/pexels-photo-5705982.jpeg?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Entry Level"
+  },
+  {
+    id: 12,
+    name: "ATS Manufacturing & Operations",
+    description: "Industrial and operations-focused ATS template. Clear sections for safety certifications.",
+    image: "https://images.pexels.com/photos/6373048/pexels-photo-6373048.jpeg?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Manufacturing"
+  },
+  {
+    id: 13,
+    name: "ATS Mining Professional",
+    description: "Specialized ATS template for South Africa's mining sector with safety and certification sections.",
+    image: "https://images.unsplash.com/photo-1653038417332-6db0ff9d4bfb?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Mining"
+  },
+  {
+    id: 14,
+    name: "ATS Project Manager",
+    description: "Project management focused ATS template highlighting methodologies, certifications, and deliverables.",
+    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Project Management"
+  },
+  {
+    id: 15,
+    name: "ATS Retail & Hospitality",
+    description: "Customer service focused ATS template for retail and hospitality professionals.",
+    image: "https://images.pexels.com/photos/3760072/pexels-photo-3760072.jpeg?w=400&h=500&fit=crop",
+    category: "ats",
+    industry: "Retail"
+  },
+  {
+    id: 16,
+    name: "Modern Professional",
+    description: "Contemporary design with subtle color accents while maintaining ATS compatibility.",
+    image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=500&fit=crop",
+    category: "modern",
+    industry: "Any"
+  },
+  {
+    id: 17,
+    name: "Modern Tech",
+    description: "Ideal for IT professionals with modern styling and ATS-safe formatting.",
+    image: "https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=400&h=500&fit=crop",
+    category: "modern",
+    industry: "Technology"
+  },
+  {
+    id: 18,
+    name: "Creative Designer",
+    description: "Stand out in creative industries with unique design while staying ATS-friendly.",
+    image: "https://images.unsplash.com/photo-1554224311-beee460ae6fb?w=400&h=500&fit=crop",
+    category: "creative",
+    industry: "Creative"
   }
 ];
 

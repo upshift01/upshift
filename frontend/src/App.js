@@ -55,7 +55,9 @@ import InterviewPrep from "./pages/customer/InterviewPrep";
 // Wrapper to conditionally show Navbar
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname.startsWith('/super-admin') || location.pathname.startsWith('/reseller-dashboard');
+  const hideNavbar = location.pathname.startsWith('/super-admin') || 
+                     location.pathname.startsWith('/reseller-dashboard') ||
+                     location.pathname.startsWith('/dashboard');
 
   return (
     <>
@@ -72,8 +74,7 @@ const AppContent = () => {
         <Route path="/ats-checker" element={<ATSChecker />} />
         <Route path="/contact" element={<Contact />} />
         
-        {/* Protected Customer Routes */}
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        {/* Protected Tools Routes (with Navbar) */}
         <Route path="/builder" element={<PrivateRoute><ResumeBuilder /></PrivateRoute>} />
         <Route path="/improve" element={<PrivateRoute><ResumeImprover /></PrivateRoute>} />
         <Route path="/cover-letter" element={<PrivateRoute><CoverLetterGenerator /></PrivateRoute>} />
@@ -82,6 +83,15 @@ const AppContent = () => {
         {/* Payment Routes */}
         <Route path="/payment/success" element={<PrivateRoute><PaymentSuccess /></PrivateRoute>} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
+
+        {/* Customer Portal Routes */}
+        <Route path="/dashboard" element={<PrivateRoute><CustomerLayout><CustomerDashboard /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/documents" element={<PrivateRoute><CustomerLayout><CustomerDocuments /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/analytics" element={<PrivateRoute><CustomerLayout><CustomerAnalytics /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/billing" element={<PrivateRoute><CustomerLayout><CustomerBilling /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/jobs" element={<PrivateRoute><CustomerLayout><JobTracker /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/interview-prep" element={<PrivateRoute><CustomerLayout><InterviewPrep /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/settings" element={<PrivateRoute><CustomerLayout><CustomerSettings /></CustomerLayout></PrivateRoute>} />
 
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<AdminLayout />}>

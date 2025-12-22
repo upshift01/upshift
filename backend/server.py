@@ -578,6 +578,60 @@ async def calculate_job_match(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== ATS Resume Checker (FREE) ====================
+
+@api_router.post("/ats-check")
+async def ats_resume_check(file: UploadFile = File(...)):
+    """
+    FREE ATS Resume Checker - Analyzes resume for ATS compliance
+    No authentication required - available to all users
+    """
+    try:
+        import PyPDF2
+        import io
+        
+        # Read file content
+        content = await file.read()
+        resume_text = ""
+        
+        # Extract text based on file type
+        if file.filename.lower().endswith('.pdf'):
+            try:
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(content))
+                for page in pdf_reader.pages:
+                    resume_text += page.extract_text() or ""
+            except Exception as pdf_error:
+                logger.warning(f"PDF extraction failed: {pdf_error}, trying as text")
+                resume_text = content.decode('utf-8', errors='ignore')
+        elif file.filename.lower().endswith(('.txt', '.doc', '.docx')):
+            resume_text = content.decode('utf-8', errors='ignore')
+        else:
+            # Try to decode as text
+            resume_text = content.decode('utf-8', errors='ignore')
+        
+        if not resume_text or len(resume_text.strip()) < 50:
+            raise HTTPException(
+                status_code=400, 
+                detail="Could not extract text from the uploaded file. Please ensure the file contains readable text."
+            )
+        
+        # Perform ATS analysis
+        analysis = await ai_service.ats_resume_check(resume_text)
+        
+        logger.info(f"ATS check performed for file: {file.filename}")
+        
+        return {
+            "success": True,
+            "filename": file.filename,
+            "analysis": analysis
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error performing ATS check: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Cover Letter Endpoints ====================
 
 @api_router.post("/cover-letters/generate", response_model=CoverLetter)

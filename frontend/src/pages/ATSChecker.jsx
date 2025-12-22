@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { 
   Upload, FileText, CheckCircle, XCircle, AlertTriangle, 
   Target, Award, TrendingUp, Download, RefreshCw, ChevronDown, ChevronUp,
-  Briefcase, GraduationCap, User, Layout, FileSearch, Zap
+  Briefcase, GraduationCap, User, Layout, FileSearch, Zap, Star, Crown
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { pricingTiers } from '../pricingData';
 
 const ATSChecker = () => {
   const [file, setFile] = useState(null);

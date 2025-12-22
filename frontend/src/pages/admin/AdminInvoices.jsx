@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Receipt, Plus, CheckCircle, Clock, AlertTriangle, Search } from 'lucide-react';
+import { Receipt, Plus, CheckCircle, Clock, AlertTriangle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
+
+const AUTO_REFRESH_INTERVAL = 15000; // 15 seconds
 
 const AdminInvoices = () => {
   const { token } = useAuth();
@@ -11,12 +12,14 @@ const AdminInvoices = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [recentlyPaid, setRecentlyPaid] = useState(new Set());
 
-  useEffect(() => {
-    fetchInvoices();
-  }, [statusFilter]);
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) setIsRefreshing(true);
+    
     try {
       const url = new URL(`${process.env.REACT_APP_BACKEND_URL}/api/admin/invoices`);
       if (statusFilter) url.searchParams.append('status_filter', statusFilter);
@@ -26,14 +29,57 @@ const AdminInvoices = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setInvoices(data.invoices);
+        
+        // Check for newly paid invoices
+        const newInvoices = data.invoices;
+        const oldInvoiceMap = new Map(invoices.map(inv => [inv.id, inv]));
+        const newlyPaidIds = new Set();
+        
+        newInvoices.forEach(inv => {
+          const oldInv = oldInvoiceMap.get(inv.id);
+          if (oldInv && oldInv.status === 'pending' && inv.status === 'paid') {
+            newlyPaidIds.add(inv.id);
+          }
+        });
+        
+        if (newlyPaidIds.size > 0) {
+          setRecentlyPaid(prev => new Set([...prev, ...newlyPaidIds]));
+          // Clear highlight after 5 seconds
+          setTimeout(() => {
+            setRecentlyPaid(prev => {
+              const next = new Set(prev);
+              newlyPaidIds.forEach(id => next.delete(id));
+              return next;
+            });
+          }, 5000);
+        }
+        
+        setInvoices(newInvoices);
+        setLastUpdated(new Date());
       }
     } catch (error) {
       console.error('Error fetching invoices:', error);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, [token, statusFilter, invoices]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchInvoices();
+  }, [statusFilter]);
+
+  // Auto-refresh
+  useEffect(() => {
+    if (!autoRefresh) return;
+    
+    const interval = setInterval(() => {
+      fetchInvoices(true);
+    }, AUTO_REFRESH_INTERVAL);
+    
+    return () => clearInterval(interval);
+  }, [autoRefresh, fetchInvoices]);
 
   const generateInvoices = async () => {
     setGenerating(true);
@@ -64,6 +110,15 @@ const AdminInvoices = () => {
         }
       );
       if (response.ok) {
+        // Add to recently paid for highlight effect
+        setRecentlyPaid(prev => new Set([...prev, invoiceId]));
+        setTimeout(() => {
+          setRecentlyPaid(prev => {
+            const next = new Set(prev);
+            next.delete(invoiceId);
+            return next;
+          });
+        }, 5000);
         fetchInvoices();
       }
     } catch (error) {
@@ -78,7 +133,7 @@ const AdminInvoices = () => {
     }).format(cents / 100);
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, isRecent = false) => {
     const styles = {
       paid: 'bg-green-100 text-green-800',
       pending: 'bg-yellow-100 text-yellow-800',
@@ -92,12 +147,29 @@ const AdminInvoices = () => {
     const Icon = icons[status] || Clock;
     
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status] || styles.pending}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status] || styles.pending} ${isRecent ? 'animate-pulse ring-2 ring-green-400' : ''}`}>
         <Icon className="h-3 w-3" />
         {status}
+        {isRecent && <span className="ml-1 text-[10px]">NEW</span>}
       </span>
     );
   };
+
+  const formatLastUpdated = () => {
+    if (!lastUpdated) return '';
+    const seconds = Math.floor((new Date() - lastUpdated) / 1000);
+    if (seconds < 10) return 'Just now';
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}m ago`;
+  };
+
+  // Count stats
+  const pendingCount = invoices.filter(i => i.status === 'pending').length;
+  const paidCount = invoices.filter(i => i.status === 'paid').length;
+  const totalPending = invoices
+    .filter(i => i.status === 'pending')
+    .reduce((sum, i) => sum + i.amount, 0);
 
   return (
     <div className="p-6">
@@ -106,15 +178,82 @@ const AdminInvoices = () => {
           <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
           <p className="text-gray-600">Manage reseller subscription invoices</p>
         </div>
-        <Button onClick={generateInvoices} disabled={generating}>
-          <Plus className="h-4 w-4 mr-2" />
-          {generating ? 'Generating...' : 'Generate Monthly Invoices'}
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Auto-refresh indicator */}
+          <div className="flex items-center gap-2 text-sm">
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`flex items-center gap-1 px-2 py-1 rounded ${
+                autoRefresh ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-50'
+              }`}
+              title={autoRefresh ? 'Auto-refresh ON (click to disable)' : 'Auto-refresh OFF (click to enable)'}
+            >
+              {autoRefresh ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+              <span className="hidden sm:inline">Live</span>
+            </button>
+            {lastUpdated && (
+              <span className="text-gray-400 text-xs">
+                Updated {formatLastUpdated()}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => fetchInvoices(true)}
+              disabled={isRefreshing}
+              className="p-1"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+          
+          <Button onClick={generateInvoices} disabled={generating}>
+            <Plus className="h-4 w-4 mr-2" />
+            {generating ? 'Generating...' : 'Generate Monthly Invoices'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Pending Invoices</p>
+                <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
+              </div>
+              <Clock className="h-8 w-8 text-yellow-200" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Pending Amount</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalPending)}</p>
+              </div>
+              <Receipt className="h-8 w-8 text-gray-200" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Paid This Period</p>
+                <p className="text-2xl font-bold text-green-600">{paidCount}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-200" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center justify-between">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -125,6 +264,16 @@ const AdminInvoices = () => {
               <option value="paid">Paid</option>
               <option value="overdue">Overdue</option>
             </select>
+            
+            {autoRefresh && (
+              <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                Auto-updating every 15s
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -152,34 +301,46 @@ const AdminInvoices = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoices.map((invoice) => (
-                    <tr key={invoice.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-mono text-sm">{invoice.invoice_number}</td>
-                      <td className="py-3 px-4">{invoice.reseller_name}</td>
-                      <td className="py-3 px-4">{invoice.period}</td>
-                      <td className="py-3 px-4 font-medium">{formatCurrency(invoice.amount)}</td>
-                      <td className="py-3 px-4 text-sm">
-                        {new Date(invoice.due_date).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4">{getStatusBadge(invoice.status)}</td>
-                      <td className="py-3 px-4">
-                        {invoice.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => markAsPaid(invoice.id)}
-                          >
-                            Mark Paid
-                          </Button>
-                        )}
-                        {invoice.status === 'paid' && (
-                          <span className="text-sm text-gray-500">
-                            Paid {invoice.paid_date && new Date(invoice.paid_date).toLocaleDateString()}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {invoices.map((invoice) => {
+                    const isRecentlyPaid = recentlyPaid.has(invoice.id);
+                    return (
+                      <tr 
+                        key={invoice.id} 
+                        className={`border-b transition-colors duration-500 ${
+                          isRecentlyPaid 
+                            ? 'bg-green-50 hover:bg-green-100' 
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <td className="py-3 px-4 font-mono text-sm">{invoice.invoice_number}</td>
+                        <td className="py-3 px-4">{invoice.reseller_name}</td>
+                        <td className="py-3 px-4">{invoice.period}</td>
+                        <td className="py-3 px-4 font-medium">{formatCurrency(invoice.amount)}</td>
+                        <td className="py-3 px-4 text-sm">
+                          {new Date(invoice.due_date).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4">
+                          {getStatusBadge(invoice.status, isRecentlyPaid && invoice.status === 'paid')}
+                        </td>
+                        <td className="py-3 px-4">
+                          {invoice.status === 'pending' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => markAsPaid(invoice.id)}
+                            >
+                              Mark Paid
+                            </Button>
+                          )}
+                          {invoice.status === 'paid' && (
+                            <span className="text-sm text-gray-500">
+                              Paid {invoice.paid_date && new Date(invoice.paid_date).toLocaleDateString()}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

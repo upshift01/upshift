@@ -698,3 +698,42 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database and create default super admin if not exists"""
+    try:
+        # Create indexes for better performance
+        await db.users.create_index("email", unique=True)
+        await db.users.create_index("role")
+        await db.resellers.create_index("subdomain", unique=True)
+        await db.resellers.create_index("custom_domain", sparse=True)
+        await db.reseller_invoices.create_index([("reseller_id", 1), ("period", 1)])
+        
+        # Create default super admin if not exists
+        default_admin_email = "admin@upshift.co.za"
+        existing_admin = await db.users.find_one({"email": default_admin_email})
+        
+        if not existing_admin:
+            admin_id = str(uuid.uuid4())
+            hashed_password = get_password_hash("admin123")  # Change in production!
+            
+            admin_user = {
+                "id": admin_id,
+                "email": default_admin_email,
+                "full_name": "Super Admin",
+                "hashed_password": hashed_password,
+                "role": "super_admin",
+                "active_tier": None,
+                "created_at": datetime.utcnow(),
+                "is_active": True,
+                "payment_history": []
+            }
+            
+            await db.users.insert_one(admin_user)
+            logger.info(f"Default super admin created: {default_admin_email}")
+        
+        logger.info("Database startup complete")
+    except Exception as e:
+        logger.error(f"Startup error: {str(e)}")

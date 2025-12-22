@@ -530,7 +530,7 @@ async def analyze_resume(
 @api_router.post("/ai/job-match")
 async def calculate_job_match(
     data: dict,
-    current_user: UserResponse = Depends(check_user_has_tier(['tier-2', 'tier-3']))
+    current_user: UserResponse = Depends(check_tier_dep(['tier-2', 'tier-3']))
 ):
     """Calculate how well resume matches job description (Requires Professional or Elite tier)"""
     try:

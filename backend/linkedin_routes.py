@@ -183,7 +183,7 @@ async def enhance_linkedin_profile(
 @router.post("/generate-section")
 async def generate_linkedin_section(
     request: GenerateSectionRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_dep)
 ):
     """
     Generate a specific LinkedIn section (headline, about, experience).

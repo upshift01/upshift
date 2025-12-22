@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/Home";
 import ResumeBuilder from "./pages/ResumeBuilder";
@@ -20,6 +21,11 @@ import PaymentCancel from "./pages/PaymentCancel";
 import ATSChecker from "./pages/ATSChecker";
 import Contact from "./pages/Contact";
 import LinkedInTools from "./pages/LinkedInTools";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import RefundPolicy from "./pages/RefundPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import POPIACompliance from "./pages/POPIACompliance";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages

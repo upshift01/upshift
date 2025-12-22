@@ -752,6 +752,232 @@ async def startup_event():
             await db.users.insert_one(admin_user)
             logger.info(f"Default super admin created: {default_admin_email}")
         
+        # Load email settings for service
+        email_settings = await db.platform_settings.find_one({"type": "email"}, {"_id": 0})
+        if email_settings:
+            email_service.configure(email_settings)
+            logger.info("Email service configured from database settings")
+        
+        # Start the scheduler
+        scheduler.add_job(
+            auto_generate_monthly_invoices,
+            CronTrigger(day=1, hour=0, minute=0),  # Run at midnight on the 1st of every month
+            id='monthly_invoice_generation',
+            replace_existing=True
+        )
+        
+        scheduler.add_job(
+            auto_send_payment_reminders,
+            CronTrigger(hour=9, minute=0),  # Run daily at 9 AM
+            id='daily_payment_reminders',
+            replace_existing=True
+        )
+        
+        scheduler.start()
+        logger.info("Background scheduler started with invoice and reminder jobs")
+        
         logger.info("Database startup complete")
     except Exception as e:
         logger.error(f"Startup error: {str(e)}")
+
+
+async def auto_generate_monthly_invoices():
+    """Automatically generate monthly invoices for all active resellers"""
+    try:
+        from datetime import timedelta, timezone
+        
+        now = datetime.now(timezone.utc)
+        period = f"{now.year}-{str(now.month).zfill(2)}"
+        
+        # Get all active resellers
+        resellers = await db.resellers.find(
+            {"status": "active"},
+            {"_id": 0}
+        ).to_list(None)
+        
+        invoices_created = 0
+        emails_sent = 0
+        
+        # Load email settings
+        settings = await db.platform_settings.find_one({"type": "email"}, {"_id": 0})
+        if settings:
+            email_service.configure(settings)
+        
+        for reseller in resellers:
+            # Check if invoice already exists for this period
+            existing = await db.reseller_invoices.find_one({
+                "reseller_id": reseller["id"],
+                "period": period
+            })
+            
+            if existing:
+                continue
+            
+            # Create invoice
+            invoice_number = f"INV-{period}-{str(invoices_created + 1).zfill(4)}"
+            monthly_fee = reseller.get("subscription", {}).get("monthly_fee", 250000)
+            due_date = now + timedelta(days=15)
+            
+            invoice = {
+                "id": str(uuid.uuid4()),
+                "reseller_id": reseller["id"],
+                "invoice_number": invoice_number,
+                "amount": monthly_fee,
+                "period": period,
+                "due_date": due_date.isoformat(),
+                "paid_date": None,
+                "status": "pending",
+                "items": [
+                    {
+                        "description": f"Monthly SaaS Subscription - {period}",
+                        "amount": monthly_fee
+                    }
+                ],
+                "created_at": now
+            }
+            
+            await db.reseller_invoices.insert_one(invoice)
+            invoices_created += 1
+            
+            # Send email notification if email is configured
+            if email_service.is_configured:
+                contact_email = reseller.get("contact_info", {}).get("email")
+                if contact_email:
+                    amount = f"R {monthly_fee / 100:,.2f}"
+                    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+                    payment_link = f"{frontend_url}/reseller-dashboard/invoices"
+                    
+                    success = await email_service.send_invoice_created(
+                        to_email=contact_email,
+                        reseller_name=reseller["company_name"],
+                        invoice_number=invoice_number,
+                        amount=amount,
+                        period=period,
+                        due_date=due_date.strftime("%d %B %Y"),
+                        payment_link=payment_link
+                    )
+                    
+                    if success:
+                        emails_sent += 1
+                        # Log the email
+                        await db.email_logs.insert_one({
+                            "id": str(uuid.uuid4()),
+                            "type": "invoice_created",
+                            "invoice_id": invoice["id"],
+                            "reseller_id": reseller["id"],
+                            "to_email": contact_email,
+                            "status": "sent",
+                            "sent_at": now,
+                            "sent_by": "system"
+                        })
+        
+        logger.info(f"[AUTO] Monthly invoices generated: {invoices_created}, emails sent: {emails_sent}")
+        
+    except Exception as e:
+        logger.error(f"[AUTO] Error generating monthly invoices: {str(e)}")
+
+
+async def auto_send_payment_reminders():
+    """Automatically send payment reminders based on configured schedules"""
+    try:
+        from datetime import timedelta, timezone
+        
+        now = datetime.now(timezone.utc)
+        
+        # Load email settings
+        settings = await db.platform_settings.find_one({"type": "email"}, {"_id": 0})
+        if not settings or not settings.get("smtp_user"):
+            logger.info("[AUTO] Email not configured, skipping payment reminders")
+            return
+        
+        email_service.configure(settings)
+        
+        # Get active reminder schedules
+        schedules = await db.reminder_schedules.find(
+            {"is_active": True},
+            {"_id": 0}
+        ).to_list(100)
+        
+        if not schedules:
+            return
+        
+        # Get all pending invoices
+        pending_invoices = await db.reseller_invoices.find(
+            {"status": "pending"},
+            {"_id": 0}
+        ).to_list(1000)
+        
+        sent_count = 0
+        
+        for invoice in pending_invoices:
+            # Parse due date
+            due_date = invoice["due_date"]
+            if isinstance(due_date, str):
+                due_date = datetime.fromisoformat(due_date.replace("Z", "+00:00"))
+            
+            days_until_due = (due_date - now).days
+            
+            # Check if any schedule matches
+            for schedule in schedules:
+                if schedule["days_before_due"] == days_until_due:
+                    # Check if we already sent a reminder today for this invoice/schedule
+                    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                    existing_log = await db.email_logs.find_one({
+                        "invoice_id": invoice["id"],
+                        "type": "invoice_reminder",
+                        "sent_at": {"$gte": today_start}
+                    })
+                    
+                    if existing_log:
+                        continue
+                    
+                    # Get reseller info
+                    reseller = await db.resellers.find_one(
+                        {"id": invoice["reseller_id"]},
+                        {"_id": 0}
+                    )
+                    
+                    if not reseller:
+                        continue
+                    
+                    contact_email = reseller.get("contact_info", {}).get("email")
+                    if not contact_email:
+                        continue
+                    
+                    is_overdue = days_until_due < 0
+                    amount = f"R {invoice['amount'] / 100:,.2f}"
+                    due_date_str = due_date.strftime("%d %B %Y")
+                    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+                    payment_link = f"{frontend_url}/reseller-dashboard/invoices"
+                    
+                    success = await email_service.send_invoice_reminder(
+                        to_email=contact_email,
+                        reseller_name=reseller["company_name"],
+                        invoice_number=invoice["invoice_number"],
+                        amount=amount,
+                        due_date=due_date_str,
+                        payment_link=payment_link,
+                        is_overdue=is_overdue
+                    )
+                    
+                    if success:
+                        sent_count += 1
+                        await db.email_logs.insert_one({
+                            "id": str(uuid.uuid4()),
+                            "type": "invoice_reminder",
+                            "invoice_id": invoice["id"],
+                            "reseller_id": reseller["id"],
+                            "to_email": contact_email,
+                            "schedule_name": schedule["name"],
+                            "status": "sent",
+                            "sent_at": now,
+                            "sent_by": "system"
+                        })
+                    
+                    break  # Only send one reminder per invoice per day
+        
+        if sent_count > 0:
+            logger.info(f"[AUTO] Payment reminders sent: {sent_count}")
+        
+    except Exception as e:
+        logger.error(f"[AUTO] Error sending payment reminders: {str(e)}")

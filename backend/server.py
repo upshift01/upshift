@@ -55,6 +55,7 @@ set_admin_db(db)
 set_whitelabel_db(db)
 set_booking_db(db)
 set_scheduler_db(db)
+set_linkedin_db(db)
 
 # Create the main app without a prefix
 app = FastAPI(title="UpShift API", description="AI-Powered Resume and Cover Letter Platform")

@@ -1067,6 +1067,9 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         # NEW: Test Yoco Payment Integration
         self.test_yoco_payment_integration()
         
+        # NEW: Test Customer Invoice Creation and Yoco Payment Integration
+        self.test_customer_invoice_creation()
+        
         # Print summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY")

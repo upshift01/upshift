@@ -720,6 +720,167 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return False
 
+    def test_linkedin_tools_api(self):
+        """Test LinkedIn Tools API endpoints"""
+        print("\n🔗 Testing LinkedIn Tools API...")
+        
+        # Test 1: GET /api/linkedin/oauth/status (No auth required)
+        response, error = self.make_request("GET", "/linkedin/oauth/status")
+        if error:
+            self.log_test("LinkedIn OAuth Status", False, error)
+        else:
+            required_fields = ["configured", "message"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("LinkedIn OAuth Status", False, f"Missing fields: {missing_fields}")
+            else:
+                configured = response.get("configured", False)
+                message = response.get("message", "")
+                self.log_test("LinkedIn OAuth Status", True, 
+                            f"Configured: {configured}, Message: {message[:50]}...")
+        
+        # For authenticated endpoints, we need a valid token
+        if not self.super_admin_token:
+            self.log_test("LinkedIn Tools Tests", False, "No authentication token available")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.super_admin_token}"}
+        
+        # Test 2: POST /api/linkedin/convert-to-resume (Requires auth)
+        linkedin_data = {
+            "full_name": "John Smith",
+            "email": "john@example.com",
+            "headline": "Senior Software Engineer",
+            "summary": "10+ years experience in software development",
+            "location": "Johannesburg, South Africa",
+            "work_experience": [
+                {
+                    "title": "Senior Developer",
+                    "company": "Tech Co",
+                    "start_date": "2020",
+                    "end_date": "Present",
+                    "description": "Led development team"
+                }
+            ],
+            "education": [
+                {
+                    "degree": "BSc Computer Science",
+                    "institution": "University of Cape Town",
+                    "graduation_date": "2014"
+                }
+            ],
+            "skills": ["Python", "JavaScript", "React"],
+            "certifications": ["AWS Solutions Architect"]
+        }
+        
+        response, error = self.make_request("POST", "/linkedin/convert-to-resume", 
+                                          headers=headers, data=linkedin_data)
+        if error:
+            self.log_test("LinkedIn Convert to Resume", False, error)
+        else:
+            required_fields = ["success", "resume"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("LinkedIn Convert to Resume", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                resume = response.get("resume", {})
+                if success and isinstance(resume, dict):
+                    # Check for key resume fields
+                    resume_fields = ["personal_info", "professional_summary", "work_experience"]
+                    has_resume_fields = any(field in resume for field in resume_fields)
+                    if has_resume_fields:
+                        self.log_test("LinkedIn Convert to Resume", True, 
+                                    f"Successfully generated resume with {len(resume)} sections")
+                    else:
+                        self.log_test("LinkedIn Convert to Resume", False, 
+                                    "Resume object missing expected fields")
+                else:
+                    self.log_test("LinkedIn Convert to Resume", False, 
+                                "Invalid response structure")
+        
+        # Test 3: POST /api/linkedin/create-profile (Requires auth)
+        profile_data = {
+            "full_name": "Jane Doe",
+            "current_title": "Marketing Manager",
+            "target_role": "Head of Marketing",
+            "industry": "Marketing",
+            "years_experience": 8,
+            "key_skills": ["Digital Marketing", "SEO", "Content Strategy"],
+            "achievements": ["Increased leads by 200%", "Managed R5M budget"],
+            "career_goals": "To become CMO at a leading tech company"
+        }
+        
+        response, error = self.make_request("POST", "/linkedin/create-profile", 
+                                          headers=headers, data=profile_data)
+        if error:
+            self.log_test("LinkedIn Create Profile", False, error)
+        else:
+            required_fields = ["success", "profile"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("LinkedIn Create Profile", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                profile = response.get("profile", {})
+                if success and isinstance(profile, dict):
+                    # Check for key profile fields
+                    profile_fields = ["headline", "about_summary", "skills_to_add"]
+                    has_profile_fields = any(field in profile for field in profile_fields)
+                    if has_profile_fields:
+                        self.log_test("LinkedIn Create Profile", True, 
+                                    f"Successfully generated profile with {len(profile)} sections")
+                    else:
+                        self.log_test("LinkedIn Create Profile", False, 
+                                    "Profile object missing expected fields")
+                else:
+                    self.log_test("LinkedIn Create Profile", False, 
+                                "Invalid response structure")
+        
+        # Test 4: POST /api/linkedin/enhance-profile (Requires auth)
+        enhance_data = {
+            "headline": "Software Developer",
+            "about": "I am a developer with 5 years experience.",
+            "experience": [
+                {
+                    "title": "Developer",
+                    "company": "Startup",
+                    "description": "Wrote code"
+                }
+            ],
+            "skills": ["Java", "SQL"],
+            "target_role": "Senior Software Engineer"
+        }
+        
+        response, error = self.make_request("POST", "/linkedin/enhance-profile", 
+                                          headers=headers, data=enhance_data)
+        if error:
+            self.log_test("LinkedIn Enhance Profile", False, error)
+        else:
+            required_fields = ["success", "analysis"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("LinkedIn Enhance Profile", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                analysis = response.get("analysis", {})
+                if success and isinstance(analysis, dict):
+                    # Check for key analysis fields
+                    analysis_fields = ["overall_score", "section_analysis", "action_items"]
+                    has_analysis_fields = any(field in analysis for field in analysis_fields)
+                    if has_analysis_fields:
+                        overall_score = analysis.get("overall_score", 0)
+                        self.log_test("LinkedIn Enhance Profile", True, 
+                                    f"Successfully analyzed profile, score: {overall_score}/100")
+                    else:
+                        self.log_test("LinkedIn Enhance Profile", False, 
+                                    "Analysis object missing expected fields")
+                else:
+                    self.log_test("LinkedIn Enhance Profile", False, 
+                                "Invalid response structure")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift White-Label SaaS Backend API Tests")

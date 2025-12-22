@@ -56,10 +56,10 @@ const PricingPage = () => {
             Upgrade Your Career Today
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Choose Your Success Plan
+            Professional AI Career Services
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            One-time payment for professional, ATS-optimized career documents that land interviews
+            Premium, one-time payment for professional, ATS-optimized career documents. No subscriptions - pay once, get results.
           </p>
         </div>
 

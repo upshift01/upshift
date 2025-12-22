@@ -41,6 +41,15 @@ const ResellerSettings = () => {
   const [testingEmail, setTestingEmail] = useState(false);
   const [testEmailAddress, setTestEmailAddress] = useState('');
 
+  // ChatGPT Settings State
+  const [chatgptSettings, setChatgptSettings] = useState({
+    openai_api_key: '',
+    model: 'gpt-4o',
+    use_custom_key: false
+  });
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [testingChatGPT, setTestingChatGPT] = useState(false);
+
   useEffect(() => {
     fetchProfile();
   }, []);

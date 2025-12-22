@@ -53,6 +53,7 @@ const AppContent = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/templates" element={<Templates />} />
+        <Route path="/cover-letter-templates" element={<CoverLetterTemplates />} />
         
         {/* Protected Customer Routes */}
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

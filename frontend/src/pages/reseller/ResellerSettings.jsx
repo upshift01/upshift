@@ -603,6 +603,152 @@ const ResellerSettings = () => {
         </div>
       )}
 
+      {/* Billing/Subscription Tab */}
+      {activeTab === 'billing' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5" />
+                Platform Subscription Invoices
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {loadingInvoices ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                </div>
+              ) : platformInvoices.length === 0 ? (
+                <div className="text-center py-12">
+                  <Receipt className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No invoices yet</p>
+                  <p className="text-sm text-gray-400">Invoices are generated monthly on the 1st</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left py-3 px-6 font-medium text-gray-600">Invoice #</th>
+                        <th className="text-left py-3 px-6 font-medium text-gray-600">Period</th>
+                        <th className="text-left py-3 px-6 font-medium text-gray-600">Amount</th>
+                        <th className="text-left py-3 px-6 font-medium text-gray-600">Due Date</th>
+                        <th className="text-left py-3 px-6 font-medium text-gray-600">Status</th>
+                        <th className="text-left py-3 px-6 font-medium text-gray-600">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {platformInvoices.map((invoice) => (
+                        <tr key={invoice.id} className="border-t hover:bg-gray-50">
+                          <td className="py-4 px-6 font-mono text-sm">{invoice.invoice_number}</td>
+                          <td className="py-4 px-6">{invoice.period}</td>
+                          <td className="py-4 px-6 font-medium">{formatPrice(invoice.amount)}</td>
+                          <td className="py-4 px-6 text-gray-500">
+                            <span className={isOverdue(invoice.due_date) && invoice.status !== 'paid' ? 'text-red-600 font-medium' : ''}>
+                              {new Date(invoice.due_date).toLocaleDateString()}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            {getStatusBadge(invoice.status, invoice.due_date)}
+                          </td>
+                          <td className="py-4 px-6">
+                            {invoice.status === 'paid' ? (
+                              <span className="text-sm text-gray-500 flex items-center gap-1">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                Paid {invoice.paid_date && new Date(invoice.paid_date).toLocaleDateString()}
+                              </span>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => handlePayInvoice(invoice.id)}
+                                disabled={payingInvoice === invoice.id}
+                                className="flex items-center gap-2"
+                              >
+                                {payingInvoice === invoice.id ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CreditCard className="h-4 w-4" />
+                                    Pay Now
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Subscription Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-600">Plan</span>
+                  <span className="font-medium">Reseller Pro</span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-600">Monthly Fee</span>
+                  <span className="font-medium">{formatPrice(250000)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-600">Billing Cycle</span>
+                  <span className="font-medium">1st of each month</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Customers</span>
+                  <span className="font-medium">Unlimited</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Payment Methods
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3 items-center mb-4">
+                <div className="bg-gray-100 px-3 py-2 rounded-lg text-sm font-medium">Visa</div>
+                <div className="bg-gray-100 px-3 py-2 rounded-lg text-sm font-medium">Mastercard</div>
+                <div className="bg-gray-100 px-3 py-2 rounded-lg text-sm font-medium">American Express</div>
+                <div className="bg-gray-100 px-3 py-2 rounded-lg text-sm font-medium">Instant EFT</div>
+              </div>
+              <p className="text-xs text-gray-500">
+                All payments are securely processed by Yoco. Your card details are never stored on our servers.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-blue-800">Payment Queries</h4>
+                  <p className="text-sm text-blue-700">
+                    Contact support@upshift.co.za for any billing questions or payment assistance.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Email Settings Tab */}
       {activeTab === 'email' && (
         <div className="space-y-6">

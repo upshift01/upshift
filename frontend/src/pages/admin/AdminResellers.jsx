@@ -211,8 +211,8 @@ const AdminResellers = () => {
                                 className="fixed inset-0 z-40" 
                                 onClick={() => setActionMenu(null)}
                               />
-                              {/* Dropdown menu */}
-                              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border z-50">
+                              {/* Dropdown menu - positioned above or below based on available space */}
+                              <div className="absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-xl border z-50">
                                 <div className="py-1">
                                   <button
                                     onClick={() => {

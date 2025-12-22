@@ -1,4 +1,4 @@
-# Pricing tiers for UpShift services
+// Pricing tiers for UpShift services
 
 export const pricingTiers = [
   {

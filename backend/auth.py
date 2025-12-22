@@ -102,6 +102,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db = None) -> Us
         email=user["email"],
         full_name=user["full_name"],
         phone=user.get("phone"),
+        role=user.get("role", "customer"),
+        reseller_id=user.get("reseller_id"),
         active_tier=user.get("active_tier"),
         tier_activation_date=user.get("tier_activation_date"),
         created_at=user["created_at"]

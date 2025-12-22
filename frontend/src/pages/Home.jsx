@@ -144,17 +144,22 @@ const Home = () => {
       <section className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
+            <Badge className="mb-4 bg-green-100 text-green-700 border-green-200">
+              <CheckCircle2 className="mr-1 h-3 w-3" />
+              Real Success Stories
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Trusted by Job Seekers Across South Africa
             </h2>
             <p className="text-xl text-gray-600">
-              See what our users have to say about their success stories
+              Join thousands who have transformed their careers with UpShift
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial) => (
-              <Card key={testimonial.id} className="border-gray-200">
+          {/* Featured Success Stories */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {testimonials.slice(0, 3).map((testimonial) => (
+              <Card key={testimonial.id} className="border-gray-200 hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center space-x-4 mb-3">
                     <img
@@ -179,6 +184,55 @@ const Home = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* More Success Stories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {testimonials.slice(3, 12).map((testimonial) => (
+              <div key={testimonial.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                <div className="flex items-start space-x-3">
+                  <img
+                    src={testimonial.avatar}
+                    alt={testimonial.name}
+                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-gray-900 text-sm truncate">{testimonial.name}</span>
+                      <div className="flex items-center space-x-0.5">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2">{testimonial.role} • {testimonial.location}</p>
+                    <p className="text-sm text-gray-600 line-clamp-3">&ldquo;{testimonial.content}&rdquo;</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stats Banner */}
+          <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div className="text-3xl md:text-4xl font-bold">10,000+</div>
+                <div className="text-blue-100 text-sm mt-1">CVs Created</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-bold">85%</div>
+                <div className="text-blue-100 text-sm mt-1">Interview Rate</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-bold">4.9★</div>
+                <div className="text-blue-100 text-sm mt-1">User Rating</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-bold">48hrs</div>
+                <div className="text-blue-100 text-sm mt-1">Avg. Response Time</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

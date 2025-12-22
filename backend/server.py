@@ -299,12 +299,12 @@ async def create_payment_checkout(
     except Exception as e:
         logger.error(f"Error creating checkout: {str(e)}")
         error_msg = str(e)
-        if "403" in error_msg or "Forbidden" in error_msg or "key is required" in error_msg.lower():
+        if "403" in error_msg or "Forbidden" in error_msg or "key is required" in error_msg.lower() or "401" in error_msg:
             raise HTTPException(
                 status_code=400, 
-                detail="Yoco payment is not configured. Please contact support or configure valid Yoco API keys."
+                detail="Yoco payment gateway is not properly configured. The API keys may be invalid or expired. Please contact the administrator to configure valid Yoco credentials in Settings → Yoco Settings."
             )
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Payment error: {str(e)}")
 
 
 @api_router.post("/payments/verify/{checkout_id}")

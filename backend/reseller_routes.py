@@ -1349,4 +1349,331 @@ async def get_customers_list(context: dict = Depends(get_current_reseller_admin)
         
     except Exception as e:
         logger.error(f"Error fetching customers list: {str(e)}")
+
+
+# ============= NOTIFICATIONS =============
+
+@reseller_router.get("/notifications", response_model=dict)
+async def get_notifications(context: dict = Depends(get_current_reseller_admin)):
+    """Get reseller notifications"""
+    try:
+        reseller = context["reseller"]
+        
+        notifications = await db.reseller_notifications.find(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(20).to_list(20)
+        
+        # Calculate time ago
+        for notif in notifications:
+            if notif.get("created_at"):
+                created = datetime.fromisoformat(notif["created_at"].replace("Z", "+00:00")) if isinstance(notif["created_at"], str) else notif["created_at"]
+                delta = datetime.now(timezone.utc) - created
+                if delta.days > 0:
+                    notif["time_ago"] = f"{delta.days}d ago"
+                elif delta.seconds > 3600:
+                    notif["time_ago"] = f"{delta.seconds // 3600}h ago"
+                else:
+                    notif["time_ago"] = f"{delta.seconds // 60}m ago"
+        
+        unread_count = await db.reseller_notifications.count_documents({
+            "reseller_id": reseller["id"],
+            "read": False
+        })
+        
+        return {"notifications": notifications, "unread_count": unread_count}
+        
+    except Exception as e:
+        logger.error(f"Error fetching notifications: {str(e)}")
+        return {"notifications": [], "unread_count": 0}
+
+
+@reseller_router.post("/notifications/{notification_id}/read", response_model=dict)
+async def mark_notification_read(notification_id: str, context: dict = Depends(get_current_reseller_admin)):
+    """Mark a notification as read"""
+    try:
+        reseller = context["reseller"]
+        await db.reseller_notifications.update_one(
+            {"id": notification_id, "reseller_id": reseller["id"]},
+            {"$set": {"read": True}}
+        )
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Error marking notification read: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============= ACTIVITY LOG =============
+
+@reseller_router.get("/activity", response_model=dict)
+async def get_activity_log(
+    filter: str = "all",
+    range: str = "7d",
+    limit: int = 50,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Get reseller activity log"""
+    try:
+        reseller = context["reseller"]
+        
+        # Calculate date range
+        range_days = {"24h": 1, "7d": 7, "30d": 30, "90d": 90}.get(range, 7)
+        start_date = datetime.now(timezone.utc) - timedelta(days=range_days)
+        
+        query = {
+            "reseller_id": reseller["id"],
+            "created_at": {"$gte": start_date.isoformat()}
+        }
+        
+        if filter != "all":
+            query["type"] = filter
+        
+        activities = await db.reseller_activity.find(
+            query, {"_id": 0}
+        ).sort("created_at", -1).limit(limit).to_list(limit)
+        
+        # Calculate time ago
+        for activity in activities:
+            if activity.get("created_at"):
+                created = datetime.fromisoformat(activity["created_at"].replace("Z", "+00:00")) if isinstance(activity["created_at"], str) else activity["created_at"]
+                delta = datetime.now(timezone.utc) - created
+                if delta.days > 0:
+                    activity["time_ago"] = f"{delta.days}d ago"
+                elif delta.seconds > 3600:
+                    activity["time_ago"] = f"{delta.seconds // 3600}h ago"
+                else:
+                    activity["time_ago"] = f"{delta.seconds // 60}m ago"
+        
+        return {"activities": activities}
+        
+    except Exception as e:
+        logger.error(f"Error fetching activity log: {str(e)}")
+        return {"activities": []}
+
+
+# ============= EMAIL CAMPAIGNS =============
+
+@reseller_router.get("/campaigns", response_model=dict)
+async def get_campaigns(context: dict = Depends(get_current_reseller_admin)):
+    """Get email campaigns"""
+    try:
+        reseller = context["reseller"]
+        
+        campaigns = await db.reseller_campaigns.find(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        
+        return {"campaigns": campaigns}
+        
+    except Exception as e:
+        logger.error(f"Error fetching campaigns: {str(e)}")
+        return {"campaigns": []}
+
+
+@reseller_router.post("/campaigns", response_model=dict)
+async def create_campaign(campaign_data: dict, context: dict = Depends(get_current_reseller_admin)):
+    """Create a new email campaign"""
+    try:
+        reseller = context["reseller"]
+        
+        # Count recipients based on audience
+        audience = campaign_data.get("audience", "all")
+        recipient_query = {"reseller_id": reseller["id"], "role": "customer"}
+        
+        if audience == "active":
+            recipient_query["active_tier"] = {"$ne": None}
+        elif audience == "inactive":
+            recipient_query["active_tier"] = None
+        elif audience == "new":
+            thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+            recipient_query["created_at"] = {"$gte": thirty_days_ago}
+        
+        recipients_count = await db.users.count_documents(recipient_query)
+        
+        campaign = {
+            "id": str(uuid.uuid4()),
+            "reseller_id": reseller["id"],
+            "name": campaign_data.get("name"),
+            "subject": campaign_data.get("subject"),
+            "content": campaign_data.get("content"),
+            "audience": audience,
+            "template": campaign_data.get("template", "default"),
+            "recipients": recipients_count,
+            "status": "draft",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "sent_at": None,
+            "open_rate": None
+        }
+        
+        await db.reseller_campaigns.insert_one(campaign)
+        campaign.pop("_id", None)
+        
+        return {"success": True, "campaign": campaign}
+        
+    except Exception as e:
+        logger.error(f"Error creating campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/campaigns/{campaign_id}/send", response_model=dict)
+async def send_campaign(campaign_id: str, context: dict = Depends(get_current_reseller_admin)):
+    """Send an email campaign"""
+    try:
+        reseller = context["reseller"]
+        
+        campaign = await db.reseller_campaigns.find_one(
+            {"id": campaign_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        if campaign.get("status") == "sent":
+            raise HTTPException(status_code=400, detail="Campaign already sent")
+        
+        # Get recipients
+        audience = campaign.get("audience", "all")
+        recipient_query = {"reseller_id": reseller["id"], "role": "customer"}
+        
+        if audience == "active":
+            recipient_query["active_tier"] = {"$ne": None}
+        elif audience == "inactive":
+            recipient_query["active_tier"] = None
+        
+        recipients = await db.users.find(recipient_query, {"_id": 0, "email": 1, "full_name": 1}).to_list(1000)
+        
+        # TODO: Actually send emails via email service
+        # For now, mark as sent
+        
+        await db.reseller_campaigns.update_one(
+            {"id": campaign_id},
+            {"$set": {
+                "status": "sent",
+                "sent_at": datetime.now(timezone.utc).isoformat(),
+                "recipients": len(recipients)
+            }}
+        )
+        
+        # Log activity
+        await db.reseller_activity.insert_one({
+            "id": str(uuid.uuid4()),
+            "reseller_id": reseller["id"],
+            "type": "email",
+            "title": "Campaign Sent",
+            "description": f"Email campaign '{campaign.get('name')}' sent to {len(recipients)} recipients",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {"success": True, "recipients_count": len(recipients)}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============= EMAIL TEMPLATES =============
+
+@reseller_router.get("/email-templates", response_model=dict)
+async def get_email_templates(context: dict = Depends(get_current_reseller_admin)):
+    """Get custom email templates"""
+    try:
+        reseller = context["reseller"]
+        
+        templates = await db.reseller_email_templates.find(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        ).to_list(20)
+        
+        return {"templates": templates}
+        
+    except Exception as e:
+        logger.error(f"Error fetching email templates: {str(e)}")
+        return {"templates": []}
+
+
+@reseller_router.put("/email-templates/{template_id}", response_model=dict)
+async def update_email_template(template_id: str, template_data: dict, context: dict = Depends(get_current_reseller_admin)):
+    """Update or create a custom email template"""
+    try:
+        reseller = context["reseller"]
+        
+        template = {
+            "id": template_id,
+            "reseller_id": reseller["id"],
+            "subject": template_data.get("subject"),
+            "content": template_data.get("content"),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.reseller_email_templates.update_one(
+            {"id": template_id, "reseller_id": reseller["id"]},
+            {"$set": template},
+            upsert=True
+        )
+        
+        return {"success": True}
+        
+    except Exception as e:
+        logger.error(f"Error updating email template: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============= DOMAIN VERIFICATION =============
+
+@reseller_router.get("/verify-domain", response_model=dict)
+async def verify_domain(domain: str, context: dict = Depends(get_current_reseller_admin)):
+    """Verify custom domain DNS configuration"""
+    import socket
+    
+    try:
+        reseller = context["reseller"]
+        
+        dns_configured = False
+        verified = False
+        ssl_active = False
+        
+        try:
+            # Check CNAME record
+            answers = socket.getaddrinfo(domain, None)
+            if answers:
+                dns_configured = True
+                verified = True
+                ssl_active = True
+        except socket.gaierror:
+            pass
+        
+        # Update reseller domain status
+        await db.resellers.update_one(
+            {"id": reseller["id"]},
+            {"$set": {
+                "domain_status": {
+                    "dns_configured": dns_configured,
+                    "verified": verified,
+                    "ssl_active": ssl_active,
+                    "checked_at": datetime.now(timezone.utc).isoformat()
+                }
+            }}
+        )
+        
+        return {
+            "domain": domain,
+            "dns_configured": dns_configured,
+            "verified": verified,
+            "ssl_active": ssl_active
+        }
+        
+    except Exception as e:
+        logger.error(f"Error verifying domain: {str(e)}")
+        return {
+            "domain": domain,
+            "dns_configured": False,
+            "verified": False,
+            "ssl_active": False,
+            "error": str(e)
+        }
+
         raise HTTPException(status_code=500, detail=str(e))

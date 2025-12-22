@@ -1247,6 +1247,9 @@ async def create_customer_invoice(
         
         logger.info(f"Customer invoice {invoice_number} created by reseller {reseller['id']}")
         
+        # Remove _id before returning
+        invoice.pop("_id", None)
+        
         return {"success": True, "invoice": invoice}
         
     except Exception as e:

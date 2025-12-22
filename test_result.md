@@ -194,7 +194,7 @@ backend:
         - comment: "✅ Authorization security working correctly: Admin endpoints return 401 without auth, reseller endpoints return 401 without auth, role-based access control returns 403 when reseller tries admin endpoints."
 
 ### Test Environment Details
-- **Backend URL**: https://resumegenius-55.preview.emergentagent.com/api
+- **Backend URL**: https://upshift-pro.preview.emergentagent.com/api
 - **Test Files Created**: 
   - `/app/backend_test.py` (basic test runner)
   - `/app/backend/tests/test_white_label_saas.py` (comprehensive test suite)
@@ -505,7 +505,7 @@ backend:
         - comment: "✅ POST /api/reseller/email-settings/test working correctly. Validates reseller's SMTP configuration independently from platform settings."
 
 ### Email & Scheduling System Test Environment Details
-- **Backend URL**: https://resumegenius-55.preview.emergentagent.com/api
+- **Backend URL**: https://upshift-pro.preview.emergentagent.com/api
 - **Test Credentials Used**: 
   - Super Admin: admin@upshift.co.za / admin123
   - Reseller Admin: john@acmecareers.com / acme123456

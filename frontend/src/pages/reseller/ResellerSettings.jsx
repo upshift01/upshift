@@ -50,6 +50,16 @@ const ResellerSettings = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [testingChatGPT, setTestingChatGPT] = useState(false);
 
+  // Yoco Settings State
+  const [yocoSettings, setYocoSettings] = useState({
+    yoco_public_key: '',
+    yoco_secret_key: '',
+    use_custom_keys: false,
+    is_live_mode: false
+  });
+  const [showYocoSecretKey, setShowYocoSecretKey] = useState(false);
+  const [testingYoco, setTestingYoco] = useState(false);
+
   useEffect(() => {
     fetchProfile();
   }, []);

@@ -137,7 +137,7 @@ async def convert_linkedin_to_resume(
 @router.post("/create-profile")
 async def create_linkedin_profile(
     request: CreateProfileRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_dep)
 ):
     """
     Create a new LinkedIn profile from scratch based on user's background.

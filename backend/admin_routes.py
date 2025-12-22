@@ -855,6 +855,8 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
             
             elif response.status_code == 401 or response.status_code == 403:
                 # Invalid or expired API key
+                error_msg = response_data.get("message", "")
+                
                 await db.platform_settings.update_one(
                     {"key": "yoco"},
                     {"$set": {
@@ -865,7 +867,10 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
                         }
                     }}
                 )
-                return {"success": False, "detail": "Invalid or expired API key. Please check your credentials."}
+                
+                if "key is required" in error_msg.lower() or "not been specified" in error_msg.lower():
+                    return {"success": False, "detail": "API key is invalid or not recognized by Yoco. Please verify your keys are correct and not expired."}
+                return {"success": False, "detail": "Invalid or expired API key. Please check your credentials in the Yoco portal."}
             
             elif response.status_code == 400:
                 # Bad request but key might be valid - check error message

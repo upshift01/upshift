@@ -13,6 +13,8 @@ import { industries } from '../mockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 const ResumeBuilder = () => {
+  const navigate = useNavigate();
+  const { user, hasTier } = useAuth();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState('');

@@ -32,15 +32,21 @@ const PricingPage = () => {
         { headers: getAuthHeader() }
       );
 
-      const { redirect_url } = response.data;
+      // Handle both snake_case (from our backend) and camelCase (from Yoco directly)
+      const redirectUrl = response.data.redirect_url || response.data.redirectUrl;
 
-      // Redirect to Yoco payment page
-      window.location.href = redirect_url;
+      if (redirectUrl) {
+        // Redirect to Yoco payment page
+        window.location.href = redirectUrl;
+      } else {
+        throw new Error('No redirect URL received from payment gateway');
+      }
     } catch (error) {
       console.error('Payment error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to initiate payment. Please try again.';
       toast({
         title: 'Payment Error',
-        description: error.response?.data?.detail || 'Failed to initiate payment. Please try again.',
+        description: errorMessage,
         variant: 'destructive'
       });
       setIsProcessing(false);

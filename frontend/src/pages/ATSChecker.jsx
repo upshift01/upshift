@@ -550,114 +550,75 @@ const ATSChecker = () => {
                 </p>
                 
                 <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  {/* Career Starter */}
-                  <div className="border rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition-all">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="h-5 w-5 text-blue-500" />
-                      <h4 className="font-semibold text-gray-900">Career Starter</h4>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900 mb-1">R199 <span className="text-sm font-normal text-gray-500">/once-off</span></p>
-                    <ul className="text-sm text-gray-600 space-y-1 mb-4">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        AI Resume Builder
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        3 ATS-Optimized Templates
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        Unlimited Downloads
-                      </li>
-                    </ul>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => window.location.href = '/pricing'}
-                    >
-                      Select Plan
-                    </Button>
-                  </div>
-
-                  {/* Professional Edge - Most Popular */}
-                  <div className="border-2 border-blue-500 rounded-xl p-5 relative shadow-lg bg-blue-50/30">
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                        MOST POPULAR
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mb-2 mt-2">
-                      <Award className="h-5 w-5 text-purple-500" />
-                      <h4 className="font-semibold text-gray-900">Professional Edge</h4>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900 mb-1">R399 <span className="text-sm font-normal text-gray-500">/once-off</span></p>
-                    <ul className="text-sm text-gray-600 space-y-1 mb-4">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        Everything in Career Starter
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        AI Cover Letter Generator
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        Job Match Analysis
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        10 Premium Templates
-                      </li>
-                    </ul>
-                    <Button 
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                      onClick={() => window.location.href = '/pricing'}
-                    >
-                      Select Plan
-                    </Button>
-                  </div>
-
-                  {/* Executive Elite */}
-                  <div className="border rounded-xl p-5 hover:border-purple-300 hover:shadow-md transition-all bg-gradient-to-br from-purple-50 to-blue-50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Target className="h-5 w-5 text-purple-600" />
-                      <h4 className="font-semibold text-gray-900">Executive Elite</h4>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900 mb-1">R699 <span className="text-sm font-normal text-gray-500">/once-off</span></p>
-                    <ul className="text-sm text-gray-600 space-y-1 mb-4">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        Everything in Professional
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        1-on-1 Strategy Call
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        LinkedIn Optimization
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        Priority Support
-                      </li>
-                    </ul>
-                    <Button 
-                      variant="outline" 
-                      className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
-                      onClick={() => window.location.href = '/pricing'}
-                    >
-                      Select Plan
-                    </Button>
-                  </div>
+                  {pricingTiers.map((tier) => {
+                    const IconComponent = getTierIcon(tier.id);
+                    return (
+                      <div 
+                        key={tier.id}
+                        className={`border rounded-xl p-5 hover:shadow-md transition-all relative ${
+                          tier.popular 
+                            ? 'border-2 border-blue-500 shadow-lg bg-blue-50/30' 
+                            : tier.id === 'tier-3'
+                            ? 'bg-gradient-to-br from-purple-50 to-blue-50 hover:border-purple-300'
+                            : 'hover:border-blue-300'
+                        }`}
+                      >
+                        {tier.badge && (
+                          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                            <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                              {tier.badge.toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div className={`flex items-center gap-2 mb-2 ${tier.badge ? 'mt-2' : ''}`}>
+                          <IconComponent className={`h-5 w-5 ${
+                            tier.id === 'tier-1' ? 'text-blue-500' :
+                            tier.id === 'tier-2' ? 'text-purple-500' :
+                            'text-orange-500'
+                          }`} />
+                          <h4 className="font-semibold text-gray-900">{tier.name}</h4>
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900 mb-1">
+                          R{tier.price.toLocaleString()} 
+                          <span className="text-sm font-normal text-gray-500">/once-off</span>
+                        </p>
+                        <p className="text-xs text-gray-500 mb-3">{tier.description}</p>
+                        <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                          {tier.features.slice(0, 4).map((feature, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
+                              <span className="truncate">{feature}</span>
+                            </li>
+                          ))}
+                          {tier.features.length > 4 && (
+                            <li className="text-xs text-blue-600">
+                              +{tier.features.length - 4} more features
+                            </li>
+                          )}
+                        </ul>
+                        <Button 
+                          className={`w-full ${
+                            tier.popular
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                              : tier.id === 'tier-3'
+                              ? 'border-purple-300 text-purple-700 hover:bg-purple-50'
+                              : ''
+                          }`}
+                          variant={tier.popular ? 'default' : 'outline'}
+                          onClick={() => navigate('/pricing')}
+                        >
+                          Select Plan
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="text-center">
                   <Button 
                     variant="link" 
                     className="text-blue-600"
-                    onClick={() => window.location.href = '/pricing'}
+                    onClick={() => navigate('/pricing')}
                   >
                     View all plan details →
                   </Button>

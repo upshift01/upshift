@@ -117,7 +117,7 @@ async def linkedin_callback(
 @router.post("/convert-to-resume")
 async def convert_linkedin_to_resume(
     profile_data: LinkedInProfileData,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_dep)
 ):
     """
     Convert LinkedIn profile data to a professional resume.

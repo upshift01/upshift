@@ -10,6 +10,7 @@ import ResumeBuilder from "./pages/ResumeBuilder";
 import ResumeImprover from "./pages/ResumeImprover";
 import CoverLetterGenerator from "./pages/CoverLetterGenerator";
 import CoverLetterTemplates from "./pages/CoverLetterTemplates";
+import StrategyCallBooking from "./pages/StrategyCallBooking";
 import Templates from "./pages/Templates";
 import Login from "./pages/Login";
 import Register from "./pages/Register";

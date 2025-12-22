@@ -22,9 +22,9 @@ class AIService:
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"resume_improve_{section}",
-                system_message="You are an expert CV/Resume writer specializing in the South African job market. Provide concise, impactful improvements that focus on quantifiable achievements and ATS optimization."
+                system_message="You are an expert CV/Resume writer specializing in the South African job market with deep expertise in ATS (Applicant Tracking Systems). Every CV you create or improve MUST be ATS-friendly with proper formatting, relevant keywords, and clear structure. Provide concise, impactful improvements that focus on quantifiable achievements."
             )
-            chat.with_model("openai", "gpt-4.1")
+            chat.with_model("openai", "gpt-5.2")
             
             prompt = f"""Improve the following {section} section for a South African job seeker:
 

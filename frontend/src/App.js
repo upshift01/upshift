@@ -24,6 +24,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminResellers from "./pages/admin/AdminResellers";
 import AdminInvoices from "./pages/admin/AdminInvoices";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 // Reseller Pages
 import ResellerLayout from "./pages/reseller/ResellerLayout";

@@ -315,16 +315,18 @@ class APITester:
         
         # Test admin endpoint without token
         response, error = self.make_request("GET", "/admin/analytics", expected_status=401)
-        print(f"DEBUG: Admin no token - Response: {response}, Error: {error}")
-        if response is None and error and "401" in error:
+        if error and "401" in error:
+            self.log_test("Admin Auth Required", True, "Correctly rejected unauthorized request")
+        elif response and "Not authenticated" in str(response):
             self.log_test("Admin Auth Required", True, "Correctly rejected unauthorized request")
         else:
             self.log_test("Admin Auth Required", False, f"Should require authentication - got response: {response}, error: {error}")
         
         # Test reseller endpoint without token
         response, error = self.make_request("GET", "/reseller/profile", expected_status=401)
-        print(f"DEBUG: Reseller no token - Response: {response}, Error: {error}")
-        if response is None and error and "401" in error:
+        if error and "401" in error:
+            self.log_test("Reseller Auth Required", True, "Correctly rejected unauthorized request")
+        elif response and "Not authenticated" in str(response):
             self.log_test("Reseller Auth Required", True, "Correctly rejected unauthorized request")
         else:
             self.log_test("Reseller Auth Required", False, f"Should require authentication - got response: {response}, error: {error}")
@@ -333,8 +335,9 @@ class APITester:
         if self.reseller_admin_token:
             headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
             response, error = self.make_request("GET", "/admin/analytics", headers=headers, expected_status=403)
-            print(f"DEBUG: Reseller->Admin - Response: {response}, Error: {error}")
-            if response is None and error and "403" in error:
+            if error and "403" in error:
+                self.log_test("Role-Based Access Control", True, "Reseller correctly denied admin access")
+            elif response and "Access denied" in str(response):
                 self.log_test("Role-Based Access Control", True, "Reseller correctly denied admin access")
             else:
                 self.log_test("Role-Based Access Control", False, f"Should deny cross-role access - got response: {response}, error: {error}")

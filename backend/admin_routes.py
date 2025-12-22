@@ -1,0 +1,716 @@
+from fastapi import APIRouter, HTTPException, Depends, status, Request
+from typing import List, Optional
+from datetime import datetime, timezone, timedelta
+import uuid
+import logging
+
+from reseller_models import (
+    Reseller, ResellerResponse, PlatformAnalytics,
+    ResellerInvoice, InvoiceItem
+)
+from auth import UserResponse
+
+logger = logging.getLogger(__name__)
+
+admin_router = APIRouter(prefix="/api/admin", tags=["Admin"])
+
+# Dependency to get DB - will be set from server.py
+db = None
+
+def set_db(database):
+    global db
+    db = database
+
+
+async def get_current_super_admin(request: Request):
+    """Get current super admin from auth"""
+    from auth import get_current_user, oauth2_scheme
+    token = await oauth2_scheme(request)
+    user = await get_current_user(token, db)
+    
+    # Check if user is super admin
+    user_doc = await db.users.find_one({"id": user.id})
+    if not user_doc or user_doc.get("role") != "super_admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Super admin privileges required."
+        )
+    
+    return user
+
+
+# ==================== Reseller Management ====================
+
+@admin_router.get("/resellers", response_model=dict)
+async def list_resellers(
+    status_filter: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """List all resellers"""
+    try:
+        query = {}
+        if status_filter:
+            query["status"] = status_filter
+        
+        resellers = await db.resellers.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.resellers.count_documents(query)
+        
+        return {
+            "resellers": resellers,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+    except Exception as e:
+        logger.error(f"Error listing resellers: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/resellers/{reseller_id}", response_model=dict)
+async def get_reseller(
+    reseller_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get specific reseller details"""
+    try:
+        reseller = await db.resellers.find_one(
+            {"id": reseller_id},
+            {"_id": 0}
+        )
+        
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        # Get owner details
+        owner = await db.users.find_one(
+            {"id": reseller["owner_user_id"]},
+            {"_id": 0, "hashed_password": 0}
+        )
+        
+        # Get customer count
+        customer_count = await db.users.count_documents({"reseller_id": reseller_id})
+        
+        return {
+            "reseller": reseller,
+            "owner": owner,
+            "customer_count": customer_count
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/resellers", response_model=dict)
+async def create_reseller(
+    data: dict,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Create a new reseller (admin-initiated)"""
+    try:
+        from auth import get_password_hash
+        
+        # Check if subdomain is taken
+        existing = await db.resellers.find_one({"subdomain": data["subdomain"]})
+        if existing:
+            raise HTTPException(status_code=400, detail="Subdomain already taken")
+        
+        # Create owner user
+        user_id = str(uuid.uuid4())
+        hashed_password = get_password_hash(data.get("owner_password", "temp123"))
+        
+        owner_user = {
+            "id": user_id,
+            "email": data["owner_email"],
+            "full_name": data["owner_name"],
+            "hashed_password": hashed_password,
+            "role": "reseller_admin",
+            "active_tier": None,
+            "created_at": datetime.now(timezone.utc),
+            "is_active": True,
+            "payment_history": []
+        }
+        
+        await db.users.insert_one(owner_user)
+        
+        # Create reseller
+        reseller_id = str(uuid.uuid4())
+        reseller = {
+            "id": reseller_id,
+            "company_name": data["company_name"],
+            "brand_name": data["brand_name"],
+            "subdomain": data["subdomain"],
+            "custom_domain": data.get("custom_domain"),
+            "status": "active",  # Admin-created resellers are auto-approved
+            "branding": {
+                "logo_url": None,
+                "primary_color": "#1e40af",
+                "secondary_color": "#7c3aed",
+                "favicon_url": None
+            },
+            "pricing": {
+                "tier_1_price": 89900,
+                "tier_2_price": 150000,
+                "tier_3_price": 300000,
+                "currency": "ZAR"
+            },
+            "contact_info": data.get("contact_info", {
+                "email": data["owner_email"],
+                "phone": "",
+                "address": ""
+            }),
+            "legal": {"terms_url": None, "privacy_url": None},
+            "subscription": {
+                "plan": "monthly",
+                "monthly_fee": 250000,
+                "status": "active",
+                "next_billing_date": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+                "payment_method": "invoice"
+            },
+            "stats": {
+                "total_customers": 0,
+                "active_customers": 0,
+                "total_revenue": 0,
+                "this_month_revenue": 0
+            },
+            "owner_user_id": user_id,
+            "api_key": f"rsl_{uuid.uuid4().hex}",
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        
+        await db.resellers.insert_one(reseller)
+        
+        logger.info(f"Reseller created by admin: {data['company_name']}")
+        
+        return {
+            "success": True,
+            "reseller_id": reseller_id,
+            "message": "Reseller created successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.put("/resellers/{reseller_id}", response_model=dict)
+async def update_reseller(
+    reseller_id: str,
+    data: dict,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Update reseller details"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        # Build update
+        update_data = {}
+        allowed_fields = [
+            "company_name", "brand_name", "custom_domain", "status",
+            "branding", "pricing", "contact_info", "legal", "subscription"
+        ]
+        
+        for field in allowed_fields:
+            if field in data:
+                update_data[field] = data[field]
+        
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"Reseller updated by admin: {reseller_id}")
+        
+        return {"success": True, "message": "Reseller updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.delete("/resellers/{reseller_id}", response_model=dict)
+async def delete_reseller(
+    reseller_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Delete a reseller (soft delete by setting status to 'deleted')"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    "status": "deleted",
+                    "updated_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        # Deactivate owner user
+        await db.users.update_one(
+            {"id": reseller["owner_user_id"]},
+            {"$set": {"is_active": False}}
+        )
+        
+        logger.info(f"Reseller deleted by admin: {reseller_id}")
+        
+        return {"success": True, "message": "Reseller deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Reseller Actions ====================
+
+@admin_router.post("/resellers/{reseller_id}/approve", response_model=dict)
+async def approve_reseller(
+    reseller_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Approve a pending reseller"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        if reseller["status"] != "pending":
+            raise HTTPException(status_code=400, detail="Reseller is not pending approval")
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    "status": "active",
+                    "subscription.status": "active",
+                    "subscription.next_billing_date": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+                    "updated_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        logger.info(f"Reseller approved: {reseller_id}")
+        
+        return {"success": True, "message": "Reseller approved successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error approving reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/resellers/{reseller_id}/suspend", response_model=dict)
+async def suspend_reseller(
+    reseller_id: str,
+    reason: Optional[str] = None,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Suspend a reseller"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    "status": "suspended",
+                    "suspension_reason": reason,
+                    "suspended_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        logger.info(f"Reseller suspended: {reseller_id}")
+        
+        return {"success": True, "message": "Reseller suspended successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error suspending reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/resellers/{reseller_id}/activate", response_model=dict)
+async def activate_reseller(
+    reseller_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Activate a suspended reseller"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    "status": "active",
+                    "suspension_reason": None,
+                    "suspended_at": None,
+                    "updated_at": datetime.now(timezone.utc)
+                },
+                "$unset": {"suspension_reason": "", "suspended_at": ""}
+            }
+        )
+        
+        logger.info(f"Reseller activated: {reseller_id}")
+        
+        return {"success": True, "message": "Reseller activated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error activating reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Analytics ====================
+
+@admin_router.get("/analytics", response_model=dict)
+async def get_platform_analytics(
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get platform-wide analytics"""
+    try:
+        # Reseller counts
+        total_resellers = await db.resellers.count_documents({})
+        active_resellers = await db.resellers.count_documents({"status": "active"})
+        pending_resellers = await db.resellers.count_documents({"status": "pending"})
+        suspended_resellers = await db.resellers.count_documents({"status": "suspended"})
+        
+        # Customer counts
+        total_customers = await db.users.count_documents({"role": "customer"})
+        
+        # Revenue from reseller invoices
+        pipeline = [
+            {"$match": {"status": "paid"}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]
+        revenue_result = await db.reseller_invoices.aggregate(pipeline).to_list(1)
+        total_revenue = revenue_result[0]["total"] if revenue_result else 0
+        
+        # This month revenue
+        now = datetime.now(timezone.utc)
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        pipeline_month = [
+            {
+                "$match": {
+                    "status": "paid",
+                    "paid_date": {"$gte": start_of_month}
+                }
+            },
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]
+        month_result = await db.reseller_invoices.aggregate(pipeline_month).to_list(1)
+        this_month_revenue = month_result[0]["total"] if month_result else 0
+        
+        # Invoice counts
+        pending_invoices = await db.reseller_invoices.count_documents({"status": "pending"})
+        overdue_invoices = await db.reseller_invoices.count_documents({"status": "overdue"})
+        
+        return {
+            "resellers": {
+                "total": total_resellers,
+                "active": active_resellers,
+                "pending": pending_resellers,
+                "suspended": suspended_resellers
+            },
+            "customers": {
+                "total": total_customers
+            },
+            "revenue": {
+                "total": total_revenue,
+                "this_month": this_month_revenue,
+                "currency": "ZAR"
+            },
+            "invoices": {
+                "pending": pending_invoices,
+                "overdue": overdue_invoices
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/analytics/revenue", response_model=dict)
+async def get_revenue_analytics(
+    months: int = 12,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get revenue analytics by month"""
+    try:
+        pipeline = [
+            {"$match": {"status": "paid"}},
+            {
+                "$group": {
+                    "_id": {
+                        "year": {"$year": "$paid_date"},
+                        "month": {"$month": "$paid_date"}
+                    },
+                    "revenue": {"$sum": "$amount"},
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id.year": -1, "_id.month": -1}},
+            {"$limit": months}
+        ]
+        
+        results = await db.reseller_invoices.aggregate(pipeline).to_list(months)
+        
+        monthly_data = [
+            {
+                "month": f"{r['_id']['year']}-{str(r['_id']['month']).zfill(2)}",
+                "revenue": r["revenue"],
+                "invoices_paid": r["count"]
+            }
+            for r in results
+        ]
+        
+        return {
+            "monthly_revenue": monthly_data,
+            "currency": "ZAR"
+        }
+    except Exception as e:
+        logger.error(f"Error getting revenue analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Invoice Management ====================
+
+@admin_router.get("/invoices", response_model=dict)
+async def list_invoices(
+    status_filter: Optional[str] = None,
+    reseller_id: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """List all reseller invoices"""
+    try:
+        query = {}
+        if status_filter:
+            query["status"] = status_filter
+        if reseller_id:
+            query["reseller_id"] = reseller_id
+        
+        invoices = await db.reseller_invoices.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        # Add reseller info to each invoice
+        for invoice in invoices:
+            reseller = await db.resellers.find_one(
+                {"id": invoice["reseller_id"]},
+                {"_id": 0, "company_name": 1, "brand_name": 1}
+            )
+            invoice["reseller_name"] = reseller["company_name"] if reseller else "Unknown"
+        
+        total = await db.reseller_invoices.count_documents(query)
+        
+        return {
+            "invoices": invoices,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+    except Exception as e:
+        logger.error(f"Error listing invoices: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/generate-invoices", response_model=dict)
+async def generate_monthly_invoices(
+    period: Optional[str] = None,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Generate monthly invoices for all active resellers"""
+    try:
+        now = datetime.now(timezone.utc)
+        if not period:
+            period = f"{now.year}-{str(now.month).zfill(2)}"
+        
+        # Get all active resellers
+        resellers = await db.resellers.find(
+            {"status": "active"},
+            {"_id": 0}
+        ).to_list(None)
+        
+        invoices_created = 0
+        
+        for reseller in resellers:
+            # Check if invoice already exists for this period
+            existing = await db.reseller_invoices.find_one({
+                "reseller_id": reseller["id"],
+                "period": period
+            })
+            
+            if existing:
+                continue
+            
+            # Create invoice
+            invoice_number = f"INV-{period}-{str(invoices_created + 1).zfill(4)}"
+            monthly_fee = reseller["subscription"].get("monthly_fee", 250000)
+            
+            invoice = {
+                "id": str(uuid.uuid4()),
+                "reseller_id": reseller["id"],
+                "invoice_number": invoice_number,
+                "amount": monthly_fee,
+                "period": period,
+                "due_date": (now + timedelta(days=15)).isoformat(),
+                "paid_date": None,
+                "status": "pending",
+                "items": [
+                    {
+                        "description": f"Monthly SaaS Subscription - {period}",
+                        "amount": monthly_fee
+                    }
+                ],
+                "created_at": now
+            }
+            
+            await db.reseller_invoices.insert_one(invoice)
+            invoices_created += 1
+        
+        logger.info(f"Generated {invoices_created} invoices for period {period}")
+        
+        return {
+            "success": True,
+            "invoices_created": invoices_created,
+            "period": period
+        }
+    except Exception as e:
+        logger.error(f"Error generating invoices: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/invoices/{invoice_id}/mark-paid", response_model=dict)
+async def mark_invoice_paid(
+    invoice_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Mark an invoice as paid"""
+    try:
+        invoice = await db.reseller_invoices.find_one({"id": invoice_id})
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        await db.reseller_invoices.update_one(
+            {"id": invoice_id},
+            {
+                "$set": {
+                    "status": "paid",
+                    "paid_date": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        logger.info(f"Invoice marked as paid: {invoice_id}")
+        
+        return {"success": True, "message": "Invoice marked as paid"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error marking invoice paid: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== User Management ====================
+
+@admin_router.get("/users", response_model=dict)
+async def list_users(
+    role: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """List all platform users"""
+    try:
+        query = {}
+        if role:
+            query["role"] = role
+        
+        users = await db.users.find(
+            query,
+            {"_id": 0, "hashed_password": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.users.count_documents(query)
+        
+        return {
+            "users": users,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+    except Exception as e:
+        logger.error(f"Error listing users: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/create-admin", response_model=dict)
+async def create_super_admin(
+    data: dict,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Create a new super admin user"""
+    try:
+        from auth import get_password_hash
+        
+        # Check if email exists
+        existing = await db.users.find_one({"email": data["email"]})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already exists")
+        
+        user_id = str(uuid.uuid4())
+        hashed_password = get_password_hash(data["password"])
+        
+        new_admin = {
+            "id": user_id,
+            "email": data["email"],
+            "full_name": data["full_name"],
+            "hashed_password": hashed_password,
+            "role": "super_admin",
+            "active_tier": None,
+            "created_at": datetime.now(timezone.utc),
+            "is_active": True,
+            "payment_history": []
+        }
+        
+        await db.users.insert_one(new_admin)
+        
+        logger.info(f"Super admin created: {data['email']}")
+        
+        return {
+            "success": True,
+            "user_id": user_id,
+            "message": "Super admin created successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating admin: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

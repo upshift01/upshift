@@ -128,7 +128,7 @@ const AdminResellers = () => {
         </Button>
       </div>
 
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader>
           <div className="flex flex-col md:flex-row gap-4 justify-between">
             <div className="relative flex-1 max-w-md">

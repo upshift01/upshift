@@ -67,10 +67,10 @@ const AppContent = () => {
         <Route path="/super-admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="resellers" element={<AdminResellers />} />
-          <Route path="users" element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
           <Route path="invoices" element={<AdminInvoices />} />
           <Route path="analytics" element={<AdminAnalytics />} />
-          <Route path="settings" element={<AdminDashboard />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         {/* Reseller Dashboard Routes */}

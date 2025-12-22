@@ -448,8 +448,11 @@ async def generate_resume_pdf(resume_data: ResumeCreate):
 # ==================== AI Endpoints ====================
 
 @api_router.post("/ai/improve-section")
-async def improve_resume_section(data: dict):
-    """Improve a specific section of resume using AI"""
+async def improve_resume_section(
+    data: dict,
+    current_user: UserResponse = Depends(check_user_has_tier(['tier-1', 'tier-2', 'tier-3']))
+):
+    """Improve a specific section of resume using AI (Requires paid tier)"""
     try:
         section = data.get("section", "")
         content = data.get("content", "")
@@ -460,15 +463,22 @@ async def improve_resume_section(data: dict):
         
         improved_text = await ai_service.improve_resume_section(section, content, context)
         
+        logger.info(f"AI improvement requested by user {current_user.email}")
+        
         return {"improved_text": improved_text}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error improving section: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.post("/ai/analyze-resume")
-async def analyze_resume(file: UploadFile = File(...)):
-    """Analyze uploaded resume and provide feedback"""
+async def analyze_resume(
+    file: UploadFile = File(...),
+    current_user: UserResponse = Depends(check_user_has_tier(['tier-1', 'tier-2', 'tier-3']))
+):
+    """Analyze uploaded resume and provide feedback (Requires paid tier)"""
     try:
         # Read file content
         content = await file.read()
@@ -482,15 +492,22 @@ async def analyze_resume(file: UploadFile = File(...)):
         # Analyze with AI
         analysis = await ai_service.analyze_resume(resume_text)
         
+        logger.info(f"Resume analysis requested by user {current_user.email}")
+        
         return analysis
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error analyzing resume: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.post("/ai/job-match")
-async def calculate_job_match(data: dict):
-    """Calculate how well resume matches job description"""
+async def calculate_job_match(
+    data: dict,
+    current_user: UserResponse = Depends(check_user_has_tier(['tier-2', 'tier-3']))
+):
+    """Calculate how well resume matches job description (Requires Professional or Elite tier)"""
     try:
         resume_text = data.get("resume_text", "")
         job_description = data.get("job_description", "")
@@ -500,7 +517,11 @@ async def calculate_job_match(data: dict):
         
         match_result = await ai_service.get_job_match_score(resume_text, job_description)
         
+        logger.info(f"Job match analysis requested by user {current_user.email}")
+        
         return match_result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error calculating job match: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

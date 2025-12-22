@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel
@@ -37,7 +37,7 @@ class ReminderSchedule(BaseModel):
     email_subject_prefix: Optional[str] = None
 
 
-async def get_current_super_admin(request):
+async def get_current_super_admin(request: Request):
     """Get current super admin from auth"""
     from auth import get_current_user, oauth2_scheme
     token = await oauth2_scheme(request)
@@ -53,7 +53,7 @@ async def get_current_super_admin(request):
 # ==================== Email Settings ====================
 
 @scheduler_router.get("/email-settings")
-async def get_email_settings(request, admin = Depends(get_current_super_admin)):
+async def get_email_settings(admin = Depends(get_current_super_admin)):
     """Get current email settings (password masked)"""
     settings = await db.platform_settings.find_one({"type": "email"}, {"_id": 0})
     
@@ -78,7 +78,6 @@ async def get_email_settings(request, admin = Depends(get_current_super_admin)):
 @scheduler_router.post("/email-settings")
 async def save_email_settings(
     settings: EmailSettings,
-    request,
     admin = Depends(get_current_super_admin)
 ):
     """Save email settings"""

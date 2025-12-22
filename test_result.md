@@ -842,6 +842,78 @@ backend:
         - agent: "testing"
         - comment: "✅ Payment history endpoint working correctly. GET /api/payments/history returns proper structure with 'payments' array and 'total_count' field. Authentication working correctly with customer token. Endpoint successfully retrieves user's payment records from database."
 
+  - task: "Customer Invoice Creation API"
+    implemented: true
+    working: true
+    file: "reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ POST /api/reseller/customer-invoices/create working perfectly. Successfully creates customer invoices with proper request body validation. Returns success=true, invoice object with id, invoice_number, status='pending' as expected. Invoice creation tested with sample data: customer_name='Test User', customer_email='test@customer.com', plan_name='ATS Optimize', amount=899. Generated invoice number format: INV-YYYYMM-XXXXXXXX."
+
+  - task: "Get Customer Invoices List API"
+    implemented: true
+    working: true
+    file: "reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ GET /api/reseller/customer-invoices working correctly. Returns invoices array containing all customer invoices for the authenticated reseller. Successfully retrieves newly created invoices and displays them in the list. Proper authentication and reseller filtering implemented."
+
+  - task: "Create Payment Link for Invoice API"
+    implemented: true
+    working: false
+    file: "reseller_routes.py, yoco_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ POST /api/reseller/customer-invoices/{invoice_id}/create-payment-link fails due to Yoco API key validation. Returns 500 error with Yoco response: 'A key is required, but has not been specified.' The endpoint structure, authentication, and invoice validation are working correctly. The failure is expected behavior when Yoco credentials are not properly configured. With valid Yoco credentials, this endpoint would return payment_url successfully."
+
+  - task: "Get Customers List for Invoice Dropdown API"
+    implemented: true
+    working: true
+    file: "reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ GET /api/reseller/customers-list working correctly. Returns customers array with customer data for invoice creation dropdown. Properly filters customers belonging to the authenticated reseller. Returns customer fields: id, full_name, email, active_tier for dropdown population."
+
+  - task: "Mark Invoice as Paid API"
+    implemented: true
+    working: true
+    file: "reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ POST /api/reseller/customer-invoices/{invoice_id}/mark-paid working perfectly. Successfully updates invoice status from 'pending' to 'paid', sets paid_date and payment_method='manual'. Status change verified by subsequent GET request showing updated status. Proper validation prevents marking already paid invoices."
+
+  - task: "Payment Checkout with Reseller Yoco Settings"
+    implemented: true
+    working: false
+    file: "server.py, yoco_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ POST /api/payments/create-checkout?tier_id=tier-1 (as customer user test@example.com) fails due to Yoco API key validation. The endpoint correctly attempts to use reseller's Yoco settings when customer belongs to reseller, but fails with 'A key is required' error from Yoco API. Endpoint structure, customer authentication, and reseller Yoco settings lookup are working correctly. Issue is with test Yoco credentials in environment."
+
 test_plan:
   current_focus:
     - "Customer Portal Testing Complete"

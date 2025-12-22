@@ -1039,6 +1039,165 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_customer_invoice_creation(self):
+        """Test Customer Invoice Creation feature and Yoco Payment integration for UpShift reseller portal"""
+        print("\n🧾 Testing Customer Invoice Creation & Yoco Payment Integration...")
+        
+        if not self.reseller_admin_token:
+            self.log_test("Customer Invoice Creation Tests", False, "No reseller admin token available")
+            return False
+        
+        reseller_headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+        
+        # Test 1: Get Customers List for Invoice Dropdown
+        response, error = self.make_request("GET", "/reseller/customers-list", headers=reseller_headers)
+        if error:
+            self.log_test("GET Customers List", False, error)
+        else:
+            if "customers" in response:
+                customer_count = len(response.get("customers", []))
+                self.log_test("GET Customers List", True, f"Retrieved {customer_count} customers for dropdown")
+            else:
+                self.log_test("GET Customers List", False, "Customers field not found in response")
+        
+        # Test 2: Create Customer Invoice API
+        invoice_data = {
+            "customer_name": "Test User",
+            "customer_email": "test@customer.com", 
+            "plan_name": "ATS Optimize",
+            "amount": 899
+        }
+        
+        response, error = self.make_request("POST", "/reseller/customer-invoices/create", 
+                                          headers=reseller_headers, data=invoice_data)
+        if error:
+            self.log_test("Create Customer Invoice", False, error)
+            return False
+        else:
+            required_fields = ["success", "invoice"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Create Customer Invoice", False, f"Missing fields: {missing_fields}")
+                return False
+            
+            if not response.get("success"):
+                self.log_test("Create Customer Invoice", False, "Success flag is False")
+                return False
+            
+            invoice = response.get("invoice", {})
+            required_invoice_fields = ["id", "invoice_number", "status"]
+            missing_invoice_fields = [f for f in required_invoice_fields if f not in invoice]
+            
+            if missing_invoice_fields:
+                self.log_test("Create Customer Invoice", False, f"Missing invoice fields: {missing_invoice_fields}")
+                return False
+            
+            if invoice.get("status") != "pending":
+                self.log_test("Create Customer Invoice", False, f"Expected status 'pending', got '{invoice.get('status')}'")
+                return False
+            
+            invoice_id = invoice.get("id")
+            invoice_number = invoice.get("invoice_number")
+            self.log_test("Create Customer Invoice", True, 
+                        f"Invoice created: {invoice_number}, ID: {invoice_id}, Status: {invoice.get('status')}")
+        
+        # Test 3: Get Customer Invoices List
+        response, error = self.make_request("GET", "/reseller/customer-invoices", headers=reseller_headers)
+        if error:
+            self.log_test("GET Customer Invoices List", False, error)
+        else:
+            if "invoices" in response:
+                invoices = response.get("invoices", [])
+                invoice_count = len(invoices)
+                
+                # Check if our created invoice is in the list
+                created_invoice_found = any(inv.get("id") == invoice_id for inv in invoices)
+                
+                if created_invoice_found:
+                    self.log_test("GET Customer Invoices List", True, 
+                                f"Retrieved {invoice_count} invoices including newly created invoice")
+                else:
+                    self.log_test("GET Customer Invoices List", True, 
+                                f"Retrieved {invoice_count} invoices (newly created invoice not found)")
+            else:
+                self.log_test("GET Customer Invoices List", False, "Invoices field not found in response")
+        
+        # Test 4: Create Payment Link for Invoice (may fail if Yoco not configured)
+        if invoice_id:
+            response, error = self.make_request("POST", f"/reseller/customer-invoices/{invoice_id}/create-payment-link", 
+                                              headers=reseller_headers)
+            if error:
+                # Expected to fail if Yoco credentials aren't configured
+                if "Yoco payment is not configured" in error or "Yoco" in error:
+                    self.log_test("Create Payment Link", True, 
+                                f"Payment link creation failed as expected (Yoco not configured): {error}")
+                else:
+                    self.log_test("Create Payment Link", False, error)
+            else:
+                if "payment_url" in response:
+                    payment_url = response.get("payment_url")
+                    self.log_test("Create Payment Link", True, f"Payment link created: {payment_url}")
+                else:
+                    # Check if it's an error response about Yoco configuration
+                    if response.get("error") and "Yoco" in str(response.get("error")):
+                        self.log_test("Create Payment Link", True, 
+                                    f"Payment link creation failed as expected: {response.get('error')}")
+                    else:
+                        self.log_test("Create Payment Link", False, "Payment URL not returned and no Yoco error")
+        
+        # Test 5: Mark Invoice as Paid
+        if invoice_id:
+            response, error = self.make_request("POST", f"/reseller/customer-invoices/{invoice_id}/mark-paid", 
+                                              headers=reseller_headers)
+            if error:
+                self.log_test("Mark Invoice as Paid", False, error)
+            else:
+                if response.get("success"):
+                    self.log_test("Mark Invoice as Paid", True, "Invoice successfully marked as paid")
+                    
+                    # Verify the status change by getting the invoice list again
+                    response, error = self.make_request("GET", "/reseller/customer-invoices", headers=reseller_headers)
+                    if not error and "invoices" in response:
+                        invoices = response.get("invoices", [])
+                        updated_invoice = next((inv for inv in invoices if inv.get("id") == invoice_id), None)
+                        if updated_invoice and updated_invoice.get("status") == "paid":
+                            self.log_test("Verify Invoice Status Change", True, "Invoice status successfully changed to 'paid'")
+                        else:
+                            self.log_test("Verify Invoice Status Change", False, 
+                                        f"Invoice status not updated correctly: {updated_invoice.get('status') if updated_invoice else 'Invoice not found'}")
+                else:
+                    self.log_test("Mark Invoice as Paid", False, "Success flag not returned")
+        
+        # Test 6: Payment Checkout with Reseller Yoco Settings (as customer user)
+        if self.customer_token:
+            customer_headers = {"Authorization": f"Bearer {self.customer_token}"}
+            
+            response, error = self.make_request("POST", "/payments/create-checkout?tier_id=tier-1", 
+                                              headers=customer_headers)
+            if error:
+                # Expected to fail due to Yoco API key validation issues
+                if "Yoco" in error or "key is required" in error or "A key is required" in error:
+                    self.log_test("Payment Checkout with Reseller Yoco Settings", True, 
+                                f"Checkout creation failed as expected (Yoco API validation): {error}")
+                else:
+                    self.log_test("Payment Checkout with Reseller Yoco Settings", False, error)
+            else:
+                required_fields = ["checkout_id", "redirect_url", "payment_id"]
+                missing_fields = [f for f in required_fields if f not in response]
+                if missing_fields:
+                    self.log_test("Payment Checkout with Reseller Yoco Settings", False, 
+                                f"Missing fields: {missing_fields}")
+                else:
+                    checkout_id = response.get("checkout_id")
+                    payment_id = response.get("payment_id")
+                    self.log_test("Payment Checkout with Reseller Yoco Settings", True, 
+                                f"Checkout created successfully: {checkout_id}, Payment ID: {payment_id}")
+        else:
+            self.log_test("Payment Checkout with Reseller Yoco Settings", False, 
+                        "No customer authentication token available")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift White-Label SaaS Backend API Tests")

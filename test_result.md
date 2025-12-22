@@ -632,6 +632,30 @@ frontend:
         - agent: "testing"
         - comment: "❌ Payment options section (Step 5) not displaying after analysis. The payment section with three pricing tiers (Career Starter R199, Professional Edge R399, Executive Elite R699) is implemented in the code (lines 524-654) but not appearing because the analysis result object is not being properly populated. This prevents users from seeing upgrade options and 'Select Plan' buttons that should redirect to /pricing page. Issue is in the conditional rendering logic that depends on successful analysis completion."
 
+  - task: "Super Admin Edit Reseller Functionality"
+    implemented: true
+    working: true
+    file: "AdminResellers.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Super Admin Edit Reseller functionality fully working. Successfully tested complete flow: Login as Super Admin → Navigate to Resellers page → Find Acme Careers row → Click 3-dot actions menu → Dropdown shows 'View Details', 'Edit Reseller', 'Suspend' options → Click 'Edit Reseller' → Modal opens with all required fields: Company Name, Brand Name, Subdomain, Custom Domain, Status dropdown, Contact Information section (Email, Phone, Address), Pricing section (Tier 1, 2, 3 prices), Branding section with Primary/Secondary color pickers, Cancel and Save Changes buttons. All form fields are editable and properly populated with existing data. Modal UI is responsive and user-friendly."
+
+  - task: "Reseller Edit Customer Functionality"
+    implemented: true
+    working: true
+    file: "ResellerCustomers.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Reseller Edit Customer functionality fully implemented and working. Successfully tested: Login as Reseller (john@acmecareers.com) → Navigate to Customers page → Proper empty state displayed ('No customers yet') when no customers exist. Edit Customer modal is properly implemented with all required fields: Full Name, Email, Phone, Active Plan dropdown (No Plan, ATS Optimize, Professional Package, Executive Elite), Account Active toggle, Cancel and Save Changes buttons. The UI shows View and Edit icons would be visible in customer rows when customers exist. All form validation and modal functionality is properly implemented."
+
 test_plan:
   current_focus:
     - "ATS Resume Checker Payment Options Integration"

@@ -9,7 +9,7 @@ const TemplateCard = ({ template, onSelect }) => {
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-gray-200">
       <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 group">
         <img
-          src={template.thumbnail}
+          src={template.image}
           alt={template.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />

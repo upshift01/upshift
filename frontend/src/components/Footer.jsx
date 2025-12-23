@@ -194,9 +194,9 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-gray-400 text-sm text-center md:text-left">
-              <p>© {currentYear} UpShift. All rights reserved.</p>
+              <p>© {currentYear} {theme.brandName}. All rights reserved.</p>
               <p className="mt-1">
-                UpShift™ is a registered trademark. Made with ❤️ in South Africa.
+                {theme.brandName}™ is a registered trademark. Made with ❤️ in South Africa.
               </p>
             </div>
             

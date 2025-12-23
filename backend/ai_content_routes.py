@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone
@@ -10,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage
-from auth import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +18,20 @@ ai_content_router = APIRouter(prefix="/api/ai-content", tags=["AI Content"])
 
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
 # Database reference - will be set by server.py
 db = None
 
 def set_db(database):
     global db
     db = database
+
+
+async def get_current_user_with_db(token: str = Depends(oauth2_scheme)):
+    """Get current user with db access"""
+    from auth import get_current_user
+    return await get_current_user(token, db)
 
 
 # ==================== COVER LETTER GENERATION ====================

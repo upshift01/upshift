@@ -6,7 +6,7 @@
 Test the improved Invoice PDF layout with VAT number support.
 
 ### Backend URL:
-https://upshift-resume.preview.emergentagent.com
+https://upshift-payments.preview.emergentagent.com
 
 ### Test Cases:
 1. **Save Reseller Site Settings with VAT Number** - POST /api/reseller/site-settings with vat_number: "4123456789"
@@ -26,7 +26,7 @@ https://upshift-resume.preview.emergentagent.com
 ## VAT Number Invoice PDF Layout Test Execution Results
 
 **Test Date:** 2025-12-23  
-**Backend URL:** https://upshift-resume.preview.emergentagent.com/api  
+**Backend URL:** https://upshift-payments.preview.emergentagent.com/api  
 **Test Status:** ✅ ALL VAT NUMBER INVOICE PDF LAYOUT TESTS PASSED
 
 ### Test Results Summary:
@@ -165,7 +165,7 @@ The improved Invoice PDF layout with VAT number support is **FULLY FUNCTIONAL**.
 Test the Strategy Call Booking payment and confirmation email functionality.
 
 ### Backend URL:
-https://upshift-resume.preview.emergentagent.com
+https://upshift-payments.preview.emergentagent.com
 
 ### Test Flow:
 1. **Create a Strategy Call Booking** - POST /api/booking/create
@@ -193,7 +193,7 @@ https://upshift-resume.preview.emergentagent.com
 ## Strategy Call Booking Payment Test Execution Results
 
 **Test Date:** 2025-12-23  
-**Backend URL:** https://upshift-resume.preview.emergentagent.com/api  
+**Backend URL:** https://upshift-payments.preview.emergentagent.com/api  
 **Test Status:** ✅ ALL STRATEGY CALL BOOKING PAYMENT TESTS PASSED
 
 ### Test Results Summary:
@@ -371,7 +371,7 @@ Test the Invoice PDF Download with Yoco QR Code functionality in UpShift platfor
 ## Invoice PDF Download with Yoco QR Code Test Execution Results
 
 **Test Date:** 2025-12-23  
-**Backend URL:** https://upshift-resume.preview.emergentagent.com/api  
+**Backend URL:** https://upshift-payments.preview.emergentagent.com/api  
 **Test Status:** ✅ ALL INVOICE PDF DOWNLOAD WITH YOCO QR CODE TESTS PASSED
 
 ### Test Results Summary:
@@ -589,7 +589,7 @@ The Invoice PDF Download functionality is **FULLY FUNCTIONAL**. All test scenari
 Test the redesigned Invoice PDF generation with QR code functionality.
 
 ### Backend URL:
-https://upshift-resume.preview.emergentagent.com
+https://upshift-payments.preview.emergentagent.com
 
 ### Test Cases:
 1. **Customer Invoice PDF with QR Code (Reseller Portal)** - Login as Reseller: john@acmecareers.com / acme123456, GET /api/reseller/customer-invoices/fd4fef62-cf2d-4225-8d7b-3d0b8b011823/pdf
@@ -607,7 +607,7 @@ https://upshift-resume.preview.emergentagent.com
 ## Invoice PDF Generation with QR Code Test Execution Results
 
 **Test Date:** 2025-12-23  
-**Backend URL:** https://upshift-resume.preview.emergentagent.com/api  
+**Backend URL:** https://upshift-payments.preview.emergentagent.com/api  
 **Test Status:** ✅ ALL INVOICE PDF GENERATION WITH QR CODE TESTS PASSED
 
 ### Test Results Summary:
@@ -847,7 +847,7 @@ The Email Settings functionality is **FULLY FUNCTIONAL**. All test scenarios pas
 ### Backend API Tests - Reseller Customer Signup E2E Flow
 
 **Test Date:** 2024-12-19  
-**Backend URL:** https://upshift-resume.preview.emergentagent.com/api  
+**Backend URL:** https://upshift-payments.preview.emergentagent.com/api  
 **Test Status:** ✅ ALL TESTS PASSED
 
 #### Test Results Summary:
@@ -923,7 +923,7 @@ The Reseller Customer Signup E2E flow is **FULLY FUNCTIONAL**. All test scenario
 ## Frontend E2E Test Results
 
 **Test Date:** 2024-12-23  
-**Frontend URL:** https://upshift-resume.preview.emergentagent.com  
+**Frontend URL:** https://upshift-payments.preview.emergentagent.com  
 **Test Status:** ✅ FRONTEND FLOW WORKING CORRECTLY
 
 #### Frontend Test Results Summary:
@@ -995,7 +995,7 @@ The frontend reseller customer signup flow is **FULLY FUNCTIONAL**. The registra
 ## Email Settings UI Frontend Test Results
 
 **Test Date:** 2025-12-23  
-**Frontend URL:** https://upshift-resume.preview.emergentagent.com  
+**Frontend URL:** https://upshift-payments.preview.emergentagent.com  
 **Test Status:** ❌ AUTHENTICATION ISSUES PREVENTING FULL UI TEST
 
 #### Email Settings UI Test Results Summary:

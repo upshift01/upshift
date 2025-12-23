@@ -838,6 +838,7 @@ app.include_router(cv_processing_router)
 app.include_router(ai_content_router)
 app.include_router(linkedin_router)
 app.include_router(customer_router)
+app.include_router(content_router)
 
 app.add_middleware(
     CORSMiddleware,

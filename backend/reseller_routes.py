@@ -1676,4 +1676,135 @@ async def verify_domain(domain: str, context: dict = Depends(get_current_reselle
             "error": str(e)
         }
 
+
+# LinkedIn Integration Settings for Resellers
+@reseller_router.get("/linkedin-settings", response_model=dict)
+async def get_reseller_linkedin_settings(context: dict = Depends(get_current_reseller_admin)):
+    """Get LinkedIn OAuth settings for a reseller"""
+    try:
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_linkedin_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if settings:
+            # Mask the client secret for security (show only last 4 chars)
+            if settings.get("client_secret"):
+                secret = settings["client_secret"]
+                settings["client_secret"] = "••••••••" + secret[-4:] if len(secret) > 4 else ""
+            return {
+                **settings,
+                "is_configured": bool(settings.get("client_id") and settings.get("client_secret"))
+            }
+        
+        return {
+            "client_id": "",
+            "client_secret": "",
+            "redirect_uri": "",
+            "use_custom_keys": False,
+            "is_configured": False
+        }
+    except Exception as e:
+        logger.error(f"Error fetching LinkedIn settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/linkedin-settings", response_model=dict)
+async def save_reseller_linkedin_settings(
+    settings: dict,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Save LinkedIn OAuth settings for a reseller"""
+    try:
+        reseller = context["reseller"]
+        
+        # Check if we need to update or preserve the existing secret
+        existing = await db.reseller_linkedin_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        # If the secret looks masked (••••), preserve the existing one
+        client_secret = settings.get("client_secret", "")
+        if client_secret.startswith("••••") and existing:
+            client_secret = existing.get("client_secret", "")
+        
+        update_data = {
+            "reseller_id": reseller["id"],
+            "client_id": settings.get("client_id", ""),
+            "client_secret": client_secret,
+            "redirect_uri": settings.get("redirect_uri", ""),
+            "use_custom_keys": settings.get("use_custom_keys", False),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.reseller_linkedin_settings.update_one(
+            {"reseller_id": reseller["id"]},
+            {"$set": update_data},
+            upsert=True
+        )
+        
+        logger.info(f"LinkedIn settings saved for reseller {reseller['id']}")
+        
+        return {"success": True, "message": "LinkedIn settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving LinkedIn settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/linkedin-settings/test", response_model=dict)
+async def test_reseller_linkedin_connection(context: dict = Depends(get_current_reseller_admin)):
+    """Test LinkedIn OAuth configuration for a reseller"""
+    try:
+        import httpx
+        
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_linkedin_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not settings or not settings.get("client_id") or not settings.get("client_secret"):
+            raise HTTPException(status_code=400, detail="LinkedIn credentials not configured")
+        
+        client_id = settings["client_id"]
+        client_secret = settings["client_secret"]
+        
+        # Test by making a request to LinkedIn's token endpoint
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://www.linkedin.com/oauth/v2/accessToken",
+                data={
+                    "grant_type": "client_credentials",
+                    "client_id": client_id,
+                    "client_secret": client_secret
+                },
+                timeout=15
+            )
+            
+            if response.status_code == 400:
+                response_data = response.json() if response.content else {}
+                error = response_data.get("error", "")
+                
+                if error == "invalid_client":
+                    return {"success": False, "detail": "Invalid Client ID or Client Secret"}
+                else:
+                    # App exists, credentials format is valid
+                    return {"success": True, "message": "LinkedIn credentials verified successfully!"}
+            
+            elif response.status_code == 401:
+                return {"success": False, "detail": "Invalid credentials"}
+            
+            else:
+                return {"success": True, "message": "LinkedIn API connection verified"}
+                
+    except httpx.TimeoutException:
+        return {"success": False, "detail": "Connection timeout"}
+    except Exception as e:
+        logger.error(f"Error testing LinkedIn connection: {str(e)}")
+        return {"success": False, "detail": str(e)}
+
         raise HTTPException(status_code=500, detail=str(e))

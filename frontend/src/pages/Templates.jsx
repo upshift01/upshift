@@ -64,7 +64,7 @@ const Templates = () => {
             Choose Your Perfect CV Template
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Professionally designed templates optimized for South African employers and ATS systems
+            Professionally designed templates optimised for South African employers and ATS systems
           </p>
         </div>
 
@@ -76,7 +76,7 @@ const Templates = () => {
               <TabsTrigger value="professional">Professional</TabsTrigger>
               <TabsTrigger value="modern">Modern</TabsTrigger>
               <TabsTrigger value="creative">Creative</TabsTrigger>
-              <TabsTrigger value="ats">ATS-Optimized</TabsTrigger>
+              <TabsTrigger value="ats">ATS-Optimised</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -106,14 +106,14 @@ const Templates = () => {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">ATS-Friendly</h3>
             <p className="text-gray-600 text-sm">
-              All templates are optimized to pass Applicant Tracking Systems used by major South African companies.
+              All templates are optimised to pass Applicant Tracking Systems used by major South African companies.
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
               <Sparkles className="h-6 w-6 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy to Customize</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy to Customise</h3>
             <p className="text-gray-600 text-sm">
               Simply select a template and fill in your information. Our AI will help you write compelling content.
             </p>

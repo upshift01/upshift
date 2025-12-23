@@ -1373,6 +1373,47 @@ async def create_invoice_payment_link(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@reseller_router.get("/customer-invoices/{invoice_id}/pdf")
+async def download_customer_invoice_pdf(
+    invoice_id: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Download customer invoice as PDF"""
+    try:
+        reseller = context["reseller"]
+        
+        # Get invoice (must belong to this reseller)
+        invoice = await db.customer_invoices.find_one({
+            "id": invoice_id,
+            "reseller_id": reseller["id"]
+        }, {"_id": 0})
+        
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        # Generate PDF with reseller branding
+        pdf_buffer = invoice_pdf_generator.generate_customer_invoice_pdf(
+            invoice=invoice,
+            reseller=reseller
+        )
+        
+        filename = f"invoice_{invoice.get('invoice_number', invoice_id)}.pdf"
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating customer invoice PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @reseller_router.get("/customers-list", response_model=dict)
 async def get_customers_list(context: dict = Depends(get_current_reseller_admin)):
     """Get list of customers for the reseller (for invoice creation dropdown)"""

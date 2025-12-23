@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, Calendar } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
@@ -14,17 +14,43 @@ const PaymentSuccess = () => {
   const { getAuthHeader } = useAuth();
   const [isVerifying, setIsVerifying] = useState(true);
   const [verificationResult, setVerificationResult] = useState(null);
+  const [bookingResult, setBookingResult] = useState(null);
   const [error, setError] = useState(null);
+  const [paymentType, setPaymentType] = useState(null); // 'subscription' or 'booking'
 
   useEffect(() => {
     const checkoutId = searchParams.get('id');
-    if (checkoutId) {
+    const bookingId = searchParams.get('booking');
+    
+    if (bookingId) {
+      // This is a booking payment confirmation
+      setPaymentType('booking');
+      confirmBookingPayment(bookingId);
+    } else if (checkoutId) {
+      // This is a subscription payment verification
+      setPaymentType('subscription');
       verifyPayment(checkoutId);
     } else {
       setError('No payment ID found');
       setIsVerifying(false);
     }
   }, [searchParams]);
+
+  const confirmBookingPayment = async (bookingId) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/booking/${bookingId}/confirm-payment`,
+        {}
+      );
+
+      setBookingResult(response.data);
+      setIsVerifying(false);
+    } catch (err) {
+      console.error('Booking confirmation error:', err);
+      setError(err.response?.data?.detail || 'Failed to confirm booking payment');
+      setIsVerifying(false);
+    }
+  };
 
   const verifyPayment = async (checkoutId) => {
     try {
@@ -70,10 +96,10 @@ const PaymentSuccess = () => {
           </CardHeader>
           <CardContent className="text-center">
             <Button
-              onClick={() => navigate('/pricing')}
+              onClick={() => navigate(paymentType === 'booking' ? '/book-strategy-call' : '/pricing')}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              Back to Pricing
+              {paymentType === 'booking' ? 'Back to Booking' : 'Back to Pricing'}
             </Button>
           </CardContent>
         </Card>
@@ -81,6 +107,68 @@ const PaymentSuccess = () => {
     );
   }
 
+  // Booking payment success
+  if (paymentType === 'booking' && bookingResult) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center py-12 px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl text-green-900">Booking Confirmed!</CardTitle>
+            <CardDescription>
+              {bookingResult.message}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <Calendar className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-600 mb-1">Your Strategy Call</p>
+              <p className="text-lg font-bold text-gray-900">
+                Confirmed
+              </p>
+            </div>
+            
+            {bookingResult.meeting_link && (
+              <div className="bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2">Meeting Link</p>
+                <a 
+                  href={bookingResult.meeting_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 font-medium break-all"
+                >
+                  {bookingResult.meeting_link}
+                </a>
+              </div>
+            )}
+            
+            {bookingResult.email_sent && (
+              <p className="text-sm text-green-600">
+                ✓ A confirmation email has been sent to your email address
+              </p>
+            )}
+            
+            <p className="text-sm text-gray-600">
+              We look forward to speaking with you! Please check your email for full details.
+            </p>
+            
+            <div className="flex flex-col space-y-2">
+              <Button
+                onClick={() => navigate('/')}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                Back to Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Subscription payment success (original flow)
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center py-12 px-4">
       <Card className="w-full max-w-md">

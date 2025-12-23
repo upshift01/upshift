@@ -37,7 +37,7 @@ from booking_routes import booking_router, set_db as set_booking_db
 from scheduler_routes import scheduler_router, set_db as set_scheduler_db
 from ai_assistant_routes import ai_assistant_router, set_db as set_ai_assistant_db
 from cv_processing_routes import cv_processing_router, set_db as set_cv_processing_db
-from ai_content_routes import ai_content_router
+from ai_content_routes import ai_content_router, set_db as set_ai_content_db
 from email_service import email_service
 from linkedin_routes import router as linkedin_router, set_db as set_linkedin_db
 from customer_routes import router as customer_router, set_db as set_customer_db

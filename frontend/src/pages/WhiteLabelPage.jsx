@@ -220,61 +220,6 @@ const WhiteLabelPage = () => {
     { icon: TrendingUp, text: 'Regular feature updates' },
   ];
 
-  const plans = [
-    {
-      name: 'Starter',
-      price: 'R2,499',
-      period: '/month',
-      description: 'Perfect for small agencies and coaches starting out',
-      features: [
-        'Up to 50 active clients',
-        'White-label branding',
-        'Custom subdomain',
-        'Email support',
-        'Basic analytics',
-        'Standard templates'
-      ],
-      cta: 'Start Free Trial',
-      popular: false
-    },
-    {
-      name: 'Professional',
-      price: 'R4,999',
-      period: '/month',
-      description: 'For growing businesses with higher volume needs',
-      features: [
-        'Up to 200 active clients',
-        'Full white-label branding',
-        'Custom domain support',
-        'Priority email & chat support',
-        'Advanced analytics',
-        'All premium templates',
-        'API access',
-        'Custom email templates'
-      ],
-      cta: 'Start Free Trial',
-      popular: true
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      period: '',
-      description: 'For large organizations with custom requirements',
-      features: [
-        'Unlimited clients',
-        'Multiple brand instances',
-        'Dedicated account manager',
-        'Phone & video support',
-        'Custom integrations',
-        'SLA guarantees',
-        'On-boarding training',
-        'Custom development'
-      ],
-      cta: 'Contact Sales',
-      popular: false
-    }
-  ];
-
   const faqs = [
     {
       q: 'How quickly can I get started?',

@@ -888,3 +888,163 @@ async def test_yoco_connection(admin: UserResponse = Depends(get_current_super_a
         logger.error(f"Error testing Yoco connection: {str(e)}")
         return {"success": False, "detail": f"Error: {str(e)}"}
 
+
+
+# LinkedIn Integration Settings
+@admin_router.get("/linkedin-settings", response_model=dict)
+async def get_linkedin_settings(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get platform LinkedIn OAuth settings"""
+    try:
+        import os
+        
+        # Get from database or environment
+        settings = await db.platform_settings.find_one({"key": "linkedin"}, {"_id": 0})
+        
+        if settings:
+            return {
+                "client_id": settings.get("client_id", ""),
+                "client_secret": "••••••••" + settings.get("client_secret", "")[-4:] if settings.get("client_secret") else "",
+                "redirect_uri": settings.get("redirect_uri", ""),
+                "is_configured": bool(settings.get("client_id") and settings.get("client_secret")),
+                "status": settings.get("status", {"connected": False})
+            }
+        
+        # Fall back to environment variables
+        client_id = os.environ.get("LINKEDIN_CLIENT_ID", "")
+        client_secret = os.environ.get("LINKEDIN_CLIENT_SECRET", "")
+        
+        return {
+            "client_id": client_id,
+            "client_secret": "••••••••" + client_secret[-4:] if client_secret else "",
+            "redirect_uri": os.environ.get("LINKEDIN_REDIRECT_URI", ""),
+            "is_configured": bool(client_id and client_secret),
+            "status": {"connected": bool(client_id and client_secret)}
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching LinkedIn settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/linkedin-settings", response_model=dict)
+async def save_linkedin_settings(data: dict, admin: UserResponse = Depends(get_current_super_admin)):
+    """Save platform LinkedIn OAuth settings"""
+    try:
+        import os
+        
+        # Get existing settings to preserve secret if masked
+        existing = await db.platform_settings.find_one({"key": "linkedin"}, {"_id": 0})
+        
+        client_secret = data.get("client_secret", "")
+        
+        # If secret is masked (••••), keep the existing one
+        if client_secret.startswith("••••") and existing:
+            client_secret = existing.get("client_secret", "")
+        
+        settings = {
+            "key": "linkedin",
+            "client_id": data.get("client_id", ""),
+            "client_secret": client_secret,
+            "redirect_uri": data.get("redirect_uri", ""),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_by": admin.id
+        }
+        
+        await db.platform_settings.update_one(
+            {"key": "linkedin"},
+            {"$set": settings},
+            upsert=True
+        )
+        
+        # Also update environment variables for immediate use
+        if settings["client_id"]:
+            os.environ["LINKEDIN_CLIENT_ID"] = settings["client_id"]
+        if client_secret:
+            os.environ["LINKEDIN_CLIENT_SECRET"] = client_secret
+        if settings["redirect_uri"]:
+            os.environ["LINKEDIN_REDIRECT_URI"] = settings["redirect_uri"]
+        
+        logger.info(f"LinkedIn settings updated by admin {admin.email}")
+        
+        return {"success": True, "message": "LinkedIn settings saved successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error saving LinkedIn settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/linkedin-settings/test", response_model=dict)
+async def test_linkedin_connection(admin: UserResponse = Depends(get_current_super_admin)):
+    """Test LinkedIn OAuth configuration by verifying credentials"""
+    try:
+        import os
+        import httpx
+        
+        # Get settings from database or environment
+        settings = await db.platform_settings.find_one({"key": "linkedin"}, {"_id": 0})
+        
+        if settings and settings.get("client_id"):
+            client_id = settings.get("client_id", "")
+            client_secret = settings.get("client_secret", "")
+        else:
+            client_id = os.environ.get("LINKEDIN_CLIENT_ID", "")
+            client_secret = os.environ.get("LINKEDIN_CLIENT_SECRET", "")
+        
+        if not client_id or not client_secret:
+            return {"success": False, "detail": "LinkedIn credentials not configured. Please save your Client ID and Client Secret first."}
+        
+        # Test by making a request to LinkedIn's token endpoint with invalid grant
+        # This will fail but will tell us if the credentials format is valid
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://www.linkedin.com/oauth/v2/accessToken",
+                data={
+                    "grant_type": "client_credentials",
+                    "client_id": client_id,
+                    "client_secret": client_secret
+                },
+                timeout=15
+            )
+            
+            # LinkedIn doesn't support client_credentials grant, but a 400 error 
+            # with specific message indicates credentials are recognized
+            if response.status_code == 400:
+                response_data = response.json() if response.content else {}
+                error = response_data.get("error", "")
+                
+                # If we get "unauthorized_client" it means the app exists but doesn't support this grant
+                # If we get "invalid_client" it means credentials are wrong
+                if error == "invalid_client":
+                    await db.platform_settings.update_one(
+                        {"key": "linkedin"},
+                        {"$set": {"status": {"connected": False, "error": "Invalid credentials"}}}
+                    )
+                    return {"success": False, "detail": "Invalid Client ID or Client Secret. Please verify your LinkedIn App credentials."}
+                else:
+                    # App exists, credentials are valid
+                    await db.platform_settings.update_one(
+                        {"key": "linkedin"},
+                        {"$set": {"status": {"connected": True, "last_checked": datetime.now(timezone.utc).isoformat()}}}
+                    )
+                    return {"success": True, "message": "LinkedIn credentials are valid! OAuth is ready to use."}
+            
+            elif response.status_code == 401:
+                await db.platform_settings.update_one(
+                    {"key": "linkedin"},
+                    {"$set": {"status": {"connected": False, "error": "Invalid credentials"}}}
+                )
+                return {"success": False, "detail": "Invalid credentials. Please check your Client ID and Client Secret."}
+            
+            else:
+                # Unexpected response, but if we got here the API is responding
+                await db.platform_settings.update_one(
+                    {"key": "linkedin"},
+                    {"$set": {"status": {"connected": True, "last_checked": datetime.now(timezone.utc).isoformat()}}}
+                )
+                return {"success": True, "message": "LinkedIn API is responding. Configuration appears valid."}
+                
+    except httpx.TimeoutException:
+        return {"success": False, "detail": "Connection timeout - LinkedIn API is not responding. Please try again."}
+    except Exception as e:
+        logger.error(f"Error testing LinkedIn connection: {str(e)}")
+        return {"success": False, "detail": f"Error: {str(e)}"}

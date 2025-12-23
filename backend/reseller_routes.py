@@ -533,9 +533,9 @@ async def get_revenue_breakdown(
         reseller = context["reseller"]
         reseller_id = reseller["id"]
         
-        # Get monthly revenue for last N months
+        # Get monthly revenue for last N months - check both succeeded and completed
         pipeline = [
-            {"$match": {"reseller_id": reseller_id, "status": "succeeded"}},
+            {"$match": {"reseller_id": reseller_id, "status": {"$in": ["succeeded", "completed"]}}},
             {
                 "$group": {
                     "_id": {
@@ -563,7 +563,7 @@ async def get_revenue_breakdown(
         
         return {
             "monthly_revenue": monthly_data,
-            "currency": reseller["pricing"].get("currency", "ZAR")
+            "currency": reseller["pricing"].get("currency", "ZAR") if reseller.get("pricing") else "ZAR"
         }
     except Exception as e:
         logger.error(f"Error getting revenue: {str(e)}")

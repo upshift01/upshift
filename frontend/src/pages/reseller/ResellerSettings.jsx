@@ -114,7 +114,9 @@ const ResellerSettings = () => {
   const [siteSettings, setSiteSettings] = useState({
     contact: { email: '', phone: '', address: '', whatsapp: '' },
     social_media: { facebook: '', twitter: '', linkedin: '', instagram: '', youtube: '', tiktok: '' },
-    business_hours: ''
+    business_hours: '',
+    vat_number: '',
+    company_registration: ''
   });
 
   useEffect(() => {

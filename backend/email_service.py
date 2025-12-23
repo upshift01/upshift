@@ -247,6 +247,91 @@ class EmailService:
         
         return await self.send_email(to_email, subject, html_body)
     
+    async def send_booking_confirmation(
+        self,
+        to_email: str,
+        customer_name: str,
+        booking_date: str,
+        booking_time: str,
+        meeting_link: str,
+        amount: str,
+        company_name: str = "UpShift"
+    ) -> bool:
+        """Send booking confirmation email after successful payment"""
+        subject = f"Your Strategy Call is Confirmed! - {company_name}"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #1e40af, #7c3aed); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .success-badge {{ background: #059669; color: white; padding: 10px 20px; border-radius: 20px; display: inline-block; margin-bottom: 20px; }}
+                .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af; }}
+                .details p {{ margin: 8px 0; }}
+                .meeting-link {{ background: #1e40af; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; display: inline-block; margin: 15px 0; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>✓ Booking Confirmed!</h1>
+                </div>
+                <div class="content">
+                    <div style="text-align: center;">
+                        <span class="success-badge">Payment Successful</span>
+                    </div>
+                    
+                    <p>Dear {customer_name},</p>
+                    
+                    <p>Great news! Your payment of <strong>{amount}</strong> has been received and your strategy call is now confirmed.</p>
+                    
+                    <div class="details">
+                        <p><strong>📅 Date:</strong> {booking_date}</p>
+                        <p><strong>🕐 Time:</strong> {booking_time}</p>
+                        <p><strong>💰 Amount Paid:</strong> {amount}</p>
+                    </div>
+                    
+                    <p><strong>Your Meeting Link:</strong></p>
+                    <p>Use the link below to join your strategy call at the scheduled time:</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="{meeting_link}" class="meeting-link">Join Strategy Call</a>
+                    </div>
+                    
+                    <p style="font-size: 12px; color: #6b7280;">
+                        Meeting Link: <a href="{meeting_link}">{meeting_link}</a>
+                    </p>
+                    
+                    <p><strong>What to Prepare:</strong></p>
+                    <ul>
+                        <li>Your current CV/resume</li>
+                        <li>Any specific questions about your career goals</li>
+                        <li>A quiet space with good internet connection</li>
+                    </ul>
+                    
+                    <p>If you need to reschedule, please contact us at least 24 hours before your appointment.</p>
+                    
+                    <p>We look forward to speaking with you!</p>
+                    
+                    <p>Best regards,<br>The {company_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated confirmation from {company_name}.</p>
+                    <p>If you did not make this booking, please contact us immediately.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body)
+    
     async def test_connection(self) -> Dict:
         """Test SMTP connection"""
         if not self.is_configured:

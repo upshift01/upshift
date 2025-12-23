@@ -455,9 +455,9 @@ async def get_reseller_stats(context: dict = Depends(get_current_reseller_admin)
             "active_tier": {"$ne": None}
         })
         
-        # Revenue calculations
+        # Revenue calculations - check for both 'succeeded' and 'completed' statuses
         pipeline = [
-            {"$match": {"reseller_id": reseller_id, "status": "succeeded"}},
+            {"$match": {"reseller_id": reseller_id, "status": {"$in": ["succeeded", "completed"]}}},
             {"$group": {"_id": None, "total": {"$sum": "$amount_cents"}}}
         ]
         revenue_result = await db.payments.aggregate(pipeline).to_list(1)
@@ -470,7 +470,7 @@ async def get_reseller_stats(context: dict = Depends(get_current_reseller_admin)
             {
                 "$match": {
                     "reseller_id": reseller_id,
-                    "status": "succeeded",
+                    "status": {"$in": ["succeeded", "completed"]},
                     "created_at": {"$gte": start_of_month}
                 }
             },
@@ -478,6 +478,19 @@ async def get_reseller_stats(context: dict = Depends(get_current_reseller_admin)
         ]
         month_result = await db.payments.aggregate(pipeline_month).to_list(1)
         this_month_revenue = month_result[0]["total"] if month_result else 0
+        
+        # Count new customers this month
+        new_customers_month = await db.users.count_documents({
+            "reseller_id": reseller_id,
+            "role": "customer",
+            "created_at": {"$gte": start_of_month}
+        })
+        
+        # Count pending payments
+        pending_payments = await db.payments.count_documents({
+            "reseller_id": reseller_id,
+            "status": "pending"
+        })
         
         # Update stats in reseller document
         await db.resellers.update_one(
@@ -488,7 +501,9 @@ async def get_reseller_stats(context: dict = Depends(get_current_reseller_admin)
                         "total_customers": total_customers,
                         "active_customers": active_customers,
                         "total_revenue": total_revenue,
-                        "this_month_revenue": this_month_revenue
+                        "this_month_revenue": this_month_revenue,
+                        "new_customers_month": new_customers_month,
+                        "pending_payments": pending_payments
                     }
                 }
             }
@@ -499,7 +514,9 @@ async def get_reseller_stats(context: dict = Depends(get_current_reseller_admin)
             "active_customers": active_customers,
             "total_revenue": total_revenue,
             "this_month_revenue": this_month_revenue,
-            "currency": reseller["pricing"].get("currency", "ZAR")
+            "new_customers_month": new_customers_month,
+            "pending_payments": pending_payments,
+            "currency": reseller["pricing"].get("currency", "ZAR") if reseller.get("pricing") else "ZAR"
         }
     except Exception as e:
         logger.error(f"Error getting stats: {str(e)}")

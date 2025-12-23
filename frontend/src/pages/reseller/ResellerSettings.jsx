@@ -1150,6 +1150,135 @@ const ResellerSettings = () => {
         </div>
       )}
 
+      {/* LinkedIn Settings Tab */}
+      {activeTab === 'linkedin' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Linkedin className="h-5 w-5 text-[#0A66C2]" />
+                LinkedIn Integration
+                {linkedinSettings.use_custom_keys && linkedinSettings.client_id && (
+                  <Badge className="ml-2 bg-green-100 text-green-700">Custom Keys Active</Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  Configure your own LinkedIn App credentials to enable the LinkedIn-to-Resume feature for your customers. 
+                  If not configured, the platform's default LinkedIn integration will be used (if available).
+                </p>
+              </div>
+
+              {/* Enable Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-medium text-gray-900">Use Custom LinkedIn Credentials</p>
+                  <p className="text-sm text-gray-500">Enable to use your own LinkedIn App credentials</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={linkedinSettings.use_custom_keys}
+                    onChange={(e) => setLinkedinSettings({...linkedinSettings, use_custom_keys: e.target.checked})}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              {linkedinSettings.use_custom_keys && (
+                <>
+                  {/* API Credentials */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Client ID *</label>
+                      <Input
+                        value={linkedinSettings.client_id}
+                        onChange={(e) => setLinkedinSettings({...linkedinSettings, client_id: e.target.value})}
+                        placeholder="Enter your LinkedIn App Client ID"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Client Secret *</label>
+                      <div className="relative">
+                        <Input
+                          type={showLinkedinSecret ? 'text' : 'password'}
+                          value={linkedinSettings.client_secret}
+                          onChange={(e) => setLinkedinSettings({...linkedinSettings, client_secret: e.target.value})}
+                          placeholder="Enter your LinkedIn App Client Secret"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowLinkedinSecret(!showLinkedinSecret)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showLinkedinSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Redirect URI (Optional)</label>
+                    <Input
+                      value={linkedinSettings.redirect_uri}
+                      onChange={(e) => setLinkedinSettings({...linkedinSettings, redirect_uri: e.target.value})}
+                      placeholder="https://yourdomain.com/api/linkedin/callback"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Must match the redirect URI in your LinkedIn App settings</p>
+                  </div>
+                </>
+              )}
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button onClick={handleSaveLinkedinSettings} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save LinkedIn Settings'}
+                </Button>
+                {linkedinSettings.use_custom_keys && (
+                  <Button variant="outline" onClick={handleTestLinkedin} disabled={testingLinkedin}>
+                    <RefreshCw className={`h-4 w-4 mr-2 ${testingLinkedin ? 'animate-spin' : ''}`} />
+                    {testingLinkedin ? 'Testing...' : 'Test Connection'}
+                  </Button>
+                )}
+                <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    LinkedIn Developer Portal
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Help Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>How to Get LinkedIn API Credentials</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                <li>Go to the <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn Developer Portal</a></li>
+                <li>Click <strong>"Create App"</strong> if you don't have one</li>
+                <li>Fill in your app details (name, LinkedIn Page, logo)</li>
+                <li>Go to the <strong>"Auth"</strong> tab in your app</li>
+                <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+                <li>Add your redirect URI under <strong>"Authorized redirect URLs"</strong></li>
+              </ol>
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> LinkedIn API access may require app verification for certain features. 
+                  Contact LinkedIn Developer Support if you need access to additional profile data.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* ChatGPT Settings Tab */}
       {activeTab === 'chatgpt' && (
         <div className="space-y-6">

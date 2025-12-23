@@ -1167,6 +1167,7 @@ async def save_site_settings(data: dict, admin: UserResponse = Depends(get_curre
             "business_hours": data.get("business_hours", ""),
             "vat_number": data.get("vat_number", ""),
             "company_registration": data.get("company_registration", ""),
+            "meeting_link": data.get("meeting_link", ""),
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "updated_by": admin.id
         }

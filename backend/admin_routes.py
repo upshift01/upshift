@@ -1113,6 +1113,8 @@ async def get_site_settings(admin: UserResponse = Depends(get_current_super_admi
                 "contact": settings.get("contact", {}),
                 "social_media": settings.get("social_media", {}),
                 "business_hours": settings.get("business_hours", ""),
+                "vat_number": settings.get("vat_number", ""),
+                "company_registration": settings.get("company_registration", ""),
                 "updated_at": settings.get("updated_at")
             }
         
@@ -1132,7 +1134,9 @@ async def get_site_settings(admin: UserResponse = Depends(get_current_super_admi
                 "youtube": "",
                 "tiktok": ""
             },
-            "business_hours": "Monday - Friday: 8:00 AM - 5:00 PM"
+            "business_hours": "Monday - Friday: 8:00 AM - 5:00 PM",
+            "vat_number": "",
+            "company_registration": ""
         }
     except Exception as e:
         logger.error(f"Error fetching site settings: {str(e)}")

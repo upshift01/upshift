@@ -2061,36 +2061,22 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         return True
 
     def run_all_tests(self):
-        """Run all test suites focusing on Platform Pricing Configuration"""
-        print("🚀 Starting UpShift Platform Pricing Configuration Backend API Tests")
+        """Run all test suites focusing on AI Assistant Bot Feature"""
+        print("🚀 Starting UpShift AI Assistant Bot Backend API Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
-        # Run authentication first
+        # Run authentication first (but AI Assistant endpoints don't require auth)
         auth_success = self.test_authentication()
         
-        if auth_success:
-            # PRIMARY TEST: Platform Pricing Configuration (Review Request)
-            print("\n🎯 FOCUS TEST: Platform Pricing Configuration")
-            print("=" * 80)
-            self.test_platform_pricing_configuration()
-            
-            # SECONDARY TEST: Invoice PDF Download with Yoco QR Code (Previous Review Request)
-            print("\n🎯 SECONDARY TEST: Invoice PDF Generation with QR Code")
-            print("=" * 80)
-            self.test_invoice_pdf_download_with_yoco_qr()
-            
-            # TERTIARY TEST: VAT Number Invoice PDF Layout (Previous Review Request)
-            print("\n🎯 TERTIARY TEST: VAT Number Invoice PDF Layout")
-            print("=" * 80)
-            self.test_vat_number_invoice_pdf_functionality()
-        else:
-            print("❌ Authentication failed - cannot proceed with tests")
-            return False
+        # PRIMARY TEST: AI Assistant Bot Feature (Review Request)
+        print("\n🎯 FOCUS TEST: AI Assistant Bot Feature")
+        print("=" * 80)
+        self.test_ai_assistant_bot_feature()
         
         # Print summary
         print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY - Platform Pricing Configuration")
+        print("📊 TEST SUMMARY - AI Assistant Bot Feature")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -2112,7 +2098,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         # Return success if no critical failures
         critical_failures = [
             t for t in self.failed_tests 
-            if "Authentication" in t["test"] or "Connection error" in t["details"]
+            if "Connection error" in t["details"]
         ]
         
         if critical_failures:
@@ -2122,7 +2108,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             print("⚠️  Some tests failed but core functionality appears to work")
             return True
         else:
-            print("✅ ALL TESTS PASSED - Platform Pricing Configuration is working correctly")
+            print("✅ ALL TESTS PASSED - AI Assistant Bot Feature is working correctly")
             return True
 
     def test_vat_number_invoice_pdf_functionality(self):

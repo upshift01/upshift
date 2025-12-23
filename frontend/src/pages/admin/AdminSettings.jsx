@@ -1040,7 +1040,7 @@ const AdminSettings = () => {
                 When a customer makes a payment:
               </p>
               <ul className="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
-                <li>If customer belongs to a reseller with Yoco configured → Uses reseller's Yoco account</li>
+                <li>If customer belongs to a reseller with Yoco configured → Uses reseller&apos;s Yoco account</li>
                 <li>If reseller has no Yoco configured → Falls back to these platform settings</li>
                 <li>Direct platform customers → Uses these platform settings</li>
               </ul>

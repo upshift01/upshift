@@ -10,11 +10,18 @@ class ResellerBranding(BaseModel):
     secondary_color: str = "#7c3aed"
     favicon_url: Optional[str] = None
 
+class StrategyCallPricing(BaseModel):
+    price: int = 69900  # R699 in cents
+    duration_minutes: int = 30
+    included_in_tier_3: bool = True
+    enabled: bool = True
+
 class ResellerPricing(BaseModel):
     tier_1_price: int = 89900  # R899 in cents
     tier_2_price: int = 150000  # R1500
     tier_3_price: int = 300000  # R3000
     currency: str = "ZAR"
+    strategy_call_pricing: Optional[StrategyCallPricing] = None
 
 class ResellerContactInfo(BaseModel):
     email: EmailStr

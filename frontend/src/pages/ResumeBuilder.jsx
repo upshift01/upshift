@@ -412,11 +412,6 @@ const ResumeBuilder = () => {
             )}
           </CardContent>
         </Card>
-                Browse Templates
-              </Button>
-            </CardContent>
-          </Card>
-        )}
 
         <Card className="mb-8">
           <CardHeader>

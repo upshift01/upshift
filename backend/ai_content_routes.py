@@ -232,17 +232,17 @@ class CVGenerationRequest(BaseModel):
 
 
 @ai_content_router.post("/generate-cv")
-async def generate_cv(data: CVGenerationRequest, current_user: dict = Depends(get_current_user_with_db)):
+async def generate_cv(data: CVGenerationRequest, current_user = Depends(get_current_user_with_db)):
     """Generate/enhance a CV using AI"""
     try:
         if not EMERGENT_LLM_KEY:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
         # Check if user has active tier
-        if not current_user.get("active_tier"):
+        if not current_user.active_tier:
             raise HTTPException(status_code=403, detail="Please purchase a plan to generate CVs")
         
-        session_id = f"cv-gen-{current_user['id']}-{uuid.uuid4()}"
+        session_id = f"cv-gen-{current_user.id}-{uuid.uuid4()}"
         
         # If summary is empty or minimal, generate one
         enhanced_summary = data.summary

@@ -60,6 +60,16 @@ const AdminSettings = () => {
   const [testingYoco, setTestingYoco] = useState(false);
   const [yocoStatus, setYocoStatus] = useState(null);
 
+  // LinkedIn Settings State
+  const [linkedinSettings, setLinkedinSettings] = useState({
+    client_id: '',
+    client_secret: '',
+    redirect_uri: ''
+  });
+  const [showLinkedinSecret, setShowLinkedinSecret] = useState(false);
+  const [testingLinkedin, setTestingLinkedin] = useState(false);
+  const [linkedinStatus, setLinkedinStatus] = useState(null);
+
   useEffect(() => {
     if (activeTab === 'email') {
       fetchEmailSettings();

@@ -76,6 +76,13 @@ const ResellerSettings = () => {
   const [showLinkedinSecret, setShowLinkedinSecret] = useState(false);
   const [testingLinkedin, setTestingLinkedin] = useState(false);
 
+  // Site Settings State (Contact & Social Media)
+  const [siteSettings, setSiteSettings] = useState({
+    contact: { email: '', phone: '', address: '', whatsapp: '' },
+    social_media: { facebook: '', twitter: '', linkedin: '', instagram: '', youtube: '', tiktok: '' },
+    business_hours: ''
+  });
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -95,6 +102,9 @@ const ResellerSettings = () => {
     }
     if (activeTab === 'linkedin') {
       fetchLinkedinSettings();
+    }
+    if (activeTab === 'site') {
+      fetchSiteSettings();
     }
   }, [activeTab]);
 

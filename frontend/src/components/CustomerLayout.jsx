@@ -103,7 +103,7 @@ const CustomerLayout = ({ children }) => {
             </div>
             {user?.active_tier && (
               <Badge className="mt-2 bg-green-100 text-green-700 text-xs">
-                {user.active_tier === 'tier-1' ? 'ATS Optimize' : 
+                {user.active_tier === 'tier-1' ? 'ATS Optimise' : 
                  user.active_tier === 'tier-2' ? 'Professional' : 'Executive Elite'}
               </Badge>
             )}

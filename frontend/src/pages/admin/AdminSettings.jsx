@@ -1145,11 +1145,11 @@ const AdminSettings = () => {
             <CardContent>
               <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                 <li>Go to the <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn Developer Portal</a></li>
-                <li>Click <strong>"Create App"</strong> if you don't have one</li>
+                <li>Click <strong>&quot;Create App&quot;</strong> if you don&apos;t have one</li>
                 <li>Fill in app details (name, LinkedIn Page, logo)</li>
-                <li>Go to the <strong>"Auth"</strong> tab in your app</li>
+                <li>Go to the <strong>&quot;Auth&quot;</strong> tab in your app</li>
                 <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
-                <li>Add your redirect URI under <strong>"Authorized redirect URLs"</strong></li>
+                <li>Add your redirect URI under <strong>&quot;Authorized redirect URLs&quot;</strong></li>
                 <li>Request the following OAuth 2.0 scopes:
                   <ul className="list-disc list-inside ml-4 mt-1">
                     <li><code className="bg-gray-100 px-1 rounded">r_liteprofile</code> - Basic profile info</li>

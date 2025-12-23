@@ -139,10 +139,28 @@ const WhiteLabelPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setSubmitted(true);
-    setSubmitting(false);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-content/partner-enquiry`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+      } else {
+        throw new Error(data.detail || 'Failed to submit enquiry');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('Failed to submit enquiry. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const benefits = [

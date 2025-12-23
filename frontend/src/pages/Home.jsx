@@ -277,7 +277,7 @@ const Home = () => {
                 <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="px-5 pb-5 text-gray-600">
-                With our AI-powered tools, you can create a professional, ATS-optimized CV in as little as 15-30 minutes. Our pre-built templates and intelligent suggestions make the process quick and easy—no design skills required.
+                With our AI-powered tools, you can create a professional, ATS-optimised CV in as little as 15-30 minutes. Our pre-built templates and intelligent suggestions make the process quick and easy—no design skills required.
               </div>
             </details>
 

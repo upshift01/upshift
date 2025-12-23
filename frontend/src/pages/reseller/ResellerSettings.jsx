@@ -92,6 +92,9 @@ const ResellerSettings = () => {
     if (activeTab === 'billing') {
       fetchPlatformInvoices();
     }
+    if (activeTab === 'linkedin') {
+      fetchLinkedinSettings();
+    }
   }, [activeTab]);
 
   const fetchProfile = async () => {

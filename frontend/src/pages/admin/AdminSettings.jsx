@@ -243,9 +243,9 @@ const AdminSettings = () => {
       return;
     }
     
-    setTestingEmail(true);
+    setSendingTestEmail(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/scheduler/email-settings/send-test?to_email=${encodeURIComponent(testEmailAddress)}`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/email-settings/send-test?to_email=${encodeURIComponent(testEmailAddress)}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -259,7 +259,7 @@ const AdminSettings = () => {
     } catch (error) {
       setMessage({ type: 'error', text: 'Error sending test email' });
     } finally {
-      setTestingEmail(false);
+      setSendingTestEmail(false);
     }
   };
 

@@ -1749,7 +1749,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
 
     def run_all_tests(self):
         """Run all test suites"""
-        print("🚀 Starting UpShift Invoice PDF Download Backend API Tests")
+        print("🚀 Starting UpShift Invoice PDF Download with Yoco QR Code Backend API Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 60)
         
@@ -1757,8 +1757,8 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         auth_success = self.test_authentication()
         
         if auth_success:
-            # PRIMARY TEST: Invoice PDF Download (Review Request)
-            self.test_invoice_pdf_download()
+            # PRIMARY TEST: Invoice PDF Download with Yoco QR Code (Review Request)
+            self.test_invoice_pdf_download_with_yoco_qr()
             
             # Additional comprehensive tests
             self.test_super_admin_apis()

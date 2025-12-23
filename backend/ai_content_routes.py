@@ -135,13 +135,13 @@ class CVSuggestionRequest(BaseModel):
 
 
 @ai_content_router.post("/cv-suggestion")
-async def get_cv_suggestion(data: CVSuggestionRequest, current_user: dict = Depends(get_current_user_with_db)):
+async def get_cv_suggestion(data: CVSuggestionRequest, current_user = Depends(get_current_user_with_db)):
     """Get AI suggestions for CV fields"""
     try:
         if not EMERGENT_LLM_KEY:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
-        session_id = f"cv-suggestion-{current_user['id']}-{uuid.uuid4()}"
+        session_id = f"cv-suggestion-{current_user.id}-{uuid.uuid4()}"
         
         system_message = """You are an expert CV writer and career coach specialising in the South African job market.
 Provide specific, actionable suggestions to improve CV content.

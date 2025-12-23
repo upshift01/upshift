@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { useToast } from '../hooks/use-toast';
-import { Loader2, Download, Plus, Trash2, Sparkles } from 'lucide-react';
+import { Loader2, Download, Plus, Trash2, Sparkles, Upload, FileText, Wand2 } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import { industries } from '../mockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
@@ -17,6 +17,9 @@ const ResumeBuilder = () => {
   const { user, hasTier } = useAuth();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [aiSuggestions, setAiSuggestions] = useState([]);
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({
@@ -35,6 +38,84 @@ const ResumeBuilder = () => {
     skills: [''],
     languages: [{ language: '', proficiency: '' }],
   });
+
+  // Handle CV file upload and AI enhancement
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+    if (!validTypes.includes(file.type) && !file.name.endsWith('.docx') && !file.name.endsWith('.pdf')) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload a PDF or Word document (.pdf, .docx)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadedFile(file);
+    setIsUploading(true);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cv/extract-and-enhance`, {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to process CV');
+      }
+
+      const data = await response.json();
+      const enhanced = data.enhanced_data;
+
+      // Populate form with enhanced data
+      setFormData({
+        fullName: enhanced.fullName || '',
+        email: enhanced.email || '',
+        phone: enhanced.phone || '',
+        idNumber: '',
+        address: enhanced.address || '',
+        city: enhanced.city || '',
+        province: enhanced.province || '',
+        postalCode: '',
+        industry: enhanced.industry || '',
+        summary: enhanced.summary || '',
+        experiences: enhanced.experiences?.length > 0 
+          ? enhanced.experiences 
+          : [{ title: '', company: '', duration: '', description: '', achievements: '' }],
+        education: enhanced.education?.length > 0 
+          ? enhanced.education 
+          : [{ degree: '', institution: '', year: '', location: '' }],
+        skills: enhanced.skills?.length > 0 ? enhanced.skills : [''],
+        languages: enhanced.languages?.length > 0 
+          ? enhanced.languages 
+          : [{ language: '', proficiency: '' }],
+      });
+
+      setAiSuggestions(data.suggestions || []);
+
+      toast({
+        title: "CV Uploaded & Enhanced! ✨",
+        description: "Your CV content has been extracted and enhanced by AI. Review and edit as needed.",
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Could not process your CV. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Load selected template from localStorage on mount
   React.useEffect(() => {

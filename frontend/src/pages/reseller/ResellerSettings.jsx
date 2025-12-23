@@ -40,15 +40,41 @@ const ResellerSettings = () => {
 
   // Email Settings State
   const [emailSettings, setEmailSettings] = useState({
-    smtp_host: 'smtp.office365.com',
+    provider: 'custom',
+    smtp_host: '',
     smtp_port: 587,
     smtp_user: '',
     smtp_password: '',
+    encryption: 'tls',
     from_email: '',
-    from_name: ''
+    from_name: '',
+    reply_to: ''
   });
   const [testingEmail, setTestingEmail] = useState(false);
   const [testEmailAddress, setTestEmailAddress] = useState('');
+
+  // Email Provider Presets
+  const emailProviders = [
+    { id: 'custom', name: 'Custom SMTP', host: '', port: 587, encryption: 'tls' },
+    { id: 'office365', name: 'Microsoft 365', host: 'smtp.office365.com', port: 587, encryption: 'tls' },
+    { id: 'gmail', name: 'Gmail', host: 'smtp.gmail.com', port: 587, encryption: 'tls' },
+    { id: 'sendgrid', name: 'SendGrid', host: 'smtp.sendgrid.net', port: 587, encryption: 'tls' },
+    { id: 'mailgun', name: 'Mailgun', host: 'smtp.mailgun.org', port: 587, encryption: 'tls' },
+    { id: 'zoho', name: 'Zoho Mail', host: 'smtp.zoho.com', port: 465, encryption: 'ssl' },
+  ];
+
+  const handleEmailProviderChange = (providerId) => {
+    const provider = emailProviders.find(p => p.id === providerId);
+    if (provider) {
+      setEmailSettings({
+        ...emailSettings,
+        provider: providerId,
+        smtp_host: provider.host,
+        smtp_port: provider.port,
+        encryption: provider.encryption
+      });
+    }
+  };
 
   // ChatGPT Settings State
   const [chatgptSettings, setChatgptSettings] = useState({

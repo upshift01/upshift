@@ -770,6 +770,151 @@ const AdminSettings = () => {
         </div>
       )}
 
+      {/* Integrations Tab */}
+      {activeTab === 'integrations' && (
+        <div className="space-y-6">
+          {/* LinkedIn Integration */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Linkedin className="h-5 w-5 text-[#0A66C2]" />
+                    LinkedIn Integration
+                  </CardTitle>
+                  <CardDescription>Configure LinkedIn OAuth for the LinkedIn-to-Resume feature</CardDescription>
+                </div>
+                {linkedinStatus && (
+                  <Badge variant={linkedinStatus.connected ? 'default' : 'destructive'} className={linkedinStatus.connected ? 'bg-green-500' : ''}>
+                    {linkedinStatus.connected ? (
+                      <><CheckCircle className="h-3 w-3 mr-1" /> Connected</>
+                    ) : (
+                      <><XCircle className="h-3 w-3 mr-1" /> Not Connected</>
+                    )}
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* API Credentials */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Client ID *</label>
+                  <Input
+                    value={linkedinSettings.client_id}
+                    onChange={(e) => setLinkedinSettings({...linkedinSettings, client_id: e.target.value})}
+                    placeholder="Enter your LinkedIn App Client ID"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Found in your LinkedIn Developer App settings</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Client Secret *</label>
+                  <div className="relative">
+                    <Input
+                      type={showLinkedinSecret ? 'text' : 'password'}
+                      value={linkedinSettings.client_secret}
+                      onChange={(e) => setLinkedinSettings({...linkedinSettings, client_secret: e.target.value})}
+                      placeholder="Enter your LinkedIn App Client Secret"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLinkedinSecret(!showLinkedinSecret)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showLinkedinSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Keep this confidential</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Redirect URI (Optional)</label>
+                <Input
+                  value={linkedinSettings.redirect_uri}
+                  onChange={(e) => setLinkedinSettings({...linkedinSettings, redirect_uri: e.target.value})}
+                  placeholder="https://yourdomain.com/api/linkedin/callback"
+                />
+                <p className="text-xs text-gray-500 mt-1">Must match the redirect URI configured in your LinkedIn App</p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button onClick={handleSaveLinkedinSettings} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save LinkedIn Settings'}
+                </Button>
+                <Button variant="outline" onClick={handleTestLinkedinConnection} disabled={testingLinkedin}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${testingLinkedin ? 'animate-spin' : ''}`} />
+                  {testingLinkedin ? 'Testing...' : 'Test Connection'}
+                </Button>
+                <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    LinkedIn Developer Portal
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* LinkedIn Setup Guide */}
+          <Card>
+            <CardHeader>
+              <CardTitle>How to Get LinkedIn API Credentials</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                <li>Go to the <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn Developer Portal</a></li>
+                <li>Click <strong>"Create App"</strong> if you don't have one</li>
+                <li>Fill in app details (name, LinkedIn Page, logo)</li>
+                <li>Go to the <strong>"Auth"</strong> tab in your app</li>
+                <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+                <li>Add your redirect URI under <strong>"Authorized redirect URLs"</strong></li>
+                <li>Request the following OAuth 2.0 scopes:
+                  <ul className="list-disc list-inside ml-4 mt-1">
+                    <li><code className="bg-gray-100 px-1 rounded">r_liteprofile</code> - Basic profile info</li>
+                    <li><code className="bg-gray-100 px-1 rounded">r_emailaddress</code> - Email address</li>
+                    <li><code className="bg-gray-100 px-1 rounded">r_basicprofile</code> - Full profile (if available)</li>
+                  </ul>
+                </li>
+              </ol>
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> LinkedIn API access may require app verification. Some features like full profile access 
+                  require LinkedIn partnership or additional verification.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Future Integrations Placeholder */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Other Integrations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 border border-dashed rounded-lg text-center">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Globe className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="font-medium text-gray-600">Odoo ERP</p>
+                  <p className="text-xs text-gray-400">Coming Soon</p>
+                </div>
+                <div className="p-4 border border-dashed rounded-lg text-center">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Database className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="font-medium text-gray-600">More Integrations</p>
+                  <p className="text-xs text-gray-400">Contact Support</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Email Settings Tab */}
       {activeTab === 'email' && (
         <div className="space-y-6">

@@ -392,11 +392,12 @@ def get_initial_industries():
 
 # ==================== ADMIN CRUD Endpoints ====================
 
+from fastapi import Request
+
 # Helper to verify admin access
-async def verify_admin(request):
+async def verify_admin(request: Request):
     """Verify request is from a super admin"""
-    from fastapi import Request
-    from auth import get_current_user, oauth2_scheme
+    from auth import get_current_user
     
     auth_header = request.headers.get("authorization", "")
     if not auth_header.startswith("Bearer "):
@@ -415,7 +416,7 @@ async def verify_admin(request):
 # ==================== CV Templates Admin ====================
 
 @content_router.get("/admin/cv-templates", response_model=dict)
-async def admin_get_cv_templates(request):
+async def admin_get_cv_templates(request: Request):
     """Get all CV templates (including inactive) for admin"""
     await verify_admin(request)
     templates = await db.cv_templates.find({}, {"_id": 0}).to_list(200)
@@ -423,7 +424,7 @@ async def admin_get_cv_templates(request):
 
 
 @content_router.post("/admin/cv-templates", response_model=dict)
-async def admin_create_cv_template(template: CVTemplate, request):
+async def admin_create_cv_template(template: CVTemplate, request: Request):
     """Create a new CV template"""
     await verify_admin(request)
     
@@ -439,7 +440,7 @@ async def admin_create_cv_template(template: CVTemplate, request):
 
 
 @content_router.put("/admin/cv-templates/{template_id}", response_model=dict)
-async def admin_update_cv_template(template_id: str, template: CVTemplate, request):
+async def admin_update_cv_template(template_id: str, template: CVTemplate, request: Request):
     """Update a CV template"""
     await verify_admin(request)
     
@@ -457,7 +458,7 @@ async def admin_update_cv_template(template_id: str, template: CVTemplate, reque
 
 
 @content_router.delete("/admin/cv-templates/{template_id}", response_model=dict)
-async def admin_delete_cv_template(template_id: str, request):
+async def admin_delete_cv_template(template_id: str, request: Request):
     """Delete a CV template"""
     await verify_admin(request)
     
@@ -472,7 +473,7 @@ async def admin_delete_cv_template(template_id: str, request):
 # ==================== Cover Letter Templates Admin ====================
 
 @content_router.get("/admin/cover-letter-templates", response_model=dict)
-async def admin_get_cover_letter_templates(request):
+async def admin_get_cover_letter_templates(request: Request):
     """Get all cover letter templates for admin"""
     await verify_admin(request)
     templates = await db.cover_letter_templates.find({}, {"_id": 0}).to_list(200)
@@ -480,7 +481,7 @@ async def admin_get_cover_letter_templates(request):
 
 
 @content_router.post("/admin/cover-letter-templates", response_model=dict)
-async def admin_create_cover_letter_template(template: CoverLetterTemplate, request):
+async def admin_create_cover_letter_template(template: CoverLetterTemplate, request: Request):
     """Create a new cover letter template"""
     await verify_admin(request)
     
@@ -496,7 +497,7 @@ async def admin_create_cover_letter_template(template: CoverLetterTemplate, requ
 
 
 @content_router.put("/admin/cover-letter-templates/{template_id}", response_model=dict)
-async def admin_update_cover_letter_template(template_id: str, template: CoverLetterTemplate, request):
+async def admin_update_cover_letter_template(template_id: str, template: CoverLetterTemplate, request: Request):
     """Update a cover letter template"""
     await verify_admin(request)
     
@@ -514,7 +515,7 @@ async def admin_update_cover_letter_template(template_id: str, template: CoverLe
 
 
 @content_router.delete("/admin/cover-letter-templates/{template_id}", response_model=dict)
-async def admin_delete_cover_letter_template(template_id: str, request):
+async def admin_delete_cover_letter_template(template_id: str, request: Request):
     """Delete a cover letter template"""
     await verify_admin(request)
     
@@ -529,7 +530,7 @@ async def admin_delete_cover_letter_template(template_id: str, request):
 # ==================== Testimonials Admin ====================
 
 @content_router.get("/admin/testimonials", response_model=dict)
-async def admin_get_testimonials(request):
+async def admin_get_testimonials(request: Request):
     """Get all testimonials for admin"""
     await verify_admin(request)
     testimonials = await db.testimonials.find({}, {"_id": 0}).to_list(200)
@@ -537,7 +538,7 @@ async def admin_get_testimonials(request):
 
 
 @content_router.post("/admin/testimonials", response_model=dict)
-async def admin_create_testimonial(testimonial: Testimonial, request):
+async def admin_create_testimonial(testimonial: Testimonial, request: Request):
     """Create a new testimonial"""
     await verify_admin(request)
     
@@ -552,7 +553,7 @@ async def admin_create_testimonial(testimonial: Testimonial, request):
 
 
 @content_router.put("/admin/testimonials/{testimonial_id}", response_model=dict)
-async def admin_update_testimonial(testimonial_id: str, testimonial: Testimonial, request):
+async def admin_update_testimonial(testimonial_id: str, testimonial: Testimonial, request: Request):
     """Update a testimonial"""
     await verify_admin(request)
     
@@ -568,7 +569,7 @@ async def admin_update_testimonial(testimonial_id: str, testimonial: Testimonial
 
 
 @content_router.delete("/admin/testimonials/{testimonial_id}", response_model=dict)
-async def admin_delete_testimonial(testimonial_id: str, request):
+async def admin_delete_testimonial(testimonial_id: str, request: Request):
     """Delete a testimonial"""
     await verify_admin(request)
     
@@ -583,7 +584,7 @@ async def admin_delete_testimonial(testimonial_id: str, request):
 # ==================== Features Admin ====================
 
 @content_router.get("/admin/features", response_model=dict)
-async def admin_get_features(request):
+async def admin_get_features(request: Request):
     """Get all features for admin"""
     await verify_admin(request)
     features = await db.features.find({}, {"_id": 0}).sort("order", 1).to_list(50)
@@ -591,7 +592,7 @@ async def admin_get_features(request):
 
 
 @content_router.post("/admin/features", response_model=dict)
-async def admin_create_feature(feature: Feature, request):
+async def admin_create_feature(feature: Feature, request: Request):
     """Create a new feature"""
     await verify_admin(request)
     
@@ -606,7 +607,7 @@ async def admin_create_feature(feature: Feature, request):
 
 
 @content_router.put("/admin/features/{feature_id}", response_model=dict)
-async def admin_update_feature(feature_id: str, feature: Feature, request):
+async def admin_update_feature(feature_id: str, feature: Feature, request: Request):
     """Update a feature"""
     await verify_admin(request)
     
@@ -622,7 +623,7 @@ async def admin_update_feature(feature_id: str, feature: Feature, request):
 
 
 @content_router.delete("/admin/features/{feature_id}", response_model=dict)
-async def admin_delete_feature(feature_id: str, request):
+async def admin_delete_feature(feature_id: str, request: Request):
     """Delete a feature"""
     await verify_admin(request)
     
@@ -637,7 +638,7 @@ async def admin_delete_feature(feature_id: str, request):
 # ==================== Industries Admin ====================
 
 @content_router.get("/admin/industries", response_model=dict)
-async def admin_get_industries(request):
+async def admin_get_industries(request: Request):
     """Get all industries for admin"""
     await verify_admin(request)
     industries = await db.industries.find({}, {"_id": 0}).sort("order", 1).to_list(100)
@@ -645,7 +646,7 @@ async def admin_get_industries(request):
 
 
 @content_router.post("/admin/industries", response_model=dict)
-async def admin_create_industry(industry: Industry, request):
+async def admin_create_industry(industry: Industry, request: Request):
     """Create a new industry"""
     await verify_admin(request)
     
@@ -660,7 +661,7 @@ async def admin_create_industry(industry: Industry, request):
 
 
 @content_router.put("/admin/industries/{industry_id}", response_model=dict)
-async def admin_update_industry(industry_id: str, industry: Industry, request):
+async def admin_update_industry(industry_id: str, industry: Industry, request: Request):
     """Update an industry"""
     await verify_admin(request)
     
@@ -676,7 +677,7 @@ async def admin_update_industry(industry_id: str, industry: Industry, request):
 
 
 @content_router.delete("/admin/industries/{industry_id}", response_model=dict)
-async def admin_delete_industry(industry_id: str, request):
+async def admin_delete_industry(industry_id: str, request: Request):
     """Delete an industry"""
     await verify_admin(request)
     

@@ -323,8 +323,30 @@ async def confirm_booking_payment(
                 "message": "Booking was already confirmed."
             }
         
-        # Generate a meeting link (placeholder - in production integrate with Zoom/Google Meet)
-        meeting_link = f"https://meet.upshift.works/strategy-call/{booking_id[:8]}"
+        # Get meeting link from platform or reseller settings
+        meeting_link = None
+        
+        # First check if booking has a reseller_id, get their meeting link
+        if booking.get("reseller_id"):
+            reseller_settings = await db.reseller_site_settings.find_one(
+                {"reseller_id": booking["reseller_id"]},
+                {"_id": 0, "meeting_link": 1}
+            )
+            if reseller_settings and reseller_settings.get("meeting_link"):
+                meeting_link = reseller_settings["meeting_link"]
+        
+        # If no reseller meeting link, use platform settings
+        if not meeting_link:
+            platform_settings = await db.platform_settings.find_one(
+                {"key": "site_settings"},
+                {"_id": 0, "meeting_link": 1}
+            )
+            if platform_settings and platform_settings.get("meeting_link"):
+                meeting_link = platform_settings["meeting_link"]
+        
+        # Fallback to generated link if no configured link
+        if not meeting_link:
+            meeting_link = f"https://meet.upshift.works/strategy-call/{booking_id[:8]}"
         
         await db.bookings.update_one(
             {"id": booking_id},

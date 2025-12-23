@@ -60,9 +60,9 @@ class InvoicePDFGenerator:
             fontName='Helvetica-Bold'
         ))
         
-        # Normal text
+        # Invoice body text
         self.styles.add(ParagraphStyle(
-            name='BodyText',
+            name='InvoiceBodyText',
             parent=self.styles['Normal'],
             fontSize=10,
             textColor=colors.HexColor('#374151'),

@@ -791,6 +791,25 @@ async def list_users(
             {"_id": 0, "hashed_password": 0}
         ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
         
+        # Get all unique reseller IDs
+        reseller_ids = list(set([u.get("reseller_id") for u in users if u.get("reseller_id")]))
+        
+        # Fetch reseller names in bulk
+        reseller_map = {}
+        if reseller_ids:
+            resellers = await db.resellers.find(
+                {"id": {"$in": reseller_ids}},
+                {"_id": 0, "id": 1, "brand_name": 1}
+            ).to_list(len(reseller_ids))
+            reseller_map = {r["id"]: r["brand_name"] for r in resellers}
+        
+        # Add reseller name to each user
+        for user in users:
+            if user.get("reseller_id"):
+                user["reseller_name"] = reseller_map.get(user["reseller_id"], "Unknown")
+            else:
+                user["reseller_name"] = None
+        
         total = await db.users.count_documents(query)
         
         return {

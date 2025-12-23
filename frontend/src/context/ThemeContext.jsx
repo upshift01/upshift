@@ -19,6 +19,18 @@ export const ThemeProvider = ({ children }) => {
     secondaryColor: '#7c3aed',
     faviconUrl: null,
     contactEmail: 'support@upshift.works',
+    contactPhone: '+27 (0) 11 234 5678',
+    contactAddress: '123 Main Street, Sandton, Johannesburg, 2196, South Africa',
+    contactWhatsapp: '',
+    businessHours: '',
+    socialMedia: {
+      facebook: '',
+      twitter: '',
+      linkedin: '',
+      instagram: '',
+      youtube: '',
+      tiktok: ''
+    },
     termsUrl: '/terms',
     privacyUrl: '/privacy',
     pricing: {
@@ -48,6 +60,18 @@ export const ThemeProvider = ({ children }) => {
           secondaryColor: data.secondary_color,
           faviconUrl: data.favicon_url,
           contactEmail: data.contact_email,
+          contactPhone: data.contact_phone,
+          contactAddress: data.contact_address,
+          contactWhatsapp: data.contact_whatsapp || '',
+          businessHours: data.business_hours || '',
+          socialMedia: data.social_media || {
+            facebook: '',
+            twitter: '',
+            linkedin: '',
+            instagram: '',
+            youtube: '',
+            tiktok: ''
+          },
           termsUrl: data.terms_url,
           privacyUrl: data.privacy_url,
           pricing: {

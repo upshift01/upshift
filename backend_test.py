@@ -2235,22 +2235,22 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         return True
 
     def run_all_tests(self):
-        """Run all test suites focusing on AI Assistant Bot Feature"""
-        print("🚀 Starting UpShift AI Assistant Bot Backend API Tests")
+        """Run all test suites focusing on AI Content Generation API endpoints"""
+        print("🚀 Starting UpShift AI Content Generation Backend API Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
-        # Run authentication first (but AI Assistant endpoints don't require auth)
+        # Run authentication first
         auth_success = self.test_authentication()
         
-        # PRIMARY TEST: AI Assistant Bot Feature (Review Request)
-        print("\n🎯 FOCUS TEST: AI Assistant Bot Feature")
+        # PRIMARY TEST: AI Content Generation API endpoints (Review Request)
+        print("\n🎯 FOCUS TEST: AI Content Generation API Endpoints")
         print("=" * 80)
-        self.test_ai_assistant_bot_feature()
+        self.test_ai_content_generation_apis()
         
         # Print summary
         print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY - AI Assistant Bot Feature")
+        print("📊 TEST SUMMARY - AI Content Generation API Endpoints")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -2282,7 +2282,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             print("⚠️  Some tests failed but core functionality appears to work")
             return True
         else:
-            print("✅ ALL TESTS PASSED - AI Assistant Bot Feature is working correctly")
+            print("✅ ALL TESTS PASSED - AI Content Generation API endpoints are working correctly")
             return True
 
     def test_vat_number_invoice_pdf_functionality(self):

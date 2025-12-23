@@ -1265,7 +1265,8 @@ async def send_admin_test_email(to_email: str, admin: UserResponse = Depends(get
         
         msg = MIMEMultipart('alternative')
         msg['Subject'] = 'UpShift - Test Email'
-        msg['From'] = f"{settings.get('from_name', 'UpShift')} <{settings.get('from_email') or settings['smtp_user']}>"
+        from_email = settings.get('from_email') or settings['smtp_user']
+        msg['From'] = f"{settings.get('from_name', 'UpShift')} <{from_email}>"
         msg['To'] = to_email
         
         if settings.get('reply_to'):
@@ -1288,7 +1289,7 @@ async def send_admin_test_email(to_email: str, admin: UserResponse = Depends(get
                 <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
                 <p style="color: #9ca3af; font-size: 12px;">
                     SMTP Server: {settings.get('smtp_host')}<br>
-                    From: {settings.get('from_email') or settings['smtp_user']}
+                    From: {from_email}
                 </p>
             </div>
         </body>
@@ -1298,24 +1299,83 @@ async def send_admin_test_email(to_email: str, admin: UserResponse = Depends(get
         msg.attach(MIMEText(html_content, 'html'))
         
         encryption = settings.get("encryption", "tls")
+        error_message = None
         
-        if encryption == "ssl":
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(settings["smtp_host"], settings["smtp_port"], context=context, timeout=10) as server:
-                server.login(settings["smtp_user"], settings["smtp_password"])
-                server.send_message(msg)
-        elif encryption == "tls":
-            with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
-                server.starttls()
-                server.login(settings["smtp_user"], settings["smtp_password"])
-                server.send_message(msg)
-        else:
-            with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
-                server.login(settings["smtp_user"], settings["smtp_password"])
-                server.send_message(msg)
+        try:
+            if encryption == "ssl":
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(settings["smtp_host"], settings["smtp_port"], context=context, timeout=15) as server:
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+                    server.send_message(msg)
+            elif encryption == "tls":
+                with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=15) as server:
+                    server.starttls()
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=15) as server:
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+                    server.send_message(msg)
+            
+            # Log successful email to email_logs collection
+            await db.email_logs.insert_one({
+                "id": str(uuid.uuid4()),
+                "type": "test_email",
+                "to_email": to_email,
+                "from_email": from_email,
+                "subject": "UpShift - Test Email",
+                "status": "sent",
+                "sent_at": datetime.now(timezone.utc),
+                "sent_by": admin.id,
+                "smtp_host": settings.get("smtp_host"),
+                "provider": settings.get("provider", "custom")
+            })
+            
+            logger.info(f"Test email sent to {to_email} by admin {admin.email}")
+            return {"success": True, "message": f"Test email sent successfully to {to_email}"}
+            
+        except smtplib.SMTPAuthenticationError as e:
+            error_message = f"Authentication failed: Invalid username or password. Please verify your SMTP credentials."
+            logger.error(f"SMTP Auth Error: {str(e)}")
+        except smtplib.SMTPConnectError as e:
+            error_message = f"Could not connect to SMTP server at {settings['smtp_host']}:{settings['smtp_port']}. Please verify host and port."
+            logger.error(f"SMTP Connect Error: {str(e)}")
+        except smtplib.SMTPRecipientsRefused as e:
+            error_message = f"Recipient address rejected: {to_email}. The mail server refused this recipient."
+            logger.error(f"SMTP Recipients Refused: {str(e)}")
+        except smtplib.SMTPSenderRefused as e:
+            error_message = f"Sender address rejected: {from_email}. The mail server refused this sender."
+            logger.error(f"SMTP Sender Refused: {str(e)}")
+        except smtplib.SMTPDataError as e:
+            error_message = f"SMTP data error: The server rejected the email content. Error code: {e.smtp_code}"
+            logger.error(f"SMTP Data Error: {str(e)}")
+        except smtplib.SMTPException as e:
+            error_message = f"SMTP error: {str(e)}"
+            logger.error(f"SMTP Exception: {str(e)}")
+        except TimeoutError:
+            error_message = f"Connection timed out. The SMTP server at {settings['smtp_host']}:{settings['smtp_port']} did not respond."
+            logger.error(f"SMTP Timeout for {settings['smtp_host']}")
+        except Exception as e:
+            error_message = f"Unexpected error: {str(e)}"
+            logger.error(f"Unexpected SMTP error: {str(e)}")
         
-        logger.info(f"Test email sent to {to_email} by admin {admin.email}")
-        return {"success": True, "message": f"Test email sent successfully to {to_email}"}
+        # Log failed email attempt to email_logs collection
+        if error_message:
+            await db.email_logs.insert_one({
+                "id": str(uuid.uuid4()),
+                "type": "test_email",
+                "to_email": to_email,
+                "from_email": from_email,
+                "subject": "UpShift - Test Email",
+                "status": "failed",
+                "error": error_message,
+                "sent_at": datetime.now(timezone.utc),
+                "sent_by": admin.id,
+                "smtp_host": settings.get("smtp_host"),
+                "provider": settings.get("provider", "custom")
+            })
+            return {"success": False, "error": error_message}
+            
     except Exception as e:
-        logger.error(f"Error sending test email: {str(e)}")
+        logger.error(f"Error in send_admin_test_email: {str(e)}")
         return {"success": False, "error": str(e)}

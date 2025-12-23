@@ -171,6 +171,7 @@ const AdminUsers = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">User</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Email</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Role</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Reseller</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Joined</th>
                   </tr>
@@ -190,6 +191,16 @@ const AdminUsers = () => {
                       </td>
                       <td className="py-3 px-4 text-gray-600">{user.email}</td>
                       <td className="py-3 px-4">{getRoleBadge(user.role)}</td>
+                      <td className="py-3 px-4">
+                        {user.reseller_name ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                            <Building2 className="h-3 w-3" />
+                            {user.reseller_name}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-sm">—</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           user.is_active !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

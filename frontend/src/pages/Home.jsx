@@ -25,7 +25,7 @@ const Home = () => {
             </span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            UpShift helps South African job seekers create professional, ATS-optimized CVs 
+            UpShift helps South African job seekers create professional, ATS-optimised CVs 
             and cover letters that stand out in today's competitive market.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

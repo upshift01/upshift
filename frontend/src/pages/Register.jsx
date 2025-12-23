@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -11,6 +12,7 @@ import { Zap, Loader2 } from 'lucide-react';
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -37,11 +39,13 @@ const Register = () => {
       return;
     }
 
+    // Pass reseller_id from white-label config if available
     const result = await register(
       formData.email,
       formData.password,
       formData.fullName,
-      formData.phone
+      formData.phone,
+      theme.resellerId || null
     );
 
     if (result.success) {

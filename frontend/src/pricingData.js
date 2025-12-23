@@ -3,14 +3,14 @@
 export const pricingTiers = [
   {
     id: 'tier-1',
-    name: 'ATS Optimize',
+    name: 'ATS Optimise',
     price: 899,
     priceCents: 89900,
     description: 'Perfect for job seekers who already have a CV',
     features: [
-      'ATS-optimized CV review',
+      'ATS-optimised CV review',
       'AI-powered CV cleanup and enhancement',
-      'Keyword optimization for South African market',
+      'Keyword optimisation for South African market',
       'Professional formatting',
       'ATS compatibility check',
       'PDF download',

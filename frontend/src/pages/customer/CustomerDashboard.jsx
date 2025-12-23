@@ -335,7 +335,7 @@ const CustomerDashboard = () => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">LinkedIn Tools</p>
-                    <p className="text-sm text-gray-500">Optimize your LinkedIn profile</p>
+                    <p className="text-sm text-gray-500">Optimise your LinkedIn profile</p>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />

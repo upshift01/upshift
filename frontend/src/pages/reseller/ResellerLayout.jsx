@@ -37,16 +37,6 @@ const ResellerLayout = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    fetchNotifications();
-    // Toggle dark mode class on body
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
   // Check if user is reseller admin
   if (!user || user.role !== 'reseller_admin') {
     return <Navigate to="/login" replace />;
@@ -66,6 +56,16 @@ const ResellerLayout = () => {
       console.error('Error fetching notifications:', error);
     }
   };
+
+  useEffect(() => {
+    fetchNotifications();
+    // Toggle dark mode class on body
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
   const navItems = [
     { path: '/reseller-dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },

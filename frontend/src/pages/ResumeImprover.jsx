@@ -80,13 +80,13 @@ const ResumeImprover = () => {
       
       toast({
         title: "Analysis Complete!",
-        description: "Your CV has been analyzed by AI. Review the suggestions below.",
+        description: "Your CV has been analysed by AI. Review the suggestions below.",
       });
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
         title: "Analysis Failed",
-        description: error.message || "Could not analyze your CV. Please try again.",
+        description: error.message || "Could not analyse your CV. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -1,24 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cvTemplates } from '../mockData';
 import TemplateCard from '../components/TemplateCard';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useToast } from '../hooks/use-toast';
 import { Badge } from '../components/ui/badge';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+// Fallback data in case API fails
+import { cvTemplates as fallbackTemplates } from '../mockData';
 
 const Templates = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Fetch templates from API
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/api/content/cv-templates`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data.templates && data.templates.length > 0) {
+            setTemplates(data.templates);
+          } else {
+            setTemplates(fallbackTemplates);
+          }
+        } else {
+          setTemplates(fallbackTemplates);
+        }
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        setTemplates(fallbackTemplates);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTemplates();
+  }, []);
+
   const filteredTemplates =
     selectedCategory === 'all'
-      ? cvTemplates
-      : cvTemplates.filter((template) => template.category === selectedCategory);
+      ? templates
+      : templates.filter((template) => template.category === selectedCategory);
 
   const handleSelectTemplate = (template) => {
     // Store the selected template in localStorage
@@ -51,6 +83,17 @@ const Templates = () => {
     });
     navigate('/builder');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading templates...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">

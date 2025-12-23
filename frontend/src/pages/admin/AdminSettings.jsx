@@ -116,7 +116,9 @@ const AdminSettings = () => {
       youtube: '',
       tiktok: ''
     },
-    business_hours: ''
+    business_hours: '',
+    vat_number: '',
+    company_registration: ''
   });
 
   useEffect(() => {

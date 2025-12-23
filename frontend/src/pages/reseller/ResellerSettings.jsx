@@ -392,6 +392,51 @@ const ResellerSettings = () => {
     }
   };
 
+  // Site Settings Functions
+  const fetchSiteSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/site-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSiteSettings({
+          contact: data.contact || { email: '', phone: '', address: '', whatsapp: '' },
+          social_media: data.social_media || { facebook: '', twitter: '', linkedin: '', instagram: '', youtube: '', tiktok: '' },
+          business_hours: data.business_hours || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching site settings:', error);
+    }
+  };
+
+  const handleSaveSiteSettings = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/site-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(siteSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Site settings saved successfully!' });
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save site settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving site settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Yoco Settings Functions
   const fetchYocoSettings = async () => {
     try {

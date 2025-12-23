@@ -211,10 +211,33 @@ const ResumeBuilder = () => {
 
   const getAiSuggestion = async (field) => {
     setAiSuggestion('Getting AI suggestion...');
-    // Mock AI suggestion - will be replaced with actual API call
-    setTimeout(() => {
-      setAiSuggestion('AI suggests: Add specific metrics and quantify your achievements for better impact.');
-    }, 1500);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-content/cv-suggestion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          field: field,
+          current_value: field === 'summary' ? formData.summary : '',
+          job_title: formData.experience?.[0]?.title || '',
+          industry: formData.industry || '',
+          context: JSON.stringify(formData)
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setAiSuggestion(data.suggestion);
+      } else {
+        setAiSuggestion('Unable to get suggestion. Please try again.');
+      }
+    } catch (error) {
+      console.error('AI suggestion error:', error);
+      setAiSuggestion('Unable to get suggestion. Please ensure you have an active plan.');
+    }
   };
 
   const generateCV = async () => {

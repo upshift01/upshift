@@ -1273,6 +1273,8 @@ async def create_customer_invoice(
             "customer_id": invoice_data.get("customer_id"),
             "customer_name": invoice_data.get("customer_name"),
             "customer_email": invoice_data.get("customer_email"),
+            "customer_vat_number": invoice_data.get("customer_vat_number", ""),
+            "customer_address": invoice_data.get("customer_address", ""),
             "plan_name": invoice_data.get("plan_name"),
             "amount": invoice_data.get("amount", 0),
             "currency": "ZAR",

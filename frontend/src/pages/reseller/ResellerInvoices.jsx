@@ -635,6 +635,25 @@ const ResellerInvoices = () => {
                 />
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Customer VAT Number</label>
+                  <Input
+                    value={newInvoice.customer_vat_number}
+                    onChange={(e) => setNewInvoice({...newInvoice, customer_vat_number: e.target.value})}
+                    placeholder="e.g., 4123456789"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Customer Address</label>
+                  <Input
+                    value={newInvoice.customer_address}
+                    onChange={(e) => setNewInvoice({...newInvoice, customer_address: e.target.value})}
+                    placeholder="123 Main Street, City"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1">Plan/Service Name</label>
                 <select

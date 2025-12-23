@@ -115,8 +115,9 @@ const AdminAnalytics = () => {
                 <Building2 className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Resellers</p>
-                <p className="text-2xl font-bold">{analytics?.resellers?.total || 0}</p>
+                <p className="text-sm text-gray-500">Active Resellers</p>
+                <p className="text-2xl font-bold">{analytics?.resellers?.active || 0}</p>
+                <p className="text-xs text-gray-400">{analytics?.resellers?.total || 0} total</p>
               </div>
             </div>
           </CardContent>
@@ -129,8 +130,9 @@ const AdminAnalytics = () => {
                 <Users className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Customers</p>
-                <p className="text-2xl font-bold">{analytics?.customers?.total || 0}</p>
+                <p className="text-sm text-gray-500">Paying Customers</p>
+                <p className="text-2xl font-bold">{analytics?.customers?.paying || 0}</p>
+                <p className="text-xs text-gray-400">{analytics?.customers?.total || 0} total registered</p>
               </div>
             </div>
           </CardContent>
@@ -145,6 +147,10 @@ const AdminAnalytics = () => {
               <div>
                 <p className="text-sm text-gray-500">Total Revenue</p>
                 <p className="text-2xl font-bold">{formatCurrency(analytics?.revenue?.total || 0)}</p>
+                <p className="text-xs text-gray-400">
+                  Fees: {formatShortCurrency(analytics?.revenue?.reseller_fees || 0)} • 
+                  Sales: {formatShortCurrency(analytics?.revenue?.customer_payments || 0)}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -159,6 +165,9 @@ const AdminAnalytics = () => {
               <div>
                 <p className="text-sm text-gray-500">This Month</p>
                 <p className="text-2xl font-bold">{formatCurrency(analytics?.revenue?.this_month || 0)}</p>
+                <p className="text-xs text-gray-400">
+                  {analytics?.invoices?.pending || 0} pending invoices
+                </p>
               </div>
             </div>
           </CardContent>

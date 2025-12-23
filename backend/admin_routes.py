@@ -1558,3 +1558,118 @@ async def update_platform_pricing(
         logger.error(f"Error updating platform pricing: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+# ==================== OpenAI/ChatGPT Settings ====================
+
+@admin_router.get("/openai-settings", response_model=dict)
+async def get_openai_settings(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get OpenAI/ChatGPT configuration"""
+    try:
+        import os
+        settings = await db.platform_settings.find_one({"key": "openai_settings"}, {"_id": 0})
+        
+        # Check if Emergent key is configured in environment
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        
+        if settings:
+            return {
+                "api_key": "********" if settings.get("api_key") else "",
+                "model": settings.get("model", "gpt-4o"),
+                "is_emergent_key": settings.get("is_emergent_key", True),
+                "is_configured": bool(settings.get("api_key")) or bool(emergent_key),
+                "updated_at": settings.get("updated_at")
+            }
+        
+        # Return defaults - using Emergent key
+        return {
+            "api_key": "",
+            "model": "gpt-4o",
+            "is_emergent_key": True,
+            "is_configured": bool(emergent_key)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching OpenAI settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/openai-settings", response_model=dict)
+async def save_openai_settings(data: dict, admin: UserResponse = Depends(get_current_super_admin)):
+    """Save OpenAI/ChatGPT configuration"""
+    try:
+        settings = {
+            "key": "openai_settings",
+            "model": data.get("model", "gpt-4o"),
+            "is_emergent_key": data.get("is_emergent_key", True),
+            "updated_at": datetime.now(timezone.utc),
+            "updated_by": admin.id
+        }
+        
+        # Only update API key if provided and not using Emergent key
+        if not data.get("is_emergent_key") and data.get("api_key") and data.get("api_key") != "********":
+            settings["api_key"] = data.get("api_key")
+        
+        await db.platform_settings.update_one(
+            {"key": "openai_settings"},
+            {"$set": settings},
+            upsert=True
+        )
+        
+        logger.info(f"OpenAI settings updated by admin {admin.email}")
+        
+        return {"success": True, "message": "OpenAI settings saved successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error saving OpenAI settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/openai-settings/test", response_model=dict)
+async def test_openai_connection(admin: UserResponse = Depends(get_current_super_admin)):
+    """Test OpenAI API connection"""
+    try:
+        import os
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Get settings
+        settings = await db.platform_settings.find_one({"key": "openai_settings"}, {"_id": 0})
+        
+        # Determine which key to use
+        if settings and not settings.get("is_emergent_key", True) and settings.get("api_key"):
+            api_key = settings["api_key"]
+        else:
+            api_key = os.environ.get("EMERGENT_LLM_KEY")
+        
+        if not api_key:
+            return {"success": False, "detail": "No API key configured"}
+        
+        model = settings.get("model", "gpt-4o") if settings else "gpt-4o"
+        
+        # Test with a simple request
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"test-{admin.id}",
+            system_message="You are a helpful assistant."
+        ).with_model("openai", model)
+        
+        user_message = UserMessage(text="Say 'Connection successful!' and nothing else.")
+        response = await chat.send_message(user_message)
+        
+        if response and "successful" in response.lower():
+            return {
+                "success": True,
+                "message": "OpenAI connection successful!",
+                "model": model,
+                "response": response
+            }
+        else:
+            return {
+                "success": True,
+                "message": "OpenAI connection working",
+                "model": model,
+                "response": response[:100] if response else "No response"
+            }
+            
+    except Exception as e:
+        logger.error(f"Error testing OpenAI connection: {str(e)}")
+        return {"success": False, "detail": str(e)}

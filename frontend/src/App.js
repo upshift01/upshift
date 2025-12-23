@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import WhatsAppButton from "./components/WhatsAppButton";
 import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/Home";
 import ResumeBuilder from "./pages/ResumeBuilder";

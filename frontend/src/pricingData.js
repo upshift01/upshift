@@ -27,10 +27,10 @@ export const pricingTiers = [
     priceCents: 150000,
     description: 'Complete career toolkit for serious job seekers',
     features: [
-      'Everything in ATS Optimize',
+      'Everything in ATS Optimise',
       'AI-driven CV creation from scratch',
       'Professional cover letter generation',
-      'LinkedIn profile optimization suggestions',
+      'LinkedIn profile optimisation suggestions',
       'Industry-specific keyword targeting',
       'Multiple CV format options',
       'Unlimited revisions (7 days)',

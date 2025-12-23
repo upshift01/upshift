@@ -1992,6 +1992,7 @@ async def save_reseller_site_settings(data: dict, context: dict = Depends(get_cu
             "business_hours": data.get("business_hours", ""),
             "vat_number": data.get("vat_number", ""),
             "company_registration": data.get("company_registration", ""),
+            "meeting_link": data.get("meeting_link", ""),
             "updated_at": datetime.utcnow().isoformat()
         }
         

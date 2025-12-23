@@ -165,7 +165,7 @@ const InterviewPrep = () => {
               <div className="space-y-3">
                 {[
                   'Research the company thoroughly before the interview',
-                  'Use the STAR method for behavioral questions',
+                  'Use the STAR method for behavioural questions',
                   'Prepare questions to ask the interviewer',
                   'Practice your answers out loud',
                   'Dress professionally and arrive early'

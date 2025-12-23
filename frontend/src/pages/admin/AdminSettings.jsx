@@ -137,18 +137,21 @@ const AdminSettings = () => {
 
   const fetchEmailSettings = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/scheduler/email-settings`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/email-settings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
         const data = await response.json();
         setEmailSettings({
-          smtp_host: data.smtp_host || 'smtp.office365.com',
+          provider: data.provider || 'custom',
+          smtp_host: data.smtp_host || '',
           smtp_port: data.smtp_port || 587,
           smtp_user: data.smtp_user || '',
           smtp_password: data.smtp_password || '',
+          encryption: data.encryption || 'tls',
           from_email: data.from_email || '',
-          from_name: data.from_name || 'UpShift'
+          from_name: data.from_name || 'UpShift',
+          reply_to: data.reply_to || ''
         });
       }
     } catch (error) {

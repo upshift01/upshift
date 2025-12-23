@@ -32,7 +32,7 @@ const InterviewPrep = () => {
   const [feedback, setFeedback] = useState(null);
 
   const topics = [
-    { id: 'behavioral', name: 'Behavioral Questions', icon: Users, color: 'blue', description: 'STAR method questions about past experiences' },
+    { id: 'behavioural', name: 'Behavioural Questions', icon: Users, color: 'blue', description: 'STAR method questions about past experiences' },
     { id: 'technical', name: 'Technical Questions', icon: Target, color: 'purple', description: 'Role-specific technical knowledge' },
     { id: 'situational', name: 'Situational Questions', icon: Lightbulb, color: 'green', description: 'How would you handle scenarios' },
     { id: 'common', name: 'Common Questions', icon: MessageSquare, color: 'orange', description: 'Tell me about yourself, strengths/weaknesses' }

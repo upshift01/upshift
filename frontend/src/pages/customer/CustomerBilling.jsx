@@ -47,7 +47,7 @@ const CustomerBilling = () => {
 
   const getTierInfo = (tierId) => {
     const tiers = {
-      'tier-1': { name: 'ATS Optimize', price: 29900, color: 'blue' },
+      'tier-1': { name: 'ATS Optimise', price: 29900, color: 'blue' },
       'tier-2': { name: 'Professional Package', price: 49900, color: 'purple' },
       'tier-3': { name: 'Executive Elite', price: 99900, color: 'orange' }
     };

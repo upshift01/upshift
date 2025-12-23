@@ -41,6 +41,7 @@ from ai_content_routes import ai_content_router, set_db as set_ai_content_db
 from email_service import email_service
 from linkedin_routes import router as linkedin_router, set_db as set_linkedin_db
 from customer_routes import router as customer_router, set_db as set_customer_db
+from content_routes import content_router, set_db as set_content_db
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()

@@ -1047,4 +1047,82 @@ async def test_linkedin_connection(admin: UserResponse = Depends(get_current_sup
         return {"success": False, "detail": "Connection timeout - LinkedIn API is not responding. Please try again."}
     except Exception as e:
         logger.error(f"Error testing LinkedIn connection: {str(e)}")
+
+
+# Platform Contact & Social Media Settings
+@admin_router.get("/site-settings", response_model=dict)
+async def get_site_settings(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get platform contact and social media settings"""
+    try:
+        settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
+        
+        if settings:
+            return {
+                "contact": settings.get("contact", {}),
+                "social_media": settings.get("social_media", {}),
+                "business_hours": settings.get("business_hours", ""),
+                "updated_at": settings.get("updated_at")
+            }
+        
+        # Return defaults
+        return {
+            "contact": {
+                "email": "support@upshift.works",
+                "phone": "+27 (0) 11 234 5678",
+                "address": "123 Main Street, Sandton, Johannesburg, 2196, South Africa",
+                "whatsapp": ""
+            },
+            "social_media": {
+                "facebook": "",
+                "twitter": "",
+                "linkedin": "",
+                "instagram": "",
+                "youtube": "",
+                "tiktok": ""
+            },
+            "business_hours": "Monday - Friday: 8:00 AM - 5:00 PM"
+        }
+    except Exception as e:
+        logger.error(f"Error fetching site settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/site-settings", response_model=dict)
+async def save_site_settings(data: dict, admin: UserResponse = Depends(get_current_super_admin)):
+    """Save platform contact and social media settings"""
+    try:
+        settings = {
+            "key": "site_settings",
+            "contact": {
+                "email": data.get("contact", {}).get("email", ""),
+                "phone": data.get("contact", {}).get("phone", ""),
+                "address": data.get("contact", {}).get("address", ""),
+                "whatsapp": data.get("contact", {}).get("whatsapp", "")
+            },
+            "social_media": {
+                "facebook": data.get("social_media", {}).get("facebook", ""),
+                "twitter": data.get("social_media", {}).get("twitter", ""),
+                "linkedin": data.get("social_media", {}).get("linkedin", ""),
+                "instagram": data.get("social_media", {}).get("instagram", ""),
+                "youtube": data.get("social_media", {}).get("youtube", ""),
+                "tiktok": data.get("social_media", {}).get("tiktok", "")
+            },
+            "business_hours": data.get("business_hours", ""),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_by": admin.id
+        }
+        
+        await db.platform_settings.update_one(
+            {"key": "site_settings"},
+            {"$set": settings},
+            upsert=True
+        )
+        
+        logger.info(f"Site settings updated by admin {admin.email}")
+        
+        return {"success": True, "message": "Site settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving site settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         return {"success": False, "detail": f"Error: {str(e)}"}

@@ -17,11 +17,16 @@ def set_db(database):
 
 
 @whitelabel_router.get("/config", response_model=dict)
-async def get_whitelabel_config(request: Request):
+async def get_whitelabel_config(request: Request, response: Response):
     """
     Get white-label configuration for the current domain.
     Returns branding, pricing, and legal info based on the request host.
     """
+    # Prevent caching to ensure fresh config
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    
     try:
         host = request.headers.get("host", "").split(":")[0]
         

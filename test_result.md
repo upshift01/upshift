@@ -1,3 +1,34 @@
+# Test Results - Email Settings Test
+
+## Test Scenario: Email Test Sending and Logging
+
+### Issue Being Fixed:
+- User reported test emails are not received
+- Emails not showing in "Recent Email Activity" section
+- Silent failure with no error messages
+
+### Root Cause:
+- The `send_admin_test_email` function in `/app/backend/admin_routes.py` was NOT logging emails to the `email_logs` collection after sending
+
+### Fix Applied:
+- Added `email_logs` collection insert after successful email send
+- Added error logging for failed email attempts
+- Added detailed SMTP error handling with specific error messages
+
+### Test Cases:
+1. **Test Email Sending** - Send a test email via API
+2. **Verify Email Logging** - Check email_logs collection for sent email
+3. **Verify Error Handling** - Test with invalid SMTP settings
+
+### API Endpoints:
+- POST /api/admin/email-settings/send-test?to_email={email} - Send test email
+- GET /api/scheduler/email-logs - Retrieve email logs
+
+### Test Credentials:
+- Super Admin: admin@upshift.works / admin123
+
+---
+
 # Test Results - Reseller Customer Signup E2E Test
 
 ## Test Scenario: White-Label Customer Registration Flow

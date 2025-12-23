@@ -1198,6 +1198,108 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_reseller_customer_signup_e2e(self):
+        """Test Reseller Customer Signup E2E flow (white-label customer registration)"""
+        print("\n🔗 Testing Reseller Customer Signup E2E Flow...")
+        
+        # Test 1: Platform Registration (without reseller)
+        platform_customer_data = {
+            "email": "platform_customer_test@test.com",
+            "password": "TestPass123!",
+            "full_name": "Platform Test Customer",
+            "phone": "+27821111111"
+        }
+        
+        response, error = self.make_request("POST", "/auth/register", data=platform_customer_data)
+        if error:
+            self.log_test("Platform Customer Registration", False, error)
+        else:
+            user = response.get("user", {})
+            reseller_id = user.get("reseller_id")
+            if reseller_id is None:
+                self.log_test("Platform Customer Registration", True, f"Customer registered with reseller_id: null")
+            else:
+                self.log_test("Platform Customer Registration", False, f"Expected reseller_id: null, got: {reseller_id}")
+        
+        # Test 2: Get reseller ID by logging in as reseller
+        if not self.reseller_admin_token:
+            self.log_test("Reseller Customer Registration", False, "No reseller admin token available")
+            return False
+        
+        reseller_headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+        
+        # Get reseller profile to extract reseller_id
+        response, error = self.make_request("GET", "/reseller/profile", headers=reseller_headers)
+        if error:
+            self.log_test("Get Reseller ID", False, error)
+            return False
+        
+        reseller_id = response.get("id")
+        if not reseller_id:
+            self.log_test("Get Reseller ID", False, "Reseller ID not found in profile")
+            return False
+        
+        self.log_test("Get Reseller ID", True, f"Reseller ID: {reseller_id}")
+        
+        # Test 3: Register customer with reseller_id
+        reseller_customer_data = {
+            "email": "reseller_customer_test@test.com",
+            "password": "TestPass123!",
+            "full_name": "Reseller Test Customer",
+            "phone": "+27822222222",
+            "reseller_id": reseller_id
+        }
+        
+        response, error = self.make_request("POST", "/auth/register", data=reseller_customer_data)
+        if error:
+            self.log_test("Reseller Customer Registration", False, error)
+        else:
+            user = response.get("user", {})
+            returned_reseller_id = user.get("reseller_id")
+            if returned_reseller_id == reseller_id:
+                self.log_test("Reseller Customer Registration", True, f"Customer registered with correct reseller_id: {reseller_id}")
+            else:
+                self.log_test("Reseller Customer Registration", False, f"Expected reseller_id: {reseller_id}, got: {returned_reseller_id}")
+        
+        # Test 4: Verify customer appears in reseller dashboard
+        response, error = self.make_request("GET", "/reseller/customers", headers=reseller_headers)
+        if error:
+            self.log_test("Verify Customer in Reseller Dashboard", False, error)
+        else:
+            customers = response.get("customers", [])
+            reseller_customer_found = any(
+                customer.get("email") == "reseller_customer_test@test.com" and 
+                customer.get("reseller_id") == reseller_id 
+                for customer in customers
+            )
+            
+            if reseller_customer_found:
+                self.log_test("Verify Customer in Reseller Dashboard", True, "New customer appears in reseller's customer list")
+            else:
+                self.log_test("Verify Customer in Reseller Dashboard", False, "New customer not found in reseller's customer list")
+        
+        # Test 5: Test invalid reseller ID (should fall back to null)
+        invalid_reseller_customer_data = {
+            "email": "invalid_reseller_test@test.com",
+            "password": "TestPass123!",
+            "full_name": "Invalid Reseller Test Customer",
+            "phone": "+27833333333",
+            "reseller_id": "invalid-reseller-123"
+        }
+        
+        response, error = self.make_request("POST", "/auth/register", data=invalid_reseller_customer_data)
+        if error:
+            self.log_test("Invalid Reseller ID Fallback", False, error)
+        else:
+            user = response.get("user", {})
+            returned_reseller_id = user.get("reseller_id")
+            if returned_reseller_id is None:
+                self.log_test("Invalid Reseller ID Fallback", True, "Invalid reseller_id correctly fell back to null")
+            else:
+                self.log_test("Invalid Reseller ID Fallback", False, f"Expected reseller_id: null, got: {returned_reseller_id}")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift White-Label SaaS Backend API Tests")
@@ -1228,6 +1330,9 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         # NEW: Test Customer Invoice Creation and Yoco Payment Integration
         self.test_customer_invoice_creation()
+        
+        # NEW: Test Reseller Customer Signup E2E Flow
+        self.test_reseller_customer_signup_e2e()
         
         # Print summary
         print("\n" + "=" * 60)

@@ -48,7 +48,10 @@ export const ThemeProvider = ({ children }) => {
 
   const fetchWhiteLabelConfig = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/white-label/config`);
+      // Add cache-busting parameter to ensure fresh data
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/white-label/config?_t=${Date.now()}`, {
+        cache: 'no-store'
+      });
       if (response.ok) {
         const data = await response.json();
         setTheme({

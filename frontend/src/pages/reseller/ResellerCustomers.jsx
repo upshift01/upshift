@@ -378,7 +378,7 @@ const EditCustomerModal = ({ customer, onClose, onSuccess, token }) => {
               className="w-full px-3 py-2 border rounded-lg"
             >
               <option value="">No Plan</option>
-              <option value="tier-1">ATS Optimize</option>
+              <option value="tier-1">ATS Optimise</option>
               <option value="tier-2">Professional Package</option>
               <option value="tier-3">Executive Elite</option>
             </select>

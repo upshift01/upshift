@@ -511,8 +511,9 @@ async def get_revenue_analytics(
 ):
     """Get revenue analytics by month"""
     try:
-        pipeline = [
-            {"$match": {"status": "paid"}},
+        # Reseller invoice revenue by month
+        reseller_pipeline = [
+            {"$match": {"status": "paid", "paid_date": {"$ne": None}}},
             {
                 "$group": {
                     "_id": {
@@ -527,16 +528,48 @@ async def get_revenue_analytics(
             {"$limit": months}
         ]
         
-        results = await db.reseller_invoices.aggregate(pipeline).to_list(months)
+        reseller_results = await db.reseller_invoices.aggregate(reseller_pipeline).to_list(months)
         
-        monthly_data = [
+        # Customer payment revenue by month
+        customer_pipeline = [
+            {"$match": {"status": "completed", "created_at": {"$ne": None}}},
             {
-                "month": f"{r['_id']['year']}-{str(r['_id']['month']).zfill(2)}",
-                "revenue": r["revenue"],
-                "invoices_paid": r["count"]
-            }
-            for r in results
+                "$group": {
+                    "_id": {
+                        "year": {"$year": "$created_at"},
+                        "month": {"$month": "$created_at"}
+                    },
+                    "revenue": {"$sum": "$amount_cents"},
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id.year": -1, "_id.month": -1}},
+            {"$limit": months}
         ]
+        
+        customer_results = await db.payments.aggregate(customer_pipeline).to_list(months)
+        
+        # Combine the data by month
+        monthly_map = {}
+        
+        for r in reseller_results:
+            key = f"{r['_id']['year']}-{str(r['_id']['month']).zfill(2)}"
+            if key not in monthly_map:
+                monthly_map[key] = {"month": key, "revenue": 0, "reseller_fees": 0, "customer_payments": 0, "invoices_paid": 0, "orders": 0}
+            monthly_map[key]["reseller_fees"] = r["revenue"]
+            monthly_map[key]["revenue"] += r["revenue"]
+            monthly_map[key]["invoices_paid"] = r["count"]
+        
+        for c in customer_results:
+            key = f"{c['_id']['year']}-{str(c['_id']['month']).zfill(2)}"
+            if key not in monthly_map:
+                monthly_map[key] = {"month": key, "revenue": 0, "reseller_fees": 0, "customer_payments": 0, "invoices_paid": 0, "orders": 0}
+            monthly_map[key]["customer_payments"] = c["revenue"]
+            monthly_map[key]["revenue"] += c["revenue"]
+            monthly_map[key]["orders"] = c["count"]
+        
+        # Sort by month descending
+        monthly_data = sorted(monthly_map.values(), key=lambda x: x["month"], reverse=True)[:months]
         
         return {
             "monthly_revenue": monthly_data,

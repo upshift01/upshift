@@ -49,7 +49,7 @@ class CoverLetterRequest(BaseModel):
 
 
 @ai_content_router.post("/generate-cover-letter")
-async def generate_cover_letter(data: CoverLetterRequest, current_user: dict = Depends(get_current_user)):
+async def generate_cover_letter(data: CoverLetterRequest, current_user: dict = Depends(get_current_user_with_db)):
     """Generate a professional cover letter using AI"""
     try:
         if not EMERGENT_LLM_KEY:

@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://career-portal-58.preview.emergentagent.com/api"
+BACKEND_URL = "https://upshift-resume.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {

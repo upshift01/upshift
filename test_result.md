@@ -39,7 +39,7 @@
 ### Backend API Tests - Reseller Customer Signup E2E Flow
 
 **Test Date:** 2024-12-19  
-**Backend URL:** https://career-portal-58.preview.emergentagent.com/api  
+**Backend URL:** https://upshift-resume.preview.emergentagent.com/api  
 **Test Status:** ✅ ALL TESTS PASSED
 
 #### Test Results Summary:
@@ -115,7 +115,7 @@ The Reseller Customer Signup E2E flow is **FULLY FUNCTIONAL**. All test scenario
 ## Frontend E2E Test Results
 
 **Test Date:** 2024-12-23  
-**Frontend URL:** https://career-portal-58.preview.emergentagent.com  
+**Frontend URL:** https://upshift-resume.preview.emergentagent.com  
 **Test Status:** ✅ FRONTEND FLOW WORKING CORRECTLY
 
 #### Frontend Test Results Summary:

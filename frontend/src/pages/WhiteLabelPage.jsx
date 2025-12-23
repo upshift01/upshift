@@ -482,46 +482,53 @@ const WhiteLabelPage = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {plans.map((plan, index) => (
-              <Card 
-                key={index} 
-                className={`relative border-2 ${plan.popular ? 'border-blue-500 shadow-xl' : 'border-gray-200'}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-blue-600 text-white px-4 py-1">Most Popular</Badge>
-                  </div>
-                )}
-                <CardHeader className="text-center pb-0">
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription className="mt-2">{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="text-center mb-6">
-                    <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                    <span className="text-gray-500">{plan.period}</span>
-                  </div>
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-3">
-                        <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span className="text-gray-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <a href="#contact">
-                    <Button 
-                      className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-                      variant={plan.popular ? 'default' : 'outline'}
-                    >
-                      {plan.cta}
-                    </Button>
-                  </a>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {loadingPlans ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading plans...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {plans.map((plan, index) => (
+                <Card 
+                  key={plan.key || index} 
+                  className={`relative border-2 ${plan.popular ? 'border-blue-500 shadow-xl' : 'border-gray-200'}`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-blue-600 text-white px-4 py-1">Most Popular</Badge>
+                    </div>
+                  )}
+                  <CardHeader className="text-center pb-0">
+                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <CardDescription className="mt-2">{plan.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="text-center mb-6">
+                      <span className="text-4xl font-bold text-gray-900">{plan.price_display}</span>
+                      <span className="text-gray-500">{plan.period}</span>
+                    </div>
+                    <ul className="space-y-3 mb-8">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                          <span className="text-gray-600">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <a href="#contact">
+                      <Button 
+                        className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                        variant={plan.popular ? 'default' : 'outline'}
+                      >
+                        {plan.cta}
+                      </Button>
+                    </a>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

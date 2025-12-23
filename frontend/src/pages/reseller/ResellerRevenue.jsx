@@ -17,11 +17,13 @@ const ResellerRevenue = () => {
   const [compareWithPrevious, setCompareWithPrevious] = useState(false);
 
   const periodOptions = [
-    { value: '3', label: '3 Months' },
-    { value: '6', label: '6 Months' },
-    { value: '12', label: '12 Months' },
-    { value: '24', label: '2 Years' }
+    { value: '3', label: '3 Months', comparisonLabel: 'vs Previous 3 Months' },
+    { value: '6', label: '6 Months', comparisonLabel: 'vs Previous 6 Months' },
+    { value: '12', label: '12 Months', comparisonLabel: 'vs Previous Year' },
+    { value: '24', label: '2 Years', comparisonLabel: 'vs Previous 2 Years' }
   ];
+
+  const getSelectedPeriodOption = () => periodOptions.find(o => o.value === selectedPeriod) || periodOptions[1];
 
   useEffect(() => {
     fetchData();

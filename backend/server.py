@@ -111,6 +111,14 @@ async def register(user_data: UserRegister):
                 detail="Email already registered"
             )
         
+        # Validate reseller_id if provided
+        reseller_id = user_data.reseller_id
+        if reseller_id:
+            reseller = await db.resellers.find_one({"id": reseller_id, "status": "active"})
+            if not reseller:
+                logger.warning(f"Invalid reseller_id during registration: {reseller_id}")
+                reseller_id = None  # Fall back to platform if invalid reseller
+        
         # Create user
         user_id = str(uuid.uuid4())
         hashed_password = get_password_hash(user_data.password)
@@ -122,7 +130,7 @@ async def register(user_data: UserRegister):
             "phone": user_data.phone,
             "hashed_password": hashed_password,
             "role": "customer",
-            "reseller_id": None,
+            "reseller_id": reseller_id,
             "active_tier": None,
             "tier_activation_date": None,
             "created_at": datetime.utcnow(),
@@ -131,7 +139,7 @@ async def register(user_data: UserRegister):
         }
         
         await db.users.insert_one(new_user)
-        logger.info(f"User registered: {user_data.email}")
+        logger.info(f"User registered: {user_data.email} (reseller: {reseller_id or 'platform'})")
         
         # Create access token
         access_token = create_access_token(data={"sub": user_data.email})
@@ -151,7 +159,7 @@ async def register(user_data: UserRegister):
                 full_name=user_data.full_name,
                 phone=user_data.phone,
                 role="customer",
-                reseller_id=None,
+                reseller_id=reseller_id,
                 active_tier=None,
                 tier_activation_date=None,
                 created_at=new_user["created_at"]

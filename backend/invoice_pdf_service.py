@@ -64,6 +64,47 @@ class InvoicePDFGenerator:
             alignment=TA_CENTER
         ))
     
+    def _generate_qr_code(self, data: str, size: int = 150, brand_color: str = '#1e40af') -> BytesIO:
+        """
+        Generate a QR code image
+        
+        Args:
+            data: The URL or data to encode in the QR code
+            size: Size of the QR code in pixels
+            brand_color: Color for the QR code (hex)
+        
+        Returns:
+            BytesIO buffer containing the QR code image
+        """
+        try:
+            # Convert hex color to RGB
+            hex_color = brand_color.lstrip('#')
+            rgb_color = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=2,
+            )
+            qr.add_data(data)
+            qr.make(fit=True)
+            
+            # Create image with brand color
+            img = qr.make_image(fill_color=rgb_color, back_color="white")
+            
+            # Resize to desired size
+            img = img.resize((size, size))
+            
+            # Save to buffer
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            buffer.seek(0)
+            return buffer
+        except Exception as e:
+            logger.error(f"Error generating QR code: {e}")
+            return None
+    
     def _format_currency(self, amount, currency='ZAR'):
         """Format amount as currency"""
         if isinstance(amount, (int, float)):

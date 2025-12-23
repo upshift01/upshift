@@ -278,9 +278,9 @@ const AdminAnalytics = () => {
                     ))}
                     
                     {/* Bars */}
-                    <div className="absolute inset-0 flex items-end gap-1 px-2 pb-1">
+                    <div className="absolute inset-0 flex items-end gap-2 px-4 pb-1">
                       {chartData.map((item, index) => {
-                        const barHeight = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
+                        const barHeight = chartMaxRevenue > 0 ? (item.revenue / chartMaxRevenue) * 100 : 0;
                         const isLastMonth = index === chartData.length - 1;
                         
                         return (
@@ -290,22 +290,23 @@ const AdminAnalytics = () => {
                           >
                             {/* Tooltip */}
                             <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
-                              <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                              <div className="bg-gray-900 text-white text-xs rounded px-3 py-2 whitespace-nowrap shadow-lg">
                                 <div className="font-medium">{item.month}</div>
                                 <div>{formatCurrency(item.revenue)}</div>
+                                {item.orders && <div className="text-gray-400">{item.orders} orders</div>}
                               </div>
                             </div>
                             
                             {/* Bar */}
                             <div
-                              className={`w-full rounded-t transition-all duration-500 cursor-pointer hover:opacity-80 ${
+                              className={`w-full max-w-16 rounded-t transition-all duration-500 cursor-pointer hover:opacity-80 ${
                                 isLastMonth 
                                   ? 'bg-gradient-to-t from-blue-600 to-blue-400' 
                                   : 'bg-gradient-to-t from-blue-500 to-blue-300'
                               }`}
                               style={{ 
-                                height: `${Math.max(barHeight, 1)}%`,
-                                minHeight: item.revenue > 0 ? '8px' : '2px'
+                                height: `${Math.max(barHeight, 2)}%`,
+                                minHeight: item.revenue > 0 ? '12px' : '4px'
                               }}
                             />
                           </div>

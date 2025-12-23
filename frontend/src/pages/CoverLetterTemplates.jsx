@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { coverLetterTemplates } from '../mockData';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useToast } from '../hooks/use-toast';
 import { Badge } from '../components/ui/badge';
-import { Sparkles, Eye, FileText, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { Sparkles, Eye, FileText, X, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+
+// Fallback data in case API fails
+import { coverLetterTemplates as fallbackTemplates } from '../mockData';
 
 const CoverLetterTemplateCard = ({ template, onSelect }) => {
   const [showPreview, setShowPreview] = useState(false);

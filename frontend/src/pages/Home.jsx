@@ -257,7 +257,7 @@ const Home = () => {
                 <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="px-5 pb-5 text-gray-600">
-                ATS (Applicant Tracking System) is software used by over 90% of large companies in South Africa to automatically scan and filter resumes before a human recruiter sees them. If your CV isn't ATS-optimized, it may never reach a hiring manager—even if you're perfectly qualified. Our AI ensures your CV passes these systems.
+                ATS (Applicant Tracking System) is software used by over 90% of large companies in South Africa to automatically scan and filter CVs before a human recruiter sees them. If your CV isn't ATS-optimised, it may never reach a hiring manager—even if you're perfectly qualified. Our AI ensures your CV passes these systems.
               </div>
             </details>
 

@@ -634,6 +634,7 @@ class InvoicePDFGenerator:
         # Platform info
         platform_name = platform_settings.get('platform_name', 'UpShift') if platform_settings else 'UpShift'
         contact = platform_settings.get('contact', {}) if platform_settings else {}
+        vat_number = platform_settings.get('vat_number', '') if platform_settings else ''
         
         # === HEADER ===
         header = self._create_header_table(
@@ -641,7 +642,8 @@ class InvoicePDFGenerator:
             company_info=contact,
             invoice_number=invoice.get('invoice_number', 'N/A'),
             invoice_date=self._format_date(invoice.get('created_at')),
-            brand_color=brand_color
+            brand_color=brand_color,
+            vat_number=vat_number
         )
         elements.append(header)
         

@@ -404,18 +404,32 @@ async def get_platform_analytics(
         
         # Customer counts
         total_customers = await db.users.count_documents({"role": "customer"})
+        paying_customers = await db.users.count_documents({"role": "customer", "active_tier": {"$ne": None}})
         
-        # Revenue from reseller invoices
+        # Revenue from reseller invoices (platform fees)
         pipeline = [
             {"$match": {"status": "paid"}},
             {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
         ]
         revenue_result = await db.reseller_invoices.aggregate(pipeline).to_list(1)
-        total_revenue = revenue_result[0]["total"] if revenue_result else 0
+        reseller_revenue = revenue_result[0]["total"] if revenue_result else 0
+        
+        # Revenue from customer payments (service fees)
+        customer_pipeline = [
+            {"$match": {"status": "completed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount_cents"}}}
+        ]
+        customer_revenue_result = await db.payments.aggregate(customer_pipeline).to_list(1)
+        customer_revenue = customer_revenue_result[0]["total"] if customer_revenue_result else 0
+        
+        # Total revenue (platform fees + customer payments)
+        total_revenue = reseller_revenue + customer_revenue
         
         # This month revenue
         now = datetime.now(timezone.utc)
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Reseller invoices this month
         pipeline_month = [
             {
                 "$match": {
@@ -426,11 +440,33 @@ async def get_platform_analytics(
             {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
         ]
         month_result = await db.reseller_invoices.aggregate(pipeline_month).to_list(1)
-        this_month_revenue = month_result[0]["total"] if month_result else 0
+        reseller_month_revenue = month_result[0]["total"] if month_result else 0
+        
+        # Customer payments this month
+        customer_month_pipeline = [
+            {
+                "$match": {
+                    "status": "completed",
+                    "created_at": {"$gte": start_of_month}
+                }
+            },
+            {"$group": {"_id": None, "total": {"$sum": "$amount_cents"}}}
+        ]
+        customer_month_result = await db.payments.aggregate(customer_month_pipeline).to_list(1)
+        customer_month_revenue = customer_month_result[0]["total"] if customer_month_result else 0
+        
+        this_month_revenue = reseller_month_revenue + customer_month_revenue
         
         # Invoice counts
         pending_invoices = await db.reseller_invoices.count_documents({"status": "pending"})
         overdue_invoices = await db.reseller_invoices.count_documents({"status": "overdue"})
+        
+        # Pending customer payments
+        pending_customer_payments = await db.payments.count_documents({"status": "pending"})
+        
+        # CV and Cover Letter counts
+        total_cvs = await db.user_cvs.count_documents({})
+        total_cover_letters = await db.cover_letters.count_documents({})
         
         return {
             "resellers": {
@@ -440,16 +476,27 @@ async def get_platform_analytics(
                 "suspended": suspended_resellers
             },
             "customers": {
-                "total": total_customers
+                "total": total_customers,
+                "paying": paying_customers,
+                "free": total_customers - paying_customers
             },
             "revenue": {
                 "total": total_revenue,
                 "this_month": this_month_revenue,
+                "reseller_fees": reseller_revenue,
+                "customer_payments": customer_revenue,
                 "currency": "ZAR"
             },
             "invoices": {
                 "pending": pending_invoices,
                 "overdue": overdue_invoices
+            },
+            "payments": {
+                "pending": pending_customer_payments
+            },
+            "content": {
+                "cvs_generated": total_cvs,
+                "cover_letters_generated": total_cover_letters
             }
         }
     except Exception as e:

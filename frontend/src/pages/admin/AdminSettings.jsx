@@ -397,6 +397,75 @@ const AdminSettings = () => {
     }
   };
 
+  // LinkedIn Settings Functions
+  const fetchLinkedinSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/linkedin-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLinkedinSettings({
+          client_id: data.client_id || '',
+          client_secret: data.client_secret || '',
+          redirect_uri: data.redirect_uri || ''
+        });
+        setLinkedinStatus(data.status || null);
+      }
+    } catch (error) {
+      console.error('Error fetching LinkedIn settings:', error);
+    }
+  };
+
+  const handleSaveLinkedinSettings = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/linkedin-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(linkedinSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'LinkedIn settings saved successfully!' });
+        fetchLinkedinSettings();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save LinkedIn settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving LinkedIn settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestLinkedinConnection = async () => {
+    setTestingLinkedin(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/linkedin-settings/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: 'LinkedIn credentials verified!' });
+        setLinkedinStatus({ connected: true, last_checked: new Date().toISOString() });
+      } else {
+        setMessage({ type: 'error', text: data.detail || 'LinkedIn connection failed' });
+        setLinkedinStatus({ connected: false, error: data.detail });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error testing LinkedIn connection' });
+    } finally {
+      setTestingLinkedin(false);
+    }
+  };
+
   const tabs = [
     { id: 'general', label: 'General', icon: Globe },
     { id: 'payments', label: 'Payments (Yoco)', icon: CreditCard },

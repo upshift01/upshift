@@ -74,7 +74,7 @@ const ResellerCustomers = () => {
       'tier-3': 'bg-amber-100 text-amber-800'
     };
     const names = {
-      'tier-1': 'ATS Optimize',
+      'tier-1': 'ATS Optimise',
       'tier-2': 'Professional',
       'tier-3': 'Executive Elite'
     };

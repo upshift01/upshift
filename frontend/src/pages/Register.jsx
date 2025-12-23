@@ -62,13 +62,20 @@ const Register = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link to="/" className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
+            {theme.logoUrl ? (
+              <img src={theme.logoUrl} alt={theme.brandName} className="h-12" />
+            ) : (
+              <div 
+                className="w-12 h-12 rounded-lg flex items-center justify-center"
+                style={{ background: `linear-gradient(to bottom right, ${theme.primaryColor}, ${theme.secondaryColor})` }}
+              >
+                <Zap className="h-6 w-6 text-white" />
+              </div>
+            )}
           </Link>
           <CardTitle className="text-2xl">Create Your Account</CardTitle>
           <CardDescription>
-            Join UpShift and transform your career
+            Join {theme.brandName} and transform your career
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -150,7 +150,7 @@ class InvoicePDFGenerator:
         return str(date_str)[:10] if date_str else "N/A"
     
     def _create_header_table(self, company_name: str, company_info: dict, invoice_number: str, 
-                            invoice_date: str, brand_color: str = '#1e40af'):
+                            invoice_date: str, brand_color: str = '#1e40af', vat_number: str = None):
         """Create the header section with company info and invoice details"""
         
         # Left side: Company info
@@ -171,40 +171,51 @@ class InvoicePDFGenerator:
             company_lines.append(Paragraph(company_info['email'], self.styles['SmallText']))
         if company_info.get('phone'):
             company_lines.append(Paragraph(company_info['phone'], self.styles['SmallText']))
+        if vat_number:
+            company_lines.append(Paragraph(f"VAT No: {vat_number}", self.styles['SmallText']))
         
-        # Right side: Invoice title and number
-        invoice_lines = [
-            Paragraph("INVOICE", ParagraphStyle(
-                name='InvoiceLabel',
+        # Right side: Invoice info - use a mini table for better alignment
+        invoice_info_data = [
+            [Paragraph("<b>INVOICE</b>", ParagraphStyle(
+                name='InvoiceLabelHeader',
                 parent=self.styles['Normal'],
-                fontSize=28,
+                fontSize=26,
                 textColor=colors.HexColor('#111827'),
                 fontName='Helvetica-Bold',
-                alignment=TA_RIGHT
-            )),
-            Paragraph(f"#{invoice_number}", ParagraphStyle(
-                name='InvoiceNum',
+                alignment=TA_RIGHT,
+                spaceAfter=0
+            ))],
+            [Paragraph(f"<b>#{invoice_number}</b>", ParagraphStyle(
+                name='InvoiceNumHeader',
                 parent=self.styles['Normal'],
-                fontSize=12,
+                fontSize=11,
                 textColor=colors.HexColor('#6b7280'),
-                alignment=TA_RIGHT
-            )),
-            Spacer(1, 5*mm),
-            Paragraph(f"<b>Date:</b> {invoice_date}", ParagraphStyle(
-                name='InvoiceDateRight',
+                alignment=TA_RIGHT,
+                spaceBefore=2
+            ))],
+            [Spacer(1, 3*mm)],
+            [Paragraph(f"Date: {invoice_date}", ParagraphStyle(
+                name='InvoiceDateHeader',
                 parent=self.styles['Normal'],
                 fontSize=10,
                 textColor=colors.HexColor('#374151'),
                 alignment=TA_RIGHT
-            ))
+            ))]
         ]
         
-        # Create two-column header
-        left_cell = [company_lines]
-        right_cell = [invoice_lines]
+        invoice_info_table = Table(invoice_info_data, colWidths=[8*cm])
+        invoice_info_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 0),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ]))
         
+        # Create two-column header
         header_table = Table(
-            [[left_cell, right_cell]],
+            [[[c for c in company_lines], invoice_info_table]],
             colWidths=[9*cm, 8*cm]
         )
         header_table.setStyle(TableStyle([

@@ -143,6 +143,7 @@ const AppContent = () => {
         </Route>
       </Routes>
       {!hideFooter && <Footer />}
+      <WhatsAppButton />
       <Toaster />
     </>
   );

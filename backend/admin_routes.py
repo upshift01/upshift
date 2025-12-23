@@ -1437,3 +1437,80 @@ async def send_admin_test_email(to_email: str, admin: UserResponse = Depends(get
     except Exception as e:
         logger.error(f"Error in send_admin_test_email: {str(e)}")
         return {"success": False, "error": str(e)}
+
+
+
+# ==================== Platform Pricing Routes ====================
+
+@admin_router.get("/platform-pricing", response_model=dict)
+async def get_platform_pricing(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get all platform pricing configuration"""
+    try:
+        pricing_config = await db.platform_settings.find_one(
+            {"key": "platform_pricing"},
+            {"_id": 0}
+        )
+        
+        # Default values
+        default_config = {
+            "whitelabel_pricing": {
+                "monthly_subscription": 250000,
+                "setup_fee": 0,
+                "per_transaction_fee": 0,
+                "minimum_commitment_months": 1
+            },
+            "default_tier_pricing": {
+                "tier_1_price": 89900,
+                "tier_2_price": 150000,
+                "tier_3_price": 300000,
+                "currency": "ZAR"
+            },
+            "strategy_call_pricing": {
+                "price": 69900,
+                "duration_minutes": 30,
+                "included_in_tier_3": True,
+                "enabled": True
+            }
+        }
+        
+        if pricing_config and pricing_config.get("value"):
+            return {**default_config, **pricing_config["value"]}
+        
+        return default_config
+        
+    except Exception as e:
+        logger.error(f"Error fetching platform pricing: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.put("/platform-pricing", response_model=dict)
+async def update_platform_pricing(
+    data: dict,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Update platform pricing configuration"""
+    try:
+        pricing_data = {
+            "key": "platform_pricing",
+            "value": {
+                "whitelabel_pricing": data.get("whitelabel_pricing", {}),
+                "default_tier_pricing": data.get("default_tier_pricing", {}),
+                "strategy_call_pricing": data.get("strategy_call_pricing", {})
+            },
+            "updated_at": datetime.now(timezone.utc),
+            "updated_by": admin.id
+        }
+        
+        await db.platform_settings.update_one(
+            {"key": "platform_pricing"},
+            {"$set": pricing_data},
+            upsert=True
+        )
+        
+        logger.info(f"Platform pricing updated by admin {admin.email}")
+        
+        return {"success": True, "message": "Platform pricing updated successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error updating platform pricing: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

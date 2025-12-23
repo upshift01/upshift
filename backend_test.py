@@ -2328,22 +2328,26 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         return True
 
     def run_all_tests(self):
-        """Run all test suites focusing on AI Content Generation API endpoints"""
-        print("🚀 Starting UpShift AI Content Generation Backend API Tests")
+        """Run all test suites focusing on Invoice Reminder API endpoint"""
+        print("🚀 Starting UpShift Invoice Reminder API Backend Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
         # Run authentication first
         auth_success = self.test_authentication()
         
-        # PRIMARY TEST: AI Content Generation API endpoints (Review Request)
-        print("\n🎯 FOCUS TEST: AI Content Generation API Endpoints")
+        if not auth_success:
+            print("❌ Authentication failed - cannot proceed with Invoice Reminder API tests")
+            return False
+        
+        # PRIMARY TEST: Invoice Reminder API endpoint (Review Request)
+        print("\n🎯 FOCUS TEST: Invoice Reminder API Endpoint")
         print("=" * 80)
-        self.test_ai_content_generation_apis()
+        invoice_reminder_success = self.test_invoice_reminder_api()
         
         # Print summary
         print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY - AI Content Generation API Endpoints")
+        print("📊 TEST SUMMARY - Invoice Reminder API Endpoint")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -2365,7 +2369,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         # Return success if no critical failures
         critical_failures = [
             t for t in self.failed_tests 
-            if "Connection error" in t["details"]
+            if "Connection error" in t["details"] or "No reseller admin token" in t["details"]
         ]
         
         if critical_failures:
@@ -2375,7 +2379,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             print("⚠️  Some tests failed but core functionality appears to work")
             return True
         else:
-            print("✅ ALL TESTS PASSED - AI Content Generation API endpoints are working correctly")
+            print("✅ ALL TESTS PASSED - Invoice Reminder API endpoint is working correctly")
             return True
 
     def test_vat_number_invoice_pdf_functionality(self):

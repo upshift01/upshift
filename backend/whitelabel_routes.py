@@ -346,3 +346,102 @@ async def get_whitelabel_plans():
     except Exception as e:
         logger.error(f"Error fetching white-label plans: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class ContactFormSubmission(BaseModel):
+    name: str
+    email: str
+    subject: str
+    message: str
+
+
+@whitelabel_router.post("/contact", response_model=dict)
+async def submit_contact_form(data: ContactFormSubmission, request: Request):
+    """
+    Submit a contact form message.
+    Stores the message in the database and optionally sends an email notification.
+    """
+    try:
+        host = request.headers.get("host", "").split(":")[0]
+        
+        # Determine if this is from a reseller site
+        reseller_id = None
+        if not (host in ["localhost", "127.0.0.1"] or host.endswith(".preview.emergentagent.com")):
+            reseller = await db.resellers.find_one(
+                {"custom_domain": host, "status": "active"},
+                {"_id": 0, "id": 1}
+            )
+            if reseller:
+                reseller_id = reseller["id"]
+        
+        # Create contact submission record
+        submission = {
+            "id": str(uuid.uuid4()),
+            "name": data.name,
+            "email": data.email,
+            "subject": data.subject,
+            "message": data.message,
+            "reseller_id": reseller_id,
+            "source_host": host,
+            "status": "new",
+            "created_at": datetime.now(timezone.utc),
+            "read_at": None,
+            "replied_at": None
+        }
+        
+        await db.contact_submissions.insert_one(submission)
+        
+        logger.info(f"Contact form submission received from {data.email}: {data.subject}")
+        
+        # Try to send email notification (optional - won't fail if email not configured)
+        try:
+            from email_service import email_service
+            
+            # Get platform settings for email
+            site_settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
+            admin_email = site_settings.get("contact", {}).get("email", "support@upshift.works") if site_settings else "support@upshift.works"
+            
+            # Send notification to admin
+            email_content = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #1e40af, #7c3aed); padding: 20px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">New Contact Form Submission</h1>
+                </div>
+                <div style="padding: 20px; background: #f9fafb;">
+                    <p><strong>From:</strong> {data.name} ({data.email})</p>
+                    <p><strong>Subject:</strong> {data.subject}</p>
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+                    <p><strong>Message:</strong></p>
+                    <p style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        {data.message.replace(chr(10), '<br>')}
+                    </p>
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+                    <p style="color: #6b7280; font-size: 12px;">
+                        Received at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}<br>
+                        Source: {host}
+                    </p>
+                </div>
+            </body>
+            </html>
+            """
+            
+            await email_service.send_email(
+                to_email=admin_email,
+                subject=f"[Contact Form] {data.subject}",
+                html_content=email_content,
+                db=db
+            )
+            logger.info(f"Contact form notification sent to {admin_email}")
+        except Exception as email_error:
+            # Don't fail the submission if email fails
+            logger.warning(f"Could not send contact form notification email: {str(email_error)}")
+        
+        return {
+            "success": True,
+            "message": "Your message has been sent successfully. We'll get back to you soon!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error submitting contact form: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to submit contact form. Please try again.")

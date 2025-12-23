@@ -565,6 +565,16 @@ const ResellerInvoices = () => {
                   </Button>
                 </div>
               )}
+              <div className="pt-2 border-t">
+                <Button 
+                  variant="outline"
+                  onClick={() => downloadInvoicePDF(selectedInvoice.id, selectedInvoice.invoice_number)}
+                  className="w-full"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

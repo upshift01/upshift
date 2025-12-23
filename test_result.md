@@ -1,21 +1,13 @@
-# Test Results - White-Label Pricing Plans Feature
+# Test Results - AI Content Generation API Endpoints
 
 ## Test Scope
-Testing the White-Label Pricing Plans feature on UpShift platform:
-
-### Frontend Tests
-1. Navigate to /white-label page and verify pricing section displays correctly
-2. Verify three pricing plans are shown: Starter (R2,499/month), Professional (R4,999/month with "Most Popular" badge), Enterprise (Custom pricing)
-3. Verify plan features are displayed correctly including "Up to X active clients", "API access" etc.
-4. Login as Super Admin and navigate to /super-admin/pricing
-5. Verify "White-Label Plans" tab is visible and active by default
-6. Verify three plan cards are displayed with toggles, price inputs, and feature toggles
-7. Test saving pricing changes and verify they reflect on public page
+Testing the AI Content Generation API endpoints on UpShift platform:
 
 ### Backend API Tests
-1. GET /api/white-label/plans - Should return list of white-label pricing plans
-2. GET /api/admin/platform-pricing - Should return platform pricing configuration (admin only)
-3. PUT /api/admin/platform-pricing - Should update platform pricing configuration (admin only)
+1. POST /api/ai-content/partner-enquiry - Partner enquiry submission (Public - No Auth Required)
+2. POST /api/ai-content/generate-cover-letter - AI cover letter generation (Requires Auth + Paid Tier)
+3. POST /api/ai-content/cv-suggestion - AI CV field suggestions (Requires Auth)
+4. POST /api/ai-content/generate-cv - AI CV generation (Requires Auth + Paid Tier)
 
 ## Test Plan
 frontend:

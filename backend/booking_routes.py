@@ -303,18 +303,27 @@ async def confirm_booking_payment(
     checkout_id: Optional[str] = None
 ):
     """
-    Confirm payment and activate booking.
+    Confirm payment and activate booking, then send confirmation email.
     """
     try:
+        from email_service import email_service
+        
         booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
         
         if not booking:
             raise HTTPException(status_code=404, detail="Booking not found")
         
-        # For demo purposes, we'll confirm without actual Yoco verification
-        # In production, verify with Yoco API
+        # Check if already paid to avoid duplicate emails
+        if booking.get("is_paid"):
+            return {
+                "success": True,
+                "booking_id": booking_id,
+                "status": "confirmed",
+                "meeting_link": booking.get("meeting_link"),
+                "message": "Booking was already confirmed."
+            }
         
-        # Generate a meeting link (placeholder)
+        # Generate a meeting link (placeholder - in production integrate with Zoom/Google Meet)
         meeting_link = f"https://meet.upshift.works/strategy-call/{booking_id[:8]}"
         
         await db.bookings.update_one(
@@ -331,12 +340,46 @@ async def confirm_booking_payment(
         
         logger.info(f"Booking confirmed: {booking_id}")
         
+        # Send confirmation email
+        email_sent = False
+        try:
+            # Get email settings from platform
+            email_settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+            if email_settings and email_settings.get("smtp_host"):
+                email_service.configure(email_settings)
+                
+                # Format amount
+                amount_rands = booking.get("amount_cents", 0) / 100
+                amount_formatted = f"R {amount_rands:,.2f}"
+                
+                # Get customer name from booking
+                customer_name = booking.get("name", booking.get("email", "Customer"))
+                
+                # Send confirmation email
+                email_sent = await email_service.send_booking_confirmation(
+                    to_email=booking["email"],
+                    customer_name=customer_name,
+                    booking_date=booking.get("date", "TBD"),
+                    booking_time=booking.get("time", "TBD"),
+                    meeting_link=meeting_link,
+                    amount=amount_formatted,
+                    company_name="UpShift"
+                )
+                
+                if email_sent:
+                    logger.info(f"Confirmation email sent to {booking['email']} for booking {booking_id}")
+                else:
+                    logger.warning(f"Failed to send confirmation email for booking {booking_id}")
+        except Exception as email_error:
+            logger.error(f"Error sending confirmation email: {str(email_error)}")
+        
         return {
             "success": True,
             "booking_id": booking_id,
             "status": "confirmed",
             "meeting_link": meeting_link,
-            "message": "Payment confirmed! Your strategy call is booked."
+            "email_sent": email_sent,
+            "message": "Payment confirmed! Your strategy call is booked." + (" Confirmation email sent." if email_sent else "")
         }
     except HTTPException:
         raise

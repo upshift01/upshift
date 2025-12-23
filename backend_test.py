@@ -1229,6 +1229,134 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_platform_pricing_configuration(self):
+        """Test Platform Pricing Configuration feature as per review request"""
+        print("\n💰 Testing Platform Pricing Configuration...")
+        
+        # Test 1: Super Admin Login and GET /api/admin/platform-pricing
+        print("\n🔹 Test 1: Super Admin Platform Pricing - GET")
+        
+        if not self.super_admin_token:
+            self.log_test("Super Admin Platform Pricing Tests", False, "No super admin token available")
+            return False
+        
+        admin_headers = {"Authorization": f"Bearer {self.super_admin_token}"}
+        
+        # GET /api/admin/platform-pricing
+        response, error = self.make_request("GET", "/admin/platform-pricing", headers=admin_headers)
+        if error:
+            self.log_test("GET Admin Platform Pricing", False, error)
+        else:
+            required_fields = ["whitelabel_pricing", "default_tier_pricing", "strategy_call_pricing"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Admin Platform Pricing", False, f"Missing fields: {missing_fields}")
+            else:
+                strategy_call = response.get("strategy_call_pricing", {})
+                current_price = strategy_call.get("price", 0)
+                self.log_test("GET Admin Platform Pricing", True, 
+                            f"Retrieved pricing config - Strategy call price: R{current_price/100:.2f}")
+        
+        # Test 2: PUT /api/admin/platform-pricing - Update strategy call price to R799
+        print("\n🔹 Test 2: Super Admin Platform Pricing - PUT (Update to R799)")
+        
+        if response:  # If GET was successful, use current data and update strategy call price
+            update_data = response.copy()
+            update_data["strategy_call_pricing"]["price"] = 79900  # R799
+            
+            response, error = self.make_request("PUT", "/admin/platform-pricing", 
+                                              headers=admin_headers, data=update_data)
+            if error:
+                self.log_test("PUT Admin Platform Pricing", False, error)
+            else:
+                if response.get("success"):
+                    self.log_test("PUT Admin Platform Pricing", True, 
+                                "Strategy call price updated to R799.00 successfully")
+                    
+                    # Verify the update by getting the data again
+                    verify_response, verify_error = self.make_request("GET", "/admin/platform-pricing", 
+                                                                    headers=admin_headers)
+                    if not verify_error and verify_response:
+                        updated_price = verify_response.get("strategy_call_pricing", {}).get("price", 0)
+                        if updated_price == 79900:
+                            self.log_test("Verify Strategy Call Price Update", True, 
+                                        f"Price correctly updated to R{updated_price/100:.2f}")
+                        else:
+                            self.log_test("Verify Strategy Call Price Update", False, 
+                                        f"Price not updated correctly: R{updated_price/100:.2f} (expected R799.00)")
+                else:
+                    self.log_test("PUT Admin Platform Pricing", False, "Success flag not returned")
+        
+        # Test 3: Reseller Profile - GET /api/reseller/profile (should include strategy_call_pricing)
+        print("\n🔹 Test 3: Reseller Profile - GET (should include strategy_call_pricing)")
+        
+        if not self.reseller_admin_token:
+            self.log_test("Reseller Profile Tests", False, "No reseller admin token available")
+            return False
+        
+        reseller_headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+        
+        response, error = self.make_request("GET", "/reseller/profile", headers=reseller_headers)
+        if error:
+            self.log_test("GET Reseller Profile", False, error)
+        else:
+            if "strategy_call_pricing" in response:
+                strategy_call = response.get("strategy_call_pricing", {})
+                price = strategy_call.get("price", 0)
+                duration = strategy_call.get("duration_minutes", 0)
+                enabled = strategy_call.get("enabled", False)
+                self.log_test("GET Reseller Profile - Strategy Call Pricing", True, 
+                            f"Strategy call pricing included - Price: R{price/100:.2f}, Duration: {duration}min, Enabled: {enabled}")
+            else:
+                self.log_test("GET Reseller Profile - Strategy Call Pricing", False, 
+                            "strategy_call_pricing field not found in reseller profile")
+        
+        # Test 4: PUT /api/reseller/pricing - Update reseller pricing with strategy call
+        print("\n🔹 Test 4: Reseller Pricing - PUT (Update with strategy call pricing)")
+        
+        # Get current reseller pricing first
+        current_pricing = response.get("pricing", {}) if response else {}
+        
+        # Update pricing data including strategy call pricing
+        pricing_update = {
+            "tier_1_price": current_pricing.get("tier_1_price", 95000),  # R950
+            "tier_2_price": current_pricing.get("tier_2_price", 160000),  # R1600
+            "tier_3_price": current_pricing.get("tier_3_price", 320000),  # R3200
+            "currency": "ZAR",
+            "strategy_call_pricing": {
+                "price": 79900,  # R799 - matching the admin update
+                "duration_minutes": 30,
+                "included_in_tier_3": True,
+                "enabled": True
+            }
+        }
+        
+        response, error = self.make_request("PUT", "/reseller/pricing", 
+                                          headers=reseller_headers, data=pricing_update)
+        if error:
+            self.log_test("PUT Reseller Pricing with Strategy Call", False, error)
+        else:
+            if response.get("success"):
+                self.log_test("PUT Reseller Pricing with Strategy Call", True, 
+                            "Reseller pricing updated with strategy call pricing successfully")
+                
+                # Verify the update by getting reseller profile again
+                verify_response, verify_error = self.make_request("GET", "/reseller/profile", 
+                                                                headers=reseller_headers)
+                if not verify_error and verify_response:
+                    updated_pricing = verify_response.get("pricing", {})
+                    strategy_call = updated_pricing.get("strategy_call_pricing", {})
+                    if strategy_call and strategy_call.get("price") == 79900:
+                        self.log_test("Verify Reseller Strategy Call Pricing Update", True, 
+                                    f"Strategy call pricing correctly saved: R{strategy_call.get('price', 0)/100:.2f}")
+                    else:
+                        self.log_test("Verify Reseller Strategy Call Pricing Update", False, 
+                                    "Strategy call pricing not saved correctly in reseller profile")
+            else:
+                self.log_test("PUT Reseller Pricing with Strategy Call", False, "Success flag not returned")
+        
+        return True
+
     def test_invoice_pdf_download_with_yoco_qr(self):
         """Test redesigned Invoice PDF generation with QR code as per review request"""
         print("\n📄 Testing Redesigned Invoice PDF Generation with QR Code...")

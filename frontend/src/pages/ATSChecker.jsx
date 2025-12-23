@@ -189,7 +189,7 @@ const ATSChecker = () => {
             ATS Resume Checker
           </h1>
           <p className="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto">
-            Check if your resume is optimized for Applicant Tracking Systems and increase your chances of landing interviews.
+            Check if your CV is optimised for Applicant Tracking Systems and increase your chances of landing interviews.
           </p>
         </div>
       </div>
@@ -198,16 +198,16 @@ const ATSChecker = () => {
         {/* Introduction Section */}
         <Card className="mb-8">
           <CardContent className="p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Why Use an ATS Resume Checker?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Why Use an ATS CV Checker?</h2>
             <div className="prose prose-blue max-w-none text-gray-600">
               <p className="mb-4">
                 Each job position receives an average of around <strong>250 applications</strong>. Standing out among these hundreds of applications is not an easy task for the job seeker and also tough for the HR department to screen them. So, many employers use Applicant Tracking Systems (ATS) to manage and streamline the influx of job applications.
               </p>
               <p className="mb-4">
-                These ATS systems automatically filter out resumes that don't meet the job description criteria. So, if your resume is not properly optimized, <strong>it won't even reach human eyes</strong> despite you having all the qualifications. This can be frustrating, especially when you spend hours crafting a perfect resume only to have it rejected due to poor formatting and lack of ATS-friendly keywords.
+                These ATS systems automatically filter out CVs that don't meet the job description criteria. So, if your CV is not properly optimised, <strong>it won't even reach human eyes</strong> despite you having all the qualifications. This can be frustrating, especially when you spend hours crafting a perfect CV only to have it rejected due to poor formatting and lack of ATS-friendly keywords.
               </p>
               <p className="mb-0">
-                To solve this problem, we developed our <strong>ATS Resume Checker tool</strong>, a free AI tool that scans your resume, focusing on the key elements that recruiters and ATS systems prioritize. It gives you a detailed score, as well as a comprehensive analysis of your resume along with a checklist of issues to fix. This tool ensures your resume is appealing to both ATS systems and recruiting managers. Whether you are a new graduate or an experienced professional looking to switch jobs, this tool helps you create resumes that stand out.
+                To solve this problem, we developed our <strong>ATS CV Checker tool</strong>, a free AI tool that scans your CV, focusing on the key elements that recruiters and ATS systems prioritise. It gives you a detailed score, as well as a comprehensive analysis of your CV along with a checklist of issues to fix. This tool ensures your CV is appealing to both ATS systems and recruiting managers. Whether you are a new graduate or an experienced professional looking to switch jobs, this tool helps you create CVs that stand out.
               </p>
             </div>
           </CardContent>

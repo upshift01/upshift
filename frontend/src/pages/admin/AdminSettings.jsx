@@ -680,6 +680,185 @@ const AdminSettings = () => {
         </div>
       )}
 
+      {/* Site & Contact Settings Tab */}
+      {activeTab === 'site' && (
+        <div className="space-y-6">
+          {/* Contact Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="h-5 w-5" />
+                Contact Information
+              </CardTitle>
+              <CardDescription>Configure the contact details displayed on the platform</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Contact Email</label>
+                  <Input
+                    type="email"
+                    value={siteSettings.contact.email}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      contact: { ...siteSettings.contact, email: e.target.value }
+                    })}
+                    placeholder="support@yourcompany.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone Number</label>
+                  <Input
+                    value={siteSettings.contact.phone}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      contact: { ...siteSettings.contact, phone: e.target.value }
+                    })}
+                    placeholder="+27 (0) 11 234 5678"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">WhatsApp Number</label>
+                  <Input
+                    value={siteSettings.contact.whatsapp}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      contact: { ...siteSettings.contact, whatsapp: e.target.value }
+                    })}
+                    placeholder="+27821234567"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Include country code without spaces</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Business Hours</label>
+                  <Input
+                    value={siteSettings.business_hours}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      business_hours: e.target.value
+                    })}
+                    placeholder="Monday - Friday: 8:00 AM - 5:00 PM"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Business Address</label>
+                <Textarea
+                  value={siteSettings.contact.address}
+                  onChange={(e) => setSiteSettings({
+                    ...siteSettings,
+                    contact: { ...siteSettings.contact, address: e.target.value }
+                  })}
+                  placeholder="123 Main Street, Sandton, Johannesburg, 2196, South Africa"
+                  rows={2}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Social Media Links */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Social Media Links
+              </CardTitle>
+              <CardDescription>Add your social media profile URLs</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                    <Facebook className="h-4 w-4 text-blue-600" /> Facebook
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.facebook}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, facebook: e.target.value }
+                    })}
+                    placeholder="https://facebook.com/yourpage"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                    <Twitter className="h-4 w-4 text-sky-500" /> Twitter / X
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.twitter}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, twitter: e.target.value }
+                    })}
+                    placeholder="https://twitter.com/yourhandle"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                    <Linkedin className="h-4 w-4 text-blue-700" /> LinkedIn
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.linkedin}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, linkedin: e.target.value }
+                    })}
+                    placeholder="https://linkedin.com/company/yourcompany"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                    <Instagram className="h-4 w-4 text-pink-600" /> Instagram
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.instagram}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, instagram: e.target.value }
+                    })}
+                    placeholder="https://instagram.com/yourhandle"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                    <Youtube className="h-4 w-4 text-red-600" /> YouTube
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.youtube}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, youtube: e.target.value }
+                    })}
+                    placeholder="https://youtube.com/@yourchannel"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg> TikTok
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.tiktok}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, tiktok: e.target.value }
+                    })}
+                    placeholder="https://tiktok.com/@yourhandle"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button onClick={handleSaveSiteSettings} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Saving...' : 'Save Site Settings'}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Payments (Yoco) Tab */}
       {activeTab === 'payments' && (
         <div className="space-y-6">

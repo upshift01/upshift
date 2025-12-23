@@ -1486,7 +1486,12 @@ const AdminSettings = () => {
                         <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
                           log.status === 'sent' ? 'bg-green-500' : 'bg-red-500'
                         }`}></span>
-                        <span className="font-medium">{log.type === 'invoice_reminder' ? 'Payment Reminder' : 'Invoice Created'}</span>
+                        <span className="font-medium">{
+                          log.type === 'invoice_reminder' ? 'Payment Reminder' : 
+                          log.type === 'test_email' ? 'Test Email' :
+                          log.type === 'invoice_created' ? 'Invoice Created' :
+                          log.type
+                        }</span>
                         <span className="text-gray-500 ml-2">to {log.to_email}</span>
                       </div>
                       <span className="text-xs text-gray-400">

@@ -217,14 +217,14 @@ const AdminSettings = () => {
     setTestingEmail(true);
     setMessage({ type: '', text: '' });
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/scheduler/email-settings/test`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/email-settings/test`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
       
       const data = await response.json();
       if (data.success) {
-        setMessage({ type: 'success', text: 'SMTP connection successful!' });
+        setMessage({ type: 'success', text: data.message || 'SMTP connection successful!' });
       } else {
         setMessage({ type: 'error', text: data.error || 'Connection failed' });
       }

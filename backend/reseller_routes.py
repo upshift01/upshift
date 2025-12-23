@@ -1208,9 +1208,10 @@ async def send_customer_invoice_reminder(
     context: dict = Depends(get_current_reseller_admin)
 ):
     """Send payment reminder email to customer"""
+    import smtplib
+    from email_service import email_service
+    
     try:
-        from email_service import email_service
-        
         reseller = context["reseller"]
         
         # Get the invoice
@@ -1270,12 +1271,13 @@ async def send_customer_invoice_reminder(
             })
             
             return {
-                "success": True, 
-                "message": "Reminder logged (email service not configured - configure SMTP in Settings to send actual emails)",
-                "email_sent": False
+                "success": False, 
+                "message": "Email service not configured. Please configure SMTP settings in Settings → Email to send reminders.",
+                "email_sent": False,
+                "error_type": "not_configured"
             }
         
-        # Send reminder email
+        # Send reminder email with specific SMTP error handling
         try:
             email_sent = await email_service.send_invoice_reminder(
                 to_email=invoice["customer_email"],
@@ -1286,54 +1288,93 @@ async def send_customer_invoice_reminder(
                 payment_link=payment_link,
                 is_overdue=is_overdue
             )
-        except Exception as email_error:
-            logger.error(f"SMTP error: {str(email_error)}")
-            email_sent = False
-        
-        if email_sent:
-            # Update invoice with reminder sent timestamp
-            await db.customer_invoices.update_one(
-                {"id": invoice_id},
-                {"$set": {"last_reminder_sent": datetime.now(timezone.utc).isoformat()}}
-            )
             
-            # Log activity
-            await db.reseller_activity.insert_one({
-                "id": str(uuid.uuid4()),
-                "reseller_id": reseller["id"],
-                "type": "email",
-                "title": "Reminder Sent",
-                "description": f"Payment reminder sent to {invoice['customer_email']} for invoice {invoice['invoice_number']}",
-                "created_at": datetime.now(timezone.utc)
-            })
-            
-            return {"success": True, "message": "Reminder sent successfully!", "email_sent": True}
-        else:
-            # Email failed but we can still log the attempt
-            await db.customer_invoices.update_one(
-                {"id": invoice_id},
-                {
-                    "$set": {
-                        "last_reminder_attempt": datetime.now(timezone.utc).isoformat(),
-                        "reminder_status": "failed"
-                    }
+            if email_sent:
+                # Update invoice with reminder sent timestamp
+                await db.customer_invoices.update_one(
+                    {"id": invoice_id},
+                    {"$set": {"last_reminder_sent": datetime.now(timezone.utc).isoformat()}}
+                )
+                
+                # Log activity
+                await db.reseller_activity.insert_one({
+                    "id": str(uuid.uuid4()),
+                    "reseller_id": reseller["id"],
+                    "type": "email",
+                    "title": "Reminder Sent",
+                    "description": f"Payment reminder sent to {invoice['customer_email']} for invoice {invoice['invoice_number']}",
+                    "created_at": datetime.now(timezone.utc)
+                })
+                
+                return {"success": True, "message": "Reminder sent successfully!", "email_sent": True}
+            else:
+                # Email service returned False (general failure)
+                await _log_reminder_failure(db, reseller, invoice, invoice_id, "Email service returned failure")
+                return {
+                    "success": False, 
+                    "message": "Failed to send email. Please verify SMTP credentials in Settings → Email are correct.",
+                    "email_sent": False,
+                    "error_type": "send_failed"
                 }
-            )
-            
-            # Log activity
-            await db.reseller_activity.insert_one({
-                "id": str(uuid.uuid4()),
-                "reseller_id": reseller["id"],
-                "type": "invoice",
-                "title": "Reminder Failed",
-                "description": f"Failed to send reminder to {invoice['customer_email']} for invoice {invoice['invoice_number']} - Check SMTP settings",
-                "created_at": datetime.now(timezone.utc)
-            })
-            
+                
+        except smtplib.SMTPAuthenticationError as auth_error:
+            logger.error(f"SMTP Authentication failed: {str(auth_error)}")
+            await _log_reminder_failure(db, reseller, invoice, invoice_id, "SMTP authentication failed")
             return {
-                "success": False, 
-                "message": "Failed to send email. Please verify SMTP credentials in Settings → Email are correct.",
-                "email_sent": False
+                "success": False,
+                "message": "SMTP authentication failed. Please check your email username and password in Settings → Email.",
+                "email_sent": False,
+                "error_type": "auth_failed"
+            }
+            
+        except smtplib.SMTPConnectError as connect_error:
+            logger.error(f"SMTP Connection failed: {str(connect_error)}")
+            await _log_reminder_failure(db, reseller, invoice, invoice_id, "SMTP connection failed")
+            return {
+                "success": False,
+                "message": "Could not connect to SMTP server. Please verify the SMTP host and port in Settings → Email.",
+                "email_sent": False,
+                "error_type": "connection_failed"
+            }
+            
+        except smtplib.SMTPServerDisconnected as disconnect_error:
+            logger.error(f"SMTP Server disconnected: {str(disconnect_error)}")
+            await _log_reminder_failure(db, reseller, invoice, invoice_id, "SMTP server disconnected")
+            return {
+                "success": False,
+                "message": "SMTP server disconnected unexpectedly. Please check your SMTP settings and try again.",
+                "email_sent": False,
+                "error_type": "disconnected"
+            }
+            
+        except smtplib.SMTPRecipientsRefused as refused_error:
+            logger.error(f"SMTP Recipients refused: {str(refused_error)}")
+            await _log_reminder_failure(db, reseller, invoice, invoice_id, f"Recipient refused: {invoice['customer_email']}")
+            return {
+                "success": False,
+                "message": f"The recipient email address ({invoice['customer_email']}) was rejected by the mail server.",
+                "email_sent": False,
+                "error_type": "recipient_refused"
+            }
+            
+        except smtplib.SMTPException as smtp_error:
+            logger.error(f"SMTP Error: {str(smtp_error)}")
+            await _log_reminder_failure(db, reseller, invoice, invoice_id, f"SMTP error: {str(smtp_error)}")
+            return {
+                "success": False,
+                "message": f"Email error: {str(smtp_error)}. Please verify your SMTP settings in Settings → Email.",
+                "email_sent": False,
+                "error_type": "smtp_error"
+            }
+            
+        except Exception as email_error:
+            logger.error(f"Unexpected email error: {str(email_error)}")
+            await _log_reminder_failure(db, reseller, invoice, invoice_id, f"Unexpected error: {str(email_error)}")
+            return {
+                "success": False,
+                "message": f"Failed to send email: {str(email_error)}. Please check your SMTP configuration.",
+                "email_sent": False,
+                "error_type": "unknown"
             }
             
     except HTTPException:
@@ -1341,6 +1382,34 @@ async def send_customer_invoice_reminder(
     except Exception as e:
         logger.error(f"Error sending invoice reminder: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _log_reminder_failure(db, reseller: dict, invoice: dict, invoice_id: str, error_details: str):
+    """Helper function to log reminder failure to database"""
+    try:
+        # Update invoice with failure details
+        await db.customer_invoices.update_one(
+            {"id": invoice_id},
+            {
+                "$set": {
+                    "last_reminder_attempt": datetime.now(timezone.utc).isoformat(),
+                    "reminder_status": "failed",
+                    "reminder_error": error_details
+                }
+            }
+        )
+        
+        # Log activity
+        await db.reseller_activity.insert_one({
+            "id": str(uuid.uuid4()),
+            "reseller_id": reseller["id"],
+            "type": "invoice",
+            "title": "Reminder Failed",
+            "description": f"Failed to send reminder to {invoice['customer_email']} for invoice {invoice['invoice_number']} - {error_details}",
+            "created_at": datetime.now(timezone.utc)
+        })
+    except Exception as log_error:
+        logger.error(f"Failed to log reminder failure: {str(log_error)}")
 
 @reseller_router.post("/customer-invoices/{invoice_id}/mark-paid", response_model=dict)
 async def mark_customer_invoice_paid(

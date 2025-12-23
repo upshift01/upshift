@@ -1906,6 +1906,8 @@ async def get_reseller_site_settings(context: dict = Depends(get_current_reselle
                 "contact": settings.get("contact", {}),
                 "social_media": settings.get("social_media", {}),
                 "business_hours": settings.get("business_hours", ""),
+                "vat_number": settings.get("vat_number", ""),
+                "company_registration": settings.get("company_registration", ""),
                 "updated_at": settings.get("updated_at")
             }
         
@@ -1926,7 +1928,9 @@ async def get_reseller_site_settings(context: dict = Depends(get_current_reselle
                 "youtube": "",
                 "tiktok": ""
             },
-            "business_hours": ""
+            "business_hours": "",
+            "vat_number": "",
+            "company_registration": ""
         }
     except Exception as e:
         logger.error(f"Error fetching reseller site settings: {str(e)}")

@@ -267,7 +267,7 @@ const Home = () => {
                 <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="px-5 pb-5 text-gray-600">
-                Simply upload your CV and our AI analyzes it against common ATS requirements. You'll receive a compatibility score (0-100) and specific recommendations to improve your CV's chances of passing automated screening systems. The basic check is completely free!
+                Simply upload your CV and our AI analyses it against common ATS requirements. You'll receive a compatibility score (0-100) and specific recommendations to improve your CV's chances of passing automated screening systems. The basic check is completely free!
               </div>
             </details>
 

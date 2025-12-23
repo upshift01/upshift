@@ -13,7 +13,7 @@ export const cvTemplates = [
   {
     id: 2,
     name: "ATS Simple & Clean",
-    description: "Minimalist ATS-optimized design with standard fonts and clear hierarchy. Ideal for all industries.",
+    description: "Minimalist ATS-optimised design with standard fonts and clear hierarchy. Ideal for all industries.",
     image: "https://images.unsplash.com/photo-1758518730327-98070967caab?w=400&h=500&fit=crop",
     category: "ats",
     industry: "Any"

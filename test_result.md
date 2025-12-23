@@ -1,90 +1,33 @@
-# Test Results
+# Test Results - Reseller Customer Signup E2E Test
 
-## LinkedIn Settings Feature Test
-- **Feature**: LinkedIn Integration settings in Super Admin portal
-- **Test Date**: 2025-12-23
-- **Tested By**: Testing Agent
-- **Status**: ✅ PASSED
+## Test Scenario: White-Label Customer Registration Flow
 
-### Test Cases Verified:
+### Prerequisites:
+- Reseller account exists: john@acmecareers.com / acme123456
+- Reseller ID: 7feb3d26-0c61-4e84-85ed-8a42ad977f4b (Acme Careers)
 
-#### ✅ 1. Super Admin Access to Integrations Tab
-- **Status**: PASSED
-- **Details**: Successfully logged in as admin@upshift.works and navigated to Settings → Integrations tab
-- **Evidence**: UI screenshot shows active Integrations tab with LinkedIn Integration card
+### Test Cases:
 
-#### ✅ 2. LinkedIn Configuration Form Display
-- **Status**: PASSED
-- **Details**: All required form fields are present and correctly labeled:
-  - Client ID input field (with placeholder text)
-  - Client Secret input field (password type with show/hide toggle)
-  - Redirect URI input field (optional)
-- **Evidence**: Screenshot shows all 3 input fields with proper labels
+1. **Customer Registration via Platform (no reseller)**
+   - Register at /register without white-label
+   - Verify reseller_id is null for new user
+   
+2. **Customer Registration via Reseller**
+   - Simulate white-label config with reseller_id
+   - Register new customer
+   - Verify customer is associated with reseller
+   
+3. **Reseller Dashboard Shows New Customer**
+   - Login as reseller admin
+   - Navigate to Customers
+   - Verify new customer appears in list
 
-#### ✅ 3. Save LinkedIn Settings Functionality
-- **Status**: PASSED
-- **Details**: 
-  - API test: POST /api/admin/linkedin-settings returns {"success":true,"message":"LinkedIn settings saved successfully"}
-  - Test values saved: Client ID="test_client_123", Client Secret="test_secret_456", Redirect URI="https://upshift.works/api/linkedin/callback"
-- **Evidence**: API response confirms successful save operation
+### API Endpoints:
+- POST /api/auth/register - Now accepts reseller_id parameter
+- GET /api/white-label/config - Returns reseller_id for white-label domains
+- GET /api/reseller/customers - Lists reseller's customers
 
-#### ✅ 4. Secret Key Masking
-- **Status**: PASSED
-- **Details**: 
-  - Client Secret is properly masked when retrieved: "••••••••_456" (shows last 4 characters)
-  - Original secret "test_secret_456" is not exposed in API responses
-- **Evidence**: GET /api/admin/linkedin-settings shows masked secret, UI screenshot shows dots in password field
-
-#### ✅ 5. Test Connection Button
-- **Status**: PASSED
-- **Details**: 
-  - Test Connection button is visible and functional
-  - API test: POST /api/admin/linkedin-settings/test returns {"success":true,"message":"LinkedIn credentials are valid! OAuth is ready to use."}
-- **Evidence**: API response confirms connection test works
-
-#### ✅ 6. LinkedIn Developer Portal Link
-- **Status**: PASSED
-- **Details**: 
-  - Link is present with correct URL: https://www.linkedin.com/developers/apps
-  - Opens in new tab (target="_blank")
-  - Multiple instances found (in button and help section)
-- **Evidence**: UI inspection shows correct href and target attributes
-
-### Additional Features Verified:
-
-#### ✅ 7. Show/Hide Toggle for Client Secret
-- **Status**: PASSED
-- **Details**: Eye icon button present next to Client Secret field for toggling visibility
-- **Evidence**: UI screenshot shows eye icon toggle button
-
-#### ✅ 8. Connection Status Badge
-- **Status**: PASSED
-- **Details**: Green "Connected" badge displayed when LinkedIn integration is configured
-- **Evidence**: UI screenshot shows green "Connected" status badge
-
-#### ✅ 9. Help Documentation
-- **Status**: PASSED
-- **Details**: Comprehensive setup guide provided with step-by-step instructions for getting LinkedIn API credentials
-- **Evidence**: UI screenshot shows detailed "How to Get LinkedIn API Credentials" section
-
-#### ✅ 10. Data Persistence
-- **Status**: PASSED
-- **Details**: Values are retained after page refresh, with Client Secret properly masked
-- **Evidence**: API tests show values persist in database with proper masking
-
-### Credentials Used:
+### Test Credentials:
 - Super Admin: admin@upshift.works / admin123
-
-### Test Environment:
-- Frontend URL: https://career-portal-58.preview.emergentagent.com
-- Backend API: https://career-portal-58.preview.emergentagent.com/api
-- Browser: Chromium (Playwright)
-- Viewport: 1920x1080 (Desktop)
-
-### Test Summary:
-✅ **ALL TEST CASES PASSED**
-- LinkedIn Integration settings feature is fully functional
-- All UI components are present and working correctly
-- API endpoints are working as expected
-- Security measures (secret masking) are properly implemented
-- User experience is smooth and intuitive
+- Reseller Admin: john@acmecareers.com / acme123456
+- Test Customer: testcustomer_[timestamp]@test.com / TestPass123!

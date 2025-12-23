@@ -212,10 +212,10 @@ class InvoicePDFGenerator:
             [Paragraph(f'<font size="9" color="#888888">Date: {self._fmt_date(invoice.get("created_at"))}</font>', styles['Normal'])],
         ]
         
-        right_table = Table(right_content, colWidths=[8*cm], rowHeights=[28, 18, 16])
+        right_table = Table(right_content, colWidths=[8*cm], rowHeights=[32, 20, 16])
         right_table.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
-            ('VALIGN', (0,0), (0,0), 'BOTTOM'),
+            ('VALIGN', (0,0), (0,0), 'TOP'),
             ('VALIGN', (0,1), (-1,-1), 'TOP'),
             ('TOPPADDING', (0,0), (-1,-1), 0),
             ('BOTTOMPADDING', (0,0), (-1,-1), 0),

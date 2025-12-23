@@ -1584,7 +1584,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
 
     def run_all_tests(self):
         """Run all test suites"""
-        print("🚀 Starting UpShift Email Settings Backend API Tests")
+        print("🚀 Starting UpShift Invoice PDF Download Backend API Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 60)
         

@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage
-from db import db
 from auth import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -18,6 +17,13 @@ logger = logging.getLogger(__name__)
 ai_content_router = APIRouter(prefix="/api/ai-content", tags=["AI Content"])
 
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
+
+# Database reference - will be set by server.py
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 
 # ==================== COVER LETTER GENERATION ====================

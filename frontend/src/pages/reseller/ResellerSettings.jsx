@@ -743,6 +743,200 @@ const ResellerSettings = () => {
         </div>
       )}
 
+      {/* Site & Contact Settings Tab */}
+      {activeTab === 'site' && (
+        <div className="space-y-6">
+          {/* Contact Information */}
+          <Card className={cardBg}>
+            <CardHeader>
+              <CardTitle className={`flex items-center gap-2 ${textPrimary}`}>
+                <Phone className="h-5 w-5" />
+                Contact Information
+              </CardTitle>
+              <CardDescription className={textSecondary}>
+                Configure the contact details displayed on your white-label site
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>Contact Email</label>
+                  <Input
+                    type="email"
+                    value={siteSettings.contact.email}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      contact: { ...siteSettings.contact, email: e.target.value }
+                    })}
+                    placeholder="support@yourcompany.com"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>Phone Number</label>
+                  <Input
+                    value={siteSettings.contact.phone}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      contact: { ...siteSettings.contact, phone: e.target.value }
+                    })}
+                    placeholder="+27 (0) 11 234 5678"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>WhatsApp Number</label>
+                  <Input
+                    value={siteSettings.contact.whatsapp}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      contact: { ...siteSettings.contact, whatsapp: e.target.value }
+                    })}
+                    placeholder="+27821234567"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                  <p className={`text-xs ${textSecondary} mt-1`}>Include country code without spaces</p>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>Business Hours</label>
+                  <Input
+                    value={siteSettings.business_hours}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      business_hours: e.target.value
+                    })}
+                    placeholder="Monday - Friday: 8:00 AM - 5:00 PM"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>Business Address</label>
+                <Textarea
+                  value={siteSettings.contact.address}
+                  onChange={(e) => setSiteSettings({
+                    ...siteSettings,
+                    contact: { ...siteSettings.contact, address: e.target.value }
+                  })}
+                  placeholder="123 Main Street, City, Country"
+                  rows={2}
+                  className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Social Media Links */}
+          <Card className={cardBg}>
+            <CardHeader>
+              <CardTitle className={`flex items-center gap-2 ${textPrimary}`}>
+                <Globe className="h-5 w-5" />
+                Social Media Links
+              </CardTitle>
+              <CardDescription className={textSecondary}>
+                Add your social media profile URLs for your white-label site
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 flex items-center gap-2 ${textPrimary}`}>
+                    <Facebook className="h-4 w-4 text-blue-600" /> Facebook
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.facebook}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, facebook: e.target.value }
+                    })}
+                    placeholder="https://facebook.com/yourpage"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 flex items-center gap-2 ${textPrimary}`}>
+                    <Twitter className="h-4 w-4 text-sky-500" /> Twitter / X
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.twitter}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, twitter: e.target.value }
+                    })}
+                    placeholder="https://twitter.com/yourhandle"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 flex items-center gap-2 ${textPrimary}`}>
+                    <Linkedin className="h-4 w-4 text-blue-700" /> LinkedIn
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.linkedin}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, linkedin: e.target.value }
+                    })}
+                    placeholder="https://linkedin.com/company/yourcompany"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 flex items-center gap-2 ${textPrimary}`}>
+                    <Instagram className="h-4 w-4 text-pink-600" /> Instagram
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.instagram}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, instagram: e.target.value }
+                    })}
+                    placeholder="https://instagram.com/yourhandle"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 flex items-center gap-2 ${textPrimary}`}>
+                    <Youtube className="h-4 w-4 text-red-600" /> YouTube
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.youtube}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, youtube: e.target.value }
+                    })}
+                    placeholder="https://youtube.com/@yourchannel"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 flex items-center gap-2 ${textPrimary}`}>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg> TikTok
+                  </label>
+                  <Input
+                    value={siteSettings.social_media.tiktok}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      social_media: { ...siteSettings.social_media, tiktok: e.target.value }
+                    })}
+                    placeholder="https://tiktok.com/@yourhandle"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button onClick={handleSaveSiteSettings} disabled={saving} style={{ backgroundColor: theme.primaryColor }} className="text-white">
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Saving...' : 'Save Site Settings'}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Billing/Subscription Tab */}
       {activeTab === 'billing' && (
         <div className="space-y-6">

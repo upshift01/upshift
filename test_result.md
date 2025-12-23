@@ -108,3 +108,5 @@ agent_communication:
     message: "✅ Super Admin Analytics Page Testing Complete - ALL WORKING PERFECTLY"
   - agent: "main"
     message: "Fixed Invoice Reminder API error handling. Now returns specific SMTP error messages instead of generic failures. Ready for testing."
+  - agent: "testing"
+    message: "✅ Invoice Reminder API Testing Complete - WORKING PERFECTLY. Tested POST /api/reseller/customer-invoices/{invoice_id}/send-reminder endpoint with test credentials john@acmecareers.com / acme123456 and invoice ID fe5d438e-a716-4372-b1fa-298794788d9d. API correctly returns comprehensive error response with all required fields: success=false, message='SMTP authentication failed. Please check your email username and password in Settings → Email.', email_sent=false, error_type='auth_failed'. The error handling is working as expected with test SMTP credentials."

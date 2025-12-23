@@ -77,6 +77,8 @@ const AdminSettings = () => {
 
   // Test Email State
   const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
 
   // Yoco Payment Settings State
   const [yocoSettings, setYocoSettings] = useState({

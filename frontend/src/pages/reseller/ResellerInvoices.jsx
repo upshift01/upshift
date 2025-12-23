@@ -168,14 +168,16 @@ const ResellerInvoices = () => {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      if (response.ok) {
+      const data = await response.json();
+      if (response.ok && data.success) {
         alert('Payment reminder sent successfully!');
+        fetchInvoices(); // Refresh to show updated reminder timestamp
       } else {
-        alert('Failed to send reminder');
+        alert(data.detail || data.error || 'Failed to send reminder. Please check email settings.');
       }
     } catch (error) {
       console.error('Error sending reminder:', error);
-      alert('Error sending reminder');
+      alert('Error sending reminder. Please try again.');
     }
   };
 

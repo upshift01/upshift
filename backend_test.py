@@ -1427,36 +1427,31 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
 
     def run_all_tests(self):
         """Run all test suites"""
-        print("🚀 Starting UpShift White-Label SaaS Backend API Tests")
+        print("🚀 Starting UpShift Email Settings Backend API Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 60)
         
-        # Run test suites
+        # Run authentication first
         auth_success = self.test_authentication()
         
         if auth_success:
+            # PRIMARY TEST: Email Settings Functionality (Review Request)
+            self.test_email_settings_functionality()
+            
+            # Additional comprehensive tests
             self.test_super_admin_apis()
             self.test_reseller_apis()
-            # NEW: Test Email and Scheduling System
             self.test_email_and_scheduling_system()
             self.test_reseller_email_settings()
         
         self.test_white_label_config()
         self.test_unauthorized_access()
         
-        # NEW: Test ATS Resume Checker (FREE endpoint)
+        # Additional API tests
         self.test_ats_resume_checker()
-        
-        # NEW: Test LinkedIn Tools API endpoints
         self.test_linkedin_tools_api()
-        
-        # NEW: Test Yoco Payment Integration
         self.test_yoco_payment_integration()
-        
-        # NEW: Test Customer Invoice Creation and Yoco Payment Integration
         self.test_customer_invoice_creation()
-        
-        # NEW: Test Reseller Customer Signup E2E Flow
         self.test_reseller_customer_signup_e2e()
         
         # Print summary

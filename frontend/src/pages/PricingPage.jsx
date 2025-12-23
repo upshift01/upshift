@@ -65,7 +65,7 @@ const PricingPage = () => {
             Professional AI Career Services
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Premium, one-time payment for professional, ATS-optimized career documents. No subscriptions - pay once, get results.
+            Premium, one-time payment for professional, ATS-optimised career documents. No subscriptions - pay once, get results.
           </p>
         </div>
 
@@ -75,7 +75,7 @@ const PricingPage = () => {
           <div className="mt-12 max-w-2xl mx-auto">
             <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 text-center">
               <h3 className="text-lg font-semibold text-green-900 mb-2">
-                Active Plan: {user.active_tier === 'tier-1' ? 'ATS Optimize' : user.active_tier === 'tier-2' ? 'Professional Package' : 'Executive Elite'}
+                Active Plan: {user.active_tier === 'tier-1' ? 'ATS Optimise' : user.active_tier === 'tier-2' ? 'Professional Package' : 'Executive Elite'}
               </h3>
               <p className="text-green-700">
                 You have full access to all features in your plan. Purchase additional services anytime!

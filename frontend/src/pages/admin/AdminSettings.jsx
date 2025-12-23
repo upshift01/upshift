@@ -71,6 +71,25 @@ const AdminSettings = () => {
   const [testingLinkedin, setTestingLinkedin] = useState(false);
   const [linkedinStatus, setLinkedinStatus] = useState(null);
 
+  // Site Settings State (Contact & Social Media)
+  const [siteSettings, setSiteSettings] = useState({
+    contact: {
+      email: '',
+      phone: '',
+      address: '',
+      whatsapp: ''
+    },
+    social_media: {
+      facebook: '',
+      twitter: '',
+      linkedin: '',
+      instagram: '',
+      youtube: '',
+      tiktok: ''
+    },
+    business_hours: ''
+  });
+
   useEffect(() => {
     if (activeTab === 'email') {
       fetchEmailSettings();

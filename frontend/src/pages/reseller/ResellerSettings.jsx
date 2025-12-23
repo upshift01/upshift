@@ -1363,7 +1363,7 @@ const ResellerSettings = () => {
               <div className="p-4 bg-gray-50 rounded-lg border">
                 <h4 className="font-medium mb-2">How to get your Yoco API keys:</h4>
                 <ol className="text-sm text-gray-600 space-y-2">
-                  <li>1. Sign up for a <a href="https://www.yoco.com/za/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Yoco account</a> if you don't have one</li>
+                  <li>1. Sign up for a <a href="https://www.yoco.com/za/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Yoco account</a> if you don&apos;t have one</li>
                   <li>2. Log in to the <a href="https://portal.yoco.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Yoco Business Portal</a></li>
                   <li>3. Navigate to Online Payments → Payment Gateway</li>
                   <li>4. Copy your Public Key and Secret Key</li>
@@ -1619,11 +1619,11 @@ const ResellerSettings = () => {
             <CardContent>
               <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                 <li>Go to the <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn Developer Portal</a></li>
-                <li>Click <strong>"Create App"</strong> if you don't have one</li>
+                <li>Click <strong>&quot;Create App&quot;</strong> if you don&apos;t have one</li>
                 <li>Fill in your app details (name, LinkedIn Page, logo)</li>
-                <li>Go to the <strong>"Auth"</strong> tab in your app</li>
+                <li>Go to the <strong>&quot;Auth&quot;</strong> tab in your app</li>
                 <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
-                <li>Add your redirect URI under <strong>"Authorized redirect URLs"</strong></li>
+                <li>Add your redirect URI under <strong>&quot;Authorized redirect URLs&quot;</strong></li>
               </ol>
               <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">

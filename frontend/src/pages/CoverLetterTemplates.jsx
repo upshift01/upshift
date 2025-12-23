@@ -132,14 +132,44 @@ const CoverLetterTemplateCard = ({ template, onSelect }) => {
 
 const CoverLetterTemplates = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Fetch templates from API
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/api/content/cover-letter-templates`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data.templates && data.templates.length > 0) {
+            setTemplates(data.templates);
+          } else {
+            setTemplates(fallbackTemplates);
+          }
+        } else {
+          setTemplates(fallbackTemplates);
+        }
+      } catch (error) {
+        console.error('Error fetching cover letter templates:', error);
+        setTemplates(fallbackTemplates);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTemplates();
+  }, []);
+
   const filteredTemplates =
     selectedCategory === 'all'
-      ? coverLetterTemplates
-      : coverLetterTemplates.filter((template) => template.category === selectedCategory);
+      ? templates
+      : templates.filter((template) => template.category === selectedCategory);
 
   const handleSelectTemplate = (template) => {
     // Store the selected template in localStorage

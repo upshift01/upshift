@@ -1314,10 +1314,25 @@ const AdminSettings = () => {
                   <RefreshCw className={`h-4 w-4 mr-2 ${testingEmail ? 'animate-spin' : ''}`} />
                   {testingEmail ? 'Testing...' : 'Test Connection'}
                 </Button>
-                <Button variant="outline" onClick={handleSendTestEmail} disabled={sendingTestEmail}>
-                  <Send className={`h-4 w-4 mr-2 ${sendingTestEmail ? 'animate-spin' : ''}`} />
-                  {sendingTestEmail ? 'Sending...' : 'Send Test Email'}
-                </Button>
+              </div>
+
+              {/* Send Test Email Section */}
+              <div className="pt-4 border-t">
+                <label className="block text-sm font-medium mb-2">Send Test Email</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={testEmailAddress}
+                    onChange={(e) => setTestEmailAddress(e.target.value)}
+                    placeholder="Enter your email to receive test"
+                    className="flex-1"
+                  />
+                  <Button variant="outline" onClick={handleSendTestEmail} disabled={sendingTestEmail}>
+                    <Send className={`h-4 w-4 mr-2 ${sendingTestEmail ? 'animate-spin' : ''}`} />
+                    {sendingTestEmail ? 'Sending...' : 'Send Test'}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Enter your email address and click Send Test to verify your SMTP configuration</p>
               </div>
 
               {/* Provider Tips */}

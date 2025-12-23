@@ -467,6 +467,14 @@ const ResellerInvoices = () => {
                             )}
                             <Button
                               size="sm"
+                              variant="outline"
+                              onClick={() => downloadInvoicePDF(invoice.id, invoice.invoice_number)}
+                              title="Download PDF"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => setSelectedInvoice(invoice)}
                               title="View Details"

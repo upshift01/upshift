@@ -1201,53 +1201,87 @@ const AdminSettings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                SMTP Configuration (Office365)
+                Email / SMTP Configuration
               </CardTitle>
+              <CardDescription>Configure your email service provider for sending system emails</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* Provider Selection */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Email Provider</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {emailProviders.map((provider) => (
+                    <button
+                      key={provider.id}
+                      onClick={() => handleProviderChange(provider.id)}
+                      className={`p-3 border rounded-lg text-sm text-left transition-all ${
+                        emailSettings.provider === provider.id
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {provider.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* SMTP Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">SMTP Host</label>
+                  <label className="block text-sm font-medium mb-1">SMTP Host *</label>
                   <Input
                     value={emailSettings.smtp_host}
                     onChange={(e) => setEmailSettings({ ...emailSettings, smtp_host: e.target.value })}
-                    placeholder="smtp.office365.com"
+                    placeholder="smtp.example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">SMTP Port</label>
+                  <label className="block text-sm font-medium mb-1">SMTP Port *</label>
                   <Input
                     type="number"
                     value={emailSettings.smtp_port}
-                    onChange={(e) => setEmailSettings({ ...emailSettings, smtp_port: parseInt(e.target.value) })}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, smtp_port: parseInt(e.target.value) || 587 })}
                     placeholder="587"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">SMTP Username (Email)</label>
+                  <label className="block text-sm font-medium mb-1">Encryption</label>
+                  <select
+                    value={emailSettings.encryption}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, encryption: e.target.value })}
+                    className="w-full h-10 px-3 border rounded-md bg-white"
+                  >
+                    <option value="tls">TLS (STARTTLS) - Port 587</option>
+                    <option value="ssl">SSL - Port 465</option>
+                    <option value="none">None (Not Recommended)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Username / Email *</label>
                   <Input
-                    type="email"
                     value={emailSettings.smtp_user}
                     onChange={(e) => setEmailSettings({ ...emailSettings, smtp_user: e.target.value })}
-                    placeholder="noreply@yourdomain.com"
+                    placeholder="your-email@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">SMTP Password</label>
+                  <label className="block text-sm font-medium mb-1">Password / App Password *</label>
                   <Input
                     type="password"
                     value={emailSettings.smtp_password}
                     onChange={(e) => setEmailSettings({ ...emailSettings, smtp_password: e.target.value })}
                     placeholder="••••••••"
                   />
+                  <p className="text-xs text-gray-500 mt-1">For Gmail/Office365, use an App Password</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">From Email (optional)</label>
+                  <label className="block text-sm font-medium mb-1">From Email</label>
                   <Input
                     type="email"
                     value={emailSettings.from_email}
                     onChange={(e) => setEmailSettings({ ...emailSettings, from_email: e.target.value })}
-                    placeholder="Same as SMTP username"
+                    placeholder="Same as username if empty"
                   />
                 </div>
                 <div>
@@ -1258,7 +1292,59 @@ const AdminSettings = () => {
                     placeholder="UpShift"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Reply-To Email</label>
+                  <Input
+                    type="email"
+                    value={emailSettings.reply_to}
+                    onChange={(e) => setEmailSettings({ ...emailSettings, reply_to: e.target.value })}
+                    placeholder="support@example.com"
+                  />
+                </div>
               </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button onClick={handleSaveEmailSettings} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Email Settings'}
+                </Button>
+                <Button variant="outline" onClick={handleTestConnection} disabled={testingEmail}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${testingEmail ? 'animate-spin' : ''}`} />
+                  {testingEmail ? 'Testing...' : 'Test Connection'}
+                </Button>
+                <Button variant="outline" onClick={handleSendTestEmail} disabled={sendingTestEmail}>
+                  <Send className={`h-4 w-4 mr-2 ${sendingTestEmail ? 'animate-spin' : ''}`} />
+                  {sendingTestEmail ? 'Sending...' : 'Send Test Email'}
+                </Button>
+              </div>
+
+              {/* Provider Tips */}
+              {emailSettings.provider === 'gmail' && (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Gmail / Google Workspace:</strong> You need to use an App Password. Go to 
+                    <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="underline ml-1">Google Account → App Passwords</a> to generate one.
+                  </p>
+                </div>
+              )}
+              {emailSettings.provider === 'office365' && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Microsoft 365 / Outlook:</strong> If you have MFA enabled, use an App Password from your 
+                    <a href="https://account.microsoft.com/security" target="_blank" rel="noopener noreferrer" className="underline ml-1">Microsoft Security settings</a>.
+                  </p>
+                </div>
+              )}
+              {emailSettings.provider === 'sendgrid' && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>SendGrid:</strong> Use <code className="bg-blue-100 px-1 rounded">apikey</code> as username and your API key as the password.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
               <div className="flex flex-wrap gap-3 pt-4 border-t">
                 <Button onClick={handleSaveEmailSettings} disabled={saving}>

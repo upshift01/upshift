@@ -198,6 +198,34 @@ const ResellerInvoices = () => {
     }
   };
 
+  const downloadInvoicePDF = async (invoiceId, invoiceNumber) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/reseller/customer-invoices/${invoiceId}/pdf`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice_${invoiceNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert('Failed to download invoice PDF');
+      }
+    } catch (error) {
+      console.error('Error downloading invoice PDF:', error);
+      alert('Error downloading invoice PDF');
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       paid: 'bg-green-100 text-green-800',

@@ -31,7 +31,7 @@ const CoverLetter = () => {
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-2">
                 <Pencil className="h-6 w-6 text-green-600" />
               </div>
-              <CardTitle>Customize</CardTitle>
+              <CardTitle>Customise</CardTitle>
               <CardDescription>
                 Easily edit and personalize your cover letter to match your unique experience.
               </CardDescription>

@@ -344,6 +344,80 @@ const ResumeBuilder = () => {
           </Card>
         )}
 
+        {/* Upload Existing CV Section */}
+        <Card className="mb-8 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Wand2 className="h-5 w-5 text-purple-600" />
+              </div>
+              Upload & Enhance Your Existing CV
+            </CardTitle>
+            <CardDescription>
+              Have an existing CV? Upload it and let AI extract, enhance, and improve your content automatically.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <label className="flex-1 w-full">
+                <div className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                  isUploading ? 'border-purple-400 bg-purple-50' : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+                }`}>
+                  {isUploading ? (
+                    <div className="flex flex-col items-center">
+                      <Loader2 className="h-8 w-8 text-purple-600 animate-spin mb-2" />
+                      <p className="text-sm text-purple-600 font-medium">AI is analyzing and enhancing your CV...</p>
+                      <p className="text-xs text-gray-500 mt-1">This may take a few seconds</p>
+                    </div>
+                  ) : uploadedFile ? (
+                    <div className="flex flex-col items-center">
+                      <FileText className="h-8 w-8 text-green-600 mb-2" />
+                      <p className="text-sm text-green-600 font-medium">{uploadedFile.name}</p>
+                      <p className="text-xs text-gray-500 mt-1">Click to upload a different file</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-600 font-medium">Drop your CV here or click to upload</p>
+                      <p className="text-xs text-gray-500 mt-1">Supports PDF and DOCX files</p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.doc"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+              </label>
+            </div>
+
+            {/* AI Suggestions from Upload */}
+            {aiSuggestions.length > 0 && (
+              <div className="mt-4 p-4 bg-white rounded-lg border border-purple-200">
+                <h4 className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  AI Suggestions for Improvement
+                </h4>
+                <ul className="space-y-1">
+                  {aiSuggestions.map((suggestion, index) => (
+                    <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
+                      <span className="text-purple-500 mt-1">•</span>
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+                Browse Templates
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>

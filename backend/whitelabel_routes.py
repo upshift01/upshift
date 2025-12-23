@@ -102,11 +102,27 @@ async def get_whitelabel_config(request: Request):
                 }
             }
         
+        # Fetch reseller's site settings
+        reseller_site_settings = await db.reseller_site_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
         # Return reseller's white-label config
         branding = reseller.get("branding", {})
         pricing = reseller.get("pricing", {})
         legal = reseller.get("legal", {})
         contact = reseller.get("contact_info", {})
+        
+        # Override with site settings if available
+        if reseller_site_settings:
+            site_contact = reseller_site_settings.get("contact", {})
+            site_social = reseller_site_settings.get("social_media", {})
+            business_hours = reseller_site_settings.get("business_hours", "")
+        else:
+            site_contact = {}
+            site_social = {}
+            business_hours = ""
         
         return {
             "is_white_label": True,
@@ -116,9 +132,19 @@ async def get_whitelabel_config(request: Request):
             "primary_color": branding.get("primary_color", "#1e40af"),
             "secondary_color": branding.get("secondary_color", "#7c3aed"),
             "favicon_url": branding.get("favicon_url"),
-            "contact_email": contact.get("email", ""),
-            "contact_phone": contact.get("phone", ""),
-            "contact_address": contact.get("address", ""),
+            "contact_email": site_contact.get("email") or contact.get("email", ""),
+            "contact_phone": site_contact.get("phone") or contact.get("phone", ""),
+            "contact_address": site_contact.get("address") or contact.get("address", ""),
+            "contact_whatsapp": site_contact.get("whatsapp", ""),
+            "business_hours": business_hours,
+            "social_media": {
+                "facebook": site_social.get("facebook", ""),
+                "twitter": site_social.get("twitter", ""),
+                "linkedin": site_social.get("linkedin", ""),
+                "instagram": site_social.get("instagram", ""),
+                "youtube": site_social.get("youtube", ""),
+                "tiktok": site_social.get("tiktok", "")
+            },
             "terms_url": legal.get("terms_url", "/terms"),
             "privacy_url": legal.get("privacy_url", "/privacy"),
             "pricing": {

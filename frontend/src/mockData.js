@@ -85,7 +85,7 @@ export const cvTemplates = [
   {
     id: 11,
     name: "ATS Entry Level",
-    description: "Perfect for graduates and entry-level positions. ATS-optimized with education and skills focus.",
+    description: "Perfect for graduates and entry-level positions. ATS-optimised with education and skills focus.",
     image: "https://images.pexels.com/photos/5705982/pexels-photo-5705982.jpeg?w=400&h=500&fit=crop",
     category: "ats",
     industry: "Entry Level"

@@ -891,6 +891,41 @@ const ResellerSettings = () => {
             </CardContent>
           </Card>
 
+          {/* Strategy Call Meeting Link */}
+          <Card className={`${cardBg} border-purple-200`}>
+            <CardHeader>
+              <CardTitle className={`flex items-center gap-2 ${textPrimary}`}>
+                <Video className="h-5 w-5 text-purple-600" />
+                Strategy Call Meeting Link
+              </CardTitle>
+              <CardDescription className={textSecondary}>
+                Configure your meeting link for strategy call bookings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>Meeting URL</label>
+                <Input
+                  value={siteSettings.meeting_link}
+                  onChange={(e) => setSiteSettings({
+                    ...siteSettings,
+                    meeting_link: e.target.value
+                  })}
+                  placeholder="https://zoom.us/j/your-meeting-id or https://meet.google.com/xxx-xxxx-xxx"
+                  className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                />
+                <p className={`text-xs mt-1 ${textSecondary}`}>
+                  Enter your Zoom, Google Meet, or Teams link. This will be sent to customers when they book a strategy call.
+                </p>
+              </div>
+              <div className={`${darkMode ? 'bg-purple-900/30 border-purple-700' : 'bg-purple-50 border-purple-200'} border rounded-lg p-3`}>
+                <p className={`text-sm ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
+                  <strong>Tip:</strong> Use a personal meeting room link that doesn't change for convenience.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Social Media Links */}
           <Card className={cardBg}>
             <CardHeader>

@@ -112,11 +112,11 @@ const ResellerPricing = () => {
               <div className="p-2 bg-blue-100 rounded-lg">
                 <DollarSign className="h-5 w-5 text-blue-600" />
               </div>
-              ATS Optimize
+              ATS Optimise
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 mb-4">Entry-level package for ATS-optimized resumes</p>
+            <p className="text-sm text-gray-500 mb-4">Entry-level package for ATS-optimised CVs</p>
             <div>
               <label className="block text-sm font-medium mb-1">Price (ZAR)</label>
               <div className="relative">

@@ -96,7 +96,7 @@ metadata:
   test_sequence: 4
 
 test_plan:
-  current_focus: ["Invoice Reminder API - Error Handling"]
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

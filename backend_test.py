@@ -1070,6 +1070,180 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_ai_content_generation_apis(self):
+        """Test AI Content Generation API endpoints as per review request"""
+        print("\n🤖 Testing AI Content Generation APIs...")
+        
+        # Test 1: Partner Enquiry (Public - No Auth Required)
+        print("\n🔹 Test 1: Partner Enquiry API (Public)")
+        
+        partner_data = {
+            "company": "Test Corp",
+            "name": "John Doe", 
+            "email": "john@test.com",
+            "phone": "+27821234567",
+            "type": "recruitment",
+            "message": "Interested in partnership"
+        }
+        
+        response, error = self.make_request("POST", "/ai-content/partner-enquiry", data=partner_data)
+        if error:
+            self.log_test("Partner Enquiry API", False, error)
+        else:
+            required_fields = ["success", "message"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Partner Enquiry API", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                message = response.get("message", "")
+                if success:
+                    self.log_test("Partner Enquiry API", True, f"Success: {success}, Message: {message[:50]}...")
+                else:
+                    self.log_test("Partner Enquiry API", False, "Success flag is False")
+        
+        # For authenticated endpoints, we need the test user with tier-2 plan
+        print("\n🔹 Test 2-4: Authenticated AI Content APIs")
+        
+        # Login as test@example.com / testpass123 (has tier-2 plan)
+        auth_creds = {
+            "email": "test@example.com",
+            "password": "testpass123"
+        }
+        
+        response, error = self.make_request("POST", "/auth/login", data=auth_creds)
+        if error:
+            self.log_test("AI Content User Login", False, error)
+            return False
+        
+        if not response.get("access_token"):
+            self.log_test("AI Content User Login", False, "No access token returned")
+            return False
+        
+        user = response.get("user", {})
+        ai_content_token = response["access_token"]
+        
+        # Verify user has tier-2 plan
+        if user.get("active_tier") != "tier-2":
+            self.log_test("AI Content User Login", False, f"Expected tier-2, got '{user.get('active_tier')}'")
+            return False
+        
+        self.log_test("AI Content User Login", True, f"Logged in with tier: {user.get('active_tier')}")
+        
+        headers = {"Authorization": f"Bearer {ai_content_token}"}
+        
+        # Test 2: Cover Letter Generation (Requires Auth + Paid Tier)
+        print("\n🔹 Test 2: Cover Letter Generation API")
+        
+        cover_letter_data = {
+            "full_name": "Jane Smith",
+            "email": "jane@test.com",
+            "company_name": "Standard Bank",
+            "job_title": "Software Developer",
+            "key_skills": "Python, React, AWS",
+            "why_interested": "Innovative fintech"
+        }
+        
+        response, error = self.make_request("POST", "/ai-content/generate-cover-letter", 
+                                          headers=headers, data=cover_letter_data)
+        if error:
+            self.log_test("Cover Letter Generation API", False, error)
+        else:
+            required_fields = ["success", "cover_letter"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Cover Letter Generation API", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                cover_letter = response.get("cover_letter", "")
+                if success and cover_letter:
+                    # Check if cover letter contains expected elements
+                    has_name = "Jane Smith" in cover_letter
+                    has_company = "Standard Bank" in cover_letter
+                    has_role = "Software Developer" in cover_letter
+                    
+                    if has_name and has_company and has_role:
+                        self.log_test("Cover Letter Generation API", True, 
+                                    f"Generated cover letter with {len(cover_letter)} characters, contains expected details")
+                    else:
+                        self.log_test("Cover Letter Generation API", True, 
+                                    f"Generated cover letter with {len(cover_letter)} characters (some details missing)")
+                else:
+                    self.log_test("Cover Letter Generation API", False, 
+                                f"Success: {success}, Cover letter length: {len(cover_letter) if cover_letter else 0}")
+        
+        # Test 3: CV Suggestion (Requires Auth)
+        print("\n🔹 Test 3: CV Suggestion API")
+        
+        cv_suggestion_data = {
+            "field": "summary",
+            "current_value": "I am a developer",
+            "job_title": "Software Engineer",
+            "industry": "Technology"
+        }
+        
+        response, error = self.make_request("POST", "/ai-content/cv-suggestion", 
+                                          headers=headers, data=cv_suggestion_data)
+        if error:
+            self.log_test("CV Suggestion API", False, error)
+        else:
+            required_fields = ["success", "suggestion", "field"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("CV Suggestion API", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                suggestion = response.get("suggestion", "")
+                field = response.get("field", "")
+                
+                if success and suggestion and field == "summary":
+                    self.log_test("CV Suggestion API", True, 
+                                f"Generated suggestion for '{field}' field with {len(suggestion)} characters")
+                else:
+                    self.log_test("CV Suggestion API", False, 
+                                f"Success: {success}, Field: {field}, Suggestion length: {len(suggestion) if suggestion else 0}")
+        
+        # Test 4: CV Generation (Requires Auth + Paid Tier)
+        print("\n🔹 Test 4: CV Generation API")
+        
+        cv_generation_data = {
+            "full_name": "John Test",
+            "email": "john@test.com",
+            "phone": "+27821234567",
+            "industry": "Technology",
+            "summary": "",
+            "experience": [
+                {
+                    "title": "Developer",
+                    "company": "Tech Corp"
+                }
+            ],
+            "skills": ["Python", "React"]
+        }
+        
+        response, error = self.make_request("POST", "/ai-content/generate-cv", 
+                                          headers=headers, data=cv_generation_data)
+        if error:
+            self.log_test("CV Generation API", False, error)
+        else:
+            required_fields = ["success", "cv_id", "enhanced_summary"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("CV Generation API", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                cv_id = response.get("cv_id", "")
+                enhanced_summary = response.get("enhanced_summary", "")
+                
+                if success and cv_id and enhanced_summary:
+                    self.log_test("CV Generation API", True, 
+                                f"Generated CV with ID: {cv_id}, Enhanced summary: {len(enhanced_summary)} characters")
+                else:
+                    self.log_test("CV Generation API", False, 
+                                f"Success: {success}, CV ID: {cv_id}, Summary length: {len(enhanced_summary) if enhanced_summary else 0}")
+        
+        return True
+
     def test_customer_invoice_creation(self):
         """Test Customer Invoice Creation feature and Yoco Payment integration for UpShift reseller portal"""
         print("\n🧾 Testing Customer Invoice Creation & Yoco Payment Integration...")

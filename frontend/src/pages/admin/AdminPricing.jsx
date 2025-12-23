@@ -587,7 +587,7 @@ const AdminPricing = () => {
                       <DollarSign className="h-4 w-4 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">ATS Optimize</h3>
+                      <h3 className="font-semibold">ATS Optimise</h3>
                       <p className="text-xs text-gray-500">Entry-level tier</p>
                     </div>
                   </div>

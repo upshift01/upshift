@@ -118,7 +118,8 @@ const AdminSettings = () => {
     },
     business_hours: '',
     vat_number: '',
-    company_registration: ''
+    company_registration: '',
+    meeting_link: ''
   });
 
   useEffect(() => {

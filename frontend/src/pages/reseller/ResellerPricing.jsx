@@ -193,6 +193,115 @@ const ResellerPricing = () => {
         </Card>
       </div>
 
+      {/* Strategy Call Pricing */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Calendar className="h-5 w-5 text-green-600" />
+            </div>
+            Strategy Call Pricing
+          </CardTitle>
+          <CardDescription>
+            Configure pricing for career strategy call bookings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label>Strategy Call Price (ZAR)</Label>
+              <div className="relative mt-1">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formatCents(strategyCallPricing.price)}
+                  onChange={(e) => setStrategyCallPricing({ 
+                    ...strategyCallPricing, 
+                    price: parseCents(e.target.value) 
+                  })}
+                  className="pl-8"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Price for customers who book a strategy call</p>
+            </div>
+
+            <div>
+              <Label>Call Duration (Minutes)</Label>
+              <Input
+                type="number"
+                min="15"
+                max="120"
+                step="15"
+                value={strategyCallPricing.duration_minutes}
+                onChange={(e) => setStrategyCallPricing({ 
+                  ...strategyCallPricing, 
+                  duration_minutes: parseInt(e.target.value) || 30 
+                })}
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">Duration of each call session</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div>
+                <Label className="text-base">Include Free with Executive Elite</Label>
+                <p className="text-sm text-gray-500">Executive Elite customers get one free strategy call</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={strategyCallPricing.included_in_tier_3}
+                  onChange={(e) => setStrategyCallPricing({ 
+                    ...strategyCallPricing, 
+                    included_in_tier_3: e.target.checked 
+                  })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div>
+                <Label className="text-base">Enable Strategy Call Bookings</Label>
+                <p className="text-sm text-gray-500">Allow customers to book strategy calls on your site</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={strategyCallPricing.enabled}
+                  onChange={(e) => setStrategyCallPricing({ 
+                    ...strategyCallPricing, 
+                    enabled: e.target.checked 
+                  })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-green-800">Strategy Call Summary</p>
+                <p className="text-sm text-green-700 mt-1">
+                  {strategyCallPricing.enabled 
+                    ? `R${formatCents(strategyCallPricing.price)} per ${strategyCallPricing.duration_minutes}-minute session${strategyCallPricing.included_in_tier_3 ? ' (free for Executive Elite)' : ''}`
+                    : 'Strategy call bookings are currently disabled'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving}>
           <Save className="h-4 w-4 mr-2" />

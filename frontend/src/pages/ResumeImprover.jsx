@@ -136,7 +136,7 @@ const ResumeImprover = () => {
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
             <Sparkles className="mr-1 h-3 w-3" />
-            AI Resume Analyzer
+            AI CV Analyser
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Improve Your Existing CV
@@ -179,7 +179,7 @@ const ResumeImprover = () => {
         {file && !analysis && (
           <Card>
             <CardHeader>
-              <CardTitle>Ready to Analyze</CardTitle>
+              <CardTitle>Ready to Analyse</CardTitle>
               <CardDescription>Your CV has been uploaded successfully</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -206,12 +206,12 @@ const ResumeImprover = () => {
                 {isAnalyzing ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Analyzing with AI...
+                    Analysing with AI...
                   </>
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-5 w-5" />
-                    Analyze CV
+                    Analyse CV
                   </>
                 )}
               </Button>

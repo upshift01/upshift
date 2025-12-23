@@ -28,13 +28,41 @@ const AdminSettings = () => {
 
   // Email Settings State
   const [emailSettings, setEmailSettings] = useState({
-    smtp_host: 'smtp.office365.com',
+    provider: 'custom',
+    smtp_host: '',
     smtp_port: 587,
     smtp_user: '',
     smtp_password: '',
+    encryption: 'tls',
     from_email: '',
-    from_name: 'UpShift'
+    from_name: 'UpShift',
+    reply_to: ''
   });
+
+  // Email Provider Presets
+  const emailProviders = [
+    { id: 'custom', name: 'Custom SMTP', host: '', port: 587, encryption: 'tls' },
+    { id: 'office365', name: 'Microsoft 365 / Outlook', host: 'smtp.office365.com', port: 587, encryption: 'tls' },
+    { id: 'gmail', name: 'Gmail / Google Workspace', host: 'smtp.gmail.com', port: 587, encryption: 'tls' },
+    { id: 'sendgrid', name: 'SendGrid', host: 'smtp.sendgrid.net', port: 587, encryption: 'tls' },
+    { id: 'mailgun', name: 'Mailgun', host: 'smtp.mailgun.org', port: 587, encryption: 'tls' },
+    { id: 'ses', name: 'Amazon SES', host: 'email-smtp.us-east-1.amazonaws.com', port: 587, encryption: 'tls' },
+    { id: 'zoho', name: 'Zoho Mail', host: 'smtp.zoho.com', port: 465, encryption: 'ssl' },
+    { id: 'yahoo', name: 'Yahoo Mail', host: 'smtp.mail.yahoo.com', port: 465, encryption: 'ssl' },
+  ];
+
+  const handleProviderChange = (providerId) => {
+    const provider = emailProviders.find(p => p.id === providerId);
+    if (provider) {
+      setEmailSettings({
+        ...emailSettings,
+        provider: providerId,
+        smtp_host: provider.host,
+        smtp_port: provider.port,
+        encryption: provider.encryption
+      });
+    }
+  };
 
   // Reminder Schedules State
   const [reminderSchedules, setReminderSchedules] = useState([]);

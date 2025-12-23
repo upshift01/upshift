@@ -12,7 +12,6 @@ const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [testingEmail, setTestingEmail] = useState(false);
   const [sendingReminders, setSendingReminders] = useState(false);
   const [generatingInvoices, setGeneratingInvoices] = useState(false);
   

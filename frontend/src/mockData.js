@@ -45,7 +45,7 @@ export const cvTemplates = [
   {
     id: 6,
     name: "ATS Healthcare Professional",
-    description: "Medical and healthcare optimized ATS template with sections for licenses and certifications.",
+    description: "Medical and healthcare optimised ATS template with sections for licences and certifications.",
     image: "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?w=400&h=500&fit=crop",
     category: "ats",
     industry: "Healthcare"

@@ -254,6 +254,8 @@ class InvoicePDFGenerator:
             bill_to_content.append(Paragraph(bill_to['email'], self.styles['SmallText']))
         if bill_to.get('address'):
             bill_to_content.append(Paragraph(bill_to['address'], self.styles['SmallText']))
+        if bill_to.get('vat_number'):
+            bill_to_content.append(Paragraph(f"VAT No: {bill_to['vat_number']}", self.styles['SmallText']))
         
         # Invoice Details box
         details_content = [

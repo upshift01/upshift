@@ -181,7 +181,7 @@ const AIAssistantBot = () => {
   return (
     <>
       {/* Chat Widget */}
-      <div className="fixed bottom-36 right-6 z-50">
+      <div className="fixed bottom-20 right-6 z-50">
         {/* Chat Window */}
         {isOpen && (
           <div className="absolute bottom-16 right-0 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-5 duration-300 flex flex-col" style={{ height: '500px' }}>

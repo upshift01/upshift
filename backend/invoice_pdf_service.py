@@ -206,14 +206,15 @@ class InvoicePDFGenerator:
         left_table.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'LEFT'),
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
         ]))
         
         right_table = Table(right_data, colWidths=[8*cm])
         right_table.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (0,0), 12),
+            ('BOTTOMPADDING', (0,1), (-1,-1), 4),
         ]))
         
         header = Table([[left_table, right_table]], colWidths=[8.5*cm, 8.5*cm])

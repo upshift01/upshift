@@ -96,8 +96,25 @@ const AdminAnalytics = () => {
   };
   const growthPercent = calculateGrowth();
 
-  // Y-axis labels
-  const yAxisLabels = [0, maxRevenue * 0.25, maxRevenue * 0.5, maxRevenue * 0.75, maxRevenue].reverse();
+  // Y-axis labels - create nice round numbers
+  const getYAxisLabels = (max) => {
+    if (max === 0) return [0];
+    const step = Math.ceil(max / 4 / 100000) * 100000; // Round to nearest 1000 ZAR
+    return [0, step, step * 2, step * 3, step * 4].filter(v => v <= max * 1.1);
+  };
+  const yAxisLabels = getYAxisLabels(maxRevenue).reverse();
+  const chartMaxRevenue = yAxisLabels[0] || maxRevenue;
+
+  // Format month label
+  const formatMonthLabel = (monthStr) => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const parts = monthStr.split('-');
+    if (parts.length === 2) {
+      const monthIndex = parseInt(parts[1]) - 1;
+      return months[monthIndex] || monthStr;
+    }
+    return monthStr;
+  };
 
   return (
     <div className="p-6">

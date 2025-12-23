@@ -2374,9 +2374,6 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         self.print_summary()
         
         return len(self.failed_tests) == 0
-        else:
-            print("✅ ALL TESTS PASSED - Invoice Reminder API endpoint is working correctly")
-            return True
 
     def test_vat_number_invoice_pdf_functionality(self):
         """Test VAT number support in Invoice PDF layout as per review request"""

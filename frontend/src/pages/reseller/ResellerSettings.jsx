@@ -312,6 +312,75 @@ const ResellerSettings = () => {
     }
   };
 
+  // LinkedIn Settings Functions
+  const fetchLinkedinSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/linkedin-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLinkedinSettings({
+          client_id: data.client_id || '',
+          client_secret: data.client_secret || '',
+          redirect_uri: data.redirect_uri || '',
+          use_custom_keys: data.use_custom_keys || false
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching LinkedIn settings:', error);
+    }
+  };
+
+  const handleSaveLinkedinSettings = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/linkedin-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(linkedinSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'LinkedIn settings saved successfully!' });
+        fetchLinkedinSettings();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save LinkedIn settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving LinkedIn settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestLinkedin = async () => {
+    setTestingLinkedin(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/linkedin-settings/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message || 'LinkedIn connection successful!' });
+      } else {
+        setMessage({ type: 'error', text: data.detail || 'Connection failed' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error testing LinkedIn connection' });
+    } finally {
+      setTestingLinkedin(false);
+    }
+  };
+
   // Yoco Settings Functions
   const fetchYocoSettings = async () => {
     try {

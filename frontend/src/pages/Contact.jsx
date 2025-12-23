@@ -294,7 +294,7 @@ const Contact = () => {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">What is ATS and why does it matter?</h4>
                   <p className="text-sm text-gray-600">
-                    ATS (Applicant Tracking System) is software used by 90% of large companies to filter resumes before a human sees them. Our AI optimizes your CV to pass these systems and get noticed.
+                    ATS (Applicant Tracking System) is software used by 90% of large companies to filter CVs before a human sees them. Our AI optimises your CV to pass these systems and get noticed.
                   </p>
                 </div>
                 <div>
@@ -314,14 +314,14 @@ const Contact = () => {
                 <div className="pt-3 border-t">
                   <h4 className="font-medium text-gray-900 mb-1">What's included in the free ATS checker?</h4>
                   <p className="text-sm text-gray-600">
-                    Our free ATS checker analyzes your resume against common ATS requirements and provides a compatibility score with basic improvement tips.
+                    Our free ATS checker analyses your CV against common ATS requirements and provides a compatibility score with basic improvement tips.
                   </p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">What's the difference between the pricing tiers?</h4>
                   <p className="text-sm text-gray-600">
-                    <strong>ATS Optimize (R899):</strong> CV rewrite, cover letter, ATS optimization.<br/>
-                    <strong>Professional (R1,500):</strong> Everything in ATS Optimize plus LinkedIn review and interview prep.<br/>
+                    <strong>ATS Optimise (R899):</strong> CV rewrite, cover letter, ATS optimisation.<br/>
+                    <strong>Professional (R1,500):</strong> Everything in ATS Optimise plus LinkedIn review and interview prep.<br/>
                     <strong>Executive Elite (R3,000):</strong> Full service with 1-on-1 consultation and unlimited revisions.
                   </p>
                 </div>
@@ -356,13 +356,13 @@ const Contact = () => {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Do you write cover letters too?</h4>
                   <p className="text-sm text-gray-600">
-                    Yes, our AI generates tailored cover letters based on the job description you provide. Each cover letter is customized to highlight your relevant experience.
+                    Yes, our AI generates tailored cover letters based on the job description you provide. Each cover letter is customised to highlight your relevant experience.
                   </p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">How does the interview preparation work?</h4>
                   <p className="text-sm text-gray-600">
-                    Our AI analyzes your target role and generates practice questions. You can practice answering and receive feedback on how to improve your responses.
+                    Our AI analyses your target role and generates practice questions. You can practise answering and receive feedback on how to improve your responses.
                   </p>
                 </div>
 

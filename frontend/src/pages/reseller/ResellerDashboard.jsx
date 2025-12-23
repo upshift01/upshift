@@ -173,7 +173,7 @@ const ResellerDashboard = () => {
                 <p className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>{stats?.total_customers || 0}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-3 w-3 text-green-500" />
-                  <span className="text-xs text-green-500">+{stats?.new_customers_this_month || 0} this month</span>
+                  <span className="text-xs text-green-500">+{stats?.new_customers_month || 0} this month</span>
                 </div>
               </div>
               <div className="p-3 rounded-xl" style={{ backgroundColor: `${theme.primaryColor}20` }}>
@@ -189,7 +189,7 @@ const ResellerDashboard = () => {
               <div>
                 <p className={`text-sm ${textSecondary}`}>Total Revenue</p>
                 <p className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>{formatPrice(stats?.total_revenue || 0)}</p>
-                <p className={`text-xs ${textSecondary} mt-1`}>All time earnings</p>
+                <p className={`text-xs ${textSecondary} mt-1`}>{stats?.active_customers || 0} paying customers</p>
               </div>
               <div className="p-3 rounded-xl bg-green-100 dark:bg-green-900/30">
                 <DollarSign className="h-6 w-6 text-green-600" />
@@ -204,13 +204,7 @@ const ResellerDashboard = () => {
               <div>
                 <p className={`text-sm ${textSecondary}`}>This Month</p>
                 <p className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>{formatPrice(stats?.this_month_revenue || 0)}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  {(stats?.revenue_growth || 0) >= 0 ? (
-                    <><ArrowUpRight className="h-3 w-3 text-green-500" /><span className="text-xs text-green-500">+{stats?.revenue_growth || 0}%</span></>
-                  ) : (
-                    <><ArrowDownRight className="h-3 w-3 text-red-500" /><span className="text-xs text-red-500">{stats?.revenue_growth || 0}%</span></>
-                  )}
-                </div>
+                <p className={`text-xs ${textSecondary} mt-1`}>Current period</p>
               </div>
               <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30">
                 <TrendingUp className="h-6 w-6 text-purple-600" />
@@ -223,11 +217,17 @@ const ResellerDashboard = () => {
           <CardContent className="p-4 md:p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className={`text-sm ${textSecondary}`}>Conversion Rate</p>
-                <p className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>{stats?.conversion_rate || 0}%</p>
-                <p className={`text-xs ${textSecondary} mt-1`}>Visitors to customers</p>
+                <p className={`text-sm ${textSecondary}`}>Pending Payments</p>
+                <p className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>{stats?.pending_payments || 0}</p>
+                <p className={`text-xs ${textSecondary} mt-1`}>Awaiting completion</p>
               </div>
               <div className="p-3 rounded-xl bg-orange-100 dark:bg-orange-900/30">
+                <Clock className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
                 <Target className="h-6 w-6 text-orange-600" />
               </div>
             </div>

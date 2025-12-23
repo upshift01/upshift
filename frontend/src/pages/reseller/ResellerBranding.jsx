@@ -79,7 +79,7 @@ const ResellerBranding = () => {
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Branding Settings</h1>
-        <p className="text-gray-600">Customize your white-label appearance</p>
+        <p className="text-gray-600">Customise your white-label appearance</p>
       </div>
 
       {message && (

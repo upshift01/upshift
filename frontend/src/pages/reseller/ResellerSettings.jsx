@@ -116,7 +116,8 @@ const ResellerSettings = () => {
     social_media: { facebook: '', twitter: '', linkedin: '', instagram: '', youtube: '', tiktok: '' },
     business_hours: '',
     vat_number: '',
-    company_registration: ''
+    company_registration: '',
+    meeting_link: ''
   });
 
   useEffect(() => {

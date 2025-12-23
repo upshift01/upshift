@@ -127,7 +127,7 @@ const ResellerRevenue = () => {
             style={compareWithPrevious ? { backgroundColor: theme.primaryColor } : {}}
           >
             <GitCompare className="h-4 w-4 mr-2" />
-            Compare Period
+            {compareWithPrevious ? getSelectedPeriodOption().comparisonLabel : 'Compare Period'}
           </Button>
         </div>
       </div>
@@ -157,18 +157,18 @@ const ResellerRevenue = () => {
 
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-gray-600 mb-1">Selected Period</p>
+            <p className="text-sm text-gray-600 mb-1">{getSelectedPeriodOption().label}</p>
             <p className="text-3xl font-bold">{formatPrice(currentPeriodTotal)}</p>
             {compareWithPrevious && previousPeriodTotal > 0 && (
               <div className={`flex items-center gap-1 mt-2 text-sm ${
                 periodGrowth >= 0 ? 'text-green-600' : 'text-red-600'
               }`}>
                 {periodGrowth >= 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                <span>{Math.abs(periodGrowth)}% vs previous period</span>
+                <span>{Math.abs(periodGrowth)}% {getSelectedPeriodOption().comparisonLabel.toLowerCase()}</span>
               </div>
             )}
             {!compareWithPrevious && (
-              <p className="text-sm text-gray-500 mt-2">Last {selectedPeriod} months</p>
+              <p className="text-sm text-gray-500 mt-2">Current period</p>
             )}
           </CardContent>
         </Card>

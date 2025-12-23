@@ -464,14 +464,54 @@ class InvoicePDFGenerator:
                     alignment=TA_CENTER
                 )
             ))
-        
-        # Payment link if available
-        if invoice.get('payment_url'):
-            elements.append(Spacer(1, 5*mm))
-            elements.append(Paragraph(
-                f"Payment Link: {invoice.get('payment_url')}",
-                ParagraphStyle(name='PaymentLink', parent=self.styles['Normal'], fontSize=9, textColor=colors.HexColor('#2563eb'))
-            ))
+            
+            # Add Yoco Payment QR Code for pending invoices
+            payment_url = invoice.get('payment_url')
+            if payment_url:
+                elements.append(Spacer(1, 10*mm))
+                
+                # Generate QR code with brand color
+                qr_buffer = self._generate_qr_code(payment_url, size=120, brand_color=brand_color)
+                
+                if qr_buffer:
+                    # Create a table with QR code and payment instructions
+                    qr_image = Image(qr_buffer, width=3*cm, height=3*cm)
+                    
+                    payment_section = [
+                        [Paragraph("<b>Scan to Pay with Yoco</b>", 
+                                 ParagraphStyle(name='QRTitle', parent=self.styles['Normal'], 
+                                              fontSize=12, alignment=TA_CENTER, 
+                                              textColor=colors.HexColor(brand_color)))],
+                        [qr_image],
+                        [Paragraph("Scan this QR code with your phone<br/>to make a secure payment via Yoco",
+                                 ParagraphStyle(name='QRInstructions', parent=self.styles['Normal'],
+                                              fontSize=9, alignment=TA_CENTER, 
+                                              textColor=colors.HexColor('#6b7280')))]
+                    ]
+                    
+                    qr_table = Table(payment_section, colWidths=[6*cm])
+                    qr_table.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('TOPPADDING', (0, 0), (-1, -1), 5),
+                        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#e5e7eb')),
+                        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f9fafb')),
+                    ]))
+                    
+                    # Center the QR code section
+                    outer_table = Table([[qr_table]], colWidths=[16*cm])
+                    outer_table.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ]))
+                    elements.append(outer_table)
+                
+                elements.append(Spacer(1, 5*mm))
+                elements.append(Paragraph(
+                    f"Or pay directly at: <font color='#2563eb'>{payment_url}</font>",
+                    ParagraphStyle(name='PaymentLink', parent=self.styles['Normal'], 
+                                 fontSize=8, alignment=TA_CENTER, textColor=colors.HexColor('#6b7280'))
+                ))
         
         elements.append(Spacer(1, 10*mm))
         

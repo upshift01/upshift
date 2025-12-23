@@ -65,6 +65,16 @@ const ResellerSettings = () => {
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [payingInvoice, setPayingInvoice] = useState(null);
 
+  // LinkedIn Settings State
+  const [linkedinSettings, setLinkedinSettings] = useState({
+    client_id: '',
+    client_secret: '',
+    redirect_uri: '',
+    use_custom_keys: false
+  });
+  const [showLinkedinSecret, setShowLinkedinSecret] = useState(false);
+  const [testingLinkedin, setTestingLinkedin] = useState(false);
+
   useEffect(() => {
     fetchProfile();
   }, []);

@@ -26,8 +26,15 @@ async def get_whitelabel_config(request: Request):
         host = request.headers.get("host", "").split(":")[0]
         
         # Check if this is a custom domain request
-        if host in ["localhost", "127.0.0.1"]:
-            # Return default/main platform config
+        if host in ["localhost", "127.0.0.1"] or host.endswith(".preview.emergentagent.com"):
+            # Fetch platform site settings from database
+            site_settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
+            
+            contact = site_settings.get("contact", {}) if site_settings else {}
+            social_media = site_settings.get("social_media", {}) if site_settings else {}
+            business_hours = site_settings.get("business_hours", "") if site_settings else ""
+            
+            # Return default/main platform config with database settings
             return {
                 "is_white_label": False,
                 "brand_name": "UpShift",
@@ -35,9 +42,19 @@ async def get_whitelabel_config(request: Request):
                 "primary_color": "#1e40af",
                 "secondary_color": "#7c3aed",
                 "favicon_url": None,
-                "contact_email": "support@upshift.works",
-                "contact_phone": "+27 (0) 11 234 5678",
-                "contact_address": "123 Main Street, Sandton, Johannesburg, 2196, South Africa",
+                "contact_email": contact.get("email", "support@upshift.works"),
+                "contact_phone": contact.get("phone", "+27 (0) 11 234 5678"),
+                "contact_address": contact.get("address", "123 Main Street, Sandton, Johannesburg, 2196, South Africa"),
+                "contact_whatsapp": contact.get("whatsapp", ""),
+                "business_hours": business_hours,
+                "social_media": {
+                    "facebook": social_media.get("facebook", ""),
+                    "twitter": social_media.get("twitter", ""),
+                    "linkedin": social_media.get("linkedin", ""),
+                    "instagram": social_media.get("instagram", ""),
+                    "youtube": social_media.get("youtube", ""),
+                    "tiktok": social_media.get("tiktok", "")
+                },
                 "terms_url": "/terms",
                 "privacy_url": "/privacy",
                 "pricing": {

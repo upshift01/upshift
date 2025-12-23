@@ -147,6 +147,19 @@ async def register(user_data: UserRegister):
         await db.users.insert_one(new_user)
         logger.info(f"User registered: {user_data.email} (reseller: {reseller_id or 'platform'})")
         
+        # Log activity for reseller
+        if reseller_id:
+            await db.reseller_activity.insert_one({
+                "id": str(uuid.uuid4()),
+                "reseller_id": reseller_id,
+                "type": "signup",
+                "title": "New Customer Signup",
+                "description": f"{user_data.full_name} ({user_data.email}) registered",
+                "customer_name": user_data.full_name,
+                "customer_email": user_data.email,
+                "created_at": datetime.now(timezone.utc)
+            })
+        
         # Create access token
         access_token = create_access_token(data={"sub": user_data.email})
         

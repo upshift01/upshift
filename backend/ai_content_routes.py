@@ -49,17 +49,17 @@ class CoverLetterRequest(BaseModel):
 
 
 @ai_content_router.post("/generate-cover-letter")
-async def generate_cover_letter(data: CoverLetterRequest, current_user: dict = Depends(get_current_user_with_db)):
+async def generate_cover_letter(data: CoverLetterRequest, current_user = Depends(get_current_user_with_db)):
     """Generate a professional cover letter using AI"""
     try:
         if not EMERGENT_LLM_KEY:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
         # Check if user has active tier
-        if not current_user.get("active_tier"):
+        if not current_user.active_tier:
             raise HTTPException(status_code=403, detail="Please purchase a plan to use AI features")
         
-        session_id = f"cover-letter-{current_user['id']}-{uuid.uuid4()}"
+        session_id = f"cover-letter-{current_user.id}-{uuid.uuid4()}"
         
         system_message = """You are an expert career coach and professional cover letter writer specialising in the South African job market. 
 Write compelling, personalised cover letters that:

@@ -103,6 +103,37 @@ class APITester:
         except Exception as e:
             return None, f"Request error: {str(e)}"
     
+    def make_pdf_request(self, method, endpoint, headers=None):
+        """Make HTTP request for PDF downloads"""
+        url = f"{BACKEND_URL}{endpoint}"
+        
+        try:
+            if method.upper() == "GET":
+                response = requests.get(url, headers=headers, timeout=30)
+            else:
+                return None, f"Unsupported method for PDF: {method}"
+            
+            if response.status_code == 200:
+                if response.headers.get('content-type') == 'application/pdf':
+                    return response.content, None
+                else:
+                    return None, f"Expected PDF but got {response.headers.get('content-type')}"
+            else:
+                error_msg = f"Status {response.status_code}"
+                try:
+                    error_detail = response.json()
+                    error_msg += f" - {error_detail.get('detail', 'No detail')}"
+                except:
+                    error_msg += f" - {response.text[:200]}"
+                return None, error_msg
+                
+        except requests.exceptions.Timeout:
+            return None, "Request timeout (30s)"
+        except requests.exceptions.ConnectionError:
+            return None, "Connection error - backend may be down"
+        except Exception as e:
+            return None, f"Request error: {str(e)}"
+    
     def test_authentication(self):
         """Test authentication endpoints with role-based access"""
         print("\n🔐 Testing Authentication...")

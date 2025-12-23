@@ -191,7 +191,7 @@ const AdminSettings = () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/scheduler/email-settings`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/email-settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

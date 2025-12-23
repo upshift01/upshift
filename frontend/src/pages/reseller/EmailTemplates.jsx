@@ -97,7 +97,7 @@ const EmailTemplates = () => {
         body: JSON.stringify(editingTemplate)
       });
       if (response.ok) {
-        setTemplates(templates.map(t => t.id === editingTemplate.id ? { ...editingTemplate, customized: true } : t));
+        setTemplates(templates.map(t => t.id === editingTemplate.id ? { ...editingTemplate, customised: true } : t));
         setEditingTemplate(null);
         alert('Template saved successfully!');
       }

@@ -238,7 +238,7 @@ async def pay_for_booking(booking_id: str):
     Create payment checkout for a booking.
     """
     try:
-        from yoco_service import yoco_service
+        from yoco_service import get_yoco_service_for_reseller
         import os
         
         booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
@@ -252,8 +252,19 @@ async def pay_for_booking(booking_id: str):
         if booking["status"] == "cancelled":
             raise HTTPException(status_code=400, detail="Booking has been cancelled")
         
+        # Get Yoco service from platform settings (not env vars)
+        yoco = await get_yoco_service_for_reseller(db, reseller_id=None)
+        
+        if not yoco.is_configured():
+            raise HTTPException(
+                status_code=400, 
+                detail="Payment is not configured. Please contact support."
+            )
+        
+        frontend_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:3000'))
+        
         # Create Yoco checkout
-        checkout = await yoco_service.create_checkout(
+        checkout = await yoco.create_checkout(
             amount_cents=booking["amount_cents"],
             email=booking["email"],
             metadata={
@@ -261,7 +272,9 @@ async def pay_for_booking(booking_id: str):
                 "type": "strategy_call",
                 "date": booking["date"],
                 "time": booking["time"]
-            }
+            },
+            success_url=f"{frontend_url}/payment/success?booking={booking_id}",
+            cancel_url=f"{frontend_url}/payment/cancel?booking={booking_id}"
         )
         
         # Store checkout ID

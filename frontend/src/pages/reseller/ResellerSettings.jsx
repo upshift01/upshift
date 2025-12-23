@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Settings, Save, Globe, Mail, FileText, Send, CheckCircle, XCircle, RefreshCw, Bot, Key, Eye, EyeOff, CreditCard, ExternalLink, Receipt, Clock, AlertTriangle, Loader2, Linkedin, Link2, Phone, Facebook, Twitter, Instagram, Youtube, MapPin } from 'lucide-react';
@@ -11,7 +12,14 @@ import { Textarea } from '../../components/ui/textarea';
 const ResellerSettings = () => {
   const { token } = useAuth();
   const { theme, formatPrice } = useTheme();
+  const { darkMode } = useOutletContext() || {};
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // Dark mode style helpers
+  const cardBg = darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white';
+  const textPrimary = darkMode ? 'text-white' : 'text-gray-900';
+  const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-600';
+  
   const [profile, setProfile] = useState({
     company_name: '',
     brand_name: '',

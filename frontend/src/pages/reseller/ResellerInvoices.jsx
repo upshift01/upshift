@@ -23,6 +23,8 @@ const ResellerInvoices = () => {
     customer_id: '',
     customer_name: '',
     customer_email: '',
+    customer_vat_number: '',
+    customer_address: '',
     plan_name: '',
     amount: '',
     due_date: ''

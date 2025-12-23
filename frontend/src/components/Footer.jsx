@@ -130,7 +130,6 @@ const Footer = () => {
                 ))}
               </div>
             )}
-            </div>
           </div>
 
           {/* Menu Links */}

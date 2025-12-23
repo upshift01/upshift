@@ -641,6 +641,55 @@ async def mark_invoice_paid(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@admin_router.get("/invoices/{invoice_id}/pdf")
+async def download_invoice_pdf(
+    invoice_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Download invoice as PDF"""
+    try:
+        # Get invoice
+        invoice = await db.reseller_invoices.find_one({"id": invoice_id}, {"_id": 0})
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        # Get reseller details
+        reseller = await db.resellers.find_one(
+            {"id": invoice["reseller_id"]},
+            {"_id": 0}
+        )
+        
+        # Get platform settings for header info
+        site_settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
+        platform_settings = {
+            "platform_name": "UpShift",
+            "contact": site_settings.get("contact", {}) if site_settings else {}
+        }
+        
+        # Generate PDF
+        pdf_buffer = invoice_pdf_generator.generate_reseller_invoice_pdf(
+            invoice=invoice,
+            reseller=reseller,
+            platform_settings=platform_settings
+        )
+        
+        filename = f"invoice_{invoice.get('invoice_number', invoice_id)}.pdf"
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating invoice PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== User Management ====================
 
 @admin_router.get("/users", response_model=dict)

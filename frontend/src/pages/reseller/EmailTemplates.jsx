@@ -24,7 +24,7 @@ const EmailTemplates = () => {
       name: 'Welcome Email',
       description: 'Sent to new customers after registration',
       subject: 'Welcome to {{brand_name}}!',
-      content: `Hi {{customer_name}},\n\nWelcome to {{brand_name}}! We're excited to have you on board.\n\nYour account is now active and you can start creating professional, ATS-optimized resumes and cover letters.\n\nGet started: {{portal_url}}\n\nBest regards,\n{{brand_name}} Team`
+      content: `Hi {{customer_name}},\n\nWelcome to {{brand_name}}! We're excited to have you on board.\n\nYour account is now active and you can start creating professional, ATS-optimised CVs and cover letters.\n\nGet started: {{portal_url}}\n\nBest regards,\n{{brand_name}} Team`
     },
     {
       id: 'invoice',

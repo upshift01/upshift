@@ -276,7 +276,7 @@ Write a 2-3 sentence professional summary."""
         # Save CV to database
         cv_data = {
             "id": str(uuid.uuid4()),
-            "user_id": current_user["id"],
+            "user_id": current_user.id,
             "full_name": data.full_name,
             "email": data.email,
             "phone": data.phone,

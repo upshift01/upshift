@@ -34,13 +34,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, fullName, phone) => {
+  const register = async (email, password, fullName, phone, resellerId = null) => {
     try {
       const response = await axios.post(`${API_URL}/api/auth/register`, {
         email,
         password,
         full_name: fullName,
-        phone
+        phone,
+        reseller_id: resellerId
       });
       const { access_token, user: userData } = response.data;
       localStorage.setItem('token', access_token);

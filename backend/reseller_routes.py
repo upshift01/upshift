@@ -717,12 +717,15 @@ async def verify_invoice_payment(
 # ==================== Reseller Email Settings ====================
 
 class ResellerEmailSettings(BaseModel):
-    smtp_host: str = "smtp.office365.com"
+    provider: str = "custom"  # office365, gmail, sendgrid, mailgun, custom
+    smtp_host: str = ""
     smtp_port: int = 587
-    smtp_user: str
-    smtp_password: str
+    smtp_user: str = ""
+    smtp_password: str = ""
+    encryption: str = "tls"  # none, tls, ssl
     from_email: Optional[str] = None
     from_name: str = "UpShift"
+    reply_to: Optional[str] = None
 
 
 @reseller_router.get("/email-settings", response_model=dict)
@@ -744,12 +747,15 @@ async def get_reseller_email_settings(context: dict = Depends(get_current_resell
         
         return {
             "reseller_id": reseller["id"],
-            "smtp_host": "smtp.office365.com",
+            "provider": "custom",
+            "smtp_host": "",
             "smtp_port": 587,
             "smtp_user": "",
             "smtp_password": "",
+            "encryption": "tls",
             "from_email": "",
             "from_name": reseller.get("brand_name", "UpShift"),
+            "reply_to": "",
             "is_configured": False
         }
     except Exception as e:
@@ -771,8 +777,8 @@ async def save_reseller_email_settings(
         
         settings_dict = settings.dict()
         settings_dict["reseller_id"] = reseller["id"]
-        settings_dict["is_configured"] = True
-        settings_dict["updated_at"] = datetime.now(timezone.utc)
+        settings_dict["is_configured"] = bool(settings.smtp_host and settings.smtp_user)
+        settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
         
         # If password is masked, keep the old one
         if settings.smtp_password == "********" and existing:

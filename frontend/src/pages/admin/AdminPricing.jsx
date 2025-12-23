@@ -2,26 +2,68 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   DollarSign, Save, Users, Calendar, Settings, TrendingUp,
-  Info, Percent, Package
+  Info, Percent, Package, Building2, Crown, Rocket, Zap
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Switch } from '../../components/ui/switch';
 
 const AdminPricing = () => {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [activeTab, setActiveTab] = useState('whitelabel');
+  const [activeTab, setActiveTab] = useState('plans');
 
-  // White-label pricing (what resellers pay)
+  // White-Label Plans (Starter, Professional, Custom)
+  const [whitelabelPlans, setWhitelabelPlans] = useState({
+    starter: {
+      name: 'Starter',
+      price: 249900, // R2,499 in cents
+      active_users_limit: 50,
+      custom_subdomain: true,
+      custom_domain: false,
+      api_access: false,
+      priority_support: false,
+      analytics: 'basic',
+      templates: 'standard',
+      enabled: true
+    },
+    professional: {
+      name: 'Professional',
+      price: 499900, // R4,999 in cents
+      active_users_limit: 200,
+      custom_subdomain: true,
+      custom_domain: true,
+      api_access: true,
+      priority_support: true,
+      analytics: 'advanced',
+      templates: 'premium',
+      enabled: true
+    },
+    custom: {
+      name: 'Enterprise',
+      price: 0, // Custom pricing
+      active_users_limit: -1, // Unlimited
+      custom_subdomain: true,
+      custom_domain: true,
+      api_access: true,
+      priority_support: true,
+      analytics: 'enterprise',
+      templates: 'all',
+      enabled: true,
+      contact_sales: true
+    }
+  });
+
+  // Legacy white-label pricing (kept for backwards compatibility)
   const [whitelabelPricing, setWhitelabelPricing] = useState({
-    monthly_subscription: 250000, // R2,500 in cents
+    monthly_subscription: 250000,
     setup_fee: 0,
-    per_transaction_fee: 0, // percentage
+    per_transaction_fee: 0,
     minimum_commitment_months: 1
   });
 
@@ -35,7 +77,7 @@ const AdminPricing = () => {
 
   // Strategy Call pricing
   const [strategyCallPricing, setStrategyCallPricing] = useState({
-    price: 69900, // R699 in cents
+    price: 69900,
     duration_minutes: 30,
     included_in_tier_3: true,
     enabled: true
@@ -52,6 +94,7 @@ const AdminPricing = () => {
       });
       if (response.ok) {
         const data = await response.json();
+        if (data.whitelabel_plans) setWhitelabelPlans(data.whitelabel_plans);
         if (data.whitelabel_pricing) setWhitelabelPricing(data.whitelabel_pricing);
         if (data.default_tier_pricing) setDefaultTierPricing(data.default_tier_pricing);
         if (data.strategy_call_pricing) setStrategyCallPricing(data.strategy_call_pricing);
@@ -74,6 +117,7 @@ const AdminPricing = () => {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
+          whitelabel_plans: whitelabelPlans,
           whitelabel_pricing: whitelabelPricing,
           default_tier_pricing: defaultTierPricing,
           strategy_call_pricing: strategyCallPricing
@@ -95,6 +139,16 @@ const AdminPricing = () => {
   const formatCents = (cents) => (cents / 100).toFixed(2);
   const parseCents = (value) => Math.round(parseFloat(value || 0) * 100);
 
+  const updatePlan = (planKey, field, value) => {
+    setWhitelabelPlans(prev => ({
+      ...prev,
+      [planKey]: {
+        ...prev[planKey],
+        [field]: value
+      }
+    }));
+  };
+
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center h-64">
@@ -107,7 +161,7 @@ const AdminPricing = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Platform Pricing Configuration</h1>
-        <p className="text-gray-600">Manage white-label fees, default pricing, and strategy call rates</p>
+        <p className="text-gray-600">Manage white-label plans, fees, and strategy call rates</p>
       </div>
 
       {message.text && (
@@ -119,10 +173,14 @@ const AdminPricing = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="plans" className="flex items-center gap-2">
+            <Crown className="h-4 w-4" />
+            White-Label Plans
+          </TabsTrigger>
           <TabsTrigger value="whitelabel" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            White-Label Fees
+            Legacy Fees
           </TabsTrigger>
           <TabsTrigger value="tiers" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
@@ -134,7 +192,289 @@ const AdminPricing = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* White-Label Pricing Tab */}
+        {/* White-Label Plans Tab */}
+        <TabsContent value="plans">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Starter Plan */}
+            <Card className="border-2 border-gray-200">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Rocket className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <CardTitle>Starter Plan</CardTitle>
+                  </div>
+                  <Switch
+                    checked={whitelabelPlans.starter.enabled}
+                    onCheckedChange={(checked) => updatePlan('starter', 'enabled', checked)}
+                  />
+                </div>
+                <CardDescription>For small agencies starting out</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Monthly Price (ZAR)</Label>
+                  <div className="relative mt-1">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formatCents(whitelabelPlans.starter.price)}
+                      onChange={(e) => updatePlan('starter', 'price', parseCents(e.target.value))}
+                      className="pl-8"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Active Users Limit</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={whitelabelPlans.starter.active_users_limit}
+                    onChange={(e) => updatePlan('starter', 'active_users_limit', parseInt(e.target.value) || 1)}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Maximum number of active clients</p>
+                </div>
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Custom Subdomain</Label>
+                    <Switch
+                      checked={whitelabelPlans.starter.custom_subdomain}
+                      onCheckedChange={(checked) => updatePlan('starter', 'custom_subdomain', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Custom Domain</Label>
+                    <Switch
+                      checked={whitelabelPlans.starter.custom_domain}
+                      onCheckedChange={(checked) => updatePlan('starter', 'custom_domain', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">API Access</Label>
+                    <Switch
+                      checked={whitelabelPlans.starter.api_access}
+                      onCheckedChange={(checked) => updatePlan('starter', 'api_access', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Priority Support</Label>
+                    <Switch
+                      checked={whitelabelPlans.starter.priority_support}
+                      onCheckedChange={(checked) => updatePlan('starter', 'priority_support', checked)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Analytics Level</Label>
+                  <select
+                    value={whitelabelPlans.starter.analytics}
+                    onChange={(e) => updatePlan('starter', 'analytics', e.target.value)}
+                    className="w-full mt-1 border rounded-md p-2"
+                  >
+                    <option value="basic">Basic</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Professional Plan */}
+            <Card className="border-2 border-purple-400 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  MOST POPULAR
+                </span>
+              </div>
+              <CardHeader className="pb-4 pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Zap className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <CardTitle>Professional Plan</CardTitle>
+                  </div>
+                  <Switch
+                    checked={whitelabelPlans.professional.enabled}
+                    onCheckedChange={(checked) => updatePlan('professional', 'enabled', checked)}
+                  />
+                </div>
+                <CardDescription>For growing businesses</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Monthly Price (ZAR)</Label>
+                  <div className="relative mt-1">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formatCents(whitelabelPlans.professional.price)}
+                      onChange={(e) => updatePlan('professional', 'price', parseCents(e.target.value))}
+                      className="pl-8"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Active Users Limit</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={whitelabelPlans.professional.active_users_limit}
+                    onChange={(e) => updatePlan('professional', 'active_users_limit', parseInt(e.target.value) || 1)}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Maximum number of active clients</p>
+                </div>
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Custom Subdomain</Label>
+                    <Switch
+                      checked={whitelabelPlans.professional.custom_subdomain}
+                      onCheckedChange={(checked) => updatePlan('professional', 'custom_subdomain', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Custom Domain</Label>
+                    <Switch
+                      checked={whitelabelPlans.professional.custom_domain}
+                      onCheckedChange={(checked) => updatePlan('professional', 'custom_domain', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">API Access</Label>
+                    <Switch
+                      checked={whitelabelPlans.professional.api_access}
+                      onCheckedChange={(checked) => updatePlan('professional', 'api_access', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Priority Support</Label>
+                    <Switch
+                      checked={whitelabelPlans.professional.priority_support}
+                      onCheckedChange={(checked) => updatePlan('professional', 'priority_support', checked)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Analytics Level</Label>
+                  <select
+                    value={whitelabelPlans.professional.analytics}
+                    onChange={(e) => updatePlan('professional', 'analytics', e.target.value)}
+                    className="w-full mt-1 border rounded-md p-2"
+                  >
+                    <option value="basic">Basic</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Enterprise/Custom Plan */}
+            <Card className="border-2 border-amber-400">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-amber-100 rounded-lg">
+                      <Crown className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <CardTitle>Enterprise Plan</CardTitle>
+                  </div>
+                  <Switch
+                    checked={whitelabelPlans.custom.enabled}
+                    onCheckedChange={(checked) => updatePlan('custom', 'enabled', checked)}
+                  />
+                </div>
+                <CardDescription>Custom pricing for large orgs</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Pricing Type</Label>
+                  <div className="mt-1 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800 font-medium">Contact Sales</p>
+                    <p className="text-xs text-amber-600">Custom pricing negotiated per client</p>
+                  </div>
+                </div>
+                <div>
+                  <Label>Active Users Limit</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Input
+                      type="number"
+                      min="-1"
+                      value={whitelabelPlans.custom.active_users_limit}
+                      onChange={(e) => updatePlan('custom', 'active_users_limit', parseInt(e.target.value))}
+                      disabled={whitelabelPlans.custom.active_users_limit === -1}
+                    />
+                    <label className="flex items-center gap-2 text-sm whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={whitelabelPlans.custom.active_users_limit === -1}
+                        onChange={(e) => updatePlan('custom', 'active_users_limit', e.target.checked ? -1 : 500)}
+                        className="rounded"
+                      />
+                      Unlimited
+                    </label>
+                  </div>
+                </div>
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Custom Subdomain</Label>
+                    <Switch
+                      checked={whitelabelPlans.custom.custom_subdomain}
+                      onCheckedChange={(checked) => updatePlan('custom', 'custom_subdomain', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Custom Domain</Label>
+                    <Switch
+                      checked={whitelabelPlans.custom.custom_domain}
+                      onCheckedChange={(checked) => updatePlan('custom', 'custom_domain', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">API Access</Label>
+                    <Switch
+                      checked={whitelabelPlans.custom.api_access}
+                      onCheckedChange={(checked) => updatePlan('custom', 'api_access', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Priority Support</Label>
+                    <Switch
+                      checked={whitelabelPlans.custom.priority_support}
+                      onCheckedChange={(checked) => updatePlan('custom', 'priority_support', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Dedicated Account Manager</Label>
+                    <Switch checked={true} disabled />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-blue-800">Plan Configuration</p>
+                <p className="text-sm text-blue-700 mt-1">
+                  These plans are displayed on the White-Label page. Each plan's features determine what resellers get access to.
+                  Active Users Limit controls how many customers a reseller can have on their platform.
+                </p>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Legacy White-Label Pricing Tab */}
         <TabsContent value="whitelabel">
           <Card>
             <CardHeader>
@@ -142,10 +482,10 @@ const AdminPricing = () => {
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Users className="h-5 w-5 text-blue-600" />
                 </div>
-                White-Label Partner Pricing
+                Legacy White-Label Partner Pricing
               </CardTitle>
               <CardDescription>
-                Set the fees that resellers/white-label partners pay to use the platform
+                Legacy pricing structure (for existing resellers not on new plans)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -167,7 +507,6 @@ const AdminPricing = () => {
                       className="pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Monthly fee charged to each reseller</p>
                 </div>
 
                 <div>
@@ -187,27 +526,23 @@ const AdminPricing = () => {
                       className="pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">One-time fee for new reseller onboarding</p>
                 </div>
 
                 <div>
                   <Label htmlFor="transaction_fee">Per-Transaction Fee (%)</Label>
-                  <div className="relative mt-1">
-                    <Input
-                      id="transaction_fee"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="100"
-                      value={whitelabelPricing.per_transaction_fee}
-                      onChange={(e) => setWhitelabelPricing({ 
-                        ...whitelabelPricing, 
-                        per_transaction_fee: parseFloat(e.target.value) || 0 
-                      })}
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Optional percentage of each customer transaction</p>
+                  <Input
+                    id="transaction_fee"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    value={whitelabelPricing.per_transaction_fee}
+                    onChange={(e) => setWhitelabelPricing({ 
+                      ...whitelabelPricing, 
+                      per_transaction_fee: parseFloat(e.target.value) || 0 
+                    })}
+                    className="mt-1"
+                  />
                 </div>
 
                 <div>
@@ -224,21 +559,6 @@ const AdminPricing = () => {
                     })}
                     className="mt-1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Minimum contract period for resellers</p>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">Revenue Model Summary</p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Each reseller pays R{formatCents(whitelabelPricing.monthly_subscription)}/month
-                      {whitelabelPricing.setup_fee > 0 && ` + R${formatCents(whitelabelPricing.setup_fee)} setup fee`}
-                      {whitelabelPricing.per_transaction_fee > 0 && ` + ${whitelabelPricing.per_transaction_fee}% per transaction`}
-                    </p>
-                  </div>
                 </div>
               </div>
             </CardContent>
@@ -253,15 +573,14 @@ const AdminPricing = () => {
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <Package className="h-5 w-5 text-purple-600" />
                 </div>
-                Default Tier Pricing
+                Default Customer Tier Pricing
               </CardTitle>
               <CardDescription>
-                Set default/suggested prices for service tiers. Resellers can customize their own pricing.
+                Default prices for customer tiers. Resellers can customize their own pricing.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Tier 1 */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="p-2 bg-blue-100 rounded-lg">
@@ -289,15 +608,14 @@ const AdminPricing = () => {
                   </div>
                 </div>
 
-                {/* Tier 2 */}
                 <div className="border rounded-lg p-4 border-purple-200 bg-purple-50">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <DollarSign className="h-4 w-4 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">Professional Package</h3>
-                      <p className="text-xs text-gray-500">Most popular tier</p>
+                      <h3 className="font-semibold">Professional</h3>
+                      <p className="text-xs text-gray-500">Most popular</p>
                     </div>
                   </div>
                   <Label>Default Price (ZAR)</Label>
@@ -317,7 +635,6 @@ const AdminPricing = () => {
                   </div>
                 </div>
 
-                {/* Tier 3 */}
                 <div className="border rounded-lg p-4 border-amber-200 bg-amber-50">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="p-2 bg-amber-100 rounded-lg">
@@ -345,13 +662,6 @@ const AdminPricing = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="mt-6 bg-gray-50 border rounded-lg p-4">
-                <p className="text-sm text-gray-600">
-                  <strong>Note:</strong> These are suggested default prices. Each reseller can set their own pricing
-                  in their portal. New resellers will start with these defaults.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -367,17 +677,16 @@ const AdminPricing = () => {
                 Strategy Call Pricing
               </CardTitle>
               <CardDescription>
-                Configure pricing for the career strategy call service
+                Configure pricing for career strategy call bookings
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="call_price">Strategy Call Price (ZAR)</Label>
+                  <Label>Strategy Call Price (ZAR)</Label>
                   <div className="relative mt-1">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
-                      id="call_price"
                       type="number"
                       step="0.01"
                       min="0"
@@ -389,13 +698,11 @@ const AdminPricing = () => {
                       className="pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Price for standalone strategy call bookings</p>
                 </div>
 
                 <div>
-                  <Label htmlFor="call_duration">Call Duration (Minutes)</Label>
+                  <Label>Call Duration (Minutes)</Label>
                   <Input
-                    id="call_duration"
                     type="number"
                     min="15"
                     max="120"
@@ -407,28 +714,22 @@ const AdminPricing = () => {
                     })}
                     className="mt-1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Duration of each strategy call</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <Label className="text-base">Include Free with Executive Elite (Tier 3)</Label>
+                    <Label className="text-base">Include Free with Executive Elite</Label>
                     <p className="text-sm text-gray-500">Elite customers get one free strategy call</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={strategyCallPricing.included_in_tier_3}
-                      onChange={(e) => setStrategyCallPricing({ 
-                        ...strategyCallPricing, 
-                        included_in_tier_3: e.target.checked 
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+                  <Switch
+                    checked={strategyCallPricing.included_in_tier_3}
+                    onCheckedChange={(checked) => setStrategyCallPricing({ 
+                      ...strategyCallPricing, 
+                      included_in_tier_3: checked 
+                    })}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -436,33 +737,13 @@ const AdminPricing = () => {
                     <Label className="text-base">Enable Strategy Call Bookings</Label>
                     <p className="text-sm text-gray-500">Allow customers to book strategy calls</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={strategyCallPricing.enabled}
-                      onChange={(e) => setStrategyCallPricing({ 
-                        ...strategyCallPricing, 
-                        enabled: e.target.checked 
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <TrendingUp className="h-5 w-5 text-green-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-green-800">Strategy Call Revenue</p>
-                    <p className="text-sm text-green-700 mt-1">
-                      {strategyCallPricing.enabled 
-                        ? `Each strategy call generates R${formatCents(strategyCallPricing.price)} (${strategyCallPricing.duration_minutes} min session)`
-                        : 'Strategy call bookings are currently disabled'
-                      }
-                    </p>
-                  </div>
+                  <Switch
+                    checked={strategyCallPricing.enabled}
+                    onCheckedChange={(checked) => setStrategyCallPricing({ 
+                      ...strategyCallPricing, 
+                      enabled: checked 
+                    })}
+                  />
                 </div>
               </div>
             </CardContent>

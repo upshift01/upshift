@@ -249,7 +249,7 @@ const WhiteLabelPage = () => {
 
   const testimonials = [
     {
-      quote: "UpShift's white-label solution transformed our recruitment agency. We've increased candidate placements by 40% with their ATS-optimized CVs.",
+      quote: "UpShift's white-label solution transformed our recruitment agency. We've increased candidate placements by 40% with their ATS-optimised CVs.",
       author: "Sarah M.",
       role: "Director, TalentBridge Recruitment",
       avatar: "SM"

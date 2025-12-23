@@ -1592,14 +1592,15 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         auth_success = self.test_authentication()
         
         if auth_success:
-            # PRIMARY TEST: Email Settings Functionality (Review Request)
-            self.test_email_settings_functionality()
+            # PRIMARY TEST: Invoice PDF Download (Review Request)
+            self.test_invoice_pdf_download()
             
             # Additional comprehensive tests
             self.test_super_admin_apis()
             self.test_reseller_apis()
             self.test_email_and_scheduling_system()
             self.test_reseller_email_settings()
+            self.test_email_settings_functionality()
         
         self.test_white_label_config()
         self.test_unauthorized_access()

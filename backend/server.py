@@ -803,6 +803,7 @@ app.include_router(whitelabel_router)
 app.include_router(booking_router)
 app.include_router(scheduler_router)
 app.include_router(ai_assistant_router)
+app.include_router(cv_processing_router)
 app.include_router(linkedin_router)
 app.include_router(customer_router)
 

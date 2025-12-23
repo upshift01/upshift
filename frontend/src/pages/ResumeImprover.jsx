@@ -51,58 +51,47 @@ const ResumeImprover = () => {
     }
 
     setIsAnalyzing(true);
-    // Mock analysis - will be replaced with actual API call
-    setTimeout(() => {
-      setAnalysis({
-        overallScore: 75,
-        atsScore: 68,
-        impactScore: 72,
-        clarityScore: 80,
-        keywordScore: 65
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cv/analyze`, {
+        method: 'POST',
+        body: formData,
       });
-      setImprovements([
-        {
-          category: 'Keywords',
-          severity: 'high',
-          issue: 'Missing industry-specific keywords',
-          suggestion: 'Add keywords like "Agile", "Stakeholder Management", and "ROI" to improve ATS compatibility.',
-          impact: '+15% ATS Score'
-        },
-        {
-          category: 'Achievements',
-          severity: 'medium',
-          issue: 'Lack of quantifiable achievements',
-          suggestion: 'Replace "Improved efficiency" with "Increased operational efficiency by 30%, saving R200,000 annually"',
-          impact: '+10 Impact Score'
-        },
-        {
-          category: 'Formatting',
-          severity: 'low',
-          issue: 'Inconsistent date formats',
-          suggestion: 'Use consistent date format throughout (e.g., "Jan 2020 - Dec 2022")',
-          impact: '+5 Clarity Score'
-        },
-        {
-          category: 'Summary',
-          severity: 'high',
-          issue: 'Weak professional summary',
-          suggestion: 'Strengthen your summary by highlighting 3 key achievements and your unique value proposition for SA employers.',
-          impact: '+12 Impact Score'
-        },
-        {
-          category: 'Skills',
-          severity: 'medium',
-          issue: 'Generic skill descriptions',
-          suggestion: 'Instead of "Good communication skills", write "Presented quarterly reports to executive team of 15+ stakeholders"',
-          impact: '+8 Impact Score'
-        }
-      ]);
-      setIsAnalyzing(false);
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Analysis failed');
+      }
+      
+      const data = await response.json();
+      
+      setAnalysis({
+        overallScore: data.overall_score,
+        atsScore: data.ats_score,
+        impactScore: data.impact_score,
+        clarityScore: data.clarity_score,
+        keywordScore: data.keyword_score
+      });
+      
+      setImprovements(data.improvements || []);
+      
       toast({
         title: "Analysis Complete!",
-        description: "Your CV has been analyzed. Review the suggestions below.",
+        description: "Your CV has been analyzed by AI. Review the suggestions below.",
       });
-    }, 3000);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "Could not analyze your CV. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const applyImprovements = () => {

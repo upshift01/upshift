@@ -262,14 +262,58 @@ const ResumeBuilder = () => {
     }
 
     setIsGenerating(true);
-    // Mock generation - will be replaced with actual API call
-    setTimeout(() => {
-      setIsGenerating(false);
-      toast({
-        title: "CV Generated Successfully!",
-        description: "Your professional CV has been created and is ready for download.",
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-content/generate-cv`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          id_number: formData.idNumber,
+          address: formData.address,
+          city: formData.city,
+          province: formData.province,
+          postal_code: formData.postalCode,
+          industry: formData.industry,
+          summary: formData.summary,
+          experience: formData.experience,
+          education: formData.education,
+          skills: formData.skills,
+          languages: formData.languages,
+          references: formData.references,
+          template_id: 'professional'
+        })
       });
-    }, 2000);
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Update summary if AI enhanced it
+        if (data.enhanced_summary && data.enhanced_summary !== formData.summary) {
+          setFormData(prev => ({ ...prev, summary: data.enhanced_summary }));
+        }
+        toast({
+          title: "CV Generated Successfully!",
+          description: "Your professional CV has been created and saved.",
+        });
+      } else {
+        throw new Error(data.detail || 'Failed to generate CV');
+      }
+    } catch (error) {
+      console.error('CV generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Could not generate CV. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (

@@ -41,10 +41,22 @@ const Contact = () => {
     setError('');
 
     try {
-      // Simulate form submission - in production, this would send to an API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setSubmitted(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/white-label/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setError(data.detail || 'Failed to send message. Please try again.');
+      }
     } catch (err) {
       setError('Failed to send message. Please try again.');
     } finally {

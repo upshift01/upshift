@@ -860,6 +860,33 @@ const ResellerSettings = () => {
                   className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
                 />
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>VAT Number</label>
+                  <Input
+                    value={siteSettings.vat_number}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      vat_number: e.target.value
+                    })}
+                    placeholder="e.g., 4123456789"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                  <p className={`text-xs mt-1 ${textSecondary}`}>Displayed on customer invoices</p>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${textPrimary}`}>Company Registration</label>
+                  <Input
+                    value={siteSettings.company_registration}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      company_registration: e.target.value
+                    })}
+                    placeholder="e.g., 2020/123456/07"
+                    className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 

@@ -40,9 +40,29 @@ class EmailService:
         html_body: str,
         text_body: Optional[str] = None,
         cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None
+        bcc: Optional[List[str]] = None,
+        raise_exceptions: bool = True
     ) -> bool:
-        """Send an email via SMTP"""
+        """Send an email via SMTP
+        
+        Args:
+            to_email: Recipient email address
+            subject: Email subject
+            html_body: HTML content of the email
+            text_body: Optional plain text content
+            cc: Optional list of CC recipients
+            bcc: Optional list of BCC recipients
+            raise_exceptions: If True, SMTP exceptions are raised for caller to handle.
+                              If False, exceptions are caught and False is returned.
+        
+        Returns:
+            bool: True if email sent successfully, False otherwise
+            
+        Raises:
+            smtplib.SMTPAuthenticationError: If authentication fails (when raise_exceptions=True)
+            smtplib.SMTPConnectError: If connection to server fails (when raise_exceptions=True)
+            smtplib.SMTPException: For other SMTP errors (when raise_exceptions=True)
+        """
         if not self.is_configured:
             logger.error("Email service not configured")
             return False
@@ -72,7 +92,7 @@ class EmailService:
                 recipients.extend(bcc)
             
             # Connect and send
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+            with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as server:
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_password)
                 server.sendmail(self.from_email, recipients, msg.as_string())
@@ -80,8 +100,35 @@ class EmailService:
             logger.info(f"Email sent to {to_email}: {subject}")
             return True
             
+        except smtplib.SMTPAuthenticationError as auth_error:
+            logger.error(f"SMTP Authentication failed for {to_email}: {str(auth_error)}")
+            if raise_exceptions:
+                raise
+            return False
+        except smtplib.SMTPConnectError as connect_error:
+            logger.error(f"SMTP Connection failed for {to_email}: {str(connect_error)}")
+            if raise_exceptions:
+                raise
+            return False
+        except smtplib.SMTPServerDisconnected as disconnect_error:
+            logger.error(f"SMTP Server disconnected while sending to {to_email}: {str(disconnect_error)}")
+            if raise_exceptions:
+                raise
+            return False
+        except smtplib.SMTPRecipientsRefused as refused_error:
+            logger.error(f"SMTP Recipients refused for {to_email}: {str(refused_error)}")
+            if raise_exceptions:
+                raise
+            return False
+        except smtplib.SMTPException as smtp_error:
+            logger.error(f"SMTP Error sending to {to_email}: {str(smtp_error)}")
+            if raise_exceptions:
+                raise
+            return False
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
+            if raise_exceptions:
+                raise
             return False
     
     async def send_invoice_reminder(

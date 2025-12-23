@@ -5,7 +5,6 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import WhatsAppButton from "./components/WhatsAppButton";
 import AIAssistantBot from "./components/AIAssistantBot";
 import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/Home";

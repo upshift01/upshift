@@ -664,7 +664,7 @@ const ResellerInvoices = () => {
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                 >
                   <option value="">Select a plan</option>
-                  <option value="ATS Optimize">ATS Optimize</option>
+                  <option value="ATS Optimise">ATS Optimise</option>
                   <option value="Professional Package">Professional Package</option>
                   <option value="Executive Elite">Executive Elite</option>
                   <option value="Custom Service">Custom Service</option>

@@ -1456,6 +1456,45 @@ async def get_platform_pricing(admin: UserResponse = Depends(get_current_super_a
         
         # Default values
         default_config = {
+            "whitelabel_plans": {
+                "starter": {
+                    "name": "Starter",
+                    "price": 249900,
+                    "active_users_limit": 50,
+                    "custom_subdomain": True,
+                    "custom_domain": False,
+                    "api_access": False,
+                    "priority_support": False,
+                    "analytics": "basic",
+                    "templates": "standard",
+                    "enabled": True
+                },
+                "professional": {
+                    "name": "Professional",
+                    "price": 499900,
+                    "active_users_limit": 200,
+                    "custom_subdomain": True,
+                    "custom_domain": True,
+                    "api_access": True,
+                    "priority_support": True,
+                    "analytics": "advanced",
+                    "templates": "premium",
+                    "enabled": True
+                },
+                "custom": {
+                    "name": "Enterprise",
+                    "price": 0,
+                    "active_users_limit": -1,
+                    "custom_subdomain": True,
+                    "custom_domain": True,
+                    "api_access": True,
+                    "priority_support": True,
+                    "analytics": "enterprise",
+                    "templates": "all",
+                    "enabled": True,
+                    "contact_sales": True
+                }
+            },
             "whitelabel_pricing": {
                 "monthly_subscription": 250000,
                 "setup_fee": 0,
@@ -1496,6 +1535,7 @@ async def update_platform_pricing(
         pricing_data = {
             "key": "platform_pricing",
             "value": {
+                "whitelabel_plans": data.get("whitelabel_plans", {}),
                 "whitelabel_pricing": data.get("whitelabel_pricing", {}),
                 "default_tier_pricing": data.get("default_tier_pricing", {}),
                 "strategy_call_pricing": data.get("strategy_call_pricing", {})
@@ -1517,3 +1557,4 @@ async def update_platform_pricing(
     except Exception as e:
         logger.error(f"Error updating platform pricing: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+

@@ -12,6 +12,7 @@ from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 from io import BytesIO
 from datetime import datetime
 import logging
+import qrcode
 
 logger = logging.getLogger(__name__)
 

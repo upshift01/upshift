@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
@@ -10,6 +11,7 @@ from reseller_models import (
     ResellerInvoice, InvoiceItem
 )
 from auth import UserResponse
+from invoice_pdf_service import invoice_pdf_generator
 
 logger = logging.getLogger(__name__)
 

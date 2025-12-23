@@ -40,6 +40,9 @@ const ResellerPricing = () => {
         if (data.pricing) {
           setPricing(data.pricing);
         }
+        if (data.strategy_call_pricing) {
+          setStrategyCallPricing(data.strategy_call_pricing);
+        }
       }
     } catch (error) {
       console.error('Error fetching pricing:', error);
@@ -58,7 +61,10 @@ const ResellerPricing = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(pricing)
+        body: JSON.stringify({
+          ...pricing,
+          strategy_call_pricing: strategyCallPricing
+        })
       });
       if (response.ok) {
         setMessage('Pricing updated successfully!');

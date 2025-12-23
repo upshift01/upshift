@@ -232,7 +232,7 @@ class CVGenerationRequest(BaseModel):
 
 
 @ai_content_router.post("/generate-cv")
-async def generate_cv(data: CVGenerationRequest, current_user: dict = Depends(get_current_user)):
+async def generate_cv(data: CVGenerationRequest, current_user: dict = Depends(get_current_user_with_db)):
     """Generate/enhance a CV using AI"""
     try:
         if not EMERGENT_LLM_KEY:

@@ -816,6 +816,39 @@ const AdminSettings = () => {
             </CardContent>
           </Card>
 
+          {/* Strategy Call Meeting Link */}
+          <Card className="border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Video className="h-5 w-5 text-purple-600" />
+                Strategy Call Meeting Link
+              </CardTitle>
+              <CardDescription>Configure your default meeting link for strategy call bookings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Meeting URL</label>
+                <Input
+                  value={siteSettings.meeting_link}
+                  onChange={(e) => setSiteSettings({
+                    ...siteSettings,
+                    meeting_link: e.target.value
+                  })}
+                  placeholder="https://zoom.us/j/your-meeting-id or https://meet.google.com/xxx-xxxx-xxx"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter your Zoom, Google Meet, Microsoft Teams, or any video conferencing link. 
+                  This will be sent to customers when they book a strategy call.
+                </p>
+              </div>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                <p className="text-sm text-purple-800">
+                  <strong>Tip:</strong> Use a personal meeting room link that doesn't change, so you don't have to update it for each booking.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Social Media Links */}
           <Card>
             <CardHeader>

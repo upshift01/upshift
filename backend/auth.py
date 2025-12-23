@@ -26,6 +26,7 @@ class UserRegister(BaseModel):
     password: str
     full_name: str
     phone: Optional[str] = None
+    reseller_id: Optional[str] = None  # For white-label signups
 
 class UserLogin(BaseModel):
     email: EmailStr

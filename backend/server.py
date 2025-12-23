@@ -382,6 +382,21 @@ async def verify_payment_status(
         
         logger.info(f"Tier {payment['tier_id']} activated for user {current_user.email}")
         
+        # Log activity for reseller if payment was through reseller
+        if payment.get("reseller_id"):
+            await db.reseller_activity.insert_one({
+                "id": str(uuid.uuid4()),
+                "reseller_id": payment["reseller_id"],
+                "type": "payment",
+                "title": "Payment Received",
+                "description": f"{current_user.full_name} purchased {payment['tier_name']} for R{payment['amount_cents']/100:.2f}",
+                "customer_name": current_user.full_name,
+                "customer_email": current_user.email,
+                "amount": payment["amount_cents"],
+                "tier": payment["tier_name"],
+                "created_at": datetime.now(timezone.utc)
+            })
+        
         # Sync to Odoo (placeholder)
         await odoo_integration.create_resume_record({
             "user_email": current_user.email,

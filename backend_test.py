@@ -1946,6 +1946,11 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             print("\n🎯 FOCUS TEST: Invoice PDF Generation with QR Code")
             print("=" * 80)
             self.test_invoice_pdf_download_with_yoco_qr()
+            
+            # NEW TEST: VAT Number Invoice PDF Layout (Review Request)
+            print("\n🎯 NEW TEST: VAT Number Invoice PDF Layout")
+            print("=" * 80)
+            self.test_vat_number_invoice_pdf_functionality()
         else:
             print("❌ Authentication failed - cannot proceed with PDF tests")
             return False

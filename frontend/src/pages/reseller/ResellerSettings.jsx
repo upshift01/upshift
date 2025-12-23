@@ -176,16 +176,17 @@ const ResellerSettings = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        if (data.is_configured) {
-          setEmailSettings({
-            smtp_host: data.smtp_host || 'smtp.office365.com',
-            smtp_port: data.smtp_port || 587,
-            smtp_user: data.smtp_user || '',
-            smtp_password: data.smtp_password || '',
-            from_email: data.from_email || '',
-            from_name: data.from_name || profile.brand_name || 'UpShift'
-          });
-        }
+        setEmailSettings({
+          provider: data.provider || 'custom',
+          smtp_host: data.smtp_host || '',
+          smtp_port: data.smtp_port || 587,
+          smtp_user: data.smtp_user || '',
+          smtp_password: data.smtp_password || '',
+          encryption: data.encryption || 'tls',
+          from_email: data.from_email || '',
+          from_name: data.from_name || profile.brand_name || 'UpShift',
+          reply_to: data.reply_to || ''
+        });
       }
     } catch (error) {
       console.error('Error fetching email settings:', error);

@@ -78,7 +78,7 @@ backend:
     file: "reseller_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -86,6 +86,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Fixed: Implemented comprehensive SMTP error handling. API now returns specific error messages for different failure types (auth_failed, connection_failed, recipient_refused, etc.). Tested with curl - returns clear message: 'SMTP authentication failed. Please check your email username and password in Settings → Email.'"
+      - working: true
+        agent: "testing"
+        comment: "✅ Invoice Reminder API working correctly. Tested POST /api/reseller/customer-invoices/fe5d438e-a716-4372-b1fa-298794788d9d/send-reminder with reseller admin credentials (john@acmecareers.com). API returns proper JSON response with all required fields: success=false, message='SMTP authentication failed. Please check your email username and password in Settings → Email.', email_sent=false, error_type='auth_failed'. Error handling is comprehensive and user-friendly as expected with test SMTP credentials."
 
 metadata:
   created_by: "testing_agent"

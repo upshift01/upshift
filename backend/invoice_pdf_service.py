@@ -567,7 +567,8 @@ class InvoicePDFGenerator:
         bill_to = {
             'name': invoice.get('customer_name', 'Customer'),
             'email': invoice.get('customer_email', ''),
-            'address': invoice.get('customer_address', '')
+            'address': invoice.get('customer_address', ''),
+            'vat_number': invoice.get('customer_vat_number', '')
         }
         
         invoice_details = {

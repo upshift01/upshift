@@ -351,20 +351,30 @@ const AdminInvoices = () => {
                           {getStatusBadge(invoice.status, isRecentlyPaid && invoice.status === 'paid')}
                         </td>
                         <td className="py-3 px-4">
-                          {invoice.status === 'pending' && (
+                          <div className="flex items-center gap-2">
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => markAsPaid(invoice.id)}
+                              onClick={() => downloadInvoicePDF(invoice.id, invoice.invoice_number)}
+                              title="Download PDF"
                             >
-                              Mark Paid
+                              <Download className="h-4 w-4" />
                             </Button>
-                          )}
-                          {invoice.status === 'paid' && (
-                            <span className="text-sm text-gray-500">
-                              Paid {invoice.paid_date && new Date(invoice.paid_date).toLocaleDateString()}
-                            </span>
-                          )}
+                            {invoice.status === 'pending' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => markAsPaid(invoice.id)}
+                              >
+                                Mark Paid
+                              </Button>
+                            )}
+                            {invoice.status === 'paid' && (
+                              <span className="text-sm text-gray-500">
+                                Paid {invoice.paid_date && new Date(invoice.paid_date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

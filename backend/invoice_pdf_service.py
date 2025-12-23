@@ -232,15 +232,21 @@ class InvoicePDFGenerator:
         story.append(line)
         story.append(Spacer(1, 10*mm))
         
-        # BILL TO
+        # BILL TO - Reseller is the buyer here
         reseller_name = reseller.get('company_name', 'Reseller') if reseller else 'Reseller'
         reseller_contact = reseller.get('contact_info', {}) if reseller else {}
+        reseller_site_settings = reseller.get('site_settings', {}) if reseller else {}
+        buyer_vat = reseller_site_settings.get('vat_number', '') if reseller_site_settings else ''
         
         story.append(Paragraph('<b><font size="10" color="gray">BILL TO:</font></b>', styles['Normal']))
         story.append(Spacer(1, 2*mm))
         story.append(Paragraph(f'<b>{reseller_name}</b>', styles['Normal']))
         if reseller_contact.get("email"):
             story.append(Paragraph(f'<font size="9" color="gray">{reseller_contact.get("email")}</font>', styles['Normal']))
+        if reseller_contact.get("address"):
+            story.append(Paragraph(f'<font size="9" color="gray">{reseller_contact.get("address")}</font>', styles['Normal']))
+        if buyer_vat:
+            story.append(Paragraph(f'<font size="9" color="gray">VAT: {buyer_vat}</font>', styles['Normal']))
         
         story.append(Spacer(1, 5*mm))
         story.append(Paragraph(f'<font size="9"><b>Period:</b> {invoice.get("period", "N/A")}</font>', styles['Normal']))

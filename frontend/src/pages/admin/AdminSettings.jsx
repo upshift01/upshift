@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Settings, Save, Shield, Bell, Globe, Database, Mail, Clock, Send, Plus, Trash2, CheckCircle, XCircle, RefreshCw, CreditCard, Eye, EyeOff, ExternalLink, Linkedin, Link2, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Video } from 'lucide-react';
+import { Settings, Save, Shield, Bell, Globe, Database, Mail, Clock, Send, Plus, Trash2, CheckCircle, XCircle, RefreshCw, CreditCard, Eye, EyeOff, ExternalLink, Linkedin, Link2, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Video, Bot } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';

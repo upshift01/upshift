@@ -161,7 +161,7 @@ const Dashboard = () => {
                     <Badge className="bg-green-500 text-white">FREE</Badge>
                   </div>
                   <p className="text-gray-600 text-sm">
-                    Check if your CV is optimized for Applicant Tracking Systems. Get a detailed score and actionable recommendations.
+                    Check if your CV is optimised for Applicant Tracking Systems. Get a detailed score and actionable recommendations.
                   </p>
                 </div>
               </div>

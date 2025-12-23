@@ -533,6 +533,7 @@ const ResellerSettings = () => {
     { id: 'billing', label: 'My Subscription', icon: Receipt },
     { id: 'email', label: 'Email Settings', icon: Mail },
     { id: 'yoco', label: 'Yoco Payments', icon: CreditCard },
+    { id: 'linkedin', label: 'LinkedIn', icon: Linkedin },
     { id: 'chatgpt', label: 'ChatGPT', icon: Bot },
     { id: 'legal', label: 'Legal Pages', icon: FileText }
   ];

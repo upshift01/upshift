@@ -518,9 +518,9 @@ const ATSChecker = () => {
             {/* CTA */}
             <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
               <CardContent className="p-8 text-center">
-                <h3 className="text-2xl font-bold mb-4">Ready to Optimize Your Resume?</h3>
+                <h3 className="text-2xl font-bold mb-4">Ready to Optimise Your CV?</h3>
                 <p className="text-blue-100 mb-6">
-                  Use our AI-powered Resume Builder to create an ATS-optimized resume in minutes.
+                  Use our AI-powered CV Builder to create an ATS-optimised CV in minutes.
                 </p>
                 <Button 
                   variant="secondary" 

@@ -1938,6 +1938,7 @@ async def get_reseller_site_settings(context: dict = Depends(get_current_reselle
                 "business_hours": settings.get("business_hours", ""),
                 "vat_number": settings.get("vat_number", ""),
                 "company_registration": settings.get("company_registration", ""),
+                "meeting_link": settings.get("meeting_link", ""),
                 "updated_at": settings.get("updated_at")
             }
         
@@ -1960,7 +1961,8 @@ async def get_reseller_site_settings(context: dict = Depends(get_current_reselle
             },
             "business_hours": "",
             "vat_number": "",
-            "company_registration": ""
+            "company_registration": "",
+            "meeting_link": ""
         }
     except Exception as e:
         logger.error(f"Error fetching reseller site settings: {str(e)}")

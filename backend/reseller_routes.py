@@ -1222,25 +1222,47 @@ async def send_customer_invoice_reminder(
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
+        # Format amount
+        amount_cents = invoice.get("amount", 0)
+        formatted_amount = f"R{amount_cents / 100:,.2f}"
+        
+        # Format due date
+        due_date = invoice.get("due_date", "")
+        if due_date:
+            try:
+                if isinstance(due_date, str):
+                    from datetime import datetime as dt
+                    due_date_obj = dt.fromisoformat(due_date.replace("Z", "+00:00"))
+                    due_date = due_date_obj.strftime("%d %B %Y")
+            except:
+                pass
+        
+        # Check if overdue
+        is_overdue = invoice.get("status") == "overdue"
+        
+        # Generate payment link (placeholder - would link to actual payment page)
+        payment_link = f"{reseller.get('portal_url', 'https://upshift.works')}/pay/{invoice_id}"
+        
         # Send reminder email
         email_sent = await email_service.send_invoice_reminder(
             to_email=invoice["customer_email"],
-            customer_name=invoice["customer_name"],
+            reseller_name=invoice.get("customer_name", "Customer"),
             invoice_number=invoice["invoice_number"],
-            amount=invoice["amount"],
-            due_date=invoice["due_date"],
-            reseller_name=reseller.get("company_name", "UpShift")
+            amount=formatted_amount,
+            due_date=due_date,
+            payment_link=payment_link,
+            is_overdue=is_overdue
         )
         
         if email_sent:
             # Update invoice with reminder sent timestamp
             await db.customer_invoices.update_one(
                 {"id": invoice_id},
-                {"$set": {"last_reminder_sent": datetime.utcnow().isoformat()}}
+                {"$set": {"last_reminder_sent": datetime.now(timezone.utc).isoformat()}}
             )
             return {"success": True, "message": "Reminder sent successfully"}
         else:
-            return {"success": False, "error": "Failed to send email"}
+            raise HTTPException(status_code=500, detail="Failed to send email. Please check email settings.")
             
     except HTTPException:
         raise

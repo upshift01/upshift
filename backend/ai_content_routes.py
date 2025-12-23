@@ -135,7 +135,7 @@ class CVSuggestionRequest(BaseModel):
 
 
 @ai_content_router.post("/cv-suggestion")
-async def get_cv_suggestion(data: CVSuggestionRequest, current_user: dict = Depends(get_current_user)):
+async def get_cv_suggestion(data: CVSuggestionRequest, current_user: dict = Depends(get_current_user_with_db)):
     """Get AI suggestions for CV fields"""
     try:
         if not EMERGENT_LLM_KEY:

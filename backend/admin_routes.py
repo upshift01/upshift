@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Request
+from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 import uuid

@@ -1936,6 +1936,9 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         self.test_customer_invoice_creation()
         self.test_reseller_customer_signup_e2e()
         
+        # PRIMARY TEST: Strategy Call Booking Payment Flow (Review Request)
+        self.test_strategy_call_booking_payment_flow()
+        
         # Print summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY")

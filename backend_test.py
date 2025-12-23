@@ -2090,7 +2090,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         # Print summary
         print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY - Invoice PDF Generation with QR Code")
+        print("📊 TEST SUMMARY - Platform Pricing Configuration")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -2122,7 +2122,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             print("⚠️  Some tests failed but core functionality appears to work")
             return True
         else:
-            print("✅ ALL TESTS PASSED - Invoice PDF generation with QR code is working correctly")
+            print("✅ ALL TESTS PASSED - Platform Pricing Configuration is working correctly")
             return True
 
     def test_vat_number_invoice_pdf_functionality(self):

@@ -102,6 +102,9 @@ const AdminSettings = () => {
     if (activeTab === 'integrations') {
       fetchLinkedinSettings();
     }
+    if (activeTab === 'site') {
+      fetchSiteSettings();
+    }
   }, [activeTab]);
 
   const fetchEmailSettings = async () => {

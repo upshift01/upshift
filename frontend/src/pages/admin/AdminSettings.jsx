@@ -1346,37 +1346,6 @@ const AdminSettings = () => {
             </CardContent>
           </Card>
 
-              <div className="flex flex-wrap gap-3 pt-4 border-t">
-                <Button onClick={handleSaveEmailSettings} disabled={saving}>
-                  <Save className="h-4 w-4 mr-2" />
-                  {saving ? 'Saving...' : 'Save Email Settings'}
-                </Button>
-                <Button variant="outline" onClick={handleTestConnection} disabled={testingEmail}>
-                  <RefreshCw className={`h-4 w-4 mr-2 ${testingEmail ? 'animate-spin' : ''}`} />
-                  Test Connection
-                </Button>
-              </div>
-
-              {/* Test Email */}
-              <div className="pt-4 border-t">
-                <label className="block text-sm font-medium mb-2">Send Test Email</label>
-                <div className="flex gap-2">
-                  <Input
-                    type="email"
-                    value={testEmailAddress}
-                    onChange={(e) => setTestEmailAddress(e.target.value)}
-                    placeholder="test@example.com"
-                    className="flex-1"
-                  />
-                  <Button variant="outline" onClick={handleSendTestEmail} disabled={testingEmail}>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Test
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Reminder Schedules */}
           <Card>
             <CardHeader>

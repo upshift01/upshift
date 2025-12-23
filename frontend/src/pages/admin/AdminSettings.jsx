@@ -926,7 +926,7 @@ const AdminSettings = () => {
               </div>
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                 <p className="text-sm text-purple-800">
-                  <strong>Tip:</strong> Use a personal meeting room link that doesn't change, so you don't have to update it for each booking.
+                  <strong>Tip:</strong> Use a personal meeting room link that doesn&apos;t change, so you don&apos;t have to update it for each booking.
                 </p>
               </div>
             </CardContent>

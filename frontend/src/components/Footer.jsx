@@ -72,7 +72,7 @@ const Footer = () => {
             </Link>
             <p className="text-gray-400 mb-6 max-w-md">
               Empowering South African job seekers with AI-powered CV and career tools. 
-              Create professional, ATS-optimized resumes that get you noticed.
+              Create professional, ATS-optimised CVs that get you noticed.
             </p>
             
             {/* Contact Info */}

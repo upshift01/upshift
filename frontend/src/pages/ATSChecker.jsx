@@ -665,13 +665,13 @@ const ATSChecker = () => {
                     {
                       step: 2,
                       title: "AI-Powered Scanning",
-                      description: "Once uploaded, our advanced AI model extracts the key elements like formatting, keyword usage, and structure from your existing resume to check whether it is ATS optimized.",
+                      description: "Once uploaded, our advanced AI model extracts the key elements like formatting, keyword usage, and structure from your existing CV to check whether it is ATS optimised.",
                       icon: FileSearch
                     },
                     {
                       step: 3,
                       title: "Score and Summary",
-                      description: "After the scanning, the tool provides you with a detailed summary of your resume along with your ATS score out of 100.",
+                      description: "After the scanning, the tool provides you with a detailed summary of your CV along with your ATS score out of 100.",
                       icon: Target
                     },
                     {
@@ -683,7 +683,7 @@ const ATSChecker = () => {
                     {
                       step: 5,
                       title: "Edit and Download",
-                      description: "You can implement the suggestions by editing the resume within the resume builder. Once done, you can download the edited optimized version of the resume.",
+                      description: "You can implement the suggestions by editing the CV within the CV builder. Once done, you can download the edited optimised version of the CV.",
                       icon: Download
                     }
                   ].map((item) => (

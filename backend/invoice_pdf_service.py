@@ -153,69 +153,45 @@ class InvoicePDFGenerator:
                             invoice_date: str, brand_color: str = '#1e40af', vat_number: str = None):
         """Create the header section with company info and invoice details"""
         
-        # Left side: Company info
-        company_lines = [
-            Paragraph(f"<b>{company_name}</b>", ParagraphStyle(
-                name='CompanyHeader',
-                parent=self.styles['Normal'],
-                fontSize=20,
-                textColor=colors.HexColor(brand_color),
-                fontName='Helvetica-Bold',
-                leading=24
-            ))
-        ]
-        
+        # Left side: Company info as a single cell with stacked content
+        company_content = f"<b>{company_name}</b><br/>"
         if company_info.get('address'):
-            company_lines.append(Paragraph(company_info['address'], self.styles['SmallText']))
+            company_content += f"<font size='9' color='#6b7280'>{company_info['address']}</font><br/>"
         if company_info.get('email'):
-            company_lines.append(Paragraph(company_info['email'], self.styles['SmallText']))
+            company_content += f"<font size='9' color='#6b7280'>{company_info['email']}</font><br/>"
         if company_info.get('phone'):
-            company_lines.append(Paragraph(company_info['phone'], self.styles['SmallText']))
+            company_content += f"<font size='9' color='#6b7280'>{company_info['phone']}</font><br/>"
         if vat_number:
-            company_lines.append(Paragraph(f"VAT No: {vat_number}", self.styles['SmallText']))
+            company_content += f"<font size='9' color='#6b7280'>VAT No: {vat_number}</font>"
         
-        # Right side: Invoice info - use a mini table for better alignment
-        invoice_info_data = [
-            [Paragraph("<b>INVOICE</b>", ParagraphStyle(
-                name='InvoiceLabelHeader',
-                parent=self.styles['Normal'],
-                fontSize=26,
-                textColor=colors.HexColor('#111827'),
-                fontName='Helvetica-Bold',
-                alignment=TA_RIGHT,
-                spaceAfter=0
-            ))],
-            [Paragraph(f"<b>#{invoice_number}</b>", ParagraphStyle(
-                name='InvoiceNumHeader',
-                parent=self.styles['Normal'],
-                fontSize=11,
-                textColor=colors.HexColor('#6b7280'),
-                alignment=TA_RIGHT,
-                spaceBefore=2
-            ))],
-            [Spacer(1, 3*mm)],
-            [Paragraph(f"Date: {invoice_date}", ParagraphStyle(
-                name='InvoiceDateHeader',
-                parent=self.styles['Normal'],
-                fontSize=10,
-                textColor=colors.HexColor('#374151'),
-                alignment=TA_RIGHT
-            ))]
-        ]
+        company_para = Paragraph(company_content, ParagraphStyle(
+            name='CompanyBlock',
+            parent=self.styles['Normal'],
+            fontSize=18,
+            textColor=colors.HexColor(brand_color),
+            fontName='Helvetica-Bold',
+            leading=14
+        ))
         
-        invoice_info_table = Table(invoice_info_data, colWidths=[8*cm])
-        invoice_info_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 0),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-            ('TOPPADDING', (0, 0), (-1, -1), 0),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
-        ]))
+        # Right side: Invoice info stacked vertically
+        invoice_content = f"""<font size='24'><b>INVOICE</b></font><br/>
+<font size='11' color='#6b7280'>#{invoice_number}</font><br/>
+<br/>
+<font size='10' color='#374151'>Date: {invoice_date}</font>"""
         
-        # Create two-column header
+        invoice_para = Paragraph(invoice_content, ParagraphStyle(
+            name='InvoiceBlock',
+            parent=self.styles['Normal'],
+            fontSize=24,
+            textColor=colors.HexColor('#111827'),
+            fontName='Helvetica-Bold',
+            alignment=TA_RIGHT,
+            leading=16
+        ))
+        
+        # Create two-column header table
         header_table = Table(
-            [[[c for c in company_lines], invoice_info_table]],
+            [[company_para, invoice_para]],
             colWidths=[9*cm, 8*cm]
         )
         header_table.setStyle(TableStyle([

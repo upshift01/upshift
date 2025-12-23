@@ -1125,4 +1125,196 @@ async def save_site_settings(data: dict, admin: UserResponse = Depends(get_curre
         logger.error(f"Error saving site settings: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-        return {"success": False, "detail": f"Error: {str(e)}"}
+
+# Platform Email/SMTP Settings
+class PlatformEmailSettings(BaseModel):
+    provider: str = "custom"  # office365, gmail, sendgrid, mailgun, custom
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    encryption: str = "tls"  # none, tls, ssl
+    from_email: str = ""
+    from_name: str = "UpShift"
+    reply_to: Optional[str] = None
+
+
+@admin_router.get("/email-settings", response_model=dict)
+async def get_admin_email_settings(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get platform email/SMTP settings"""
+    try:
+        settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+        
+        if settings:
+            # Mask password
+            if settings.get("smtp_password"):
+                settings["smtp_password"] = "********"
+            return {
+                "provider": settings.get("provider", "custom"),
+                "smtp_host": settings.get("smtp_host", ""),
+                "smtp_port": settings.get("smtp_port", 587),
+                "smtp_user": settings.get("smtp_user", ""),
+                "smtp_password": settings.get("smtp_password", ""),
+                "encryption": settings.get("encryption", "tls"),
+                "from_email": settings.get("from_email", ""),
+                "from_name": settings.get("from_name", "UpShift"),
+                "reply_to": settings.get("reply_to", ""),
+                "is_configured": settings.get("is_configured", False)
+            }
+        
+        return {
+            "provider": "custom",
+            "smtp_host": "",
+            "smtp_port": 587,
+            "smtp_user": "",
+            "smtp_password": "",
+            "encryption": "tls",
+            "from_email": "",
+            "from_name": "UpShift",
+            "reply_to": "",
+            "is_configured": False
+        }
+    except Exception as e:
+        logger.error(f"Error fetching email settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/email-settings", response_model=dict)
+async def save_admin_email_settings(settings: PlatformEmailSettings, admin: UserResponse = Depends(get_current_super_admin)):
+    """Save platform email/SMTP settings"""
+    try:
+        # Get existing to preserve password if masked
+        existing = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+        
+        settings_dict = settings.dict()
+        settings_dict["key"] = "email"
+        settings_dict["is_configured"] = bool(settings.smtp_host and settings.smtp_user)
+        settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+        settings_dict["updated_by"] = admin.id
+        
+        # If password is masked, keep the old one
+        if settings.smtp_password == "********" and existing:
+            settings_dict["smtp_password"] = existing.get("smtp_password", "")
+        
+        await db.platform_settings.update_one(
+            {"key": "email"},
+            {"$set": settings_dict},
+            upsert=True
+        )
+        
+        logger.info(f"Email settings updated by admin {admin.email}")
+        
+        return {"success": True, "message": "Email settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving email settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/email-settings/test", response_model=dict)
+async def test_admin_email_connection(admin: UserResponse = Depends(get_current_super_admin)):
+    """Test platform SMTP connection"""
+    try:
+        import smtplib
+        import ssl
+        
+        settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+        
+        if not settings or not settings.get("smtp_host") or not settings.get("smtp_user"):
+            return {"success": False, "error": "Email settings not configured. Please enter SMTP host and username."}
+        
+        try:
+            encryption = settings.get("encryption", "tls")
+            
+            if encryption == "ssl":
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(settings["smtp_host"], settings["smtp_port"], context=context, timeout=10) as server:
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+            elif encryption == "tls":
+                with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
+                    server.starttls()
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+            else:
+                with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+            
+            return {"success": True, "message": "SMTP connection successful! Your email settings are working."}
+        except smtplib.SMTPAuthenticationError:
+            return {"success": False, "error": "Authentication failed. Please check your username and password."}
+        except smtplib.SMTPConnectError:
+            return {"success": False, "error": "Could not connect to SMTP server. Check host and port."}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@admin_router.post("/email-settings/send-test", response_model=dict)
+async def send_admin_test_email(to_email: str, admin: UserResponse = Depends(get_current_super_admin)):
+    """Send a test email using platform SMTP settings"""
+    try:
+        import smtplib
+        import ssl
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+        
+        if not settings or not settings.get("smtp_host"):
+            return {"success": False, "error": "Email settings not configured"}
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = 'UpShift - Test Email'
+        msg['From'] = f"{settings.get('from_name', 'UpShift')} <{settings.get('from_email') or settings['smtp_user']}>"
+        msg['To'] = to_email
+        
+        if settings.get('reply_to'):
+            msg['Reply-To'] = settings['reply_to']
+        
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #1e40af, #7c3aed); padding: 30px; text-align: center;">
+                <h1 style="color: white; margin: 0;">UpShift</h1>
+            </div>
+            <div style="padding: 30px; background: #f9fafb;">
+                <h2 style="color: #1f2937;">Test Email Successful! ✓</h2>
+                <p style="color: #4b5563;">
+                    Congratulations! Your SMTP settings are configured correctly.
+                </p>
+                <p style="color: #4b5563;">
+                    This test email was sent from your UpShift platform to verify that emails are working properly.
+                </p>
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+                <p style="color: #9ca3af; font-size: 12px;">
+                    SMTP Server: {settings.get('smtp_host')}<br>
+                    From: {settings.get('from_email') or settings['smtp_user']}
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        msg.attach(MIMEText(html_content, 'html'))
+        
+        encryption = settings.get("encryption", "tls")
+        
+        if encryption == "ssl":
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(settings["smtp_host"], settings["smtp_port"], context=context, timeout=10) as server:
+                server.login(settings["smtp_user"], settings["smtp_password"])
+                server.send_message(msg)
+        elif encryption == "tls":
+            with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
+                server.starttls()
+                server.login(settings["smtp_user"], settings["smtp_password"])
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
+                server.login(settings["smtp_user"], settings["smtp_password"])
+                server.send_message(msg)
+        
+        logger.info(f"Test email sent to {to_email} by admin {admin.email}")
+        return {"success": True, "message": f"Test email sent successfully to {to_email}"}
+    except Exception as e:
+        logger.error(f"Error sending test email: {str(e)}")
+        return {"success": False, "error": str(e)}

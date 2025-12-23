@@ -1311,6 +1311,124 @@ const AdminSettings = () => {
             </CardContent>
           </Card>
 
+          {/* OpenAI/ChatGPT Integration */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-green-600" />
+                    ChatGPT / OpenAI Integration
+                  </CardTitle>
+                  <CardDescription>Configure AI-powered features for CV generation, cover letters, and chat assistant</CardDescription>
+                </div>
+                {openaiStatus && (
+                  <Badge variant={openaiStatus.connected ? 'default' : 'destructive'} className={openaiStatus.connected ? 'bg-green-500' : ''}>
+                    {openaiStatus.connected ? (
+                      <><CheckCircle className="h-3 w-3 mr-1" /> Connected</>
+                    ) : (
+                      <><XCircle className="h-3 w-3 mr-1" /> Not Configured</>
+                    )}
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Emergent Key Option */}
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="use-emergent-key"
+                    checked={openaiSettings.is_emergent_key}
+                    onChange={(e) => setOpenaiSettings({...openaiSettings, is_emergent_key: e.target.checked})}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div>
+                    <label htmlFor="use-emergent-key" className="font-medium text-gray-900 cursor-pointer">
+                      Use Emergent Universal Key (Recommended)
+                    </label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      The platform comes pre-configured with an Emergent Universal Key that provides access to GPT-4o. 
+                      Credits are deducted from your platform balance. No additional setup required.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom API Key Option */}
+              {!openaiSettings.is_emergent_key && (
+                <div className="space-y-4 pt-4 border-t">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">OpenAI API Key *</label>
+                    <div className="relative">
+                      <Input
+                        type={showOpenaiKey ? 'text' : 'password'}
+                        value={openaiSettings.api_key}
+                        onChange={(e) => setOpenaiSettings({...openaiSettings, api_key: e.target.value})}
+                        placeholder="sk-..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showOpenaiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Your OpenAI API key from platform.openai.com</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Model</label>
+                    <select
+                      value={openaiSettings.model}
+                      onChange={(e) => setOpenaiSettings({...openaiSettings, model: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="gpt-4o">GPT-4o (Recommended)</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini (Faster, Lower Cost)</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Legacy)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Select the AI model for content generation</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button onClick={handleSaveOpenaiSettings} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save AI Settings'}
+                </Button>
+                <Button variant="outline" onClick={handleTestOpenaiConnection} disabled={testingOpenai}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${testingOpenai ? 'animate-spin' : ''}`} />
+                  {testingOpenai ? 'Testing...' : 'Test Connection'}
+                </Button>
+                {!openaiSettings.is_emergent_key && (
+                  <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      OpenAI Dashboard
+                    </Button>
+                  </a>
+                )}
+              </div>
+
+              {/* Info Box */}
+              <div className="p-4 bg-gray-50 border rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">AI Features Powered by This Integration:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• <strong>Cover Letter Generator</strong> - AI-written personalised cover letters</li>
+                  <li>• <strong>CV Builder Suggestions</strong> - Smart recommendations for CV content</li>
+                  <li>• <strong>Resume Improver</strong> - AI analysis and enhancement suggestions</li>
+                  <li>• <strong>AI Chat Assistant</strong> - 24/7 customer support bot</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Future Integrations Placeholder */}
           <Card>
             <CardHeader>

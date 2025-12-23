@@ -1819,4 +1819,99 @@ async def test_reseller_linkedin_connection(context: dict = Depends(get_current_
         logger.error(f"Error testing LinkedIn connection: {str(e)}")
         return {"success": False, "detail": str(e)}
 
+
+
+# Reseller Site Settings (Contact & Social Media)
+@reseller_router.get("/site-settings", response_model=dict)
+async def get_reseller_site_settings(context: dict = Depends(get_current_reseller_admin)):
+    """Get reseller's contact and social media settings for their white-label site"""
+    try:
+        reseller = context["reseller"]
+        
+        settings = await db.reseller_site_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if settings:
+            return {
+                "contact": settings.get("contact", {}),
+                "social_media": settings.get("social_media", {}),
+                "business_hours": settings.get("business_hours", ""),
+                "updated_at": settings.get("updated_at")
+            }
+        
+        # Return defaults from reseller profile or empty
+        contact_info = reseller.get("contact_info", {})
+        return {
+            "contact": {
+                "email": contact_info.get("email", ""),
+                "phone": contact_info.get("phone", ""),
+                "address": contact_info.get("address", ""),
+                "whatsapp": ""
+            },
+            "social_media": {
+                "facebook": "",
+                "twitter": "",
+                "linkedin": "",
+                "instagram": "",
+                "youtube": "",
+                "tiktok": ""
+            },
+            "business_hours": ""
+        }
+    except Exception as e:
+        logger.error(f"Error fetching reseller site settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/site-settings", response_model=dict)
+async def save_reseller_site_settings(data: dict, context: dict = Depends(get_current_reseller_admin)):
+    """Save reseller's contact and social media settings"""
+    try:
+        reseller = context["reseller"]
+        
+        settings = {
+            "reseller_id": reseller["id"],
+            "contact": {
+                "email": data.get("contact", {}).get("email", ""),
+                "phone": data.get("contact", {}).get("phone", ""),
+                "address": data.get("contact", {}).get("address", ""),
+                "whatsapp": data.get("contact", {}).get("whatsapp", "")
+            },
+            "social_media": {
+                "facebook": data.get("social_media", {}).get("facebook", ""),
+                "twitter": data.get("social_media", {}).get("twitter", ""),
+                "linkedin": data.get("social_media", {}).get("linkedin", ""),
+                "instagram": data.get("social_media", {}).get("instagram", ""),
+                "youtube": data.get("social_media", {}).get("youtube", ""),
+                "tiktok": data.get("social_media", {}).get("tiktok", "")
+            },
+            "business_hours": data.get("business_hours", ""),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.reseller_site_settings.update_one(
+            {"reseller_id": reseller["id"]},
+            {"$set": settings},
+            upsert=True
+        )
+        
+        # Also update the reseller's contact_info in the main resellers collection
+        await db.resellers.update_one(
+            {"id": reseller["id"]},
+            {"$set": {
+                "contact_info.email": settings["contact"]["email"],
+                "contact_info.phone": settings["contact"]["phone"],
+                "contact_info.address": settings["contact"]["address"]
+            }}
+        )
+        
+        logger.info(f"Site settings updated for reseller {reseller['id']}")
+        
+        return {"success": True, "message": "Site settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving reseller site settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         raise HTTPException(status_code=500, detail=str(e))

@@ -79,6 +79,9 @@ const AdminSettings = () => {
     if (activeTab === 'payments') {
       fetchYocoSettings();
     }
+    if (activeTab === 'integrations') {
+      fetchLinkedinSettings();
+    }
   }, [activeTab]);
 
   const fetchEmailSettings = async () => {

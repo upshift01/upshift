@@ -1243,6 +1243,38 @@ async def send_customer_invoice_reminder(
         # Generate payment link (placeholder - would link to actual payment page)
         payment_link = f"{reseller.get('portal_url', 'https://upshift.works')}/pay/{invoice_id}"
         
+        # Check if email service is configured
+        if not email_service.is_configured:
+            # Log the reminder attempt and update invoice anyway
+            logger.info(f"Email not configured - Reminder logged for invoice {invoice['invoice_number']} to {invoice['customer_email']}")
+            
+            # Update invoice with reminder sent timestamp
+            await db.customer_invoices.update_one(
+                {"id": invoice_id},
+                {
+                    "$set": {
+                        "last_reminder_sent": datetime.now(timezone.utc).isoformat(),
+                        "reminder_note": "Email service not configured - reminder logged only"
+                    }
+                }
+            )
+            
+            # Log activity
+            await db.reseller_activity.insert_one({
+                "id": str(uuid.uuid4()),
+                "reseller_id": reseller["id"],
+                "type": "invoice",
+                "title": "Reminder Logged",
+                "description": f"Payment reminder for {invoice['invoice_number']} ({invoice['customer_email']}) - Email not sent (email service not configured)",
+                "created_at": datetime.now(timezone.utc)
+            })
+            
+            return {
+                "success": True, 
+                "message": "Reminder logged (email service not configured - configure SMTP in Settings to send actual emails)",
+                "email_sent": False
+            }
+        
         # Send reminder email
         email_sent = await email_service.send_invoice_reminder(
             to_email=invoice["customer_email"],
@@ -1260,9 +1292,20 @@ async def send_customer_invoice_reminder(
                 {"id": invoice_id},
                 {"$set": {"last_reminder_sent": datetime.now(timezone.utc).isoformat()}}
             )
-            return {"success": True, "message": "Reminder sent successfully"}
+            
+            # Log activity
+            await db.reseller_activity.insert_one({
+                "id": str(uuid.uuid4()),
+                "reseller_id": reseller["id"],
+                "type": "email",
+                "title": "Reminder Sent",
+                "description": f"Payment reminder sent to {invoice['customer_email']} for invoice {invoice['invoice_number']}",
+                "created_at": datetime.now(timezone.utc)
+            })
+            
+            return {"success": True, "message": "Reminder sent successfully!", "email_sent": True}
         else:
-            raise HTTPException(status_code=500, detail="Failed to send email. Please check email settings.")
+            raise HTTPException(status_code=500, detail="Failed to send email. Please check your SMTP settings.")
             
     except HTTPException:
         raise

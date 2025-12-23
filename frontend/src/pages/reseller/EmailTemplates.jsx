@@ -134,7 +134,7 @@ const EmailTemplates = () => {
     <div className="p-4 md:p-6 space-y-6">
       <div>
         <h1 className={`text-2xl font-bold ${textPrimary}`}>Email Templates</h1>
-        <p className={textSecondary}>Customize the emails sent to your customers</p>
+        <p className={textSecondary}>Customise the emails sent to your customers</p>
       </div>
 
       {/* Variable Reference */}

@@ -1391,10 +1391,17 @@ async def download_customer_invoice_pdf(
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
+        # Get reseller site settings for VAT number
+        reseller_settings = await db.reseller_site_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
         # Generate PDF with reseller branding
         pdf_buffer = invoice_pdf_generator.generate_customer_invoice_pdf(
             invoice=invoice,
-            reseller=reseller
+            reseller=reseller,
+            reseller_settings=reseller_settings
         )
         
         filename = f"invoice_{invoice.get('invoice_number', invoice_id)}.pdf"

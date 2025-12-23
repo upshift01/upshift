@@ -37,6 +37,7 @@ import AdminInvoices from "./pages/admin/AdminInvoices";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPricing from "./pages/admin/AdminPricing";
 
 // Reseller Pages
 import ResellerLayout from "./pages/reseller/ResellerLayout";

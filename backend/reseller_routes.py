@@ -159,6 +159,26 @@ async def register_reseller(data: ResellerCreate):
 async def get_reseller_profile(context: dict = Depends(get_current_reseller_admin)):
     """Get current reseller's profile"""
     reseller = context["reseller"]
+    pricing = reseller.get("pricing", {})
+    
+    # Get strategy call pricing - check reseller-specific first, then platform defaults
+    strategy_call_pricing = pricing.get("strategy_call_pricing")
+    if not strategy_call_pricing:
+        # Get platform defaults
+        platform_pricing = await db.platform_settings.find_one(
+            {"key": "platform_pricing"},
+            {"_id": 0}
+        )
+        if platform_pricing and platform_pricing.get("value", {}).get("strategy_call_pricing"):
+            strategy_call_pricing = platform_pricing["value"]["strategy_call_pricing"]
+        else:
+            strategy_call_pricing = {
+                "price": 69900,
+                "duration_minutes": 30,
+                "included_in_tier_3": True,
+                "enabled": True
+            }
+    
     return {
         "id": reseller["id"],
         "company_name": reseller["company_name"],
@@ -167,7 +187,8 @@ async def get_reseller_profile(context: dict = Depends(get_current_reseller_admi
         "custom_domain": reseller.get("custom_domain"),
         "status": reseller["status"],
         "branding": reseller["branding"],
-        "pricing": reseller["pricing"],
+        "pricing": pricing,
+        "strategy_call_pricing": strategy_call_pricing,
         "contact_info": reseller["contact_info"],
         "legal": reseller.get("legal", {}),
         "subscription": reseller["subscription"],

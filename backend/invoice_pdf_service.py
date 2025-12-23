@@ -514,7 +514,7 @@ class InvoicePDFGenerator:
         ]))
         return status_table
     
-    def generate_customer_invoice_pdf(self, invoice: dict, reseller: dict = None) -> BytesIO:
+    def generate_customer_invoice_pdf(self, invoice: dict, reseller: dict = None, reseller_settings: dict = None) -> BytesIO:
         """Generate professional PDF for customer invoice"""
         buffer = BytesIO()
         doc = SimpleDocTemplate(
@@ -533,13 +533,17 @@ class InvoicePDFGenerator:
         brand_color = reseller.get('branding', {}).get('primary_color', '#1e40af') if reseller else '#1e40af'
         contact_info = reseller.get('contact_info', {}) if reseller else {}
         
+        # Get VAT number from reseller settings
+        vat_number = reseller_settings.get('vat_number', '') if reseller_settings else ''
+        
         # === HEADER ===
         header = self._create_header_table(
             company_name=company_name,
             company_info=contact_info,
             invoice_number=invoice.get('invoice_number', 'N/A'),
             invoice_date=self._format_date(invoice.get('created_at')),
-            brand_color=brand_color
+            brand_color=brand_color,
+            vat_number=vat_number
         )
         elements.append(header)
         

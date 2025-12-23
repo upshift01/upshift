@@ -469,6 +469,7 @@ const AdminSettings = () => {
   const tabs = [
     { id: 'general', label: 'General', icon: Globe },
     { id: 'payments', label: 'Payments (Yoco)', icon: CreditCard },
+    { id: 'integrations', label: 'Integrations', icon: Link2 },
     { id: 'email', label: 'Email & Reminders', icon: Mail },
     { id: 'security', label: 'Security', icon: Shield }
   ];

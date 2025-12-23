@@ -153,45 +153,78 @@ class InvoicePDFGenerator:
                             invoice_date: str, brand_color: str = '#1e40af', vat_number: str = None):
         """Create the header section with company info and invoice details"""
         
-        # Left side: Company info as a single cell with stacked content
-        company_content = f"<b>{company_name}</b><br/>"
-        if company_info.get('address'):
-            company_content += f"<font size='9' color='#6b7280'>{company_info['address']}</font><br/>"
-        if company_info.get('email'):
-            company_content += f"<font size='9' color='#6b7280'>{company_info['email']}</font><br/>"
-        if company_info.get('phone'):
-            company_content += f"<font size='9' color='#6b7280'>{company_info['phone']}</font><br/>"
-        if vat_number:
-            company_content += f"<font size='9' color='#6b7280'>VAT No: {vat_number}</font>"
-        
-        company_para = Paragraph(company_content, ParagraphStyle(
-            name='CompanyBlock',
+        # Left side: Company info
+        left_content = []
+        left_content.append(Paragraph(f"<b>{company_name}</b>", ParagraphStyle(
+            name='CompNameStyle',
             parent=self.styles['Normal'],
             fontSize=18,
             textColor=colors.HexColor(brand_color),
             fontName='Helvetica-Bold',
-            leading=14
-        ))
+            spaceAfter=3
+        )))
         
-        # Right side: Invoice info stacked vertically
-        invoice_content = f"""<font size='24'><b>INVOICE</b></font><br/>
-<font size='11' color='#6b7280'>#{invoice_number}</font><br/>
-<br/>
-<font size='10' color='#374151'>Date: {invoice_date}</font>"""
+        if company_info.get('address'):
+            left_content.append(Paragraph(company_info['address'], self.styles['SmallText']))
+        if company_info.get('email'):
+            left_content.append(Paragraph(company_info['email'], self.styles['SmallText']))
+        if company_info.get('phone'):
+            left_content.append(Paragraph(company_info['phone'], self.styles['SmallText']))
+        if vat_number:
+            left_content.append(Paragraph(f"VAT No: {vat_number}", self.styles['SmallText']))
         
-        invoice_para = Paragraph(invoice_content, ParagraphStyle(
-            name='InvoiceBlock',
-            parent=self.styles['Normal'],
-            fontSize=24,
-            textColor=colors.HexColor('#111827'),
-            fontName='Helvetica-Bold',
-            alignment=TA_RIGHT,
-            leading=16
-        ))
+        # Right side: INVOICE title, number, and date as separate rows
+        right_data = [
+            [Paragraph("<b>INVOICE</b>", ParagraphStyle(
+                name='InvTitleStyle',
+                parent=self.styles['Normal'],
+                fontSize=28,
+                textColor=colors.HexColor('#111827'),
+                fontName='Helvetica-Bold',
+                alignment=TA_RIGHT
+            ))],
+            [Paragraph(f"#{invoice_number}", ParagraphStyle(
+                name='InvNumStyle',
+                parent=self.styles['Normal'],
+                fontSize=11,
+                textColor=colors.HexColor('#6b7280'),
+                alignment=TA_RIGHT
+            ))],
+            [Spacer(1, 4*mm)],
+            [Paragraph(f"Date: {invoice_date}", ParagraphStyle(
+                name='InvDateStyle',
+                parent=self.styles['Normal'],
+                fontSize=10,
+                textColor=colors.HexColor('#374151'),
+                alignment=TA_RIGHT
+            ))]
+        ]
         
-        # Create two-column header table
+        right_table = Table(right_data, colWidths=[8*cm])
+        right_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING', (0, 0), (-1, -1), 0),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ]))
+        
+        # Create left content table
+        left_data = [[item] for item in left_content]
+        left_table = Table(left_data, colWidths=[9*cm])
+        left_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING', (0, 0), (-1, -1), 0),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ]))
+        
+        # Main header table
         header_table = Table(
-            [[company_para, invoice_para]],
+            [[left_table, right_table]],
             colWidths=[9*cm, 8*cm]
         )
         header_table.setStyle(TableStyle([

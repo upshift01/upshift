@@ -2061,8 +2061,8 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         return True
 
     def run_all_tests(self):
-        """Run all test suites focusing on Invoice PDF generation with QR code"""
-        print("🚀 Starting UpShift Invoice PDF Generation with QR Code Backend API Tests")
+        """Run all test suites focusing on Platform Pricing Configuration"""
+        print("🚀 Starting UpShift Platform Pricing Configuration Backend API Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
@@ -2070,17 +2070,22 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         auth_success = self.test_authentication()
         
         if auth_success:
-            # PRIMARY TEST: Invoice PDF Download with Yoco QR Code (Review Request)
-            print("\n🎯 FOCUS TEST: Invoice PDF Generation with QR Code")
+            # PRIMARY TEST: Platform Pricing Configuration (Review Request)
+            print("\n🎯 FOCUS TEST: Platform Pricing Configuration")
+            print("=" * 80)
+            self.test_platform_pricing_configuration()
+            
+            # SECONDARY TEST: Invoice PDF Download with Yoco QR Code (Previous Review Request)
+            print("\n🎯 SECONDARY TEST: Invoice PDF Generation with QR Code")
             print("=" * 80)
             self.test_invoice_pdf_download_with_yoco_qr()
             
-            # NEW TEST: VAT Number Invoice PDF Layout (Review Request)
-            print("\n🎯 NEW TEST: VAT Number Invoice PDF Layout")
+            # TERTIARY TEST: VAT Number Invoice PDF Layout (Previous Review Request)
+            print("\n🎯 TERTIARY TEST: VAT Number Invoice PDF Layout")
             print("=" * 80)
             self.test_vat_number_invoice_pdf_functionality()
         else:
-            print("❌ Authentication failed - cannot proceed with PDF tests")
+            print("❌ Authentication failed - cannot proceed with tests")
             return False
         
         # Print summary

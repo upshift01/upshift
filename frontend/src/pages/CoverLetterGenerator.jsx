@@ -73,38 +73,48 @@ const CoverLetterGenerator = () => {
     }
 
     setIsGenerating(true);
-    // Mock generation - will be replaced with actual API call
-    setTimeout(() => {
-      const mockLetter = `Dear ${formData.recipientName || 'Hiring Manager'},
-
-I am writing to express my strong interest in the ${formData.jobTitle} position at ${formData.companyName}. With my background in ${formData.keySkills || 'relevant field'}, I am confident in my ability to contribute effectively to your team and help drive success.
-
-${formData.whyInterested ? `I am particularly drawn to ${formData.companyName} because ${formData.whyInterested}` : `I am particularly excited about this opportunity because it aligns perfectly with my career goals and allows me to leverage my expertise in a dynamic South African company.`}
-
-Throughout my career, I have consistently demonstrated:
-• Strong analytical and problem-solving abilities
-• Excellent communication and interpersonal skills
-• A proven track record of delivering results in fast-paced environments
-• The ability to work collaboratively with diverse teams
-
-${formData.jobDescription ? `After reviewing the job description, I believe my experience directly aligns with your requirements. I am particularly well-suited to handle the responsibilities outlined, including ${formData.jobDescription.substring(0, 100)}...` : 'My experience and skills make me an ideal candidate for this role.'}
-
-I am excited about the possibility of bringing my unique perspective and dedication to ${formData.companyName}. I would welcome the opportunity to discuss how my background, skills, and enthusiasms align with your team's needs.
-
-Thank you for considering my application. I look forward to the possibility of discussing this exciting opportunity with you.
-
-Warm regards,
-${formData.fullName}
-${formData.email}
-${formData.phone}`;
-
-      setGeneratedLetter(mockLetter);
-      setIsGenerating(false);
-      toast({
-        title: "Cover Letter Generated!",
-        description: "Your personalized cover letter is ready.",
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-content/generate-cover-letter`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          recipient_name: formData.recipientName,
+          company_name: formData.companyName,
+          job_title: formData.jobTitle,
+          job_description: formData.jobDescription,
+          key_skills: formData.keySkills,
+          why_interested: formData.whyInterested
+        })
       });
-    }, 2500);
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setGeneratedLetter(data.cover_letter);
+        toast({
+          title: "Cover Letter Generated!",
+          description: "Your personalised cover letter is ready.",
+        });
+      } else {
+        throw new Error(data.detail || 'Failed to generate cover letter');
+      }
+    } catch (error) {
+      console.error('Generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Could not generate cover letter. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const copyToClipboard = () => {

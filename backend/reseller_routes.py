@@ -1532,7 +1532,7 @@ async def get_activity_log(
         
         query = {
             "reseller_id": reseller["id"],
-            "created_at": {"$gte": start_date.isoformat()}
+            "created_at": {"$gte": start_date}
         }
         
         if filter != "all":
@@ -1545,7 +1545,11 @@ async def get_activity_log(
         # Calculate time ago
         for activity in activities:
             if activity.get("created_at"):
-                created = datetime.fromisoformat(activity["created_at"].replace("Z", "+00:00")) if isinstance(activity["created_at"], str) else activity["created_at"]
+                created = activity["created_at"]
+                if isinstance(created, str):
+                    created = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                if created.tzinfo is None:
+                    created = created.replace(tzinfo=timezone.utc)
                 delta = datetime.now(timezone.utc) - created
                 if delta.days > 0:
                     activity["time_ago"] = f"{delta.days}d ago"
@@ -1553,6 +1557,8 @@ async def get_activity_log(
                     activity["time_ago"] = f"{delta.seconds // 3600}h ago"
                 else:
                     activity["time_ago"] = f"{delta.seconds // 60}m ago"
+                # Convert datetime to string for JSON serialization
+                activity["created_at"] = created.isoformat()
         
         return {"activities": activities}
         

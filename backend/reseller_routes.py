@@ -803,6 +803,7 @@ async def test_reseller_email_connection(context: dict = Depends(get_current_res
     """Test reseller's email connection"""
     try:
         import smtplib
+        import ssl
         
         reseller = context["reseller"]
         
@@ -811,14 +812,32 @@ async def test_reseller_email_connection(context: dict = Depends(get_current_res
             {"_id": 0}
         )
         
-        if not settings or not settings.get("smtp_user"):
-            return {"success": False, "error": "Email settings not configured"}
+        if not settings or not settings.get("smtp_host") or not settings.get("smtp_user"):
+            return {"success": False, "error": "Email settings not configured. Please enter SMTP host and username."}
         
         try:
-            with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
-                server.starttls()
-                server.login(settings["smtp_user"], settings["smtp_password"])
-            return {"success": True, "message": "SMTP connection successful"}
+            encryption = settings.get("encryption", "tls")
+            
+            if encryption == "ssl":
+                # Use SSL from the start (port 465)
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(settings["smtp_host"], settings["smtp_port"], context=context, timeout=10) as server:
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+            elif encryption == "tls":
+                # Start plain, then upgrade to TLS (port 587)
+                with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
+                    server.starttls()
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+            else:
+                # No encryption (not recommended)
+                with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=10) as server:
+                    server.login(settings["smtp_user"], settings["smtp_password"])
+            
+            return {"success": True, "message": "SMTP connection successful! Your email settings are working."}
+        except smtplib.SMTPAuthenticationError:
+            return {"success": False, "error": "Authentication failed. Please check your username and password."}
+        except smtplib.SMTPConnectError:
+            return {"success": False, "error": "Could not connect to SMTP server. Check host and port."}
         except Exception as e:
             return {"success": False, "error": str(e)}
     except Exception as e:

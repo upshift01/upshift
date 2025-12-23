@@ -1960,6 +1960,8 @@ async def save_reseller_site_settings(data: dict, context: dict = Depends(get_cu
                 "tiktok": data.get("social_media", {}).get("tiktok", "")
             },
             "business_hours": data.get("business_hours", ""),
+            "vat_number": data.get("vat_number", ""),
+            "company_registration": data.get("company_registration", ""),
             "updated_at": datetime.utcnow().isoformat()
         }
         

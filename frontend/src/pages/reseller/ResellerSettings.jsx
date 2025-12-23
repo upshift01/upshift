@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Settings, Save, Globe, Mail, FileText, Send, CheckCircle, XCircle, RefreshCw, Bot, Key, Eye, EyeOff, CreditCard, ExternalLink, Receipt, Clock, AlertTriangle, Loader2, Linkedin, Link2, Phone, Facebook, Twitter, Instagram, Youtube, MapPin } from 'lucide-react';
+import { Settings, Save, Globe, Mail, FileText, Send, CheckCircle, XCircle, RefreshCw, Bot, Key, Eye, EyeOff, CreditCard, ExternalLink, Receipt, Clock, AlertTriangle, Loader2, Linkedin, Link2, Phone, Facebook, Twitter, Instagram, Youtube, MapPin, Video } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';

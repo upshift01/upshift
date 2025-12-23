@@ -57,6 +57,7 @@ set_admin_db(db)
 set_whitelabel_db(db)
 set_booking_db(db)
 set_scheduler_db(db)
+set_ai_assistant_db(db)
 set_linkedin_db(db)
 set_customer_db(db)
 

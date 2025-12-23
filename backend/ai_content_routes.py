@@ -1,0 +1,376 @@
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime, timezone
+import logging
+import os
+import uuid
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+from db import db
+from auth import get_current_user
+
+logger = logging.getLogger(__name__)
+
+ai_content_router = APIRouter(prefix="/api/ai-content", tags=["AI Content"])
+
+EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
+
+
+# ==================== COVER LETTER GENERATION ====================
+
+class CoverLetterRequest(BaseModel):
+    full_name: str
+    email: str
+    phone: Optional[str] = ""
+    recipient_name: Optional[str] = "Hiring Manager"
+    company_name: str
+    job_title: str
+    job_description: Optional[str] = ""
+    key_skills: Optional[str] = ""
+    why_interested: Optional[str] = ""
+
+
+@ai_content_router.post("/generate-cover-letter")
+async def generate_cover_letter(data: CoverLetterRequest, current_user: dict = Depends(get_current_user)):
+    """Generate a professional cover letter using AI"""
+    try:
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Check if user has active tier
+        if not current_user.get("active_tier"):
+            raise HTTPException(status_code=403, detail="Please purchase a plan to use AI features")
+        
+        session_id = f"cover-letter-{current_user['id']}-{uuid.uuid4()}"
+        
+        system_message = """You are an expert career coach and professional cover letter writer specialising in the South African job market. 
+Write compelling, personalised cover letters that:
+- Use UK English spelling (e.g., organisation, specialise, colour)
+- Are tailored to South African companies and culture
+- Highlight relevant skills and experience
+- Show genuine enthusiasm for the role
+- Are professional yet personable
+- Include specific details from the job description when provided
+- Are concise (max 400 words)
+- Format with proper paragraphs (no bullet points)"""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id,
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+
+        prompt = f"""Write a professional cover letter for the following:
+
+Applicant: {data.full_name}
+Email: {data.email}
+Phone: {data.phone or 'Not provided'}
+
+Position: {data.job_title}
+Company: {data.company_name}
+Recipient: {data.recipient_name or 'Hiring Manager'}
+
+Key Skills & Experience:
+{data.key_skills or 'Not specified - use general professional skills'}
+
+Why interested in this role:
+{data.why_interested or 'Not specified - express general enthusiasm'}
+
+Job Description:
+{data.job_description or 'Not provided - write a general but professional letter'}
+
+Write a complete, ready-to-send cover letter. Start with "Dear {data.recipient_name or 'Hiring Manager'}," and end with the applicant's name and contact details."""
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Log the generation
+        await db.ai_generations.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "type": "cover_letter",
+            "input": data.dict(),
+            "output": response,
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        return {
+            "success": True,
+            "cover_letter": response
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating cover letter: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate cover letter: {str(e)}")
+
+
+# ==================== CV AI SUGGESTIONS ====================
+
+class CVSuggestionRequest(BaseModel):
+    field: str  # e.g., "summary", "experience", "skills"
+    current_value: Optional[str] = ""
+    job_title: Optional[str] = ""
+    industry: Optional[str] = ""
+    context: Optional[str] = ""
+
+
+@ai_content_router.post("/cv-suggestion")
+async def get_cv_suggestion(data: CVSuggestionRequest, current_user: dict = Depends(get_current_user)):
+    """Get AI suggestions for CV fields"""
+    try:
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        session_id = f"cv-suggestion-{current_user['id']}-{uuid.uuid4()}"
+        
+        system_message = """You are an expert CV writer and career coach specialising in the South African job market.
+Provide specific, actionable suggestions to improve CV content.
+- Use UK English spelling
+- Be concise and practical
+- Focus on ATS optimisation
+- Include industry-specific keywords when relevant
+- Suggest quantifiable achievements where possible"""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id,
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+
+        field_prompts = {
+            "summary": f"""Suggest an improved professional summary for a CV.
+Current summary: {data.current_value or 'None provided'}
+Job title/role: {data.job_title or 'Not specified'}
+Industry: {data.industry or 'Not specified'}
+
+Provide a compelling 2-3 sentence professional summary that highlights key strengths and is ATS-friendly.""",
+
+            "experience": f"""Suggest improvements for this work experience description:
+Current description: {data.current_value or 'None provided'}
+Job title: {data.job_title or 'Not specified'}
+Industry: {data.industry or 'Not specified'}
+
+Provide 3-4 bullet points with quantifiable achievements and action verbs.""",
+
+            "skills": f"""Suggest relevant skills to add to a CV.
+Current skills: {data.current_value or 'None provided'}
+Job title: {data.job_title or 'Not specified'}
+Industry: {data.industry or 'Not specified'}
+
+List 5-8 relevant hard and soft skills that are ATS-friendly for this role.""",
+
+            "achievements": f"""Suggest achievement statements for a CV.
+Context: {data.context or data.current_value or 'Not specified'}
+Job title: {data.job_title or 'Not specified'}
+Industry: {data.industry or 'Not specified'}
+
+Provide 3 strong achievement statements with metrics where possible."""
+        }
+
+        prompt = field_prompts.get(data.field, f"""Provide suggestions to improve this CV section:
+Field: {data.field}
+Current content: {data.current_value or 'None provided'}
+Job title: {data.job_title or 'Not specified'}
+
+Provide specific, actionable improvements.""")
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        return {
+            "success": True,
+            "suggestion": response,
+            "field": data.field
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting CV suggestion: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get suggestion: {str(e)}")
+
+
+# ==================== CV GENERATION ====================
+
+class CVGenerationRequest(BaseModel):
+    full_name: str
+    email: str
+    phone: Optional[str] = ""
+    id_number: Optional[str] = ""
+    address: Optional[str] = ""
+    city: Optional[str] = ""
+    province: Optional[str] = ""
+    postal_code: Optional[str] = ""
+    industry: Optional[str] = ""
+    summary: Optional[str] = ""
+    experience: Optional[List[dict]] = []
+    education: Optional[List[dict]] = []
+    skills: Optional[List[str]] = []
+    languages: Optional[List[dict]] = []
+    references: Optional[List[dict]] = []
+    template_id: Optional[str] = "professional"
+
+
+@ai_content_router.post("/generate-cv")
+async def generate_cv(data: CVGenerationRequest, current_user: dict = Depends(get_current_user)):
+    """Generate/enhance a CV using AI"""
+    try:
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Check if user has active tier
+        if not current_user.get("active_tier"):
+            raise HTTPException(status_code=403, detail="Please purchase a plan to generate CVs")
+        
+        session_id = f"cv-gen-{current_user['id']}-{uuid.uuid4()}"
+        
+        # If summary is empty or minimal, generate one
+        enhanced_summary = data.summary
+        if not data.summary or len(data.summary) < 50:
+            system_message = """You are an expert CV writer. Generate a professional summary for a CV.
+Use UK English. Be concise (2-3 sentences). Focus on key strengths and career objectives."""
+            
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=session_id,
+                system_message=system_message
+            ).with_model("openai", "gpt-4o")
+            
+            experience_text = ""
+            if data.experience:
+                for exp in data.experience[:2]:
+                    experience_text += f"- {exp.get('title', '')} at {exp.get('company', '')}\n"
+            
+            prompt = f"""Generate a professional summary for:
+Name: {data.full_name}
+Industry: {data.industry or 'Not specified'}
+Recent Experience:
+{experience_text or 'Not provided'}
+Skills: {', '.join(data.skills[:5]) if data.skills else 'Not provided'}
+
+Write a 2-3 sentence professional summary."""
+            
+            user_message = UserMessage(text=prompt)
+            enhanced_summary = await chat.send_message(user_message)
+        
+        # Save CV to database
+        cv_data = {
+            "id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "full_name": data.full_name,
+            "email": data.email,
+            "phone": data.phone,
+            "id_number": data.id_number,
+            "address": data.address,
+            "city": data.city,
+            "province": data.province,
+            "postal_code": data.postal_code,
+            "industry": data.industry,
+            "summary": enhanced_summary,
+            "experience": data.experience,
+            "education": data.education,
+            "skills": data.skills,
+            "languages": data.languages,
+            "references": data.references,
+            "template_id": data.template_id,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        
+        await db.user_cvs.insert_one(cv_data)
+        
+        return {
+            "success": True,
+            "message": "CV generated successfully",
+            "cv_id": cv_data["id"],
+            "enhanced_summary": enhanced_summary
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating CV: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate CV: {str(e)}")
+
+
+# ==================== PARTNER ENQUIRY (White-Label Page) ====================
+
+class PartnerEnquiryRequest(BaseModel):
+    company: str
+    name: str
+    email: str
+    phone: Optional[str] = ""
+    type: str  # recruitment, career_coach, hr_consultancy, other
+    message: str
+
+
+@ai_content_router.post("/partner-enquiry")
+async def submit_partner_enquiry(data: PartnerEnquiryRequest):
+    """Submit a partner/reseller enquiry"""
+    try:
+        enquiry = {
+            "id": str(uuid.uuid4()),
+            "company": data.company,
+            "name": data.name,
+            "email": data.email,
+            "phone": data.phone,
+            "business_type": data.type,
+            "message": data.message,
+            "status": "new",
+            "created_at": datetime.now(timezone.utc),
+            "followed_up_at": None
+        }
+        
+        await db.partner_enquiries.insert_one(enquiry)
+        
+        logger.info(f"Partner enquiry received from {data.company} ({data.email})")
+        
+        # Try to send notification email
+        try:
+            from email_service import email_service
+            
+            email_content = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #1e40af, #7c3aed); padding: 20px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">New Partner Enquiry</h1>
+                </div>
+                <div style="padding: 20px; background: #f9fafb;">
+                    <p><strong>Company:</strong> {data.company}</p>
+                    <p><strong>Contact:</strong> {data.name}</p>
+                    <p><strong>Email:</strong> {data.email}</p>
+                    <p><strong>Phone:</strong> {data.phone or 'Not provided'}</p>
+                    <p><strong>Business Type:</strong> {data.type}</p>
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+                    <p><strong>Message:</strong></p>
+                    <p style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        {data.message.replace(chr(10), '<br>')}
+                    </p>
+                </div>
+            </body>
+            </html>
+            """
+            
+            await email_service.send_email(
+                to_email="partners@upshift.works",
+                subject=f"[Partner Enquiry] {data.company} - {data.type}",
+                html_content=email_content,
+                db=db
+            )
+        except Exception as email_error:
+            logger.warning(f"Could not send partner enquiry notification: {str(email_error)}")
+        
+        return {
+            "success": True,
+            "message": "Thank you for your interest! Our partnership team will contact you within 24-48 hours."
+        }
+        
+    except Exception as e:
+        logger.error(f"Error submitting partner enquiry: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to submit enquiry. Please try again.")

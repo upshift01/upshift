@@ -787,6 +787,31 @@ const AdminSettings = () => {
                   rows={2}
                 />
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">VAT Number</label>
+                  <Input
+                    value={siteSettings.vat_number}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      vat_number: e.target.value
+                    })}
+                    placeholder="e.g., 4123456789"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Displayed on invoices</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Company Registration</label>
+                  <Input
+                    value={siteSettings.company_registration}
+                    onChange={(e) => setSiteSettings({
+                      ...siteSettings,
+                      company_registration: e.target.value
+                    })}
+                    placeholder="e.g., 2020/123456/07"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 

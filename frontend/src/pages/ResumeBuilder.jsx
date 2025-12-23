@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -9,7 +9,7 @@ import { Textarea } from '../components/ui/textarea';
 import { useToast } from '../hooks/use-toast';
 import { Loader2, Download, Plus, Trash2, Sparkles, Upload, FileText, Wand2 } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
-import { industries } from '../mockData';
+import { industries as fallbackIndustries } from '../mockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 const ResumeBuilder = () => {
@@ -22,6 +22,7 @@ const ResumeBuilder = () => {
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [industries, setIndustries] = useState(fallbackIndustries);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -38,6 +39,25 @@ const ResumeBuilder = () => {
     skills: [''],
     languages: [{ language: '', proficiency: '' }],
   });
+
+  // Fetch industries from API
+  useEffect(() => {
+    const fetchIndustries = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/content/industries`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.industries && data.industries.length > 0) {
+            setIndustries(data.industries);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching industries:', error);
+        // Keep using fallback
+      }
+    };
+    fetchIndustries();
+  }, []);
 
   // Handle CV file upload and AI enhancement
   const handleFileUpload = async (e) => {

@@ -165,8 +165,8 @@ const EmailTemplates = () => {
                   <CardTitle className={`text-lg ${textPrimary}`}>{template.name}</CardTitle>
                   <CardDescription className={textSecondary}>{template.description}</CardDescription>
                 </div>
-                {template.customized && (
-                  <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Customized</Badge>
+                {template.customised && (
+                  <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Customised</Badge>
                 )}
               </div>
             </CardHeader>

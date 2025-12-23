@@ -1425,6 +1425,163 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_invoice_pdf_download(self):
+        """Test Invoice PDF Download functionality"""
+        print("\n📄 Testing Invoice PDF Download...")
+        
+        # Test 1: Admin Invoice PDF Download
+        if not self.super_admin_token:
+            self.log_test("Invoice PDF Download Tests", False, "No super admin token available")
+            return False
+        
+        admin_headers = {"Authorization": f"Bearer {self.super_admin_token}"}
+        
+        # First, get list of invoices to find one to download
+        response, error = self.make_request("GET", "/admin/invoices", headers=admin_headers)
+        if error:
+            self.log_test("GET Admin Invoices List", False, error)
+            return False
+        
+        invoices = response.get("invoices", [])
+        if not invoices:
+            # Generate invoices if none exist
+            response, error = self.make_request("POST", "/admin/generate-invoices", headers=admin_headers)
+            if error:
+                self.log_test("Generate Invoices for PDF Test", False, error)
+                return False
+            
+            # Get invoices again
+            response, error = self.make_request("GET", "/admin/invoices", headers=admin_headers)
+            if error or not response.get("invoices"):
+                self.log_test("GET Admin Invoices After Generation", False, "No invoices available for PDF test")
+                return False
+            invoices = response.get("invoices", [])
+        
+        self.log_test("GET Admin Invoices List", True, f"Found {len(invoices)} invoices")
+        
+        # Test PDF download for first invoice
+        if invoices:
+            invoice_id = invoices[0]["id"]
+            invoice_number = invoices[0].get("invoice_number", "Unknown")
+            
+            # Test PDF download endpoint
+            url = f"{BACKEND_URL}/admin/invoices/{invoice_id}/pdf"
+            try:
+                import requests
+                response = requests.get(url, headers=admin_headers, timeout=30)
+                
+                if response.status_code == 200:
+                    # Verify it's a PDF
+                    content_type = response.headers.get('content-type', '')
+                    content_disposition = response.headers.get('content-disposition', '')
+                    content_length = len(response.content)
+                    
+                    if 'application/pdf' in content_type:
+                        if content_length > 0:
+                            if 'attachment' in content_disposition and 'filename' in content_disposition:
+                                self.log_test("Admin Invoice PDF Download", True, 
+                                            f"PDF downloaded successfully - Invoice: {invoice_number}, Size: {content_length} bytes")
+                            else:
+                                self.log_test("Admin Invoice PDF Download", False, 
+                                            "PDF downloaded but missing Content-Disposition header with filename")
+                        else:
+                            self.log_test("Admin Invoice PDF Download", False, "PDF file is empty")
+                    else:
+                        self.log_test("Admin Invoice PDF Download", False, 
+                                    f"Wrong content type: {content_type}, expected application/pdf")
+                else:
+                    error_msg = f"Status {response.status_code}"
+                    try:
+                        error_detail = response.json()
+                        error_msg += f" - {error_detail.get('detail', 'No detail')}"
+                    except:
+                        error_msg += f" - {response.text[:200]}"
+                    self.log_test("Admin Invoice PDF Download", False, error_msg)
+                    
+            except Exception as e:
+                self.log_test("Admin Invoice PDF Download", False, f"Request error: {str(e)}")
+        
+        # Test 2: Reseller Customer Invoice PDF Download
+        if not self.reseller_admin_token:
+            self.log_test("Reseller Customer Invoice PDF Tests", False, "No reseller admin token available")
+            return False
+        
+        reseller_headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+        
+        # Get list of customer invoices
+        response, error = self.make_request("GET", "/reseller/customer-invoices", headers=reseller_headers)
+        if error:
+            self.log_test("GET Reseller Customer Invoices", False, error)
+        else:
+            customer_invoices = response.get("invoices", [])
+            
+            if not customer_invoices:
+                # Create a test customer invoice
+                invoice_data = {
+                    "customer_name": "Test PDF Customer",
+                    "customer_email": "pdftest@customer.com", 
+                    "plan_name": "ATS Optimize",
+                    "amount": 899
+                }
+                
+                response, error = self.make_request("POST", "/reseller/customer-invoices/create", 
+                                                  headers=reseller_headers, data=invoice_data)
+                if error:
+                    self.log_test("Create Customer Invoice for PDF Test", False, error)
+                else:
+                    if response.get("success"):
+                        customer_invoices = [response.get("invoice")]
+                        self.log_test("Create Customer Invoice for PDF Test", True, "Test invoice created")
+                    else:
+                        self.log_test("Create Customer Invoice for PDF Test", False, "Failed to create test invoice")
+            
+            if customer_invoices:
+                self.log_test("GET Reseller Customer Invoices", True, f"Found {len(customer_invoices)} customer invoices")
+                
+                # Test PDF download for first customer invoice
+                invoice_id = customer_invoices[0]["id"]
+                invoice_number = customer_invoices[0].get("invoice_number", "Unknown")
+                
+                url = f"{BACKEND_URL}/reseller/customer-invoices/{invoice_id}/pdf"
+                try:
+                    import requests
+                    response = requests.get(url, headers=reseller_headers, timeout=30)
+                    
+                    if response.status_code == 200:
+                        # Verify it's a PDF
+                        content_type = response.headers.get('content-type', '')
+                        content_disposition = response.headers.get('content-disposition', '')
+                        content_length = len(response.content)
+                        
+                        if 'application/pdf' in content_type:
+                            if content_length > 0:
+                                if 'attachment' in content_disposition and 'filename' in content_disposition:
+                                    self.log_test("Reseller Customer Invoice PDF Download", True, 
+                                                f"PDF downloaded successfully - Invoice: {invoice_number}, Size: {content_length} bytes")
+                                else:
+                                    self.log_test("Reseller Customer Invoice PDF Download", False, 
+                                                "PDF downloaded but missing Content-Disposition header with filename")
+                            else:
+                                self.log_test("Reseller Customer Invoice PDF Download", False, "PDF file is empty")
+                        else:
+                            self.log_test("Reseller Customer Invoice PDF Download", False, 
+                                        f"Wrong content type: {content_type}, expected application/pdf")
+                    else:
+                        error_msg = f"Status {response.status_code}"
+                        try:
+                            error_detail = response.json()
+                            error_msg += f" - {error_detail.get('detail', 'No detail')}"
+                        except:
+                            error_msg += f" - {response.text[:200]}"
+                        self.log_test("Reseller Customer Invoice PDF Download", False, error_msg)
+                        
+                except Exception as e:
+                    self.log_test("Reseller Customer Invoice PDF Download", False, f"Request error: {str(e)}")
+            else:
+                self.log_test("GET Reseller Customer Invoices", True, "No customer invoices found (expected for new reseller)")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Email Settings Backend API Tests")

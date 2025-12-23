@@ -576,7 +576,7 @@ const AdminPricing = () => {
                 Default Customer Tier Pricing
               </CardTitle>
               <CardDescription>
-                Default prices for customer tiers. Resellers can customize their own pricing.
+                Default prices for customer tiers. Resellers can customise their own pricing.
               </CardDescription>
             </CardHeader>
             <CardContent>

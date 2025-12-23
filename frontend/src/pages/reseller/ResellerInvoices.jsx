@@ -173,7 +173,9 @@ const ResellerInvoices = () => {
         alert('Payment reminder sent successfully!');
         fetchInvoices(); // Refresh to show updated reminder timestamp
       } else {
-        alert(data.detail || data.error || 'Failed to send reminder. Please check email settings.');
+        // Display the user-friendly message from the API
+        const errorMessage = data.message || data.detail || data.error || 'Failed to send reminder. Please check email settings.';
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error sending reminder:', error);

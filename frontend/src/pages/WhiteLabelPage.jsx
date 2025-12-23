@@ -188,7 +188,7 @@ const WhiteLabelPage = () => {
     {
       icon: Briefcase,
       title: 'Recruitment Agencies',
-      description: 'Offer premium CV services to candidates. Increase placements with ATS-optimized resumes.',
+      description: 'Offer premium CV services to candidates. Increase placements with ATS-optimised CVs.',
       benefits: ['Candidate preparation tools', 'Bulk CV processing', 'Client portal access', 'Placement tracking']
     },
     {

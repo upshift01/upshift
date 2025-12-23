@@ -586,6 +586,7 @@ const ResellerSettings = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: Settings },
+    { id: 'site', label: 'Site & Contact', icon: Phone },
     { id: 'billing', label: 'My Subscription', icon: Receipt },
     { id: 'email', label: 'Email Settings', icon: Mail },
     { id: 'yoco', label: 'Yoco Payments', icon: CreditCard },

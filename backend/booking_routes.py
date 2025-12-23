@@ -342,6 +342,7 @@ async def confirm_booking_payment(
         
         # Send confirmation email
         email_sent = False
+        email_error_msg = None
         try:
             # Get email settings from platform
             email_settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
@@ -366,11 +367,30 @@ async def confirm_booking_payment(
                     company_name="UpShift"
                 )
                 
+                # Log the email to email_logs collection
+                import uuid
+                await db.email_logs.insert_one({
+                    "id": str(uuid.uuid4()),
+                    "type": "booking_confirmation",
+                    "to_email": booking["email"],
+                    "from_email": email_settings.get("from_email", email_settings.get("smtp_user")),
+                    "subject": "Your Strategy Call is Confirmed! - UpShift",
+                    "status": "sent" if email_sent else "failed",
+                    "error": None if email_sent else "Failed to send",
+                    "sent_at": datetime.now(timezone.utc),
+                    "booking_id": booking_id,
+                    "smtp_host": email_settings.get("smtp_host")
+                })
+                
                 if email_sent:
                     logger.info(f"Confirmation email sent to {booking['email']} for booking {booking_id}")
                 else:
                     logger.warning(f"Failed to send confirmation email for booking {booking_id}")
+            else:
+                email_error_msg = "Email settings not configured"
+                logger.warning(f"Email settings not configured, skipping confirmation email for booking {booking_id}")
         except Exception as email_error:
+            email_error_msg = str(email_error)
             logger.error(f"Error sending confirmation email: {str(email_error)}")
         
         return {
@@ -379,6 +399,7 @@ async def confirm_booking_payment(
             "status": "confirmed",
             "meeting_link": meeting_link,
             "email_sent": email_sent,
+            "email_error": email_error_msg if not email_sent else None,
             "message": "Payment confirmed! Your strategy call is booked." + (" Confirmation email sent." if email_sent else "")
         }
     except HTTPException:

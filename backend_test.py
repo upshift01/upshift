@@ -2668,6 +2668,325 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_admin_content_management_apis(self):
+        """Test Admin Content Management API endpoints as per review request"""
+        print("\n📝 Testing Admin Content Management APIs...")
+        
+        if not self.super_admin_token:
+            self.log_test("Admin Content Management Tests", False, "No super admin token available")
+            return False
+        
+        admin_headers = {"Authorization": f"Bearer {self.super_admin_token}"}
+        
+        # Test 1: Verify admin authentication is required (try without token - should get 401)
+        print("\n🔹 Test 1: Admin Authentication Required")
+        
+        response, error = self.make_request("GET", "/content/admin/cv-templates", expected_status=401)
+        if error and "401" in error:
+            self.log_test("Admin Auth Required - CV Templates", True, "Correctly rejected unauthorized request")
+        elif response and ("Not authenticated" in str(response) or "authentication" in str(response).lower()):
+            self.log_test("Admin Auth Required - CV Templates", True, "Correctly rejected unauthorized request")
+        else:
+            self.log_test("Admin Auth Required - CV Templates", False, f"Should require authentication - got response: {response}, error: {error}")
+        
+        # Test 2: Verify non-admin users cannot access (try with reseller token - should get 403)
+        print("\n🔹 Test 2: Role-Based Access Control")
+        
+        if self.reseller_admin_token:
+            reseller_headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+            response, error = self.make_request("GET", "/content/admin/cv-templates", headers=reseller_headers, expected_status=403)
+            if error and "403" in error:
+                self.log_test("Role-Based Access Control - CV Templates", True, "Reseller correctly denied admin access")
+            elif response and ("Access denied" in str(response) or "Admin access required" in str(response)):
+                self.log_test("Role-Based Access Control - CV Templates", True, "Reseller correctly denied admin access")
+            else:
+                self.log_test("Role-Based Access Control - CV Templates", False, f"Should deny cross-role access - got response: {response}, error: {error}")
+        
+        # Test 3: CV Templates Admin CRUD
+        print("\n🔹 Test 3: CV Templates Admin CRUD")
+        
+        # GET /api/content/admin/cv-templates - List all templates
+        response, error = self.make_request("GET", "/content/admin/cv-templates", headers=admin_headers)
+        if error:
+            self.log_test("GET CV Templates Admin", False, error)
+        else:
+            required_fields = ["templates", "total"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET CV Templates Admin", False, f"Missing fields: {missing_fields}")
+            else:
+                templates = response.get("templates", [])
+                total = response.get("total", 0)
+                self.log_test("GET CV Templates Admin", True, f"Retrieved {total} CV templates")
+        
+        # POST /api/content/admin/cv-templates - Create template
+        test_cv_template = {
+            "name": "Test ATS Template",
+            "description": "Test template for admin API testing",
+            "image": "https://example.com/test-template.jpg",
+            "category": "ats",
+            "industry": "Technology",
+            "is_active": True
+        }
+        
+        response, error = self.make_request("POST", "/content/admin/cv-templates", headers=admin_headers, data=test_cv_template)
+        if error:
+            self.log_test("POST CV Template Admin", False, error)
+            created_cv_template_id = None
+        else:
+            required_fields = ["success", "template"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("POST CV Template Admin", False, f"Missing fields: {missing_fields}")
+                created_cv_template_id = None
+            else:
+                success = response.get("success", False)
+                template = response.get("template", {})
+                created_cv_template_id = template.get("id")
+                if success and created_cv_template_id:
+                    self.log_test("POST CV Template Admin", True, f"Created CV template with ID: {created_cv_template_id}")
+                else:
+                    self.log_test("POST CV Template Admin", False, f"Success: {success}, Template ID: {created_cv_template_id}")
+                    created_cv_template_id = None
+        
+        # PUT /api/content/admin/cv-templates/{id} - Update template (if created successfully)
+        if created_cv_template_id:
+            updated_template = {
+                "name": "Updated Test ATS Template",
+                "description": "Updated test template for admin API testing",
+                "image": "https://example.com/updated-test-template.jpg",
+                "category": "ats",
+                "industry": "Finance",
+                "is_active": True
+            }
+            
+            response, error = self.make_request("PUT", f"/content/admin/cv-templates/{created_cv_template_id}", 
+                                              headers=admin_headers, data=updated_template)
+            if error:
+                self.log_test("PUT CV Template Admin", False, error)
+            else:
+                success = response.get("success", False)
+                message = response.get("message", "")
+                if success:
+                    self.log_test("PUT CV Template Admin", True, f"Updated CV template: {message}")
+                else:
+                    self.log_test("PUT CV Template Admin", False, f"Success: {success}, Message: {message}")
+        
+        # Test 4: Cover Letter Templates Admin CRUD
+        print("\n🔹 Test 4: Cover Letter Templates Admin CRUD")
+        
+        # GET /api/content/admin/cover-letter-templates - List all
+        response, error = self.make_request("GET", "/content/admin/cover-letter-templates", headers=admin_headers)
+        if error:
+            self.log_test("GET Cover Letter Templates Admin", False, error)
+        else:
+            required_fields = ["templates", "total"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Cover Letter Templates Admin", False, f"Missing fields: {missing_fields}")
+            else:
+                templates = response.get("templates", [])
+                total = response.get("total", 0)
+                self.log_test("GET Cover Letter Templates Admin", True, f"Retrieved {total} cover letter templates")
+        
+        # POST /api/content/admin/cover-letter-templates - Create
+        test_cl_template = {
+            "name": "Test Professional Cover Letter",
+            "description": "Test cover letter template for admin API testing",
+            "image": "https://example.com/test-cl-template.jpg",
+            "category": "professional",
+            "industry": "Technology",
+            "tone": "Professional",
+            "is_active": True
+        }
+        
+        response, error = self.make_request("POST", "/content/admin/cover-letter-templates", 
+                                          headers=admin_headers, data=test_cl_template)
+        if error:
+            self.log_test("POST Cover Letter Template Admin", False, error)
+            created_cl_template_id = None
+        else:
+            required_fields = ["success", "template"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("POST Cover Letter Template Admin", False, f"Missing fields: {missing_fields}")
+                created_cl_template_id = None
+            else:
+                success = response.get("success", False)
+                template = response.get("template", {})
+                created_cl_template_id = template.get("id")
+                if success and created_cl_template_id:
+                    self.log_test("POST Cover Letter Template Admin", True, f"Created cover letter template with ID: {created_cl_template_id}")
+                else:
+                    self.log_test("POST Cover Letter Template Admin", False, f"Success: {success}, Template ID: {created_cl_template_id}")
+                    created_cl_template_id = None
+        
+        # Test 5: Testimonials Admin CRUD
+        print("\n🔹 Test 5: Testimonials Admin CRUD")
+        
+        # GET /api/content/admin/testimonials - List all
+        response, error = self.make_request("GET", "/content/admin/testimonials", headers=admin_headers)
+        if error:
+            self.log_test("GET Testimonials Admin", False, error)
+        else:
+            required_fields = ["testimonials", "total"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Testimonials Admin", False, f"Missing fields: {missing_fields}")
+            else:
+                testimonials = response.get("testimonials", [])
+                total = response.get("total", 0)
+                self.log_test("GET Testimonials Admin", True, f"Retrieved {total} testimonials")
+        
+        # POST /api/content/admin/testimonials - Create with required fields
+        test_testimonial = {
+            "name": "Test User",
+            "role": "Software Developer",
+            "location": "Cape Town, South Africa",
+            "content": "This is a test testimonial for the admin API testing. UpShift helped me land my dream job!",
+            "rating": 5,
+            "avatar": "https://example.com/test-avatar.jpg",
+            "is_active": True
+        }
+        
+        response, error = self.make_request("POST", "/content/admin/testimonials", 
+                                          headers=admin_headers, data=test_testimonial)
+        if error:
+            self.log_test("POST Testimonial Admin", False, error)
+            created_testimonial_id = None
+        else:
+            required_fields = ["success", "testimonial"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("POST Testimonial Admin", False, f"Missing fields: {missing_fields}")
+                created_testimonial_id = None
+            else:
+                success = response.get("success", False)
+                testimonial = response.get("testimonial", {})
+                created_testimonial_id = testimonial.get("id")
+                if success and created_testimonial_id:
+                    self.log_test("POST Testimonial Admin", True, f"Created testimonial with ID: {created_testimonial_id}")
+                else:
+                    self.log_test("POST Testimonial Admin", False, f"Success: {success}, Testimonial ID: {created_testimonial_id}")
+                    created_testimonial_id = None
+        
+        # Test 6: Features Admin CRUD
+        print("\n🔹 Test 6: Features Admin CRUD")
+        
+        # GET /api/content/admin/features - List all
+        response, error = self.make_request("GET", "/content/admin/features", headers=admin_headers)
+        if error:
+            self.log_test("GET Features Admin", False, error)
+        else:
+            required_fields = ["features", "total"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Features Admin", False, f"Missing fields: {missing_fields}")
+            else:
+                features = response.get("features", [])
+                total = response.get("total", 0)
+                self.log_test("GET Features Admin", True, f"Retrieved {total} features")
+        
+        # POST /api/content/admin/features - Create with required fields
+        test_feature = {
+            "title": "Test AI Feature",
+            "description": "This is a test feature for admin API testing",
+            "icon": "TestIcon",
+            "color": "blue",
+            "order": 99,
+            "is_active": True
+        }
+        
+        response, error = self.make_request("POST", "/content/admin/features", 
+                                          headers=admin_headers, data=test_feature)
+        if error:
+            self.log_test("POST Feature Admin", False, error)
+            created_feature_id = None
+        else:
+            required_fields = ["success", "feature"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("POST Feature Admin", False, f"Missing fields: {missing_fields}")
+                created_feature_id = None
+            else:
+                success = response.get("success", False)
+                feature = response.get("feature", {})
+                created_feature_id = feature.get("id")
+                if success and created_feature_id:
+                    self.log_test("POST Feature Admin", True, f"Created feature with ID: {created_feature_id}")
+                else:
+                    self.log_test("POST Feature Admin", False, f"Success: {success}, Feature ID: {created_feature_id}")
+                    created_feature_id = None
+        
+        # Test 7: Industries Admin CRUD
+        print("\n🔹 Test 7: Industries Admin CRUD")
+        
+        # GET /api/content/admin/industries - List all
+        response, error = self.make_request("GET", "/content/admin/industries", headers=admin_headers)
+        if error:
+            self.log_test("GET Industries Admin", False, error)
+        else:
+            required_fields = ["industries", "total"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Industries Admin", False, f"Missing fields: {missing_fields}")
+            else:
+                industries = response.get("industries", [])
+                total = response.get("total", 0)
+                self.log_test("GET Industries Admin", True, f"Retrieved {total} industries")
+        
+        # Test 8: List all testimonials to confirm the new one appears
+        print("\n🔹 Test 8: Verify Created Testimonial Appears in List")
+        
+        if created_testimonial_id:
+            response, error = self.make_request("GET", "/content/admin/testimonials", headers=admin_headers)
+            if error:
+                self.log_test("Verify Testimonial in List", False, error)
+            else:
+                testimonials = response.get("testimonials", [])
+                found_testimonial = any(t.get("id") == created_testimonial_id for t in testimonials)
+                if found_testimonial:
+                    self.log_test("Verify Testimonial in List", True, f"Created testimonial {created_testimonial_id} found in list")
+                else:
+                    self.log_test("Verify Testimonial in List", False, f"Created testimonial {created_testimonial_id} not found in list")
+        
+        # Test 9: Delete the test testimonial (cleanup)
+        print("\n🔹 Test 9: Delete Test Testimonial (Cleanup)")
+        
+        if created_testimonial_id:
+            response, error = self.make_request("DELETE", f"/content/admin/testimonials/{created_testimonial_id}", 
+                                              headers=admin_headers)
+            if error:
+                self.log_test("DELETE Testimonial Admin", False, error)
+            else:
+                success = response.get("success", False)
+                message = response.get("message", "")
+                if success:
+                    self.log_test("DELETE Testimonial Admin", True, f"Deleted testimonial: {message}")
+                else:
+                    self.log_test("DELETE Testimonial Admin", False, f"Success: {success}, Message: {message}")
+        
+        # Cleanup other test items
+        if created_cv_template_id:
+            response, error = self.make_request("DELETE", f"/content/admin/cv-templates/{created_cv_template_id}", 
+                                              headers=admin_headers)
+            if response and response.get("success"):
+                self.log_test("Cleanup CV Template", True, "Test CV template deleted")
+        
+        if created_cl_template_id:
+            response, error = self.make_request("DELETE", f"/content/admin/cover-letter-templates/{created_cl_template_id}", 
+                                              headers=admin_headers)
+            if response and response.get("success"):
+                self.log_test("Cleanup Cover Letter Template", True, "Test cover letter template deleted")
+        
+        if created_feature_id:
+            response, error = self.make_request("DELETE", f"/content/admin/features/{created_feature_id}", 
+                                              headers=admin_headers)
+            if response and response.get("success"):
+                self.log_test("Cleanup Feature", True, "Test feature deleted")
+        
+        return True
+
 def main():
     """Main test runner"""
     tester = APITester()

@@ -75,7 +75,7 @@ const ResellerDashboard = () => {
   const onboardingSteps = [
     { id: 'brand', label: 'Set up brand name', icon: Zap, link: '/reseller-dashboard/branding', done: !!profile?.brand_name },
     { id: 'logo', label: 'Upload your logo', icon: Palette, link: '/reseller-dashboard/branding', done: !!profile?.branding?.logo_url },
-    { id: 'colors', label: 'Customize colors', icon: Palette, link: '/reseller-dashboard/branding', done: !!profile?.branding?.primary_color },
+    { id: 'colors', label: 'Customise colours', icon: Palette, link: '/reseller-dashboard/branding', done: !!profile?.branding?.primary_color },
     { id: 'pricing', label: 'Set your pricing', icon: DollarSign, link: '/reseller-dashboard/pricing', done: !!profile?.pricing?.tier_1_price },
     { id: 'email', label: 'Configure email', icon: Mail, link: '/reseller-dashboard/settings', done: !!profile?.email_settings?.is_configured },
     { id: 'payments', label: 'Set up Yoco payments', icon: CreditCard, link: '/reseller-dashboard/settings', done: !!profile?.yoco_settings?.is_configured },

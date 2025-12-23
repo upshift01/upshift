@@ -70,7 +70,7 @@ const EmailTemplates = () => {
         // Merge with defaults
         const merged = defaultTemplates.map(dt => {
           const custom = data.templates?.find(t => t.id === dt.id);
-          return custom ? { ...dt, ...custom, customized: true } : dt;
+          return custom ? { ...dt, ...custom, customised: true } : dt;
         });
         setTemplates(merged);
       } else {

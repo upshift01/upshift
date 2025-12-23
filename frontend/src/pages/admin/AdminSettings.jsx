@@ -535,6 +535,78 @@ const AdminSettings = () => {
     }
   };
 
+  // OpenAI/ChatGPT Settings Functions
+  const fetchOpenaiSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/openai-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setOpenaiSettings({
+          api_key: data.api_key || '',
+          model: data.model || 'gpt-4o',
+          is_emergent_key: data.is_emergent_key !== false
+        });
+        setOpenaiStatus({ connected: data.is_configured || false });
+      }
+    } catch (error) {
+      console.error('Error fetching OpenAI settings:', error);
+    }
+  };
+
+  const handleSaveOpenaiSettings = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/openai-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(openaiSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'OpenAI settings saved successfully!' });
+        fetchOpenaiSettings();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save OpenAI settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving OpenAI settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestOpenaiConnection = async () => {
+    setTestingOpenai(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/openai-settings/test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOpenaiStatus({ connected: true });
+        setMessage({ type: 'success', text: 'OpenAI connection successful!' });
+      } else {
+        setOpenaiStatus({ connected: false });
+        setMessage({ type: 'error', text: data.detail || 'OpenAI connection failed' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error testing OpenAI connection' });
+    } finally {
+      setTestingOpenai(false);
+    }
+  };
+
   // Site Settings Functions
   const fetchSiteSettings = async () => {
     try {

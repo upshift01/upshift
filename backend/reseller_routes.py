@@ -592,7 +592,7 @@ async def pay_invoice(
 ):
     """Create a payment checkout for an invoice"""
     try:
-        from yoco_service import yoco_service
+        from yoco_service import get_yoco_service_for_reseller
         import os
         
         reseller = context["reseller"]
@@ -610,10 +610,19 @@ async def pay_invoice(
         if invoice["status"] == "paid":
             raise HTTPException(status_code=400, detail="Invoice already paid")
         
+        # Get Yoco service with platform credentials (reseller pays to platform)
+        yoco = await get_yoco_service_for_reseller(db, reseller_id=None)
+        
+        if not yoco.is_configured():
+            raise HTTPException(
+                status_code=400, 
+                detail="Payment gateway is not configured. Please contact the platform administrator."
+            )
+        
         # Create Yoco checkout
         frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
         
-        checkout = await yoco_service.create_checkout(
+        checkout = await yoco.create_checkout(
             amount_cents=invoice["amount"],
             email=user.email,
             metadata={
@@ -622,7 +631,10 @@ async def pay_invoice(
                 "reseller_id": reseller["id"],
                 "reseller_name": reseller["company_name"],
                 "type": "reseller_subscription"
-            }
+            },
+            success_url=f"{frontend_url}/reseller-dashboard/settings?payment=success&invoice={invoice_id}",
+            cancel_url=f"{frontend_url}/reseller-dashboard/settings?payment=cancelled",
+            failure_url=f"{frontend_url}/reseller-dashboard/settings?payment=failed"
         )
         
         # Store checkout ID in invoice

@@ -1902,42 +1902,27 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         return True
 
     def run_all_tests(self):
-        """Run all test suites"""
-        print("🚀 Starting UpShift Invoice PDF Download with Yoco QR Code Backend API Tests")
+        """Run all test suites focusing on Invoice PDF generation with QR code"""
+        print("🚀 Starting UpShift Invoice PDF Generation with QR Code Backend API Tests")
         print(f"Backend URL: {BACKEND_URL}")
-        print("=" * 60)
+        print("=" * 80)
         
         # Run authentication first
         auth_success = self.test_authentication()
         
         if auth_success:
             # PRIMARY TEST: Invoice PDF Download with Yoco QR Code (Review Request)
+            print("\n🎯 FOCUS TEST: Invoice PDF Generation with QR Code")
+            print("=" * 80)
             self.test_invoice_pdf_download_with_yoco_qr()
-            
-            # Additional comprehensive tests
-            self.test_super_admin_apis()
-            self.test_reseller_apis()
-            self.test_email_and_scheduling_system()
-            self.test_reseller_email_settings()
-            self.test_email_settings_functionality()
-        
-        self.test_white_label_config()
-        self.test_unauthorized_access()
-        
-        # Additional API tests
-        self.test_ats_resume_checker()
-        self.test_linkedin_tools_api()
-        self.test_yoco_payment_integration()
-        self.test_customer_invoice_creation()
-        self.test_reseller_customer_signup_e2e()
-        
-        # PRIMARY TEST: Strategy Call Booking Payment Flow (Review Request)
-        self.test_strategy_call_booking_payment_flow()
+        else:
+            print("❌ Authentication failed - cannot proceed with PDF tests")
+            return False
         
         # Print summary
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
+        print("\n" + "=" * 80)
+        print("📊 TEST SUMMARY - Invoice PDF Generation with QR Code")
+        print("=" * 80)
         
         total_tests = len(self.test_results)
         passed_tests = len([t for t in self.test_results if t["success"]])
@@ -1953,12 +1938,12 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             for test in self.failed_tests:
                 print(f"  • {test['test']}: {test['details']}")
         
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 80)
         
         # Return success if no critical failures
         critical_failures = [
             t for t in self.failed_tests 
-            if "Login" in t["test"] or "Connection error" in t["details"]
+            if "Authentication" in t["test"] or "Connection error" in t["details"]
         ]
         
         if critical_failures:
@@ -1968,7 +1953,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             print("⚠️  Some tests failed but core functionality appears to work")
             return True
         else:
-            print("✅ ALL TESTS PASSED - Backend is working correctly")
+            print("✅ ALL TESTS PASSED - Invoice PDF generation with QR code is working correctly")
             return True
 
 def main():

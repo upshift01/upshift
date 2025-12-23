@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, 
@@ -24,7 +24,8 @@ import {
   TrendingUp,
   Lock,
   Clock,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -43,6 +44,97 @@ const WhiteLabelPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+
+  // Fetch pricing plans from API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/white-label/plans`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.plans && data.plans.length > 0) {
+            setPlans(data.plans);
+          } else {
+            // Fallback to default plans if API returns empty
+            setPlans(getDefaultPlans());
+          }
+        } else {
+          setPlans(getDefaultPlans());
+        }
+      } catch (error) {
+        console.error('Error fetching plans:', error);
+        setPlans(getDefaultPlans());
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+    fetchPlans();
+  }, []);
+
+  // Default plans fallback
+  const getDefaultPlans = () => [
+    {
+      key: 'starter',
+      name: 'Starter',
+      price: 249900,
+      price_display: 'R2,499',
+      period: '/month',
+      description: 'Perfect for small agencies and coaches starting out',
+      features: [
+        'Up to 50 active clients',
+        'White-label branding',
+        'Custom subdomain',
+        'Email support',
+        'Basic analytics',
+        'Standard templates'
+      ],
+      cta: 'Start Free Trial',
+      popular: false
+    },
+    {
+      key: 'professional',
+      name: 'Professional',
+      price: 499900,
+      price_display: 'R4,999',
+      period: '/month',
+      description: 'For growing businesses with higher volume needs',
+      features: [
+        'Up to 200 active clients',
+        'Full white-label branding',
+        'Custom domain support',
+        'Priority email & chat support',
+        'Advanced analytics',
+        'All premium templates',
+        'API access',
+        'Custom email templates'
+      ],
+      cta: 'Start Free Trial',
+      popular: true
+    },
+    {
+      key: 'enterprise',
+      name: 'Enterprise',
+      price: 0,
+      price_display: 'Custom',
+      period: '',
+      description: 'For large organizations with custom requirements',
+      features: [
+        'Unlimited clients',
+        'Multiple brand instances',
+        'Dedicated account manager',
+        'Phone & video support',
+        'Custom integrations',
+        'SLA guarantees',
+        'On-boarding training',
+        'Custom development'
+      ],
+      cta: 'Contact Sales',
+      popular: false,
+      contact_sales: true
+    }
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();

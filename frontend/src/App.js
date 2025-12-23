@@ -101,8 +101,8 @@ const AppContent = () => {
         <Route path="/cover-letter" element={<PrivateRoute><CoverLetterGenerator /></PrivateRoute>} />
         <Route path="/linkedin-tools" element={<PrivateRoute><LinkedInTools /></PrivateRoute>} />
         
-        {/* Payment Routes */}
-        <Route path="/payment/success" element={<PrivateRoute><PaymentSuccess /></PrivateRoute>} />
+        {/* Payment Routes - PaymentSuccess handles both authenticated (subscription) and public (booking) flows */}
+        <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
 
         {/* Customer Portal Routes */}

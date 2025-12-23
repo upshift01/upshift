@@ -143,6 +143,7 @@ const AdminSettings = () => {
     }
     if (activeTab === 'integrations') {
       fetchLinkedinSettings();
+      fetchOpenaiSettings();
     }
     if (activeTab === 'site') {
       fetchSiteSettings();

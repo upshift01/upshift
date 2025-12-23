@@ -426,8 +426,9 @@ async def get_payment_history(
     """Get user's payment history"""
     try:
         payments = await db.payments.find(
-            {"user_id": current_user.id}
-        ).sort("created_at", -1).to_list(None)
+            {"user_id": current_user.id},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
         
         return {
             "payments": payments,

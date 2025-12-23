@@ -60,7 +60,7 @@ const CustomerDashboard = () => {
 
   const getTierInfo = (tierId) => {
     const tiers = {
-      'tier-1': { name: 'ATS Optimize', color: 'blue' },
+      'tier-1': { name: 'ATS Optimise', color: 'blue' },
       'tier-2': { name: 'Professional Package', color: 'purple' },
       'tier-3': { name: 'Executive Elite', color: 'orange' }
     };

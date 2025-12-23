@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { DollarSign, Save } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { DollarSign, Save, Calendar, Info } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 const ResellerPricing = () => {
   const { token } = useAuth();
@@ -14,6 +15,12 @@ const ResellerPricing = () => {
     tier_2_price: 150000,
     tier_3_price: 300000,
     currency: 'ZAR'
+  });
+  const [strategyCallPricing, setStrategyCallPricing] = useState({
+    price: 69900,
+    duration_minutes: 30,
+    included_in_tier_3: true,
+    enabled: true
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

@@ -37,11 +37,6 @@ const ResellerLayout = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Check if user is reseller admin
-  if (!user || user.role !== 'reseller_admin') {
-    return <Navigate to="/login" replace />;
-  }
-
   const fetchNotifications = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/notifications`, {
@@ -58,14 +53,21 @@ const ResellerLayout = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    if (user && user.role === 'reseller_admin') {
+      fetchNotifications();
+    }
     // Toggle dark mode class on body
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [darkMode]);
+  }, [darkMode, user]);
+
+  // Check if user is reseller admin
+  if (!user || user.role !== 'reseller_admin') {
+    return <Navigate to="/login" replace />;
+  }
 
   const navItems = [
     { path: '/reseller-dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },

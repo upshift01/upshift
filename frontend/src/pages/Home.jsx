@@ -297,8 +297,8 @@ const Home = () => {
                 <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="px-5 pb-5 text-gray-600">
-                <strong>ATS Optimize (R899):</strong> Professional CV rewrite, tailored cover letter, and full ATS optimization.<br/><br/>
-                <strong>Professional Package (R1,500):</strong> Everything in ATS Optimize plus LinkedIn profile review and interview preparation materials.<br/><br/>
+                <strong>ATS Optimise (R899):</strong> Professional CV rewrite, tailored cover letter, and full ATS optimisation.<br/><br/>
+                <strong>Professional Package (R1,500):</strong> Everything in ATS Optimise plus LinkedIn profile review and interview preparation materials.<br/><br/>
                 <strong>Executive Elite (R3,000):</strong> Our premium service with 1-on-1 consultation, unlimited revisions, priority support, and 12-hour turnaround.
               </div>
             </details>

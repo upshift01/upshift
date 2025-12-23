@@ -228,12 +228,6 @@ const ResellerDashboard = () => {
           </CardContent>
         </Card>
       </div>
-                <Target className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Quick Actions */}
       <Card className={cardBg}>

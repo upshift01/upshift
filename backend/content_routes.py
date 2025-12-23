@@ -388,3 +388,302 @@ def get_initial_industries():
         {"id": str(uuid.uuid4()), "name": ind, "order": idx, "is_active": True, "created_at": datetime.now(timezone.utc).isoformat()}
         for idx, ind in enumerate(industries)
     ]
+
+
+# ==================== ADMIN CRUD Endpoints ====================
+
+# Helper to verify admin access
+async def verify_admin(request):
+    """Verify request is from a super admin"""
+    from fastapi import Request
+    from auth import get_current_user, oauth2_scheme
+    
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = auth_header.replace("Bearer ", "")
+    user = await get_current_user(token, db)
+    
+    user_doc = await db.users.find_one({"id": user.id}, {"_id": 0})
+    if not user_doc or user_doc.get("role") != "super_admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    return user
+
+
+# ==================== CV Templates Admin ====================
+
+@content_router.get("/admin/cv-templates", response_model=dict)
+async def admin_get_cv_templates(request):
+    """Get all CV templates (including inactive) for admin"""
+    await verify_admin(request)
+    templates = await db.cv_templates.find({}, {"_id": 0}).to_list(200)
+    return {"templates": templates, "total": len(templates)}
+
+
+@content_router.post("/admin/cv-templates", response_model=dict)
+async def admin_create_cv_template(template: CVTemplate, request):
+    """Create a new CV template"""
+    await verify_admin(request)
+    
+    template_dict = template.dict()
+    template_dict["id"] = str(uuid.uuid4())
+    template_dict["created_at"] = datetime.now(timezone.utc).isoformat()
+    template_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.cv_templates.insert_one(template_dict)
+    logger.info(f"CV template created: {template_dict['name']}")
+    
+    return {"success": True, "template": {k: v for k, v in template_dict.items() if k != "_id"}}
+
+
+@content_router.put("/admin/cv-templates/{template_id}", response_model=dict)
+async def admin_update_cv_template(template_id: str, template: CVTemplate, request):
+    """Update a CV template"""
+    await verify_admin(request)
+    
+    existing = await db.cv_templates.find_one({"id": template_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    update_data = template.dict()
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.cv_templates.update_one({"id": template_id}, {"$set": update_data})
+    logger.info(f"CV template updated: {template_id}")
+    
+    return {"success": True, "message": "Template updated"}
+
+
+@content_router.delete("/admin/cv-templates/{template_id}", response_model=dict)
+async def admin_delete_cv_template(template_id: str, request):
+    """Delete a CV template"""
+    await verify_admin(request)
+    
+    result = await db.cv_templates.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    logger.info(f"CV template deleted: {template_id}")
+    return {"success": True, "message": "Template deleted"}
+
+
+# ==================== Cover Letter Templates Admin ====================
+
+@content_router.get("/admin/cover-letter-templates", response_model=dict)
+async def admin_get_cover_letter_templates(request):
+    """Get all cover letter templates for admin"""
+    await verify_admin(request)
+    templates = await db.cover_letter_templates.find({}, {"_id": 0}).to_list(200)
+    return {"templates": templates, "total": len(templates)}
+
+
+@content_router.post("/admin/cover-letter-templates", response_model=dict)
+async def admin_create_cover_letter_template(template: CoverLetterTemplate, request):
+    """Create a new cover letter template"""
+    await verify_admin(request)
+    
+    template_dict = template.dict()
+    template_dict["id"] = str(uuid.uuid4())
+    template_dict["created_at"] = datetime.now(timezone.utc).isoformat()
+    template_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.cover_letter_templates.insert_one(template_dict)
+    logger.info(f"Cover letter template created: {template_dict['name']}")
+    
+    return {"success": True, "template": {k: v for k, v in template_dict.items() if k != "_id"}}
+
+
+@content_router.put("/admin/cover-letter-templates/{template_id}", response_model=dict)
+async def admin_update_cover_letter_template(template_id: str, template: CoverLetterTemplate, request):
+    """Update a cover letter template"""
+    await verify_admin(request)
+    
+    existing = await db.cover_letter_templates.find_one({"id": template_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    update_data = template.dict()
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.cover_letter_templates.update_one({"id": template_id}, {"$set": update_data})
+    logger.info(f"Cover letter template updated: {template_id}")
+    
+    return {"success": True, "message": "Template updated"}
+
+
+@content_router.delete("/admin/cover-letter-templates/{template_id}", response_model=dict)
+async def admin_delete_cover_letter_template(template_id: str, request):
+    """Delete a cover letter template"""
+    await verify_admin(request)
+    
+    result = await db.cover_letter_templates.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    logger.info(f"Cover letter template deleted: {template_id}")
+    return {"success": True, "message": "Template deleted"}
+
+
+# ==================== Testimonials Admin ====================
+
+@content_router.get("/admin/testimonials", response_model=dict)
+async def admin_get_testimonials(request):
+    """Get all testimonials for admin"""
+    await verify_admin(request)
+    testimonials = await db.testimonials.find({}, {"_id": 0}).to_list(200)
+    return {"testimonials": testimonials, "total": len(testimonials)}
+
+
+@content_router.post("/admin/testimonials", response_model=dict)
+async def admin_create_testimonial(testimonial: Testimonial, request):
+    """Create a new testimonial"""
+    await verify_admin(request)
+    
+    testimonial_dict = testimonial.dict()
+    testimonial_dict["id"] = str(uuid.uuid4())
+    testimonial_dict["created_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.testimonials.insert_one(testimonial_dict)
+    logger.info(f"Testimonial created: {testimonial_dict['name']}")
+    
+    return {"success": True, "testimonial": {k: v for k, v in testimonial_dict.items() if k != "_id"}}
+
+
+@content_router.put("/admin/testimonials/{testimonial_id}", response_model=dict)
+async def admin_update_testimonial(testimonial_id: str, testimonial: Testimonial, request):
+    """Update a testimonial"""
+    await verify_admin(request)
+    
+    existing = await db.testimonials.find_one({"id": testimonial_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Testimonial not found")
+    
+    update_data = testimonial.dict()
+    await db.testimonials.update_one({"id": testimonial_id}, {"$set": update_data})
+    logger.info(f"Testimonial updated: {testimonial_id}")
+    
+    return {"success": True, "message": "Testimonial updated"}
+
+
+@content_router.delete("/admin/testimonials/{testimonial_id}", response_model=dict)
+async def admin_delete_testimonial(testimonial_id: str, request):
+    """Delete a testimonial"""
+    await verify_admin(request)
+    
+    result = await db.testimonials.delete_one({"id": testimonial_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Testimonial not found")
+    
+    logger.info(f"Testimonial deleted: {testimonial_id}")
+    return {"success": True, "message": "Testimonial deleted"}
+
+
+# ==================== Features Admin ====================
+
+@content_router.get("/admin/features", response_model=dict)
+async def admin_get_features(request):
+    """Get all features for admin"""
+    await verify_admin(request)
+    features = await db.features.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+    return {"features": features, "total": len(features)}
+
+
+@content_router.post("/admin/features", response_model=dict)
+async def admin_create_feature(feature: Feature, request):
+    """Create a new feature"""
+    await verify_admin(request)
+    
+    feature_dict = feature.dict()
+    feature_dict["id"] = str(uuid.uuid4())
+    feature_dict["created_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.features.insert_one(feature_dict)
+    logger.info(f"Feature created: {feature_dict['title']}")
+    
+    return {"success": True, "feature": {k: v for k, v in feature_dict.items() if k != "_id"}}
+
+
+@content_router.put("/admin/features/{feature_id}", response_model=dict)
+async def admin_update_feature(feature_id: str, feature: Feature, request):
+    """Update a feature"""
+    await verify_admin(request)
+    
+    existing = await db.features.find_one({"id": feature_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Feature not found")
+    
+    update_data = feature.dict()
+    await db.features.update_one({"id": feature_id}, {"$set": update_data})
+    logger.info(f"Feature updated: {feature_id}")
+    
+    return {"success": True, "message": "Feature updated"}
+
+
+@content_router.delete("/admin/features/{feature_id}", response_model=dict)
+async def admin_delete_feature(feature_id: str, request):
+    """Delete a feature"""
+    await verify_admin(request)
+    
+    result = await db.features.delete_one({"id": feature_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Feature not found")
+    
+    logger.info(f"Feature deleted: {feature_id}")
+    return {"success": True, "message": "Feature deleted"}
+
+
+# ==================== Industries Admin ====================
+
+@content_router.get("/admin/industries", response_model=dict)
+async def admin_get_industries(request):
+    """Get all industries for admin"""
+    await verify_admin(request)
+    industries = await db.industries.find({}, {"_id": 0}).sort("order", 1).to_list(100)
+    return {"industries": industries, "total": len(industries)}
+
+
+@content_router.post("/admin/industries", response_model=dict)
+async def admin_create_industry(industry: Industry, request):
+    """Create a new industry"""
+    await verify_admin(request)
+    
+    industry_dict = industry.dict()
+    industry_dict["id"] = str(uuid.uuid4())
+    industry_dict["created_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.industries.insert_one(industry_dict)
+    logger.info(f"Industry created: {industry_dict['name']}")
+    
+    return {"success": True, "industry": {k: v for k, v in industry_dict.items() if k != "_id"}}
+
+
+@content_router.put("/admin/industries/{industry_id}", response_model=dict)
+async def admin_update_industry(industry_id: str, industry: Industry, request):
+    """Update an industry"""
+    await verify_admin(request)
+    
+    existing = await db.industries.find_one({"id": industry_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Industry not found")
+    
+    update_data = industry.dict()
+    await db.industries.update_one({"id": industry_id}, {"$set": update_data})
+    logger.info(f"Industry updated: {industry_id}")
+    
+    return {"success": True, "message": "Industry updated"}
+
+
+@content_router.delete("/admin/industries/{industry_id}", response_model=dict)
+async def admin_delete_industry(industry_id: str, request):
+    """Delete an industry"""
+    await verify_admin(request)
+    
+    result = await db.industries.delete_one({"id": industry_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Industry not found")
+    
+    logger.info(f"Industry deleted: {industry_id}")
+    return {"success": True, "message": "Industry deleted"}
+

@@ -316,13 +316,13 @@ const AdminAnalytics = () => {
                   </div>
 
                   {/* X-axis labels */}
-                  <div className="flex gap-1 px-2 mt-2">
+                  <div className="flex gap-2 px-4 mt-2">
                     {chartData.map((item, index) => (
                       <div key={item.month} className="flex-1 text-center">
                         <span className={`text-xs ${
                           index === chartData.length - 1 ? 'text-blue-600 font-medium' : 'text-gray-500'
                         }`}>
-                          {item.month.slice(0, 3)}
+                          {formatMonthLabel(item.month)}
                         </span>
                       </div>
                     ))}

@@ -1244,6 +1244,99 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_invoice_reminder_api(self):
+        """Test Invoice Reminder API endpoint with SMTP error handling"""
+        print("\n📧 Testing Invoice Reminder API...")
+        
+        if not self.reseller_admin_token:
+            self.log_test("Invoice Reminder API Tests", False, "No reseller admin token available")
+            return False
+        
+        reseller_headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+        
+        # Test Invoice ID from review request
+        test_invoice_id = "fe5d438e-a716-4372-b1fa-298794788d9d"
+        
+        # Test: Send Invoice Reminder
+        response, error = self.make_request(
+            "POST", 
+            f"/reseller/customer-invoices/{test_invoice_id}/send-reminder", 
+            headers=reseller_headers
+        )
+        
+        if error:
+            self.log_test("Send Invoice Reminder", False, error)
+            return False
+        
+        # Validate response structure
+        required_fields = ["success", "message", "email_sent", "error_type"]
+        missing_fields = [f for f in required_fields if f not in response]
+        
+        if missing_fields:
+            self.log_test("Send Invoice Reminder - Response Structure", False, 
+                        f"Missing required fields: {missing_fields}")
+            return False
+        
+        # Validate field types
+        success = response.get("success")
+        message = response.get("message")
+        email_sent = response.get("email_sent")
+        error_type = response.get("error_type")
+        
+        if not isinstance(success, bool):
+            self.log_test("Send Invoice Reminder - Success Field", False, 
+                        f"'success' should be boolean, got {type(success)}")
+            return False
+        
+        if not isinstance(message, str) or not message.strip():
+            self.log_test("Send Invoice Reminder - Message Field", False, 
+                        f"'message' should be non-empty string, got: '{message}'")
+            return False
+        
+        if not isinstance(email_sent, bool):
+            self.log_test("Send Invoice Reminder - Email Sent Field", False, 
+                        f"'email_sent' should be boolean, got {type(email_sent)}")
+            return False
+        
+        # Validate error_type is one of expected values
+        valid_error_types = [
+            "not_configured", "auth_failed", "connection_failed", 
+            "disconnected", "recipient_refused", "smtp_error", "unknown", "send_failed"
+        ]
+        
+        if error_type not in valid_error_types:
+            self.log_test("Send Invoice Reminder - Error Type", False, 
+                        f"'error_type' should be one of {valid_error_types}, got: '{error_type}'")
+            return False
+        
+        # Since SMTP credentials are test/invalid, we expect failure
+        if success:
+            self.log_test("Send Invoice Reminder - Expected Failure", False, 
+                        "Expected success=false with test SMTP credentials, but got success=true")
+            return False
+        
+        if email_sent:
+            self.log_test("Send Invoice Reminder - Expected Email Not Sent", False, 
+                        "Expected email_sent=false with test SMTP credentials, but got email_sent=true")
+            return False
+        
+        # Check if message is user-friendly and actionable
+        message_lower = message.lower()
+        is_actionable = any(keyword in message_lower for keyword in [
+            "smtp", "email", "settings", "username", "password", "host", "port", "configure"
+        ])
+        
+        if not is_actionable:
+            self.log_test("Send Invoice Reminder - User-Friendly Message", False, 
+                        f"Message should be actionable and mention SMTP/email settings: '{message}'")
+            return False
+        
+        # All validations passed
+        self.log_test("Send Invoice Reminder", True, 
+                    f"Success: {success}, Email sent: {email_sent}, Error type: {error_type}, Message: '{message[:100]}...'")
+        
+        return True
+
     def test_customer_invoice_creation(self):
         """Test Customer Invoice Creation feature and Yoco Payment integration for UpShift reseller portal"""
         print("\n🧾 Testing Customer Invoice Creation & Yoco Payment Integration...")

@@ -1679,7 +1679,7 @@ async def send_campaign(campaign_id: str, context: dict = Depends(get_current_re
             "type": "email",
             "title": "Campaign Sent",
             "description": f"Email campaign '{campaign.get('name')}' sent to {len(recipients)} recipients",
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc)
         })
         
         return {"success": True, "recipients_count": len(recipients)}

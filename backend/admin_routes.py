@@ -663,7 +663,8 @@ async def download_invoice_pdf(
         site_settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
         platform_settings = {
             "platform_name": "UpShift",
-            "contact": site_settings.get("contact", {}) if site_settings else {}
+            "contact": site_settings.get("contact", {}) if site_settings else {},
+            "vat_number": site_settings.get("vat_number", "") if site_settings else ""
         }
         
         # Generate PDF

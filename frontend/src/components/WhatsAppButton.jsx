@@ -3,12 +3,12 @@ import { MessageCircle, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const WhatsAppButton = () => {
-  const { siteConfig } = useTheme();
+  const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Get WhatsApp number from site config
-  const whatsappNumber = siteConfig?.contact_whatsapp || '';
+  // Get WhatsApp number from theme config
+  const whatsappNumber = theme?.contactWhatsapp || '';
   
   // Don't render if no WhatsApp number configured
   if (!whatsappNumber) {
@@ -25,8 +25,8 @@ const WhatsAppButton = () => {
       ? '27' + cleanNumber.substring(1) // Assume South African number if starts with 0
       : cleanNumber;
 
-  const brandName = siteConfig?.brand_name || 'UpShift';
-  const primaryColor = siteConfig?.primary_color || '#25D366';
+  const brandName = theme?.brandName || 'UpShift';
+  const primaryColor = theme?.primaryColor || '#25D366';
 
   const handleSendMessage = () => {
     const encodedMessage = encodeURIComponent(message || `Hi ${brandName}! I'd like to know more about your services.`);

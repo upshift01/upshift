@@ -489,8 +489,53 @@ const AdminSettings = () => {
     }
   };
 
+  // Site Settings Functions
+  const fetchSiteSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/site-settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSiteSettings({
+          contact: data.contact || { email: '', phone: '', address: '', whatsapp: '' },
+          social_media: data.social_media || { facebook: '', twitter: '', linkedin: '', instagram: '', youtube: '', tiktok: '' },
+          business_hours: data.business_hours || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching site settings:', error);
+    }
+  };
+
+  const handleSaveSiteSettings = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/site-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(siteSettings)
+      });
+      
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Site settings saved successfully!' });
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to save site settings' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error saving site settings' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const tabs = [
     { id: 'general', label: 'General', icon: Globe },
+    { id: 'site', label: 'Site & Contact', icon: Phone },
     { id: 'payments', label: 'Payments (Yoco)', icon: CreditCard },
     { id: 'integrations', label: 'Integrations', icon: Link2 },
     { id: 'email', label: 'Email & Reminders', icon: Mail },

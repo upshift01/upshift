@@ -100,6 +100,16 @@ const AdminSettings = () => {
   const [testingLinkedin, setTestingLinkedin] = useState(false);
   const [linkedinStatus, setLinkedinStatus] = useState(null);
 
+  // OpenAI/ChatGPT Settings State
+  const [openaiSettings, setOpenaiSettings] = useState({
+    api_key: '',
+    model: 'gpt-4o',
+    is_emergent_key: true
+  });
+  const [showOpenaiKey, setShowOpenaiKey] = useState(false);
+  const [testingOpenai, setTestingOpenai] = useState(false);
+  const [openaiStatus, setOpenaiStatus] = useState(null);
+
   // Site Settings State (Contact & Social Media)
   const [siteSettings, setSiteSettings] = useState({
     contact: {

@@ -1,13 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, CheckCircle2, Sparkles, Zap } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import FeatureCard from '../components/FeatureCard';
-import { features, testimonials, sampleImprovements } from '../mockData';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 
+// Fallback data in case API fails
+import { features as fallbackFeatures, testimonials as fallbackTestimonials, sampleImprovements as fallbackImprovements } from '../mockData';
+
 const Home = () => {
+  const [features, setFeatures] = useState(fallbackFeatures);
+  const [testimonials, setTestimonials] = useState(fallbackTestimonials);
+  const [sampleImprovements, setSampleImprovements] = useState(fallbackImprovements);
+
+  // Fetch content from API
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        // Fetch all content in parallel
+        const [featuresRes, testimonialsRes, improvementsRes] = await Promise.all([
+          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/content/features`),
+          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/content/testimonials`),
+          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/content/sample-improvements`)
+        ]);
+
+        if (featuresRes.ok) {
+          const data = await featuresRes.json();
+          if (data.features && data.features.length > 0) {
+            setFeatures(data.features);
+          }
+        }
+
+        if (testimonialsRes.ok) {
+          const data = await testimonialsRes.json();
+          if (data.testimonials && data.testimonials.length > 0) {
+            setTestimonials(data.testimonials);
+          }
+        }
+
+        if (improvementsRes.ok) {
+          const data = await improvementsRes.json();
+          if (data.improvements && data.improvements.length > 0) {
+            setSampleImprovements(data.improvements);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching homepage content:', error);
+        // Keep using fallback data
+      }
+    };
+
+    fetchContent();
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}

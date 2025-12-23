@@ -65,6 +65,7 @@ set_cv_processing_db(db)
 set_ai_content_db(db)
 set_linkedin_db(db)
 set_customer_db(db)
+set_content_db(db)
 
 # Create the main app without a prefix
 app = FastAPI(title="UpShift API", description="AI-Powered Resume and Cover Letter Platform")

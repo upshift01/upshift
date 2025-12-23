@@ -105,7 +105,7 @@ Write a complete, ready-to-send cover letter. Start with "Dear {data.recipient_n
         # Log the generation
         await db.ai_generations.insert_one({
             "id": str(uuid.uuid4()),
-            "user_id": current_user["id"],
+            "user_id": current_user.id,
             "type": "cover_letter",
             "input": data.dict(),
             "output": response,

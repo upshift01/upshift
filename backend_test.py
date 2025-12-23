@@ -2328,56 +2328,52 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         return True
 
     def run_all_tests(self):
-        """Run all test suites focusing on Invoice Reminder API endpoint"""
-        print("🚀 Starting UpShift Invoice Reminder API Backend Tests")
+        """Run all test suites"""
+        print("🚀 Starting UpShift Backend API Tests...")
         print(f"Backend URL: {BACKEND_URL}")
-        print("=" * 80)
+        print("=" * 60)
         
         # Run authentication first
-        auth_success = self.test_authentication()
-        
-        if not auth_success:
-            print("❌ Authentication failed - cannot proceed with Invoice Reminder API tests")
+        if not self.test_authentication():
+            print("\n❌ Authentication failed - stopping tests")
             return False
         
-        # PRIMARY TEST: Invoice Reminder API endpoint (Review Request)
-        print("\n🎯 FOCUS TEST: Invoice Reminder API Endpoint")
-        print("=" * 80)
-        invoice_reminder_success = self.test_invoice_reminder_api()
-        
-        # Print summary
-        print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY - Invoice Reminder API Endpoint")
-        print("=" * 80)
-        
-        total_tests = len(self.test_results)
-        passed_tests = len([t for t in self.test_results if t["success"]])
-        failed_tests = len(self.failed_tests)
-        
-        print(f"Total Tests: {total_tests}")
-        print(f"Passed: {passed_tests} ✅")
-        print(f"Failed: {failed_tests} ❌")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
-        
-        if self.failed_tests:
-            print("\n❌ FAILED TESTS:")
-            for test in self.failed_tests:
-                print(f"  • {test['test']}: {test['details']}")
-        
-        print("\n" + "=" * 80)
-        
-        # Return success if no critical failures
-        critical_failures = [
-            t for t in self.failed_tests 
-            if "Connection error" in t["details"] or "No reseller admin token" in t["details"]
+        # Run all test suites
+        test_suites = [
+            self.test_super_admin_apis,
+            self.test_reseller_apis,
+            self.test_white_label_config,
+            self.test_unauthorized_access,
+            self.test_email_and_scheduling_system,
+            self.test_reseller_email_settings,
+            self.test_ats_resume_checker,
+            self.test_linkedin_tools_api,
+            self.test_yoco_payment_integration,
+            self.test_ai_content_generation_apis,
+            self.test_invoice_reminder_api,
+            self.test_customer_invoice_creation,
+            self.test_invoice_pdf_download_with_yoco_qr,
+            self.test_reseller_customer_signup_e2e,
+            self.test_ai_assistant_apis,
+            self.test_admin_content_management_apis
         ]
         
-        if critical_failures:
-            print("❌ CRITICAL FAILURES DETECTED - Backend may not be working properly")
-            return False
-        elif failed_tests > 0:
-            print("⚠️  Some tests failed but core functionality appears to work")
-            return True
+        for test_suite in test_suites:
+            try:
+                test_suite()
+            except Exception as e:
+                print(f"\n❌ Test suite {test_suite.__name__} failed with error: {str(e)}")
+                self.failed_tests.append({
+                    "test": test_suite.__name__,
+                    "success": False,
+                    "details": str(e),
+                    "timestamp": datetime.now().isoformat()
+                })
+        
+        # Print summary
+        self.print_summary()
+        
+        return len(self.failed_tests) == 0
         else:
             print("✅ ALL TESTS PASSED - Invoice Reminder API endpoint is working correctly")
             return True

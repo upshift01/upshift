@@ -740,7 +740,7 @@ const WhiteLabelPage = () => {
             Join 50+ Partners Already Growing with UpShift
           </h2>
           <p className="text-gray-400 mb-8">
-            Start your 14-day free trial today. No credit card required.
+            Start your 7-day free trial today. No credit card required.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="#contact">

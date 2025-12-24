@@ -476,11 +476,12 @@ Generate the skills now:"""
         # Initialize LLM
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
-            model="gpt-4o"
-        )
+            session_id=f"skills-{uuid.uuid4()}"
+        ).with_model("openai", "gpt-4o")
         
         # Generate skills
-        response = await chat.send_message_async(UserMessage(prompt))
+        user_message = UserMessage(prompt)
+        response = await chat.send_message(user_message)
         generated_skills = response.content
         
         logger.info(f"Skills generated for {request.job_title} in {request.industry}")

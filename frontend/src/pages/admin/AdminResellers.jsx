@@ -96,7 +96,39 @@ const AdminResellers = () => {
     }).format(cents / 100);
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, subscription = {}) => {
+    const isTrialStatus = subscription?.is_trial || subscription?.status === 'trial' || subscription?.status === 'trial_expired';
+    
+    // Handle trial statuses
+    if (isTrialStatus) {
+      const trialEnd = subscription?.trial_end_date;
+      let daysRemaining = 0;
+      let trialExpired = subscription?.status === 'trial_expired';
+      
+      if (trialEnd && !trialExpired) {
+        const endDate = new Date(trialEnd);
+        const now = new Date();
+        daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+        trialExpired = daysRemaining < 0;
+      }
+      
+      if (trialExpired || subscription?.status === 'trial_expired') {
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <AlertCircle className="h-3 w-3" />
+            Trial Expired
+          </span>
+        );
+      }
+      
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+          <Gift className="h-3 w-3" />
+          Trial ({daysRemaining}d left)
+        </span>
+      );
+    }
+    
     const styles = {
       active: 'bg-green-100 text-green-800',
       pending: 'bg-yellow-100 text-yellow-800',

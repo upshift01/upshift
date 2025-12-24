@@ -967,6 +967,9 @@ async def mark_invoice_paid(
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
+        if invoice["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Cannot mark a cancelled invoice as paid")
+        
         await db.reseller_invoices.update_one(
             {"id": invoice_id},
             {
@@ -984,6 +987,44 @@ async def mark_invoice_paid(
         raise
     except Exception as e:
         logger.error(f"Error marking invoice paid: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/invoices/{invoice_id}/cancel", response_model=dict)
+async def cancel_invoice(
+    invoice_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Cancel an invoice - removes it from analytics"""
+    try:
+        invoice = await db.reseller_invoices.find_one({"id": invoice_id})
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        if invoice["status"] == "paid":
+            raise HTTPException(status_code=400, detail="Cannot cancel a paid invoice")
+        
+        if invoice["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Invoice is already cancelled")
+        
+        await db.reseller_invoices.update_one(
+            {"id": invoice_id},
+            {
+                "$set": {
+                    "status": "cancelled",
+                    "cancelled_at": datetime.now(timezone.utc),
+                    "cancelled_by": admin.id
+                }
+            }
+        )
+        
+        logger.info(f"Invoice cancelled: {invoice_id}")
+        
+        return {"success": True, "message": "Invoice cancelled successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error cancelling invoice: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

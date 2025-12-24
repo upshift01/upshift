@@ -143,6 +143,23 @@ async def create_reseller(
         
         await db.users.insert_one(owner_user)
         
+        # Determine if this is a trial or direct activation
+        start_as_trial = data.get("start_as_trial", True)
+        trial_days = 7  # 7-day free trial
+        
+        now = datetime.now(timezone.utc)
+        
+        if start_as_trial:
+            subscription_status = "trial"
+            trial_end_date = now + timedelta(days=trial_days)
+            next_billing_date = trial_end_date
+            is_trial = True
+        else:
+            subscription_status = "active"
+            trial_end_date = None
+            next_billing_date = now + timedelta(days=30)
+            is_trial = False
+        
         # Create reseller
         reseller_id = str(uuid.uuid4())
         reseller = {
@@ -173,9 +190,15 @@ async def create_reseller(
             "subscription": {
                 "plan": "monthly",
                 "monthly_fee": 250000,
-                "status": "active",
-                "next_billing_date": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
-                "payment_method": "invoice"
+                "status": subscription_status,
+                "next_billing_date": next_billing_date.isoformat(),
+                "payment_method": "invoice",
+                "is_trial": is_trial,
+                "trial_start_date": now.isoformat() if is_trial else None,
+                "trial_end_date": trial_end_date.isoformat() if trial_end_date else None,
+                "trial_days": trial_days,
+                "converted_from_trial": False,
+                "converted_date": None
             },
             "stats": {
                 "total_customers": 0,
@@ -191,12 +214,14 @@ async def create_reseller(
         
         await db.resellers.insert_one(reseller)
         
-        logger.info(f"Reseller created by admin: {data['company_name']}")
+        logger.info(f"Reseller created by admin: {data['company_name']} (trial: {is_trial})")
         
         return {
             "success": True,
             "reseller_id": reseller_id,
-            "message": "Reseller created successfully"
+            "message": f"Reseller created successfully{' with 7-day trial' if is_trial else ''}",
+            "is_trial": is_trial,
+            "trial_end_date": trial_end_date.isoformat() if trial_end_date else None
         }
     except HTTPException:
         raise

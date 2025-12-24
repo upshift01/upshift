@@ -198,11 +198,36 @@ const ResellerInvoices = () => {
         fetchCustomerInvoices();
         alert('Invoice marked as paid!');
       } else {
-        alert('Failed to update invoice');
+        const error = await response.json();
+        alert(error.detail || 'Failed to update invoice');
       }
     } catch (error) {
       console.error('Error updating invoice:', error);
       alert('Error updating invoice');
+    }
+  };
+
+  const handleCancelInvoice = async (invoiceId) => {
+    if (!window.confirm('Are you sure you want to cancel this invoice? This will remove it from your analytics.')) return;
+    
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/reseller/customer-invoices/${invoiceId}/cancel`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (response.ok) {
+        fetchCustomerInvoices();
+        alert('Invoice cancelled successfully!');
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Failed to cancel invoice');
+      }
+    } catch (error) {
+      console.error('Error cancelling invoice:', error);
+      alert('Error cancelling invoice');
     }
   };
 

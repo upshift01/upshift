@@ -162,7 +162,7 @@ const ResellerDashboard = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>Welcome back, {profile?.contact_name?.split(' ')[0] || 'Partner'}!</h1>
-          <p className={textSecondary}>Here's what's happening with your business today</p>
+          <p className={textSecondary}>Here&apos;s what&apos;s happening with your business today</p>
         </div>
         <div className="flex gap-2">
           <Link to="/reseller-dashboard/customers">

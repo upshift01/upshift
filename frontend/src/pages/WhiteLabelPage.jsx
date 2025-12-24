@@ -213,7 +213,7 @@ const WhiteLabelPage = () => {
       icon: GraduationCap,
       title: 'Educational Institutions',
       description: 'Empower students and alumni with career tools. Boost graduate employment outcomes.',
-      benefits: ['Student career services', 'Alumni support programs', 'Campus branding', 'Usage analytics']
+      benefits: ['Student career services', 'Alumni support programmes', 'Campus branding', 'Usage analytics']
     },
     {
       icon: Heart,

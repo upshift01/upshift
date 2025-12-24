@@ -394,7 +394,7 @@ const Contact = () => {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Can I become a reseller partner?</h4>
                   <p className="text-sm text-gray-600">
-                    Yes! We offer a white-label reseller program where you can brand our platform as your own and set custom pricing. Contact us to learn more about partnership opportunities.
+                    Yes! We offer a white-label reseller programme where you can brand our platform as your own and set custom pricing. Contact us to learn more about partnership opportunities.
                   </p>
                 </div>
               </CardContent>

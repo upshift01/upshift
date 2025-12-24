@@ -394,7 +394,7 @@ const Home = () => {
                 <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="px-5 pb-5 text-gray-600">
-                Yes! We offer white-label solutions for recruitment agencies, HR departments, career centers, and educational institutions. Our reseller program allows you to brand our platform as your own with custom pricing. Contact us at support@upshift.works to learn about partnership opportunities.
+                Yes! We offer white-label solutions for recruitment agencies, HR departments, career centres, and educational institutions. Our reseller programme allows you to brand our platform as your own with custom pricing. Contact us at support@upshift.works to learn about partnership opportunities.
               </div>
             </details>
           </div>

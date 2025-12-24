@@ -391,17 +391,53 @@ const AdminInvoices = () => {
                               <Download className="h-4 w-4" />
                             </Button>
                             {invoice.status === 'pending' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => markAsPaid(invoice.id)}
-                              >
-                                Mark Paid
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => markAsPaid(invoice.id)}
+                                >
+                                  Mark Paid
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => cancelInvoice(invoice.id)}
+                                  className="text-gray-500 hover:text-red-600 hover:border-red-300"
+                                  title="Cancel Invoice"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                            {invoice.status === 'overdue' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => markAsPaid(invoice.id)}
+                                >
+                                  Mark Paid
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => cancelInvoice(invoice.id)}
+                                  className="text-gray-500 hover:text-red-600 hover:border-red-300"
+                                  title="Cancel Invoice"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </>
                             )}
                             {invoice.status === 'paid' && (
                               <span className="text-sm text-gray-500">
                                 Paid {invoice.paid_date && new Date(invoice.paid_date).toLocaleDateString()}
+                              </span>
+                            )}
+                            {invoice.status === 'cancelled' && (
+                              <span className="text-sm text-gray-400 italic">
+                                Cancelled
                               </span>
                             )}
                           </div>

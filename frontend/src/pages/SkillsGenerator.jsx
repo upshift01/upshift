@@ -432,17 +432,17 @@ const SkillsGenerator = () => {
       {/* ATS Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8">
             ATS Friendly Skills & Using Action Verbs in your Resume
           </h2>
-          <div className="prose prose-lg prose-invert max-w-none">
-            <p>
+          <div className="space-y-6">
+            <p className="text-lg leading-relaxed text-blue-50">
               In today's job market, most companies use ATS systems to filter resumes before they reach human recruiters. Therefore, having an ATS-friendly resume is important to pass the initial screening stage.
             </p>
-            <p>
+            <p className="text-lg leading-relaxed text-blue-50">
               Action verbs like "managed," "developed," "analysed," and "designed" clearly convey your accomplishments and responsibilities. These verbs make your resume more engaging and appealing. They help you not only pass the ATS but also make a favourable impression on hiring managers.
             </p>
-            <p className="bg-white/10 p-4 rounded-lg">
+            <p className="bg-white/10 p-6 rounded-lg text-lg leading-relaxed">
               Our AI Resume Skill Generator tool focuses on ATS-friendly language and crafts the skills section with strong action verbs to enhance your resume capabilities and effectiveness.
             </p>
           </div>

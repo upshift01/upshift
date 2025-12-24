@@ -243,7 +243,7 @@ const AdminContent = () => {
       case 'testimonials':
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Name</Label>
                 <Input value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} />
@@ -253,7 +253,7 @@ const AdminContent = () => {
                 <Input value={formData.role || ''} onChange={(e) => setFormData({...formData, role: e.target.value})} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Location</Label>
                 <Input value={formData.location || ''} onChange={(e) => setFormData({...formData, location: e.target.value})} />

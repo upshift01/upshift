@@ -181,7 +181,7 @@ const ResellerDashboard = () => {
             <Clock className="h-5 w-5 text-yellow-600" />
             <div>
               <p className="text-yellow-800 dark:text-yellow-200 font-medium">Account Pending Approval</p>
-              <p className="text-yellow-700 dark:text-yellow-300 text-sm">Your reseller account is being reviewed. You'll be notified once activated.</p>
+              <p className="text-yellow-700 dark:text-yellow-300 text-sm">Your reseller account is being reviewed. You&apos;ll be notified once activated.</p>
             </div>
           </div>
         </div>

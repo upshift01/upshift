@@ -244,7 +244,7 @@ const AdminResellers = () => {
                           <div className="text-xs text-gray-500">{reseller.custom_domain}</div>
                         )}
                       </td>
-                      <td className="py-3 px-4">{getStatusBadge(reseller.status)}</td>
+                      <td className="py-3 px-4">{getStatusBadge(reseller.status, reseller.subscription)}</td>
                       <td className="py-3 px-4">{reseller.stats?.total_customers || 0}</td>
                       <td className="py-3 px-4">{formatCurrency(reseller.stats?.total_revenue || 0)}</td>
                       <td className="py-3 px-4">

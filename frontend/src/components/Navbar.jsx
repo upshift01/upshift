@@ -15,8 +15,8 @@ const Navbar = () => {
     { name: 'Improve Resume', path: '/improve' },
     { name: 'Cover Letter', path: '/cover-letter' },
     { name: 'Templates', path: '/templates' },
-    { name: 'ATS Checker', path: '/ats-checker' },
-    { name: 'Skills Generator', path: '/skills-generator' },
+    { name: 'ATS Checker', path: '/ats-checker', isFree: true },
+    { name: 'Skills Generator', path: '/skills-generator', isFree: true },
     { name: 'Contact', path: '/contact' }
   ];
 

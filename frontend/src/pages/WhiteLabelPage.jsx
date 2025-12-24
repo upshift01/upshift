@@ -330,7 +330,7 @@ const WhiteLabelPage = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-blue-200">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>14-day free trial</span>
+              <span>7-day free trial</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />

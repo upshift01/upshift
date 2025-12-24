@@ -391,6 +391,7 @@ const ResellerInvoices = () => {
               <option value="paid">Paid</option>
               <option value="pending">Pending</option>
               <option value="overdue">Overdue</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
         </CardContent>

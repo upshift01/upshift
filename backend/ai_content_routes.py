@@ -374,8 +374,8 @@ async def submit_partner_enquiry(data: PartnerEnquiryRequest):
             await email_service.send_email(
                 to_email="partners@upshift.works",
                 subject=f"[Partner Enquiry] {data.company} - {data.type}",
-                html_content=email_content,
-                db=db
+                html_body=email_content,
+                raise_exceptions=False
             )
         except Exception as email_error:
             logger.warning(f"Could not send partner enquiry notification: {str(email_error)}")

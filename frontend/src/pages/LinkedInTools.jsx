@@ -894,7 +894,7 @@ const EnhanceProfile = ({ getAuthHeader, toast, loading, setLoading, result, set
     } catch (error) {
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to analyze profile",
+        description: error.response?.data?.detail || "Failed to analyse profile",
         variant: "destructive"
       });
     } finally {

@@ -356,7 +356,7 @@ class ContactFormSubmission(BaseModel):
 
 
 @whitelabel_router.post("/contact", response_model=dict)
-async def submit_contact_form(data: ContactFormSubmission, request: Request):
+async def submit_contact_form(data: ContactFormSubmission, request: Request, background_tasks: BackgroundTasks):
     """
     Submit a contact form message.
     Stores the message in the database and optionally sends an email notification.
@@ -393,49 +393,11 @@ async def submit_contact_form(data: ContactFormSubmission, request: Request):
         
         logger.info(f"Contact form submission received from {data.email}: {data.subject}")
         
-        # Try to send email notification (optional - won't fail if email not configured)
-        try:
-            from email_service import email_service
-            
-            # Get platform settings for email
-            site_settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
-            admin_email = site_settings.get("contact", {}).get("email", "support@upshift.works") if site_settings else "support@upshift.works"
-            
-            # Send notification to admin
-            email_content = f"""
-            <html>
-            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #1e40af, #7c3aed); padding: 20px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">New Contact Form Submission</h1>
-                </div>
-                <div style="padding: 20px; background: #f9fafb;">
-                    <p><strong>From:</strong> {data.name} ({data.email})</p>
-                    <p><strong>Subject:</strong> {data.subject}</p>
-                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
-                    <p><strong>Message:</strong></p>
-                    <p style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                        {data.message.replace(chr(10), '<br>')}
-                    </p>
-                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
-                    <p style="color: #6b7280; font-size: 12px;">
-                        Received at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}<br>
-                        Source: {host}
-                    </p>
-                </div>
-            </body>
-            </html>
-            """
-            
-            await email_service.send_email(
-                to_email=admin_email,
-                subject=f"[Contact Form] {data.subject}",
-                html_body=email_content,
-                raise_exceptions=False
-            )
-            logger.info(f"Contact form notification sent to {admin_email}")
-        except Exception as email_error:
-            # Don't fail the submission if email fails
-            logger.warning(f"Could not send contact form notification email: {str(email_error)}")
+        # Send email notification in background (non-blocking)
+        background_tasks.add_task(
+            send_contact_notification_email,
+            data.name, data.email, data.subject, data.message, host
+        )
         
         return {
             "success": True,

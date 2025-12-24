@@ -598,6 +598,61 @@ async def get_trial_resellers(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@admin_router.post("/resellers/check-expired-trials", response_model=dict)
+async def check_and_expire_trials(
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Check for expired trials and update their status"""
+    try:
+        now = datetime.now(timezone.utc)
+        
+        # Find all active trials that have expired
+        expired_query = {
+            "subscription.status": "trial",
+            "subscription.is_trial": True,
+            "subscription.trial_end_date": {"$lt": now.isoformat()}
+        }
+        
+        expired_resellers = await db.resellers.find(expired_query, {"_id": 0, "id": 1, "company_name": 1}).to_list(100)
+        
+        expired_count = 0
+        expired_names = []
+        
+        for reseller in expired_resellers:
+            await db.resellers.update_one(
+                {"id": reseller["id"]},
+                {
+                    "$set": {
+                        "subscription.status": "trial_expired",
+                        "updated_at": now
+                    }
+                }
+            )
+            expired_count += 1
+            expired_names.append(reseller.get("company_name", reseller["id"]))
+            
+            # Log activity
+            await db.activity_logs.insert_one({
+                "id": str(uuid.uuid4()),
+                "reseller_id": reseller["id"],
+                "type": "trial_expired",
+                "description": "Trial period expired",
+                "created_at": now
+            })
+        
+        logger.info(f"Expired {expired_count} trials")
+        
+        return {
+            "success": True,
+            "expired_count": expired_count,
+            "expired_resellers": expired_names,
+            "message": f"Processed {expired_count} expired trials"
+        }
+    except Exception as e:
+        logger.error(f"Error checking expired trials: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Analytics ====================
 
 @admin_router.get("/analytics", response_model=dict)

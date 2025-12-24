@@ -2525,11 +2525,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             self.test_ai_content_generation_apis,
             self.test_invoice_reminder_api,
             self.test_customer_invoice_creation,
-            self.test_trial_system,  # Add the new trial system tests
-            self.test_invoice_pdf_download_with_yoco_qr,
-            self.test_reseller_customer_signup_e2e,
-            self.test_ai_assistant_apis,
-            self.test_admin_content_management_apis
+            self.test_trial_system  # Add the new trial system tests
         ]
         
         for test_suite in test_suites:

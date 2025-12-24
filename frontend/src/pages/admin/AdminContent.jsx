@@ -287,7 +287,7 @@ const AdminContent = () => {
       case 'features':
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Title</Label>
                 <Input value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} />
@@ -301,7 +301,7 @@ const AdminContent = () => {
               <Label>Description</Label>
               <Textarea value={formData.description || ''} onChange={(e) => setFormData({...formData, description: e.target.value})} rows={3} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Icon Name</Label>
                 <Select value={formData.icon || 'Sparkles'} onValueChange={(v) => setFormData({...formData, icon: v})}>
@@ -343,7 +343,7 @@ const AdminContent = () => {
       case 'industries':
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Industry Name</Label>
                 <Input value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} />

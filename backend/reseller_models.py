@@ -35,9 +35,16 @@ class ResellerLegal(BaseModel):
 class ResellerSubscription(BaseModel):
     plan: str = "monthly"
     monthly_fee: int = 250000  # R2500 in cents
-    status: str = "active"  # active, suspended, cancelled
+    status: str = "trial"  # trial, active, suspended, cancelled, trial_expired
     next_billing_date: Optional[datetime] = None
     payment_method: str = "invoice"  # invoice, card
+    # Trial fields
+    is_trial: bool = True
+    trial_start_date: Optional[datetime] = None
+    trial_end_date: Optional[datetime] = None
+    trial_days: int = 7  # 7-day free trial
+    converted_from_trial: bool = False
+    converted_date: Optional[datetime] = None
 
 class ResellerStats(BaseModel):
     total_customers: int = 0

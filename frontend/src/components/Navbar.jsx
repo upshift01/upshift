@@ -52,7 +52,7 @@ const Navbar = () => {
               >
                 {item.name}
                 {item.isFree && (
-                  <sup className="text-[6px] font-semibold text-green-600">F</sup>
+                  <sup className="text-[8px] font-bold text-green-600">FREE</sup>
                 )}
               </Link>
             ))}

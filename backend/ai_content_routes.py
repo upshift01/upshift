@@ -476,7 +476,8 @@ Generate the skills now:"""
         # Initialize LLM
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
-            session_id=f"skills-{uuid.uuid4()}"
+            session_id=f"skills-{uuid.uuid4()}",
+            system_message="You are an expert resume writer and ATS optimization specialist."
         ).with_model("openai", "gpt-4o")
         
         # Generate skills

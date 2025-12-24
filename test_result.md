@@ -289,6 +289,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ Mobile responsiveness working correctly. Tested with 390x844 viewport, mobile navigation elements (8 elements detected) present and functional. Site adapts properly to mobile screen sizes."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE MOBILE RESPONSIVENESS TESTING COMPLETED. Super Admin Portal: Hamburger menu (≡) visible and functional on mobile, sidebar slides in/out correctly with dark overlay, navigation to Content/Users/Analytics pages working, dashboard cards stack vertically, no horizontal overflow. Reseller Portal: Hamburger menu visible on mobile, sidebar functionality present, dashboard cards responsive, no horizontal overflow detected. Both portals fully responsive on 390x844 mobile viewport with proper mobile navigation patterns."
 
 backend:
   - task: "Partner Enquiry API"

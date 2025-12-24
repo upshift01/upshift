@@ -483,7 +483,12 @@ Generate the skills now:"""
         # Generate skills
         user_message = UserMessage(prompt)
         response = await chat.send_message(user_message)
-        generated_skills = response.content
+        
+        # Handle response - could be string or object with content attribute
+        if hasattr(response, 'content'):
+            generated_skills = response.content
+        else:
+            generated_skills = str(response)
         
         logger.info(f"Skills generated for {request.job_title} in {request.industry}")
         

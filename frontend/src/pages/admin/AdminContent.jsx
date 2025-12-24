@@ -461,41 +461,50 @@ const AdminContent = () => {
   const currentData = getCurrentData();
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Content Management</h1>
-          <p className="text-gray-500">Manage templates, testimonials, and features</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Content Management</h1>
+          <p className="text-sm text-gray-500">Manage templates, testimonials, and features</p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setShowForm(false); }}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="cv-templates" className="gap-2">
-            <FileText className="h-4 w-4" />
-            CV Templates ({cvTemplates.length})
-          </TabsTrigger>
-          <TabsTrigger value="cover-letter-templates" className="gap-2">
-            <FileText className="h-4 w-4" />
-            Cover Letters ({coverLetterTemplates.length})
-          </TabsTrigger>
-          <TabsTrigger value="testimonials" className="gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Testimonials ({testimonials.length})
-          </TabsTrigger>
-          <TabsTrigger value="features" className="gap-2">
-            <Sparkles className="h-4 w-4" />
-            Features ({features.length})
-          </TabsTrigger>
-          <TabsTrigger value="industries" className="gap-2">
-            <Briefcase className="h-4 w-4" />
-            Industries ({industries.length})
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="mb-6 inline-flex min-w-max">
+            <TabsTrigger value="cv-templates" className="gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">CV Templates</span>
+              <span className="sm:hidden">CV</span>
+              <span className="hidden sm:inline">({cvTemplates.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="cover-letter-templates" className="gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Cover Letters</span>
+              <span className="sm:hidden">Letters</span>
+              <span className="hidden sm:inline">({coverLetterTemplates.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="testimonials" className="gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Testimonials ({testimonials.length})</span>
+              <span className="sm:hidden">Reviews</span>
+            </TabsTrigger>
+            <TabsTrigger value="features" className="gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Features ({features.length})</span>
+              <span className="sm:hidden">Features</span>
+            </TabsTrigger>
+            <TabsTrigger value="industries" className="gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Industries ({industries.length})</span>
+              <span className="sm:hidden">Industries</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Search and Add */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input 
               placeholder="Search..." 
@@ -504,7 +513,7 @@ const AdminContent = () => {
               className="pl-10"
             />
           </div>
-          <Button onClick={startCreate} className="gap-2">
+          <Button onClick={startCreate} className="gap-2 whitespace-nowrap">
             <Plus className="h-4 w-4" />
             Add New
           </Button>

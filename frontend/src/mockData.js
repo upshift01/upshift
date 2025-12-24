@@ -198,20 +198,20 @@ export const features = [
   {
     id: 3,
     title: "Cover Letter Generator",
-    description: "Generate compelling, personalized cover letters that match job descriptions perfectly.",
+    description: "Generate compelling, personalised cover letters that match job descriptions perfectly.",
     icon: "Mail",
     color: "purple"
   },
   {
     id: 4,
     title: "Job Matching",
-    description: "Match your resume to job descriptions and get optimization suggestions for better results.",
+    description: "Match your resume to job descriptions and get optimisation suggestions for better results.",
     icon: "Target",
     color: "orange"
   },
   {
     id: 5,
-    title: "ATS Optimization",
+    title: "ATS Optimisation",
     description: "Ensure your CV passes Applicant Tracking Systems used by major South African companies.",
     icon: "CheckCircle",
     color: "teal"
@@ -258,7 +258,7 @@ export const testimonials = [
     name: "Lerato Molefe",
     role: "HR Director",
     location: "Pretoria",
-    content: "After 6 months of job hunting, I used UpShift and got 5 interview calls in 2 weeks! The ATS optimization really works.",
+    content: "After 6 months of job hunting, I used UpShift and got 5 interview calls in 2 weeks! The ATS optimisation really works.",
     rating: 5,
     avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=100&h=100&fit=crop"
   },
@@ -285,7 +285,7 @@ export const testimonials = [
     name: "Ahmed Patel",
     role: "Chartered Accountant",
     location: "Sandton",
-    content: "Switched from Big 4 to industry in just 3 weeks using UpShift. The LinkedIn optimization tips were game-changing.",
+    content: "Switched from Big 4 to industry in just 3 weeks using UpShift. The LinkedIn optimisation tips were game-changing.",
     rating: 5,
     avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"
   },

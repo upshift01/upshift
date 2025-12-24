@@ -388,3 +388,113 @@ async def submit_partner_enquiry(data: PartnerEnquiryRequest):
     except Exception as e:
         logger.error(f"Error submitting partner enquiry: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to submit enquiry. Please try again.")
+
+
+
+# ==================== RESUME SKILLS GENERATOR ====================
+
+class SkillsGeneratorRequest(BaseModel):
+    industry: str
+    job_title: str
+    experience_level: str  # student, entry_level, team_lead, manager, executive, freelancer
+    soft_skills: bool = True
+    hard_skills: bool = True
+    transferable_skills: bool = True
+    job_description: Optional[str] = None
+
+
+@ai_content_router.post("/generate-skills", response_model=dict)
+async def generate_resume_skills(request: SkillsGeneratorRequest):
+    """
+    Generate AI-powered resume skills based on industry, job title, and experience level.
+    This is a FREE tool - no authentication required.
+    """
+    try:
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Build skill types string
+        skill_types = []
+        if request.soft_skills:
+            skill_types.append("Soft Skills (communication, teamwork, leadership, problem-solving, adaptability)")
+        if request.hard_skills:
+            skill_types.append("Hard Skills (technical abilities, tools, software, certifications)")
+        if request.transferable_skills:
+            skill_types.append("Transferable Skills (skills applicable across industries)")
+        
+        skill_types_str = ", ".join(skill_types) if skill_types else "all types of skills"
+        
+        # Experience level descriptions
+        experience_descriptions = {
+            "student": "a student or recent graduate with limited work experience",
+            "entry_level": "an entry-level professional just starting their career",
+            "team_lead": "a team lead with experience managing small teams",
+            "manager": "a manager with experience overseeing departments or projects",
+            "executive": "an executive with senior leadership experience",
+            "freelancer": "a freelancer or independent contractor"
+        }
+        
+        experience_desc = experience_descriptions.get(
+            request.experience_level, 
+            f"a professional at {request.experience_level} level"
+        )
+        
+        # Build prompt
+        prompt = f"""You are an expert resume writer and ATS (Applicant Tracking System) optimization specialist. 
+Generate a comprehensive list of resume skills for the following profile:
+
+**Industry:** {request.industry}
+**Job Title:** {request.job_title}
+**Experience Level:** {experience_desc}
+**Skill Types Requested:** {skill_types_str}
+"""
+
+        if request.job_description:
+            prompt += f"""
+**Target Job Description:** 
+{request.job_description}
+
+Analyze the job description and ensure the skills generated match the keywords and requirements mentioned.
+"""
+
+        prompt += """
+
+**Instructions:**
+1. Generate 15-20 highly relevant skills for this role
+2. Use strong action verbs where appropriate (e.g., "Proficient in...", "Experienced with...", "Expert at...")
+3. Make skills ATS-friendly by including industry-standard keywords
+4. Format each skill as a bullet point
+5. Group skills by category if multiple skill types are requested
+6. Tailor skills to the experience level - more advanced skills for senior roles
+7. Include specific tools, technologies, or methodologies relevant to the industry
+
+**Output Format:**
+Provide skills in clear bullet points grouped by category. Each skill should be concise but descriptive enough to pass ATS screening.
+
+Generate the skills now:"""
+
+        # Initialize LLM
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            model="gpt-4o"
+        )
+        
+        # Generate skills
+        response = await chat.send_message_async(UserMessage(prompt))
+        generated_skills = response.content
+        
+        logger.info(f"Skills generated for {request.job_title} in {request.industry}")
+        
+        return {
+            "success": True,
+            "skills": generated_skills,
+            "job_title": request.job_title,
+            "industry": request.industry,
+            "experience_level": request.experience_level
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating skills: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate skills. Please try again.")

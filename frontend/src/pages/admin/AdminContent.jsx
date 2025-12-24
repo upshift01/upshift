@@ -194,7 +194,7 @@ const AdminContent = () => {
       case 'cover-letter-templates':
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Name</Label>
                 <Input value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} />
@@ -216,7 +216,7 @@ const AdminContent = () => {
               <Label>Description</Label>
               <Textarea value={formData.description || ''} onChange={(e) => setFormData({...formData, description: e.target.value})} rows={3} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Industry</Label>
                 <Input value={formData.industry || ''} onChange={(e) => setFormData({...formData, industry: e.target.value})} />

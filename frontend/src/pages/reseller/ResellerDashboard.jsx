@@ -5,7 +5,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { 
   Users, TrendingUp, DollarSign, BarChart3, ArrowUpRight, ArrowDownRight,
   FileText, Mail, Settings, Palette, Globe, Zap, CheckCircle, Circle,
-  PlusCircle, Send, Eye, UserPlus, CreditCard, Activity, Clock, Target
+  PlusCircle, Send, Eye, UserPlus, CreditCard, Activity, Clock, Target,
+  AlertCircle, Gift
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';

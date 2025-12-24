@@ -262,13 +262,18 @@ const AdminResellers = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Brand</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Domain</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-600">Active</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Customers</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Revenue</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredResellers.map((reseller) => (
+                  {filteredResellers.map((reseller) => {
+                    const isActive = reseller.status === 'active' || reseller.status === 'pending';
+                    const canToggle = reseller.status !== 'suspended' && reseller.status !== 'deleted';
+                    
+                    return (
                     <tr key={reseller.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div className="font-medium">{reseller.company_name}</div>
@@ -282,6 +287,29 @@ const AdminResellers = () => {
                         )}
                       </td>
                       <td className="py-3 px-4">{getStatusBadge(reseller.status, reseller.subscription)}</td>
+                      <td className="py-3 px-4 text-center">
+                        {canToggle ? (
+                          <button
+                            onClick={() => handleToggleStatus(reseller)}
+                            className={`p-1 rounded-lg transition-colors ${
+                              isActive 
+                                ? 'text-green-600 hover:bg-green-50' 
+                                : 'text-gray-400 hover:bg-gray-100'
+                            }`}
+                            title={isActive ? 'Click to deactivate' : 'Click to activate'}
+                          >
+                            {isActive ? (
+                              <ToggleRight className="h-6 w-6" />
+                            ) : (
+                              <ToggleLeft className="h-6 w-6" />
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-gray-300">
+                            <Power className="h-5 w-5 mx-auto" />
+                          </span>
+                        )}
+                      </td>
                       <td className="py-3 px-4">{reseller.stats?.total_customers || 0}</td>
                       <td className="py-3 px-4">{formatCurrency(reseller.stats?.total_revenue || 0)}</td>
                       <td className="py-3 px-4">
@@ -305,7 +333,7 @@ const AdminResellers = () => {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>

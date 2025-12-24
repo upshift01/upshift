@@ -15,7 +15,10 @@ import {
   X,
   Gift,
   Calendar,
-  RefreshCw
+  RefreshCw,
+  Power,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';

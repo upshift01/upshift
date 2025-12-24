@@ -279,7 +279,7 @@ const WhiteLabelPage = () => {
       avatar: "MK"
     },
     {
-      quote: "We deployed UpShift across our university career center. Student engagement with career services increased by 300% in the first semester.",
+      quote: "We deployed UpShift across our university career centre. Student engagement with career services increased by 300% in the first semester.",
       author: "Dr. Thabo N.",
       role: "Head of Career Services, University",
       avatar: "TN"

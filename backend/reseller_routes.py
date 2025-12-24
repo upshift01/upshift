@@ -198,6 +198,49 @@ async def get_reseller_profile(context: dict = Depends(get_current_reseller_admi
     }
 
 
+@reseller_router.get("/trial-status", response_model=dict)
+async def get_trial_status(context: dict = Depends(get_current_reseller_admin)):
+    """Get current reseller's trial status"""
+    reseller = context["reseller"]
+    subscription = reseller.get("subscription", {})
+    
+    is_trial = subscription.get("is_trial", False)
+    trial_status = subscription.get("status", "active")
+    trial_end_date = subscription.get("trial_end_date")
+    
+    days_remaining = 0
+    trial_expired = False
+    
+    if trial_end_date:
+        try:
+            end_dt = datetime.fromisoformat(trial_end_date.replace('Z', '+00:00'))
+            now = datetime.now(timezone.utc)
+            days_remaining = (end_dt - now).days
+            hours_remaining = ((end_dt - now).seconds // 3600) if days_remaining >= 0 else 0
+            trial_expired = days_remaining < 0
+            days_remaining = max(0, days_remaining)
+        except:
+            trial_expired = True
+            hours_remaining = 0
+    else:
+        hours_remaining = 0
+    
+    return {
+        "is_trial": is_trial,
+        "trial_status": trial_status,
+        "trial_start_date": subscription.get("trial_start_date"),
+        "trial_end_date": trial_end_date,
+        "days_remaining": days_remaining,
+        "hours_remaining": hours_remaining if days_remaining == 0 else None,
+        "trial_expired": trial_expired,
+        "converted_from_trial": subscription.get("converted_from_trial", False),
+        "converted_date": subscription.get("converted_date"),
+        "plan": subscription.get("plan", "monthly"),
+        "monthly_fee": subscription.get("monthly_fee", 250000),
+        "next_billing_date": subscription.get("next_billing_date")
+    }
+
+
 @reseller_router.put("/profile", response_model=dict)
 async def update_reseller_profile(
     data: ResellerUpdate,

@@ -347,12 +347,23 @@ const WhiteLabelPage = () => {
       {/* Trusted By */}
       <section className="py-12 bg-gray-50 border-b">
         <div className="max-w-6xl mx-auto px-4">
-          <p className="text-center text-gray-500 mb-8">Trusted by leading organizations across South Africa</p>
-          <div className="flex flex-wrap items-center justify-center gap-12 opacity-60">
-            {['Recruitment', 'University', 'Consulting', 'Education', 'Corporate'].map((name, i) => (
-              <div key={i} className="flex items-center gap-2 text-gray-400">
-                <Building2 className="h-6 w-6" />
-                <span className="font-semibold text-lg">{name} Partner</span>
+          <p className="text-center text-gray-500 mb-8">Trusted by leading organisations across South Africa</p>
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+            {[
+              { name: 'Stellenbosch Careers', abbr: 'SC', color: 'bg-maroon-600', textColor: 'text-red-800' },
+              { name: 'Gauteng Talent Hub', abbr: 'GTH', color: 'bg-blue-600', textColor: 'text-blue-700' },
+              { name: 'Cape Recruit Pro', abbr: 'CRP', color: 'bg-green-600', textColor: 'text-green-700' },
+              { name: 'Joburg Executive Search', abbr: 'JES', color: 'bg-amber-500', textColor: 'text-amber-700' },
+              { name: 'Durban Skills Academy', abbr: 'DSA', color: 'bg-purple-600', textColor: 'text-purple-700' },
+              { name: 'SA Graduate Network', abbr: 'SAGN', color: 'bg-teal-600', textColor: 'text-teal-700' },
+            ].map((partner, i) => (
+              <div key={i} className="flex items-center gap-3 group">
+                <div className={`w-10 h-10 rounded-lg ${partner.color} flex items-center justify-center text-white font-bold text-xs shadow-sm`}>
+                  {partner.abbr}
+                </div>
+                <span className={`font-semibold text-gray-500 group-hover:text-gray-700 transition-colors hidden sm:block`}>
+                  {partner.name}
+                </span>
               </div>
             ))}
           </div>

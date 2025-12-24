@@ -413,6 +413,191 @@ async def activate_reseller(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== Trial Management ====================
+
+@admin_router.post("/resellers/{reseller_id}/convert-trial", response_model=dict)
+async def convert_trial_to_paid(
+    reseller_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Convert a trial reseller to a paid subscription"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        subscription = reseller.get("subscription", {})
+        if not subscription.get("is_trial"):
+            raise HTTPException(status_code=400, detail="Reseller is not on a trial")
+        
+        now = datetime.now(timezone.utc)
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    "subscription.status": "active",
+                    "subscription.is_trial": False,
+                    "subscription.converted_from_trial": True,
+                    "subscription.converted_date": now.isoformat(),
+                    "subscription.next_billing_date": (now + timedelta(days=30)).isoformat(),
+                    "updated_at": now
+                }
+            }
+        )
+        
+        # Log activity
+        await db.activity_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "reseller_id": reseller_id,
+            "type": "trial_converted",
+            "description": f"Trial converted to paid subscription by admin",
+            "performed_by": admin.id,
+            "created_at": now
+        })
+        
+        logger.info(f"Trial converted to paid for reseller: {reseller_id}")
+        
+        return {
+            "success": True,
+            "message": "Trial converted to paid subscription successfully",
+            "next_billing_date": (now + timedelta(days=30)).isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error converting trial: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/resellers/{reseller_id}/extend-trial", response_model=dict)
+async def extend_trial(
+    reseller_id: str,
+    days: int = 7,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Extend a reseller's trial period"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        subscription = reseller.get("subscription", {})
+        if not subscription.get("is_trial") and subscription.get("status") != "trial_expired":
+            raise HTTPException(status_code=400, detail="Reseller is not on a trial or trial hasn't expired")
+        
+        now = datetime.now(timezone.utc)
+        
+        # Calculate new trial end date
+        current_end = subscription.get("trial_end_date")
+        if current_end:
+            try:
+                current_end_dt = datetime.fromisoformat(current_end.replace('Z', '+00:00'))
+                if current_end_dt > now:
+                    # Trial hasn't expired yet, extend from current end
+                    new_end = current_end_dt + timedelta(days=days)
+                else:
+                    # Trial expired, extend from now
+                    new_end = now + timedelta(days=days)
+            except:
+                new_end = now + timedelta(days=days)
+        else:
+            new_end = now + timedelta(days=days)
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    "subscription.status": "trial",
+                    "subscription.is_trial": True,
+                    "subscription.trial_end_date": new_end.isoformat(),
+                    "subscription.next_billing_date": new_end.isoformat(),
+                    "updated_at": now
+                }
+            }
+        )
+        
+        # Log activity
+        await db.activity_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "reseller_id": reseller_id,
+            "type": "trial_extended",
+            "description": f"Trial extended by {days} days by admin",
+            "performed_by": admin.id,
+            "created_at": now
+        })
+        
+        logger.info(f"Trial extended by {days} days for reseller: {reseller_id}")
+        
+        return {
+            "success": True,
+            "message": f"Trial extended by {days} days",
+            "new_trial_end_date": new_end.isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error extending trial: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/resellers/trials", response_model=dict)
+async def get_trial_resellers(
+    status_filter: Optional[str] = None,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get all resellers on trial or with expired trials"""
+    try:
+        query = {
+            "$or": [
+                {"subscription.is_trial": True},
+                {"subscription.status": "trial"},
+                {"subscription.status": "trial_expired"}
+            ]
+        }
+        
+        if status_filter == "active":
+            query = {"subscription.status": "trial", "subscription.is_trial": True}
+        elif status_filter == "expired":
+            query = {"subscription.status": "trial_expired"}
+        elif status_filter == "expiring_soon":
+            # Trials expiring in next 3 days
+            now = datetime.now(timezone.utc)
+            three_days = (now + timedelta(days=3)).isoformat()
+            query = {
+                "subscription.is_trial": True,
+                "subscription.status": "trial",
+                "subscription.trial_end_date": {"$lte": three_days, "$gte": now.isoformat()}
+            }
+        
+        resellers = await db.resellers.find(query, {"_id": 0}).sort("subscription.trial_end_date", 1).to_list(100)
+        
+        # Calculate days remaining for each
+        now = datetime.now(timezone.utc)
+        for reseller in resellers:
+            trial_end = reseller.get("subscription", {}).get("trial_end_date")
+            if trial_end:
+                try:
+                    end_dt = datetime.fromisoformat(trial_end.replace('Z', '+00:00'))
+                    days_remaining = (end_dt - now).days
+                    reseller["trial_days_remaining"] = max(0, days_remaining)
+                    reseller["trial_expired"] = days_remaining < 0
+                except:
+                    reseller["trial_days_remaining"] = 0
+                    reseller["trial_expired"] = True
+            else:
+                reseller["trial_days_remaining"] = 0
+                reseller["trial_expired"] = False
+        
+        return {
+            "resellers": resellers,
+            "total": len(resellers)
+        }
+    except Exception as e:
+        logger.error(f"Error getting trial resellers: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Analytics ====================
 
 @admin_router.get("/analytics", response_model=dict)

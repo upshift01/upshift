@@ -450,7 +450,7 @@ const ResellerInvoices = () => {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-2">
-                            {invoice.status !== 'paid' && (
+                            {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
                               <>
                                 {invoice.payment_url ? (
                                   <Button
@@ -497,7 +497,19 @@ const ResellerInvoices = () => {
                                 >
                                   <CheckCircle className="h-4 w-4" />
                                 </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleCancelInvoice(invoice.id)}
+                                  title="Cancel Invoice"
+                                  className="text-gray-500 hover:text-red-600 hover:border-red-300"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
                               </>
+                            )}
+                            {invoice.status === 'cancelled' && (
+                              <span className="text-sm text-gray-400 italic">Cancelled</span>
                             )}
                             <Button
                               size="sm"

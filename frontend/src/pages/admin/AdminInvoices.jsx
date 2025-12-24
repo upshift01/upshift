@@ -120,9 +120,36 @@ const AdminInvoices = () => {
           });
         }, 5000);
         fetchInvoices();
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Failed to mark invoice as paid');
       }
     } catch (error) {
       console.error('Error marking invoice as paid:', error);
+    }
+  };
+
+  const cancelInvoice = async (invoiceId) => {
+    if (!window.confirm('Are you sure you want to cancel this invoice? This will remove it from analytics.')) {
+      return;
+    }
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/admin/invoices/${invoiceId}/cancel`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (response.ok) {
+        fetchInvoices();
+        alert('Invoice cancelled successfully');
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Failed to cancel invoice');
+      }
+    } catch (error) {
+      console.error('Error cancelling invoice:', error);
     }
   };
 

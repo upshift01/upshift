@@ -291,6 +291,9 @@ const AdminResellers = () => {
                 {(() => {
                   const reseller = resellers.find(r => r.id === actionMenu);
                   if (!reseller) return null;
+                  const isOnTrial = reseller.subscription?.is_trial || reseller.subscription?.status === 'trial';
+                  const isTrialExpired = reseller.subscription?.status === 'trial_expired';
+                  
                   return (
                     <>
                       <button
@@ -309,6 +312,26 @@ const AdminResellers = () => {
                         <Edit className="h-4 w-4" /> Edit Reseller
                       </button>
                       <div className="border-t my-1"></div>
+                      
+                      {/* Trial Actions */}
+                      {(isOnTrial || isTrialExpired) && (
+                        <>
+                          <button
+                            onClick={() => handleAction(reseller.id, 'convert-trial')}
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-600 flex items-center gap-2 transition-colors"
+                          >
+                            <CheckCircle className="h-4 w-4" /> Convert to Paid
+                          </button>
+                          <button
+                            onClick={() => handleExtendTrial(reseller.id)}
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-purple-50 text-purple-600 flex items-center gap-2 transition-colors"
+                          >
+                            <Calendar className="h-4 w-4" /> Extend Trial
+                          </button>
+                          <div className="border-t my-1"></div>
+                        </>
+                      )}
+                      
                       {reseller.status === 'pending' && (
                         <button
                           onClick={() => handleAction(reseller.id, 'approve')}
@@ -317,7 +340,7 @@ const AdminResellers = () => {
                           <CheckCircle className="h-4 w-4" /> Approve
                         </button>
                       )}
-                      {reseller.status === 'active' && (
+                      {reseller.status === 'active' && !isOnTrial && (
                         <button
                           onClick={() => handleAction(reseller.id, 'suspend')}
                           className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2 transition-colors"

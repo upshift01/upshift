@@ -779,7 +779,7 @@ async def get_revenue_analytics(
 ):
     """Get revenue analytics by month"""
     try:
-        # Reseller invoice revenue by month
+        # Reseller invoice revenue by month (exclude cancelled)
         reseller_pipeline = [
             {"$match": {"status": "paid", "paid_date": {"$ne": None}}},
             {

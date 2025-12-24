@@ -90,6 +90,7 @@ const AppContent = () => {
         <Route path="/book-strategy-call" element={<StrategyCallBooking />} />
         <Route path="/ats-checker" element={<ATSChecker />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/skills-generator" element={<SkillsGenerator />} />
         
         {/* Legal Pages */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

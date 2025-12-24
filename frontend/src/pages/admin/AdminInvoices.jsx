@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Receipt, Plus, CheckCircle, Clock, AlertTriangle, RefreshCw, Wifi, WifiOff, Download } from 'lucide-react';
+import { Receipt, Plus, CheckCircle, Clock, AlertTriangle, RefreshCw, Wifi, WifiOff, Download, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 

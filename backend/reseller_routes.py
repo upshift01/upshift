@@ -91,8 +91,12 @@ async def register_reseller(data: ResellerCreate):
         
         await db.users.insert_one(owner_user)
         
-        # Create reseller
+        # Create reseller with 7-day trial
         reseller_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+        trial_days = 7
+        trial_end_date = now + timedelta(days=trial_days)
+        
         reseller = {
             "id": reseller_id,
             "company_name": data.company_name,
@@ -120,9 +124,15 @@ async def register_reseller(data: ResellerCreate):
             "subscription": {
                 "plan": "monthly",
                 "monthly_fee": 250000,
-                "status": "pending",
-                "next_billing_date": None,
-                "payment_method": "invoice"
+                "status": "trial",
+                "next_billing_date": trial_end_date.isoformat(),
+                "payment_method": "invoice",
+                "is_trial": True,
+                "trial_start_date": now.isoformat(),
+                "trial_end_date": trial_end_date.isoformat(),
+                "trial_days": trial_days,
+                "converted_from_trial": False,
+                "converted_date": None
             },
             "stats": {
                 "total_customers": 0,
@@ -132,8 +142,8 @@ async def register_reseller(data: ResellerCreate):
             },
             "owner_user_id": user_id,
             "api_key": f"rsl_{uuid.uuid4().hex}",
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc)
+            "created_at": now,
+            "updated_at": now
         }
         
         await db.resellers.insert_one(reseller)

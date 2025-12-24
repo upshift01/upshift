@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Receipt, CheckCircle, Clock, AlertTriangle, CreditCard, ExternalLink, Loader2, Search, Filter, Download, Send, Eye, Plus, X, Link2 } from 'lucide-react';
+import { Receipt, CheckCircle, Clock, AlertTriangle, CreditCard, ExternalLink, Loader2, Search, Filter, Download, Send, Eye, Plus, X, Link2, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';

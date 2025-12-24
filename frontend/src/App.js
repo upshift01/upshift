@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AIAssistantBot from "./components/AIAssistantBot";
 import PrivateRoute from "./components/PrivateRoute";
+import ScrollToTop from "./components/ScrollToTop";
 import Home from "./pages/Home";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import ResumeImprover from "./pages/ResumeImprover";

@@ -52,3 +52,5 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "Starting comprehensive testing of Invoice Cancel functionality in both Super Admin and Reseller portals. Will verify UI elements, status filters, and cancel operations."
+  - agent: "testing"
+    message: "✅ TESTING COMPLETED: Invoice Cancel functionality is working in both portals. Super Admin: Status filter has 'Cancelled' option, Cancel button (X icon) present on pending invoices, confirmation dialog works properly. Reseller Portal: Status filter has 'Cancelled' option, cancel functionality implemented correctly. Backend API endpoints exist and are properly configured. Minor UI timing issue in Super Admin but core functionality is solid."

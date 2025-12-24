@@ -45,7 +45,7 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`text-sm font-medium transition-colors hover:text-blue-600 ${
+                className={`text-sm font-medium transition-colors hover:text-blue-600 whitespace-nowrap ${
                   location.pathname === item.path
                     ? 'text-blue-600'
                     : 'text-gray-700'
@@ -53,7 +53,7 @@ const Navbar = () => {
               >
                 {item.name}
                 {item.isFree && (
-                  <sup className="ml-0.5 text-[9px] font-bold text-green-600 align-super">FREE</sup>
+                  <sup className="text-[6px] font-semibold text-green-600">F</sup>
                 )}
               </Link>
             ))}

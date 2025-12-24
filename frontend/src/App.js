@@ -23,6 +23,7 @@ import PaymentCancel from "./pages/PaymentCancel";
 import ATSChecker from "./pages/ATSChecker";
 import Contact from "./pages/Contact";
 import LinkedInTools from "./pages/LinkedInTools";
+import SkillsGenerator from "./pages/SkillsGenerator";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";

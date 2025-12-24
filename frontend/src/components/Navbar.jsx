@@ -52,6 +52,9 @@ const Navbar = () => {
                 }`}
               >
                 {item.name}
+                {item.isFree && (
+                  <sup className="ml-0.5 text-[9px] font-bold text-green-600 align-super">FREE</sup>
+                )}
               </Link>
             ))}
             

@@ -56,22 +56,40 @@ const AdminResellers = () => {
     }
   };
 
-  const handleAction = async (resellerId, action) => {
+  const handleAction = async (resellerId, action, extraParams = {}) => {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/resellers/${resellerId}/${action}`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const url = new URL(`${process.env.REACT_APP_BACKEND_URL}/api/admin/resellers/${resellerId}/${action}`);
+      
+      // Add query params for extend-trial
+      if (action === 'extend-trial' && extraParams.days) {
+        url.searchParams.append('days', extraParams.days);
+      }
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (response.ok) {
+        const data = await response.json();
+        if (data.message) {
+          alert(data.message);
+        }
         fetchResellers();
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Action failed');
       }
     } catch (error) {
       console.error(`Error ${action} reseller:`, error);
     }
     setActionMenu(null);
+  };
+
+  const handleExtendTrial = (resellerId) => {
+    const days = prompt('Enter number of days to extend the trial:', '7');
+    if (days && !isNaN(parseInt(days))) {
+      handleAction(resellerId, 'extend-trial', { days: parseInt(days) });
+    }
   };
 
   const handleEditReseller = (reseller) => {

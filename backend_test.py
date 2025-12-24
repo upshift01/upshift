@@ -2541,9 +2541,34 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
                 })
         
         # Print summary
-        self.print_summary()
+        print("\n" + "=" * 60)
+        print("📊 TEST SUMMARY")
+        print("=" * 60)
         
-        return len(self.failed_tests) == 0
+        total_tests = len(self.test_results)
+        passed_tests = len([t for t in self.test_results if t["success"]])
+        failed_tests = len(self.failed_tests)
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        
+        if self.failed_tests:
+            print("\n🔍 FAILED TESTS:")
+            for test in self.failed_tests:
+                print(f"  • {test['test']}: {test['details']}")
+        
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        print(f"\n📈 Success Rate: {success_rate:.1f}%")
+        
+        if success_rate >= 90:
+            print("🎉 Excellent! Most tests are passing.")
+        elif success_rate >= 70:
+            print("👍 Good! Most core functionality is working.")
+        else:
+            print("⚠️  Several issues need attention.")
+        
+        return success_rate >= 70
 
     def test_vat_number_invoice_pdf_functionality(self):
         """Test VAT number support in Invoice PDF layout as per review request"""

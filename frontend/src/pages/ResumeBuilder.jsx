@@ -453,7 +453,7 @@ const ResumeBuilder = () => {
                   {isUploading ? (
                     <div className="flex flex-col items-center">
                       <Loader2 className="h-8 w-8 text-purple-600 animate-spin mb-2" />
-                      <p className="text-sm text-purple-600 font-medium">AI is analyzing and enhancing your CV...</p>
+                      <p className="text-sm text-purple-600 font-medium">AI is analysing and enhancing your CV...</p>
                       <p className="text-xs text-gray-500 mt-1">This may take a few seconds</p>
                     </div>
                   ) : uploadedFile ? (

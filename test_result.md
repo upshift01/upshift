@@ -1,40 +1,22 @@
-# Test Results - Invoice Cancel Functionality
+# Test Results - Reseller Activate/Deactivate Functionality
 
 ## Test Focus
-Testing the new Invoice Cancel functionality in both Super Admin and Reseller portals.
+Testing the new Activate/Deactivate functionality for reseller accounts in the Super Admin platform.
 
 ## Frontend Tests - IN PROGRESS
 
 frontend:
-  - task: "Super Admin Invoice Cancel Feature"
+  - task: "Reseller Activate/Deactivate Feature"
     implemented: true
-    working: true
-    file: "/app/frontend/src/pages/admin/AdminInvoices.jsx"
+    working: "NA"
+    file: "/app/frontend/src/pages/admin/AdminResellers.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "testing"
-        comment: "Ready for testing - Cancel functionality implemented with XCircle icon button and confirmation dialog"
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED: Status filter includes 'Cancelled' option, Cancel button (X icon) present on pending invoices, Confirmation dialog works. Minor: UI click timeout issue but functionality is properly implemented with backend API endpoint /api/admin/invoices/{id}/cancel"
-
-  - task: "Reseller Invoice Cancel Feature"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/pages/reseller/ResellerInvoices.jsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "testing"
-        comment: "Ready for testing - Cancel functionality implemented with XCircle icon button and confirmation dialog"
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED: Status filter includes 'Cancelled' option, Cancel functionality implemented with XCircle icon button and confirmation dialog. Backend API endpoint /api/reseller/customer-invoices/{id}/cancel exists. All current invoices are 'Paid' status so cancel button not visible (correct behavior)"
+        comment: "Ready for testing - Activate/Deactivate functionality implemented with toggle icons (ToggleRight/ToggleLeft) and confirmation dialogs. Status filter includes 'Inactive' option. Action menu shows Activate/Deactivate options based on current status."
 
 metadata:
   created_by: "testing_agent"
@@ -43,14 +25,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Super Admin Invoice Cancel Feature"
-    - "Reseller Invoice Cancel Feature"
+    - "Reseller Activate/Deactivate Feature"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "testing"
-    message: "Starting comprehensive testing of Invoice Cancel functionality in both Super Admin and Reseller portals. Will verify UI elements, status filters, and cancel operations."
-  - agent: "testing"
-    message: "✅ TESTING COMPLETED: Invoice Cancel functionality is working in both portals. Super Admin: Status filter has 'Cancelled' option, Cancel button (X icon) present on pending invoices, confirmation dialog works properly. Reseller Portal: Status filter has 'Cancelled' option, cancel functionality implemented correctly. Backend API endpoints exist and are properly configured. Minor UI timing issue in Super Admin but core functionality is solid."
+    message: "Starting comprehensive testing of Reseller Activate/Deactivate functionality in Super Admin platform. Will verify UI elements (Active column with toggle icons), status filter with 'Inactive' option, toggle functionality with confirmation dialogs, and action menu options."

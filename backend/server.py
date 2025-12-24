@@ -938,7 +938,7 @@ async def auto_generate_monthly_invoices():
         emails_sent = 0
         
         # Load email settings
-        settings = await db.platform_settings.find_one({"type": "email"}, {"_id": 0})
+        settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
         if settings:
             email_service.configure(settings)
         

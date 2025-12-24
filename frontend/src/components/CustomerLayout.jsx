@@ -37,6 +37,7 @@ const CustomerLayout = ({ children }) => {
 
   const toolItems = [
     { path: '/ats-checker', icon: Target, label: 'ATS Checker', badge: 'FREE' },
+    { path: '/skills-generator', icon: Sparkles, label: 'Skills Generator', badge: 'FREE' },
     { path: '/linkedin-tools', icon: Linkedin, label: 'LinkedIn Tools' },
     { path: '/builder', icon: FileText, label: 'Build CV' },
   ];

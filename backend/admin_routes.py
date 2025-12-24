@@ -756,7 +756,8 @@ async def get_platform_analytics(
             },
             "invoices": {
                 "pending": pending_invoices,
-                "overdue": overdue_invoices
+                "overdue": overdue_invoices,
+                "cancelled": cancelled_invoices
             },
             "payments": {
                 "pending": pending_customer_payments

@@ -76,6 +76,7 @@ const AppContent = () => {
 
   return (
     <>
+      <ScrollToTop />
       {!hideNavbar && <Navbar />}
       <Routes>
         {/* Public Routes */}

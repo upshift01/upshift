@@ -119,7 +119,7 @@ const WhiteLabelPage = () => {
       price: 0,
       price_display: 'Custom',
       period: '',
-      description: 'For large organizations with custom requirements',
+      description: 'For large organisations with custom requirements',
       features: [
         'Unlimited clients',
         'Multiple brand instances',

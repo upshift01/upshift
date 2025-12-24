@@ -1725,7 +1725,7 @@ const ResellerSettings = () => {
                 <ul className="text-sm text-blue-700 space-y-1">
                   <li>• Full control over your OpenAI costs and billing</li>
                   <li>• Set your own usage limits and rate limits</li>
-                  <li>• Access to your organization's fine-tuned models</li>
+                  <li>• Access to your organisation's fine-tuned models</li>
                   <li>• Independent from platform-wide usage quotas</li>
                 </ul>
               </div>

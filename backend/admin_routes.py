@@ -471,6 +471,52 @@ async def activate_reseller(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@admin_router.post("/resellers/{reseller_id}/deactivate", response_model=dict)
+async def deactivate_reseller(
+    reseller_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Deactivate a reseller account (softer than suspend)"""
+    try:
+        reseller = await db.resellers.find_one({"id": reseller_id})
+        if not reseller:
+            raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        if reseller["status"] == "inactive":
+            raise HTTPException(status_code=400, detail="Reseller is already inactive")
+        
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    "status": "inactive",
+                    "deactivated_at": datetime.now(timezone.utc),
+                    "deactivated_by": admin.id,
+                    "updated_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        # Log activity
+        await db.activity_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "reseller_id": reseller_id,
+            "type": "reseller_deactivated",
+            "description": f"Reseller account deactivated by admin",
+            "performed_by": admin.id,
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        logger.info(f"Reseller deactivated: {reseller_id}")
+        
+        return {"success": True, "message": "Reseller deactivated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deactivating reseller: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Trial Management ====================
 
 @admin_router.post("/resellers/{reseller_id}/convert-trial", response_model=dict)

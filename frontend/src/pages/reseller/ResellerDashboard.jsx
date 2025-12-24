@@ -131,6 +131,28 @@ const ResellerDashboard = () => {
         </div>
       )}
 
+      {/* Trial Status Banner */}
+      {profile?.subscription?.is_trial && (
+        <TrialBanner subscription={profile.subscription} darkMode={darkMode} />
+      )}
+      {profile?.subscription?.status === 'trial_expired' && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-red-800 dark:text-red-200 font-medium">Trial Period Expired</p>
+                <p className="text-red-700 dark:text-red-300 text-sm">Your free trial has ended. Contact support to upgrade to a paid plan.</p>
+              </div>
+            </div>
+            <Button variant="destructive" size="sm">
+              <Mail className="h-4 w-4 mr-2" />
+              Contact Support
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Onboarding Progress */}
       {onboardingProgress < 100 && (
         <Card className={cardBg}>

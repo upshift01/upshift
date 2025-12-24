@@ -723,9 +723,10 @@ async def get_platform_analytics(
         
         this_month_revenue = reseller_month_revenue + customer_month_revenue
         
-        # Invoice counts
+        # Invoice counts (exclude cancelled)
         pending_invoices = await db.reseller_invoices.count_documents({"status": "pending"})
         overdue_invoices = await db.reseller_invoices.count_documents({"status": "overdue"})
+        cancelled_invoices = await db.reseller_invoices.count_documents({"status": "cancelled"})
         
         # Pending customer payments
         pending_customer_payments = await db.payments.count_documents({"status": "pending"})

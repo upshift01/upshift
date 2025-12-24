@@ -31,6 +31,7 @@ const Footer = () => {
     { name: 'Pricing', path: '/pricing' },
     { name: 'CV Templates', path: '/templates' },
     { name: 'Cover Letter Templates', path: '/cover-letter-templates' },
+    { name: 'Skills Generator', path: '/skills-generator' },
     { name: 'LinkedIn Tools', path: '/linkedin-tools' },
     { name: 'Book Strategy Call', path: '/book-strategy-call' },
     { name: 'White-Label Partners', path: '/white-label' },

@@ -892,7 +892,7 @@ async def startup_event():
             logger.info(f"Default super admin created: {default_admin_email}")
         
         # Load email settings for service
-        email_settings = await db.platform_settings.find_one({"type": "email"}, {"_id": 0})
+        email_settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
         if email_settings:
             email_service.configure(email_settings)
             logger.info("Email service configured from database settings")

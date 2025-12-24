@@ -80,6 +80,7 @@ const CustomerDashboard = () => {
 
   const quickActions = [
     { icon: Target, label: 'ATS Checker', link: '/ats-checker', badge: 'FREE', color: 'green' },
+    { icon: Sparkles, label: 'Skills Generator', link: '/skills-generator', badge: 'FREE', color: 'emerald' },
     { icon: FileText, label: 'Build CV', link: '/builder', color: 'blue' },
     { icon: Zap, label: 'Improve CV', link: '/improve', color: 'purple' },
     { icon: Mail, label: 'Cover Letter', link: '/cover-letter', color: 'pink' },

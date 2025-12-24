@@ -442,24 +442,40 @@ async def activate_reseller(
     reseller_id: str,
     admin: UserResponse = Depends(get_current_super_admin)
 ):
-    """Activate a suspended reseller"""
+    """Activate a suspended or inactive reseller"""
     try:
         reseller = await db.resellers.find_one({"id": reseller_id})
         if not reseller:
             raise HTTPException(status_code=404, detail="Reseller not found")
+        
+        if reseller["status"] == "active":
+            raise HTTPException(status_code=400, detail="Reseller is already active")
         
         await db.resellers.update_one(
             {"id": reseller_id},
             {
                 "$set": {
                     "status": "active",
-                    "suspension_reason": None,
-                    "suspended_at": None,
                     "updated_at": datetime.now(timezone.utc)
                 },
-                "$unset": {"suspension_reason": "", "suspended_at": ""}
+                "$unset": {
+                    "suspension_reason": "",
+                    "suspended_at": "",
+                    "deactivated_at": "",
+                    "deactivated_by": ""
+                }
             }
         )
+        
+        # Log activity
+        await db.activity_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "reseller_id": reseller_id,
+            "type": "reseller_activated",
+            "description": f"Reseller account activated by admin",
+            "performed_by": admin.id,
+            "created_at": datetime.now(timezone.utc)
+        })
         
         logger.info(f"Reseller activated: {reseller_id}")
         

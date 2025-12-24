@@ -1485,6 +1485,9 @@ async def mark_customer_invoice_paid(
         if invoice["status"] == "paid":
             raise HTTPException(status_code=400, detail="Invoice already paid")
         
+        if invoice["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Cannot mark a cancelled invoice as paid")
+        
         # Update invoice status
         await db.customer_invoices.update_one(
             {"id": invoice_id},
@@ -1507,6 +1510,54 @@ async def mark_customer_invoice_paid(
     except Exception as e:
         logger.error(f"Error marking invoice as paid: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/customer-invoices/{invoice_id}/cancel", response_model=dict)
+async def cancel_customer_invoice(
+    invoice_id: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Cancel a customer invoice - removes it from analytics"""
+    try:
+        reseller = context["reseller"]
+        
+        # Get the invoice
+        invoice = await db.customer_invoices.find_one(
+            {"id": invoice_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        if invoice["status"] == "paid":
+            raise HTTPException(status_code=400, detail="Cannot cancel a paid invoice")
+        
+        if invoice["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Invoice is already cancelled")
+        
+        # Update invoice status
+        await db.customer_invoices.update_one(
+            {"id": invoice_id},
+            {
+                "$set": {
+                    "status": "cancelled",
+                    "cancelled_at": datetime.utcnow().isoformat(),
+                    "updated_at": datetime.utcnow().isoformat()
+                }
+            }
+        )
+        
+        logger.info(f"Invoice {invoice_id} cancelled by reseller {reseller['id']}")
+        
+        return {"success": True, "message": "Invoice cancelled successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error cancelling invoice: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @reseller_router.post("/customer-invoices/create", response_model=dict)
 async def create_customer_invoice(

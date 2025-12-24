@@ -496,7 +496,7 @@ const WhiteLabelPage = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Choose the plan that fits your business. All plans include a 14-day free trial.
+              Choose the plan that fits your business. All plans include a 7-day free trial.
             </p>
           </div>
           

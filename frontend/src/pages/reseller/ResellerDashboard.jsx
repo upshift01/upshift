@@ -13,6 +13,61 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Progress } from '../../components/ui/progress';
 
+// Trial Banner Component
+const TrialBanner = ({ subscription, darkMode }) => {
+  const trialEnd = subscription?.trial_end_date;
+  let daysRemaining = 0;
+  let hoursRemaining = 0;
+  
+  if (trialEnd) {
+    const endDate = new Date(trialEnd);
+    const now = new Date();
+    const diffMs = endDate - now;
+    daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    hoursRemaining = Math.ceil((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    daysRemaining = Math.max(0, daysRemaining);
+  }
+  
+  const isUrgent = daysRemaining <= 2;
+  const bgColor = isUrgent 
+    ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800' 
+    : 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
+  const textColor = isUrgent 
+    ? 'text-orange-800 dark:text-orange-200' 
+    : 'text-purple-800 dark:text-purple-200';
+  const subtextColor = isUrgent 
+    ? 'text-orange-700 dark:text-orange-300' 
+    : 'text-purple-700 dark:text-purple-300';
+  const iconColor = isUrgent ? 'text-orange-600' : 'text-purple-600';
+  
+  return (
+    <div className={`${bgColor} border rounded-xl p-4`}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Gift className={`h-5 w-5 ${iconColor}`} />
+          <div>
+            <p className={`${textColor} font-medium`}>
+              Free Trial {isUrgent ? '- Ending Soon!' : 'Active'}
+            </p>
+            <p className={`${subtextColor} text-sm`}>
+              {daysRemaining > 0 
+                ? `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining` 
+                : `${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} remaining`}
+              {' '}• Enjoy full access to all features
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className={`text-center px-3 py-1 rounded-lg ${isUrgent ? 'bg-orange-100 dark:bg-orange-800/30' : 'bg-purple-100 dark:bg-purple-800/30'}`}>
+            <p className={`text-2xl font-bold ${textColor}`}>{daysRemaining}</p>
+            <p className={`text-xs ${subtextColor}`}>days left</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ResellerDashboard = () => {
   const { token } = useAuth();
   const { theme, formatPrice } = useTheme();

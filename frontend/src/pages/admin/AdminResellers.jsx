@@ -95,6 +95,37 @@ const AdminResellers = () => {
     }
   };
 
+  const handleToggleStatus = async (reseller) => {
+    const isActive = reseller.status === 'active' || reseller.status === 'pending';
+    const action = isActive ? 'deactivate' : 'activate';
+    const confirmMsg = isActive 
+      ? `Are you sure you want to deactivate "${reseller.company_name}"? They will lose access to their portal.`
+      : `Are you sure you want to activate "${reseller.company_name}"?`;
+    
+    if (!window.confirm(confirmMsg)) return;
+    
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/admin/resellers/${reseller.id}/${action}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message || `Reseller ${action}d successfully`);
+        fetchResellers();
+      } else {
+        const error = await response.json();
+        alert(error.detail || `Failed to ${action} reseller`);
+      }
+    } catch (error) {
+      console.error(`Error ${action} reseller:`, error);
+      alert(`Error ${action} reseller`);
+    }
+  };
+
   const handleEditReseller = (reseller) => {
     setEditingReseller({
       ...reseller,

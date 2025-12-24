@@ -362,17 +362,17 @@ const SkillsGenerator = () => {
       {/* Info Section */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8">
             Boost Your Resume with Personalised Skills Section
           </h2>
-          <div className="prose prose-lg max-w-none text-gray-600">
-            <p>
+          <div className="space-y-6 text-gray-600">
+            <p className="text-lg leading-relaxed">
               Need help to create a compelling skill section for your resume? Many job seekers find it challenging to craft a perfect skills section. Without using the right keywords and action verbs, your resume might not even pass through the Application Tracking System (ATS).
             </p>
-            <p>
+            <p className="text-lg leading-relaxed">
               This can be frustrating especially when you have skills but don't know how to put them in your resume properly. To solve this problem, we have come up with a tool that generates the skills section for you — Resume Skills Generator from UpShift.
             </p>
-            <p className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
+            <p className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-600 text-lg leading-relaxed">
               According to JobScan's report, <strong>over 98% of the top 500 companies use ATS</strong> to filter out resumes for interviews. Resumes optimised with the right keywords and skills have a <strong>30% higher chance of passing ATS filters</strong>.
             </p>
           </div>

@@ -429,8 +429,8 @@ async def submit_contact_form(data: ContactFormSubmission, request: Request):
             await email_service.send_email(
                 to_email=admin_email,
                 subject=f"[Contact Form] {data.subject}",
-                html_content=email_content,
-                db=db
+                html_body=email_content,
+                raise_exceptions=False
             )
             logger.info(f"Contact form notification sent to {admin_email}")
         except Exception as email_error:

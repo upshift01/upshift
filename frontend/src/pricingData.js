@@ -46,7 +46,7 @@ export const pricingTiers = [
     name: 'Executive Elite',
     price: 3000,
     priceCents: 300000,
-    description: 'Premium service with personalized career strategy',
+    description: 'Premium service with personalised career strategy',
     features: [
       'Everything in Professional Package',
       '30-minute career strategy call with expert',

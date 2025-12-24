@@ -166,7 +166,7 @@ const CoverLetterGenerator = () => {
             Generate Professional Cover Letters
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Create compelling, personalized cover letters that match job descriptions perfectly. Tailored for the South African job market.
+            Create compelling, personalised cover letters that match job descriptions perfectly. Tailored for the South African job market.
           </p>
         </div>
 
@@ -331,7 +331,7 @@ const CoverLetterGenerator = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Additional Details</CardTitle>
-                <CardDescription>Help AI personalize your letter</CardDescription>
+                <CardDescription>Help AI personalise your letter</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>

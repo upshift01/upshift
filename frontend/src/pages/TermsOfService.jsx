@@ -24,7 +24,7 @@ const TermsOfService = () => {
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4 mt-8">2. Services Description</h2>
             <p className="text-gray-600 mb-6">
-              UpShift provides AI-powered CV creation, cover letter generation, ATS optimization, 
+              UpShift provides AI-powered CV creation, cover letter generation, ATS optimisation, 
               and career assistance tools. Our services are designed to help job seekers in South Africa 
               create professional career documents.
             </p>

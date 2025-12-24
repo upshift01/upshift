@@ -267,7 +267,7 @@ const CoverLetterTemplates = () => {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">AI-Powered Content</h3>
             <p className="text-gray-600 text-sm">
-              Our AI generates personalized content that matches the job description and highlights your strengths.
+              Our AI generates personalised content that matches the job description and highlights your strengths.
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">

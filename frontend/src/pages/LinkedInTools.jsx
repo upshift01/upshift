@@ -814,11 +814,11 @@ const CreateProfile = ({ getAuthHeader, toast, loading, setLoading, result, setR
               )}
 
               {/* Optimization Tips */}
-              {result.profile_optimization_tips && (
+              {result.profile_optimisation_tips && (
                 <div className="border rounded-lg p-4 bg-yellow-50">
                   <h4 className="font-semibold mb-2 text-yellow-800">Profile Tips</h4>
                   <ul className="text-sm space-y-1">
-                    {result.profile_optimization_tips.map((tip, idx) => (
+                    {result.profile_optimisation_tips.map((tip, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <CheckCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
                         <span>{tip}</span>

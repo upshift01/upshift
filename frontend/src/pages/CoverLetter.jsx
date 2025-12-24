@@ -33,7 +33,7 @@ const CoverLetter = () => {
               </div>
               <CardTitle>Customise</CardTitle>
               <CardDescription>
-                Easily edit and personalize your cover letter to match your unique experience.
+                Easily edit and personalise your cover letter to match your unique experience.
               </CardDescription>
             </CardHeader>
           </Card>

@@ -191,7 +191,7 @@ const WhiteLabelPage = () => {
     {
       icon: Zap,
       title: 'AI-Powered Tools',
-      description: 'Cutting-edge GPT technology for CV creation, cover letters, ATS optimization, and interview prep.',
+      description: 'Cutting-edge GPT technology for CV creation, cover letters, ATS optimisation, and interview prep.',
       color: 'bg-yellow-100 text-yellow-600'
     },
     {

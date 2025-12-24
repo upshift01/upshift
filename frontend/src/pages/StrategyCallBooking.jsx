@@ -270,7 +270,7 @@ const StrategyCallBooking = () => {
             Book Your 30-Minute Strategy Call
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Get personalized career advice from our experts. Available Monday to Friday, 9 AM - 5 PM.
+            Get personalised career advice from our experts. Available Monday to Friday, 9 AM - 5 PM.
           </p>
           
           {/* Pricing Info */}
@@ -646,7 +646,7 @@ const StrategyCallBooking = () => {
             <Star className="h-8 w-8 text-amber-500 mb-3" />
             <h3 className="font-semibold mb-2">Expert Advice</h3>
             <p className="text-sm text-gray-600">
-              Get personalized guidance from career professionals.
+              Get personalised guidance from career professionals.
             </p>
           </div>
         </div>

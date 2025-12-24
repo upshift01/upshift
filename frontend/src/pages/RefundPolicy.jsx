@@ -40,7 +40,7 @@ const RefundPolicy = () => {
               <li>Services purchased more than 7 days ago</li>
               <li>Strategy call consultations that have been completed</li>
               <li>Custom enterprise or bulk orders (subject to separate agreement)</li>
-              <li>Services where the final deliverable has been fully utilized</li>
+              <li>Services where the final deliverable has been fully utilised</li>
             </ul>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4 mt-8">How to Request a Refund</h2>

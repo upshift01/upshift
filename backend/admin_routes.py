@@ -599,63 +599,6 @@ async def extend_trial(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@admin_router.get("/resellers/trials", response_model=dict)
-async def get_trial_resellers(
-    status_filter: Optional[str] = None,
-    admin: UserResponse = Depends(get_current_super_admin)
-):
-    """Get all resellers on trial or with expired trials"""
-    try:
-        query = {
-            "$or": [
-                {"subscription.is_trial": True},
-                {"subscription.status": "trial"},
-                {"subscription.status": "trial_expired"}
-            ]
-        }
-        
-        if status_filter == "active":
-            query = {"subscription.status": "trial", "subscription.is_trial": True}
-        elif status_filter == "expired":
-            query = {"subscription.status": "trial_expired"}
-        elif status_filter == "expiring_soon":
-            # Trials expiring in next 3 days
-            now = datetime.now(timezone.utc)
-            three_days = (now + timedelta(days=3)).isoformat()
-            query = {
-                "subscription.is_trial": True,
-                "subscription.status": "trial",
-                "subscription.trial_end_date": {"$lte": three_days, "$gte": now.isoformat()}
-            }
-        
-        resellers = await db.resellers.find(query, {"_id": 0}).sort("subscription.trial_end_date", 1).to_list(100)
-        
-        # Calculate days remaining for each
-        now = datetime.now(timezone.utc)
-        for reseller in resellers:
-            trial_end = reseller.get("subscription", {}).get("trial_end_date")
-            if trial_end:
-                try:
-                    end_dt = datetime.fromisoformat(trial_end.replace('Z', '+00:00'))
-                    days_remaining = (end_dt - now).days
-                    reseller["trial_days_remaining"] = max(0, days_remaining)
-                    reseller["trial_expired"] = days_remaining < 0
-                except:
-                    reseller["trial_days_remaining"] = 0
-                    reseller["trial_expired"] = True
-            else:
-                reseller["trial_days_remaining"] = 0
-                reseller["trial_expired"] = False
-        
-        return {
-            "resellers": resellers,
-            "total": len(resellers)
-        }
-    except Exception as e:
-        logger.error(f"Error getting trial resellers: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @admin_router.post("/resellers/check-expired-trials", response_model=dict)
 async def check_and_expire_trials(
     admin: UserResponse = Depends(get_current_super_admin)

@@ -79,8 +79,14 @@ async def get_whitelabel_config(request: Request, response: Response):
     try:
         host = request.headers.get("host", "").split(":")[0]
         
-        # Check if this is a custom domain request
-        if host in ["localhost", "127.0.0.1"] or host.endswith(".preview.emergentagent.com"):
+        # Check if this is a main platform request (not a reseller subdomain/custom domain)
+        is_main_platform = (
+            host in ["localhost", "127.0.0.1"] or 
+            host.endswith(".preview.emergentagent.com") or
+            host in ["upshift.works", "www.upshift.works"]
+        )
+        
+        if is_main_platform:
             # Fetch platform site settings from database
             site_settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
             

@@ -2439,3 +2439,270 @@ async def convert_lead_to_reseller(
     except Exception as e:
         logger.error(f"Error converting lead: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Booking Calendar Management ====================
+
+@admin_router.get("/bookings", response_model=dict)
+async def list_admin_bookings(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """List all bookings for admin calendar view"""
+    try:
+        query = {}
+        
+        if start_date:
+            query["date"] = {"$gte": start_date}
+        if end_date:
+            if "date" in query:
+                query["date"]["$lte"] = end_date
+            else:
+                query["date"] = {"$lte": end_date}
+        if status_filter:
+            query["status"] = status_filter
+        
+        bookings = await db.bookings.find(
+            query,
+            {"_id": 0}
+        ).sort([("date", 1), ("time", 1)]).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.bookings.count_documents(query)
+        
+        # Get stats
+        stats = {
+            "total": total,
+            "confirmed": await db.bookings.count_documents({"status": "confirmed"}),
+            "pending": await db.bookings.count_documents({"status": "pending"}),
+            "cancelled": await db.bookings.count_documents({"status": "cancelled"})
+        }
+        
+        return {
+            "bookings": bookings,
+            "total": total,
+            "stats": stats
+        }
+    except Exception as e:
+        logger.error(f"Error listing admin bookings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/bookings/{booking_id}", response_model=dict)
+async def get_admin_booking(
+    booking_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get a specific booking details"""
+    try:
+        booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+        
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        return {"booking": booking}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting booking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/bookings/{booking_id}/confirm", response_model=dict)
+async def confirm_admin_booking(
+    booking_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Manually confirm a booking (mark as paid and confirmed)"""
+    try:
+        booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+        
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        if booking["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Cannot confirm a cancelled booking")
+        
+        # Get meeting link from platform settings
+        meeting_link = None
+        platform_settings = await db.platform_settings.find_one(
+            {"key": "site_settings"},
+            {"_id": 0, "meeting_link": 1}
+        )
+        if platform_settings and platform_settings.get("meeting_link"):
+            meeting_link = platform_settings["meeting_link"]
+        else:
+            meeting_link = f"https://meet.upshift.works/strategy-call/{booking_id[:8]}"
+        
+        await db.bookings.update_one(
+            {"id": booking_id},
+            {
+                "$set": {
+                    "status": "confirmed",
+                    "is_paid": True,
+                    "meeting_link": meeting_link,
+                    "confirmed_at": datetime.now(timezone.utc),
+                    "confirmed_by": admin.email
+                }
+            }
+        )
+        
+        # Try to send confirmation email
+        try:
+            from email_service import email_service
+            email_settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+            if email_settings and email_settings.get("smtp_host"):
+                email_service.configure(email_settings)
+                await email_service.send_booking_confirmation(
+                    to_email=booking["email"],
+                    customer_name=booking.get("name", "Customer"),
+                    booking_date=booking.get("date"),
+                    booking_time=booking.get("time"),
+                    meeting_link=meeting_link,
+                    amount="Complimentary",
+                    company_name="UpShift"
+                )
+        except Exception as email_error:
+            logger.warning(f"Could not send confirmation email: {str(email_error)}")
+        
+        logger.info(f"Booking {booking_id} confirmed by admin {admin.email}")
+        
+        return {
+            "success": True,
+            "message": "Booking confirmed successfully",
+            "meeting_link": meeting_link
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error confirming booking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/bookings/{booking_id}/cancel", response_model=dict)
+async def cancel_admin_booking(
+    booking_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Cancel a booking"""
+    try:
+        booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+        
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        if booking["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Booking is already cancelled")
+        
+        await db.bookings.update_one(
+            {"id": booking_id},
+            {
+                "$set": {
+                    "status": "cancelled",
+                    "cancelled_at": datetime.now(timezone.utc),
+                    "cancelled_by": admin.email
+                }
+            }
+        )
+        
+        # Try to send cancellation email
+        try:
+            from email_service import email_service
+            email_settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+            if email_settings and email_settings.get("smtp_host"):
+                email_service.configure(email_settings)
+                await email_service.send_email(
+                    to_email=booking["email"],
+                    subject="Your Strategy Call Booking Has Been Cancelled - UpShift",
+                    html_body=f"""
+                    <html>
+                    <body style="font-family: Arial, sans-serif;">
+                        <h2>Booking Cancellation Notice</h2>
+                        <p>Dear {booking.get('name', 'Customer')},</p>
+                        <p>Your strategy call booking for <strong>{booking.get('date')} at {booking.get('time')}</strong> has been cancelled.</p>
+                        <p>If you did not request this cancellation or have any questions, please contact us.</p>
+                        <p>Best regards,<br>The UpShift Team</p>
+                    </body>
+                    </html>
+                    """
+                )
+        except Exception as email_error:
+            logger.warning(f"Could not send cancellation email: {str(email_error)}")
+        
+        logger.info(f"Booking {booking_id} cancelled by admin {admin.email}")
+        
+        return {"success": True, "message": "Booking cancelled successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error cancelling booking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/calendar/settings", response_model=dict)
+async def get_calendar_settings(
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get calendar/booking settings"""
+    try:
+        settings = await db.platform_settings.find_one(
+            {"key": "calendar_settings"},
+            {"_id": 0}
+        )
+        
+        if not settings:
+            # Return defaults
+            settings = {
+                "available_times": [
+                    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+                    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+                    "15:00", "15:30", "16:00", "16:30"
+                ],
+                "booking_duration_minutes": 30,
+                "price_cents": 69900,
+                "buffer_minutes": 0,
+                "max_advance_days": 30,
+                "blocked_dates": []
+            }
+        
+        return {"settings": settings}
+    except Exception as e:
+        logger.error(f"Error getting calendar settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class CalendarSettingsUpdate(BaseModel):
+    available_times: Optional[List[str]] = None
+    booking_duration_minutes: Optional[int] = None
+    price_cents: Optional[int] = None
+    buffer_minutes: Optional[int] = None
+    max_advance_days: Optional[int] = None
+    blocked_dates: Optional[List[str]] = None
+
+
+@admin_router.put("/calendar/settings", response_model=dict)
+async def update_calendar_settings(
+    settings: CalendarSettingsUpdate,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Update calendar/booking settings"""
+    try:
+        update_data = {k: v for k, v in settings.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        update_data["updated_by"] = admin.email
+        
+        await db.platform_settings.update_one(
+            {"key": "calendar_settings"},
+            {"$set": update_data},
+            upsert=True
+        )
+        
+        logger.info(f"Calendar settings updated by {admin.email}")
+        
+        return {"success": True, "message": "Calendar settings updated"}
+    except Exception as e:
+        logger.error(f"Error updating calendar settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

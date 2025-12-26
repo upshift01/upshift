@@ -82,6 +82,8 @@ import PartnerBookStrategyCall from "./pages/partner/PartnerBookStrategyCall";
 import PartnerPrivacyPolicy from "./pages/partner/PartnerPrivacyPolicy";
 import PartnerTermsOfService from "./pages/partner/PartnerTermsOfService";
 import PartnerRefundPolicy from "./pages/partner/PartnerRefundPolicy";
+import PartnerPaymentSuccess from "./pages/partner/PartnerPaymentSuccess";
+import PartnerPaymentCancel from "./pages/partner/PartnerPaymentCancel";
 
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";

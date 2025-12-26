@@ -349,6 +349,12 @@ async def submit_partner_enquiry(data: PartnerEnquiryRequest):
         try:
             from email_service import email_service
             
+            # Get admin notification email from platform settings
+            site_settings = await db.platform_settings.find_one({"key": "site_settings"}, {"_id": 0})
+            admin_email = "support@upshift.works"  # Default fallback
+            if site_settings and site_settings.get("contact", {}).get("email"):
+                admin_email = site_settings["contact"]["email"]
+            
             email_content = f"""
             <html>
             <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -364,7 +370,11 @@ async def submit_partner_enquiry(data: PartnerEnquiryRequest):
                     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
                     <p><strong>Message:</strong></p>
                     <p style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                        {data.message.replace(chr(10), '<br>')}
+                        {data.message.replace(chr(10), '<br>') if data.message else 'No message provided'}
+                    </p>
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+                    <p style="color: #6b7280; font-size: 12px;">
+                        Received at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
                     </p>
                 </div>
             </body>
@@ -372,11 +382,12 @@ async def submit_partner_enquiry(data: PartnerEnquiryRequest):
             """
             
             await email_service.send_email(
-                to_email="partners@upshift.works",
+                to_email=admin_email,
                 subject=f"[Partner Enquiry] {data.company} - {data.type}",
                 html_body=email_content,
                 raise_exceptions=False
             )
+            logger.info(f"Partner enquiry notification sent to {admin_email}")
         except Exception as email_error:
             logger.warning(f"Could not send partner enquiry notification: {str(email_error)}")
         

@@ -1,18 +1,28 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { usePartner } from '../../context/PartnerContext';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { Check, Zap, ArrowRight } from 'lucide-react';
+import { Check, Zap, ArrowRight, Loader2 } from 'lucide-react';
+import { useToast } from '../../hooks/use-toast';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PartnerPricing = () => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, getAuthHeader } = useAuth();
+  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
   const { 
     brandName, 
     primaryColor, 
     secondaryColor, 
     baseUrl,
-    pricing
+    pricing,
+    resellerId
   } = usePartner();
 
   const tiers = [

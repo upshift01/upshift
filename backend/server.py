@@ -659,14 +659,31 @@ async def calculate_job_match(
 # ==================== ATS Resume Checker (FREE) ====================
 
 @api_router.post("/ats-check")
-async def ats_resume_check(file: UploadFile = File(...)):
+async def ats_resume_check(
+    file: UploadFile = File(...),
+    request: Request = None
+):
     """
     FREE ATS Resume Checker - Analyzes resume for ATS compliance
     No authentication required - available to all users
+    Results are saved to history if user is logged in
     """
     try:
         import PyPDF2
         import io
+        
+        # Try to get current user (optional - for saving history)
+        current_user_id = None
+        try:
+            auth_header = request.headers.get("Authorization", "") if request else ""
+            if auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+                from auth import decode_access_token
+                payload = decode_access_token(token)
+                if payload:
+                    current_user_id = payload.get("sub")
+        except Exception:
+            pass  # User not logged in, that's fine
         
         # Read file content
         content = await file.read()
@@ -696,12 +713,29 @@ async def ats_resume_check(file: UploadFile = File(...)):
         # Perform ATS analysis
         analysis = await ai_service.ats_resume_check(resume_text)
         
+        # Save to history if user is logged in
+        if current_user_id:
+            try:
+                ats_result = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": current_user_id,
+                    "filename": file.filename,
+                    "score": analysis.get("score", 0),
+                    "analysis": analysis,
+                    "created_at": datetime.now(timezone.utc)
+                }
+                await db.ats_results.insert_one(ats_result)
+                logger.info(f"ATS result saved for user: {current_user_id}")
+            except Exception as save_error:
+                logger.warning(f"Failed to save ATS result: {save_error}")
+        
         logger.info(f"ATS check performed for file: {file.filename}")
         
         return {
             "success": True,
             "filename": file.filename,
-            "analysis": analysis
+            "analysis": analysis,
+            "saved_to_history": current_user_id is not None
         }
     except HTTPException:
         raise

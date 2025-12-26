@@ -1,183 +1,315 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { usePartner } from '../../context/PartnerContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
-import { Card, CardContent } from '../../components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { useToast } from '../../hooks/use-toast';
 import { Badge } from '../../components/ui/badge';
-import { FileText, Star, Briefcase, Sparkles, GraduationCap, Users, ArrowRight, Mail } from 'lucide-react';
+import { Sparkles, Eye, FileText, X, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { usePartner } from '../../context/PartnerContext';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+
+// Fallback data in case API fails
+import { coverLetterTemplates as fallbackTemplates } from '../../mockData';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
+const PartnerCoverLetterTemplateCard = ({ template, onSelect, primaryColor, secondaryColor }) => {
+  const [showPreview, setShowPreview] = useState(false);
+  const [zoom, setZoom] = useState(1);
+
+  const handlePreview = (e) => {
+    e.stopPropagation();
+    setShowPreview(true);
+    setZoom(1);
+  };
+
+  return (
+    <>
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-gray-200">
+        <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 group">
+          <img
+            src={template.image}
+            alt={template.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.target.src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=600&fit=crop';
+            }}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
+            <Button
+              onClick={handlePreview}
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white text-gray-900 hover:bg-gray-100"
+              size="sm"
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Preview
+            </Button>
+          </div>
+        </div>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <CardTitle className="text-base">{template.name}</CardTitle>
+            <Badge variant="secondary" className="text-xs">
+              {template.industry}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="pb-3">
+          <CardDescription className="text-sm line-clamp-2">
+            {template.description}
+          </CardDescription>
+          <div className="mt-2">
+            <span className="text-xs text-gray-500">Tone: </span>
+            <span className="text-xs font-medium" style={{ color: primaryColor }}>{template.tone}</span>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button
+            onClick={() => onSelect(template)}
+            variant="outline"
+            className="w-full"
+            size="sm"
+            style={{ borderColor: primaryColor, color: primaryColor }}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Use Template
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4"
+          onClick={() => setShowPreview(false)}
+        >
+          <div 
+            className="relative max-w-4xl w-full max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between bg-white rounded-t-lg px-4 py-3 border-b">
+              <div>
+                <h3 className="font-semibold text-lg">{template.name}</h3>
+                <p className="text-sm text-gray-500">{template.industry} • {template.tone} tone</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z - 0.25, 0.5))} disabled={zoom <= 0.5}>
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-gray-600 w-16 text-center">{Math.round(zoom * 100)}%</span>
+                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z + 0.25, 3))} disabled={zoom >= 3}>
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowPreview(false)} className="ml-2">
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-auto bg-gray-100 flex items-center justify-center p-4">
+              <img
+                src={template.image}
+                alt={template.name}
+                className="max-w-full h-auto shadow-2xl rounded transition-transform duration-200"
+                style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=1200&fit=crop';
+                }}
+              />
+            </div>
+            <div className="bg-white rounded-b-lg px-4 py-3 border-t flex items-center justify-between">
+              <p className="text-sm text-gray-600 max-w-md line-clamp-1">{template.description}</p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowPreview(false)}>Close</Button>
+                <Button
+                  onClick={() => { setShowPreview(false); onSelect(template); }}
+                  style={{ backgroundColor: primaryColor }}
+                  className="text-white"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Use This Template
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 const PartnerCoverLetterTemplates = () => {
   const { brandName, primaryColor, secondaryColor, baseUrl } = usePartner();
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const categories = [
-    { id: 'all', name: 'All Templates', icon: Mail },
-    { id: 'professional', name: 'Professional', icon: Briefcase },
-    { id: 'entry-level', name: 'Entry Level', icon: GraduationCap },
-    { id: 'career-change', name: 'Career Change', icon: Users },
-  ];
+  // Fetch templates from API
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/content/cover-letter-templates`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.templates && data.templates.length > 0) {
+            setTemplates(data.templates);
+          } else {
+            setTemplates(fallbackTemplates);
+          }
+        } else {
+          setTemplates(fallbackTemplates);
+        }
+      } catch (error) {
+        console.error('Error fetching cover letter templates:', error);
+        setTemplates(fallbackTemplates);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const templates = [
-    {
-      id: 1,
-      name: 'Professional Standard',
-      category: 'professional',
-      description: 'Traditional format suitable for most industries',
-      popular: true,
-      features: ['Formal Tone', 'Classic Structure', 'Achievement Focus']
-    },
-    {
-      id: 2,
-      name: 'Modern Executive',
-      category: 'professional',
-      description: 'Polished design for senior-level positions',
-      popular: true,
-      features: ['Leadership Focus', 'Results-Driven', 'Executive Style']
-    },
-    {
-      id: 3,
-      name: 'Fresh Graduate',
-      category: 'entry-level',
-      description: 'Perfect for those starting their career',
-      popular: true,
-      features: ['Education Highlight', 'Enthusiasm', 'Transferable Skills']
-    },
-    {
-      id: 4,
-      name: 'Career Transition',
-      category: 'career-change',
-      description: 'Highlight transferable skills and new direction',
-      popular: false,
-      features: ['Skills Bridge', 'Story-Based', 'Motivation Clear']
-    },
-    {
-      id: 5,
-      name: 'Tech Industry',
-      category: 'professional',
-      description: 'Technical focus with project highlights',
-      popular: true,
-      features: ['Technical Skills', 'Project Examples', 'Modern Tone']
-    },
-    {
-      id: 6,
-      name: 'Creative Professional',
-      category: 'professional',
-      description: 'Show personality while staying professional',
-      popular: false,
-      features: ['Creative Flair', 'Portfolio Links', 'Engaging Style']
-    },
-    {
-      id: 7,
-      name: 'Internship Application',
-      category: 'entry-level',
-      description: 'Ideal for students seeking internships',
-      popular: false,
-      features: ['Academic Focus', 'Eager to Learn', 'Relevant Courses']
-    },
-    {
-      id: 8,
-      name: 'Return to Work',
-      category: 'career-change',
-      description: 'Re-entering the workforce after a break',
-      popular: false,
-      features: ['Gap Explanation', 'Updated Skills', 'Fresh Start']
-    },
-  ];
+    fetchTemplates();
+  }, []);
 
-  const filteredTemplates = selectedCategory === 'all' 
-    ? templates 
-    : templates.filter(t => t.category === selectedCategory);
+  const filteredTemplates =
+    selectedCategory === 'all'
+      ? templates
+      : templates.filter((template) => template.category === selectedCategory);
+
+  const handleSelectTemplate = (template) => {
+    // Store the selected template in localStorage
+    localStorage.setItem('selectedCoverLetterTemplate', JSON.stringify(template));
+    
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to start creating your cover letter with this template.",
+      });
+      navigate(`${baseUrl}/login`, { state: { from: `${baseUrl}/cover-letter`, template: template.id } });
+      return;
+    }
+
+    // Check if user has tier 2 or 3 (cover letter requires higher tier)
+    if (!user.active_tier || !['tier-2', 'tier-3'].includes(user.active_tier)) {
+      toast({
+        title: "Template Selected!",
+        description: `${template.name} selected. Upgrade to Professional Package to create cover letters.`,
+      });
+      navigate(`${baseUrl}/pricing`, { state: { template: template.id, type: 'cover-letter' } });
+      return;
+    }
+
+    // User is logged in and has a plan - go to cover letter generator
+    toast({
+      title: "Template Selected!",
+      description: `Starting cover letter generator with ${template.name}`,
+    });
+    navigate(`${baseUrl}/cover-letter`);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" style={{ color: primaryColor }} />
+          <p className="text-gray-600">Loading templates...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section 
-        className="py-12"
-        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-      >
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <Badge className="mb-4 bg-white/20 text-white border-none">
-            <Mail className="mr-1 h-3 w-3" />
-            {templates.length}+ Templates
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <Badge 
+            className="mb-4 text-white border-none"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+          >
+            <Sparkles className="mr-1 h-3 w-3" />
+            Professional Cover Letters
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Cover Letter Templates
           </h1>
-          <p className="text-lg text-white/80">
-            Professional templates to complement your CV and impress employers
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Professionally written templates that complement your CV and help you stand out
           </p>
         </div>
-      </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Category Filters */}
-        <div className="flex flex-wrap gap-2 mb-8 justify-center">
-          {categories.map((cat) => (
-            <Button
-              key={cat.id}
-              variant={selectedCategory === cat.id ? 'default' : 'outline'}
-              onClick={() => setSelectedCategory(cat.id)}
-              style={selectedCategory === cat.id ? { backgroundColor: primaryColor } : {}}
-            >
-              <cat.icon className="h-4 w-4 mr-2" />
-              {cat.name}
-            </Button>
-          ))}
+        {/* Filter Tabs */}
+        <div className="mb-8 flex justify-center">
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+            <TabsList className="bg-gray-100">
+              <TabsTrigger value="all">All Templates</TabsTrigger>
+              <TabsTrigger value="professional">Professional</TabsTrigger>
+              <TabsTrigger value="creative">Creative</TabsTrigger>
+              <TabsTrigger value="entry-level">Entry Level</TabsTrigger>
+              <TabsTrigger value="career-change">Career Change</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
-        {/* Templates Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Template Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTemplates.map((template) => (
-            <Card key={template.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div 
-                className="h-40 flex items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}15)` }}
-              >
-                <Mail className="h-16 w-16" style={{ color: primaryColor }} />
-              </div>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-lg">{template.name}</h3>
-                  {template.popular && (
-                    <Badge className="bg-amber-100 text-amber-700">
-                      <Star className="h-3 w-3 mr-1" /> Popular
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-gray-600 text-sm mb-3">{template.description}</p>
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {template.features.map((feature, i) => (
-                    <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Link to={`${baseUrl}/cover-letter`} className="flex-1">
-                    <Button 
-                      className="w-full" 
-                      size="sm"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      Use Template
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+            <PartnerCoverLetterTemplateCard
+              key={template.id}
+              template={template}
+              onSelect={handleSelectTemplate}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+            />
           ))}
         </div>
 
-        {/* CTA Section */}
-        <div 
-          className="mt-12 rounded-xl p-8 text-center"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-        >
-          <h2 className="text-2xl font-bold text-white mb-4">Create Your Cover Letter</h2>
-          <p className="text-white/80 mb-6">Use our AI-powered tool to generate a personalized cover letter in seconds</p>
-          <Link to={`${baseUrl}/cover-letter`}>
-            <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
-              <Sparkles className="mr-2 h-4 w-4" /> Generate Cover Letter
-            </Button>
-          </Link>
+        {filteredTemplates.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No templates found in this category.</p>
+          </div>
+        )}
+
+        {/* Info Section */}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+              style={{ backgroundColor: `${primaryColor}15` }}
+            >
+              <Sparkles className="h-6 w-6" style={{ color: primaryColor }} />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Tailored Content</h3>
+            <p className="text-gray-600 text-sm">
+              Each template is written to highlight your strengths and match the job you're applying for.
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+              style={{ backgroundColor: `${secondaryColor}15` }}
+            >
+              <Sparkles className="h-6 w-6" style={{ color: secondaryColor }} />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Multiple Tones</h3>
+            <p className="text-gray-600 text-sm">
+              Choose from professional, creative, confident, or friendly tones to match your industry.
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+              style={{ backgroundColor: `${primaryColor}15` }}
+            >
+              <Sparkles className="h-6 w-6" style={{ color: primaryColor }} />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">AI-Enhanced</h3>
+            <p className="text-gray-600 text-sm">
+              Our AI helps you customize the template with your experience and the job requirements.
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -197,6 +197,13 @@ const AppContent = () => {
           <Route path="skills-generator" element={<PartnerSkillsGenerator />} />
           <Route path="templates" element={<PartnerCVTemplates />} />
           <Route path="cover-letter-templates" element={<PartnerCoverLetterTemplates />} />
+          {/* Additional Tools */}
+          <Route path="linkedin-tools" element={<PartnerLinkedInTools />} />
+          <Route path="book-strategy-call" element={<PartnerBookStrategyCall />} />
+          {/* Legal Pages */}
+          <Route path="privacy-policy" element={<PartnerPrivacyPolicy />} />
+          <Route path="terms-of-service" element={<PartnerTermsOfService />} />
+          <Route path="refund-policy" element={<PartnerRefundPolicy />} />
           {/* Aliases for backward compatibility */}
           <Route path="cv-builder" element={<PartnerCVBuilder />} />
           <Route path="improve-resume" element={<PartnerResumeImprover />} />

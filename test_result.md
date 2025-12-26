@@ -51,17 +51,17 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
 
 test_plan:
   current_focus:
-    - "Calendar/Booking Management - COMPLETED"
+    - "Pricing Display Testing - COMPLETED"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Implemented Calendar/Booking management for admin and reseller portals. Backend APIs working. Ready for frontend testing."
+    message: "Need to test pricing display functionality to verify prices are correctly fetched from admin settings and displayed in proper ZAR format."
   - agent: "testing"
-    message: "✅ TESTING COMPLETE - All Calendar/Booking Management features working perfectly! Admin Calendar page shows all required elements: header, stats cards, week/list views, time slots, booking interactions, and details panel. Strategy Call Booking page has proper flow: date/time selection, pricing, step progress, and form submission. All requirements from test request have been verified and are working correctly."
+    message: "✅ PRICING TESTING COMPLETE - All pricing functionality working perfectly! Public pricing page displays correct prices in normal ZAR format (R499, R999, R3,000) with proper badges. API integration working correctly, fetching from /api/pricing endpoint. Admin pricing page properly protected and configured with normal amounts. No cents format issues found - all prices display correctly."

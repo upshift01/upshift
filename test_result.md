@@ -192,7 +192,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "ATS Checker Testing - COMPLETED"
+    - "URL-Based Partner Routing Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -210,3 +210,56 @@ agent_communication:
     message: "🔄 STARTING ATS CHECKER TESTING - Testing new error handling and fallback features. Will verify page loading, file upload & analysis, user-friendly error messages, fallback mode with amber notice, and cache notice display. Focus on ensuring ATS Checker works with or without AI service."
   - agent: "testing"
     message: "✅ ATS CHECKER TESTING COMPLETE - All requirements successfully met! Page loads correctly at /ats-checker with proper upload interface. File upload and analysis working excellently - tested with real resume content, analysis completes showing circular score indicators (76/100, 86/100), detailed category analysis, and comprehensive results. Error handling provides user-friendly messages instead of technical errors. Fallback mode implemented with rule-based analysis when AI unavailable. Cache system working with 24-hour result storage. All new error handling and fallback features functioning as designed. ATS Checker is production-ready!"
+  - agent: "main"
+    message: "🔄 STARTING URL-BASED PARTNER ROUTING TESTING - Implemented URL-based partner routing as alternative to DNS subdomain routing. Created partner pages: PartnerHome, PartnerPricing, PartnerAbout, PartnerContact, PartnerATSChecker. Test partner created: 'yottanet' with brand 'YottaNet Careers'. Test URL: /partner/yottanet. Verify: 1) Partner home page loads with correct branding, 2) All partner pages accessible, 3) Navigation between partner pages works, 4) 404 error shows for non-existent partners, 5) Partner navbar and footer display correctly."
+
+## Current Tests - URL-Based Partner Routing
+
+  - task: "Partner Home Page"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet"
+    test_partner: "yottanet"
+    expected: "Should display 'YottaNet Careers' branding, hero section, stats, features, CTA"
+    priority: "high"
+
+  - task: "Partner Pricing Page"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/pricing"
+    expected: "Should display 3 pricing tiers (R899, R1500, R3000) with 'Most Popular' badge on tier 2"
+    priority: "high"
+
+  - task: "Partner About Page"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/about"
+    expected: "Should display 'About YottaNet Careers' with stats, mission, values, services"
+    priority: "high"
+
+  - task: "Partner Contact Page"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/contact"
+    expected: "Should display contact form, email (owner@yottanet.com), business hours, FAQ"
+    priority: "high"
+
+  - task: "Partner ATS Checker"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/ats-checker"
+    expected: "Should display file upload interface with partner branding"
+    priority: "high"
+
+  - task: "Partner Navigation"
+    implemented: true
+    working: "NEEDS_TESTING"
+    expected: "Navbar links should navigate to correct partner pages (/partner/yottanet/*)"
+    priority: "high"
+
+  - task: "Non-existent Partner Handling"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/nonexistent"
+    expected: "Should show 'Partner Not Found' error page with options to go to UpShift or become a partner"
+    priority: "medium"

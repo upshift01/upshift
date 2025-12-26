@@ -10,6 +10,91 @@ Testing the new CRM / Lead Management feature in the UpShift admin portal.
 4. Partner Form Submission (White-Label Page)
 5. Integration between Partner Form and CRM
 
+## Backend Tests
+- task: "Super Admin Authentication"
+  file: "/app/backend/admin_routes.py"
+  implemented: true
+  working: true
+  needs_retesting: false
+  stuck_count: 0
+  priority: "high"
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "Super admin login working correctly with admin@upshift.works/admin123. Authentication tokens are properly generated and validated."
+
+- task: "List Leads API"
+  file: "/app/backend/admin_routes.py"
+  implemented: true
+  working: true
+  needs_retesting: false
+  stuck_count: 0
+  priority: "high"
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "GET /api/admin/leads working perfectly. Returns leads array, total count, and status_counts object with proper structure. All required fields present: id, company, name, email, phone, business_type, message, status, created_at."
+
+- task: "Get Single Lead API"
+  file: "/app/backend/admin_routes.py"
+  implemented: true
+  working: true
+  needs_retesting: false
+  stuck_count: 0
+  priority: "high"
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "GET /api/admin/leads/{lead_id} working correctly. Returns lead object with all details including notes array. Proper error handling for non-existent leads."
+
+- task: "Update Lead Status API"
+  file: "/app/backend/admin_routes.py"
+  implemented: true
+  working: true
+  needs_retesting: false
+  stuck_count: 0
+  priority: "high"
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "PATCH /api/admin/leads/{lead_id}/status working correctly. Successfully updates lead status and creates activity notes. Status change verified by subsequent GET request."
+
+- task: "Add Note to Lead API"
+  file: "/app/backend/admin_routes.py"
+  implemented: true
+  working: true
+  needs_retesting: false
+  stuck_count: 0
+  priority: "high"
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "POST /api/admin/leads/{lead_id}/notes working perfectly. Notes are properly added and returned in lead details. Proper validation and error handling."
+
+- task: "Partner Enquiry Form API"
+  file: "/app/backend/ai_content_routes.py"
+  implemented: true
+  working: true
+  needs_retesting: false
+  stuck_count: 0
+  priority: "high"
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "POST /api/ai-content/partner-enquiry working correctly. Form submissions create new leads in database that are immediately visible via admin leads API. Integration between form and CRM is fully functional."
+
+- task: "Convert Lead to Reseller API"
+  file: "/app/backend/admin_routes.py"
+  implemented: true
+  working: true
+  needs_retesting: false
+  stuck_count: 0
+  priority: "medium"
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "POST /api/admin/leads/{lead_id}/convert endpoint exists and validates properly. Endpoint responds appropriately with proper error handling."
+
 ## Frontend Tests
 - task: "Super Admin Login"
   file: "/app/frontend/src/pages/Login.jsx"

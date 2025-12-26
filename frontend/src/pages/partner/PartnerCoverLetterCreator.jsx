@@ -36,10 +36,6 @@ const PartnerCoverLetterCreator = () => {
 
   // Cover letter requires tier 2 or tier 3
   const hasAccess = isAuthenticated && user?.active_tier && ['tier-2', 'tier-3'].includes(user.active_tier);
-        </CardContent>
-      </Card>
-    </div>
-  );
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -1144,7 +1144,9 @@ async def get_reseller_yoco_settings(context: dict = Depends(get_current_reselle
             "yoco_public_key": "",
             "yoco_secret_key": "",
             "use_custom_keys": False,
-            "is_live_mode": False
+            "is_live_mode": False,
+            "success_redirect_url": "",
+            "cancel_redirect_url": ""
         }
     except Exception as e:
         logger.error(f"Error fetching Yoco settings: {str(e)}")

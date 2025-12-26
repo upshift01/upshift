@@ -114,9 +114,74 @@ metadata:
   version: "1.2"
   test_sequence: 4
 
+## Current Tests - ATS Checker Error Handling & Fallback Features
+  - task: "ATS Checker Page Loading"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ATSChecker.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING REQUIRED: Need to verify ATS Checker page loads correctly at /ats-checker route and displays upload interface."
+
+  - task: "ATS Checker File Upload & Analysis"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ATSChecker.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING REQUIRED: Need to test file upload functionality, analysis process, and results display with circular score indicator, category scores, strengths and recommendations."
+
+  - task: "ATS Checker Error Handling"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING REQUIRED: Need to verify user-friendly error messages are displayed instead of technical errors like '500 Internal Server Error'."
+
+  - task: "ATS Checker Fallback Mode"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/ai_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING REQUIRED: Need to verify fallback analysis works when AI service is unavailable, shows amber notice banner with 'Basic Analysis Mode' and 'Try Full AI Analysis' retry button."
+
+  - task: "ATS Checker Cache Notice"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING REQUIRED: Need to verify blue notice banner appears when results are loaded from cache with message 'Results loaded from cache for faster response'."
+
 test_plan:
   current_focus:
-    - "Customer Portal Sidebar Testing - COMPLETED"
+    - "ATS Checker Page Loading"
+    - "ATS Checker File Upload & Analysis"
+    - "ATS Checker Error Handling"
+    - "ATS Checker Fallback Mode"
+    - "ATS Checker Cache Notice"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -130,3 +195,5 @@ agent_communication:
     message: "🔄 STARTING CUSTOMER PORTAL SIDEBAR TESTING - Testing customer login, sidebar Tools section visibility, navigation to /improve and /cover-letter pages, and dashboard Quick Actions section. Will verify all 6 sidebar tools and 7 dashboard quick actions are present and functional."
   - agent: "testing"
     message: "✅ CUSTOMER PORTAL SIDEBAR TESTING COMPLETE - All requirements met! Customer login successful with testcustomer@test.com. Sidebar Tools section shows all 6 required tools: ATS Checker (FREE), Skills Generator (FREE), Improve CV, Cover Letter, LinkedIn Tools, Build CV. Dashboard Quick Actions shows all 7 tools with correct badges. Both 'Improve CV' and 'Cover Letter' are visible and properly linked to /improve and /cover-letter routes. Navigation routes are protected with PrivateRoute and components exist. All functionality working as expected."
+  - agent: "testing"
+    message: "🔄 STARTING ATS CHECKER TESTING - Testing new error handling and fallback features. Will verify page loading, file upload & analysis, user-friendly error messages, fallback mode with amber notice, and cache notice display. Focus on ensuring ATS Checker works with or without AI service."

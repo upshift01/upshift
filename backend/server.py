@@ -245,6 +245,125 @@ async def get_current_user_info(current_user: UserResponse = Depends(get_current
     return current_user
 
 
+# ==================== Public Pricing Endpoint ====================
+
+@api_router.get("/pricing")
+async def get_public_pricing():
+    """Get public pricing for the website - no authentication required"""
+    try:
+        # Get pricing from platform settings
+        pricing_config = await db.platform_settings.find_one(
+            {"key": "platform_pricing"},
+            {"_id": 0}
+        )
+        
+        # Default pricing (in normal ZAR amounts, not cents)
+        default_pricing = {
+            "tier_1": {
+                "id": "tier-1",
+                "name": "ATS Optimise",
+                "price": 899,
+                "description": "Perfect for job seekers who already have a CV",
+                "features": [
+                    "ATS-optimised CV review",
+                    "AI-powered CV cleanup and enhancement",
+                    "Keyword optimisation for South African market",
+                    "Professional formatting",
+                    "ATS compatibility check",
+                    "PDF download",
+                    "One revision included"
+                ],
+                "turnaround": "24 hours",
+                "support": "Email support"
+            },
+            "tier_2": {
+                "id": "tier-2",
+                "name": "Professional Package",
+                "price": 1500,
+                "description": "Complete career toolkit for serious job seekers",
+                "features": [
+                    "Everything in ATS Optimise",
+                    "AI-driven CV creation from scratch",
+                    "Professional cover letter generation",
+                    "LinkedIn profile optimisation suggestions",
+                    "Industry-specific keyword targeting",
+                    "Multiple CV format options",
+                    "Unlimited revisions (7 days)",
+                    "Priority processing"
+                ],
+                "turnaround": "48 hours",
+                "support": "Email & WhatsApp support",
+                "popular": True,
+                "badge": "Most Popular"
+            },
+            "tier_3": {
+                "id": "tier-3",
+                "name": "Executive Elite",
+                "price": 3000,
+                "description": "Premium service with personalised career strategy",
+                "features": [
+                    "Everything in Professional Package",
+                    "30-minute career strategy call with expert",
+                    "12-hour turnaround time",
+                    "30 days of dedicated support",
+                    "Job application strategy guidance",
+                    "Interview preparation tips",
+                    "LinkedIn profile rewrite",
+                    "Unlimited revisions (30 days)",
+                    "Priority WhatsApp support line"
+                ],
+                "turnaround": "12 hours",
+                "support": "Priority WhatsApp & Phone support",
+                "badge": "Best Value"
+            },
+            "strategy_call": {
+                "price": 699,
+                "duration_minutes": 30
+            }
+        }
+        
+        # If we have pricing config in the database, use it
+        if pricing_config and pricing_config.get("value"):
+            config = pricing_config["value"]
+            tier_pricing = config.get("default_tier_pricing", {})
+            strategy_pricing = config.get("strategy_call_pricing", {})
+            
+            # Update prices from database (prices are stored as normal amounts now)
+            if tier_pricing.get("tier_1_price"):
+                default_pricing["tier_1"]["price"] = tier_pricing["tier_1_price"]
+            if tier_pricing.get("tier_2_price"):
+                default_pricing["tier_2"]["price"] = tier_pricing["tier_2_price"]
+            if tier_pricing.get("tier_3_price"):
+                default_pricing["tier_3"]["price"] = tier_pricing["tier_3_price"]
+            if strategy_pricing.get("price"):
+                default_pricing["strategy_call"]["price"] = strategy_pricing["price"]
+            if strategy_pricing.get("duration_minutes"):
+                default_pricing["strategy_call"]["duration_minutes"] = strategy_pricing["duration_minutes"]
+        
+        # Return as array for easier frontend use
+        return {
+            "tiers": [
+                default_pricing["tier_1"],
+                default_pricing["tier_2"],
+                default_pricing["tier_3"]
+            ],
+            "strategy_call": default_pricing["strategy_call"],
+            "currency": "ZAR"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching public pricing: {str(e)}")
+        # Return defaults on error
+        return {
+            "tiers": [
+                {"id": "tier-1", "name": "ATS Optimise", "price": 899},
+                {"id": "tier-2", "name": "Professional Package", "price": 1500, "popular": True},
+                {"id": "tier-3", "name": "Executive Elite", "price": 3000}
+            ],
+            "currency": "ZAR"
+        }
+
+
 # ==================== Payment Endpoints ====================
 
 @api_router.post("/payments/create-checkout")

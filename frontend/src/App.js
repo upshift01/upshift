@@ -77,6 +77,11 @@ import PartnerCoverLetterTemplates from "./pages/partner/PartnerCoverLetterTempl
 import PartnerLogin from "./pages/partner/PartnerLogin";
 import PartnerRegister from "./pages/partner/PartnerRegister";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
+import PartnerLinkedInTools from "./pages/partner/PartnerLinkedInTools";
+import PartnerBookStrategyCall from "./pages/partner/PartnerBookStrategyCall";
+import PartnerPrivacyPolicy from "./pages/partner/PartnerPrivacyPolicy";
+import PartnerTermsOfService from "./pages/partner/PartnerTermsOfService";
+import PartnerRefundPolicy from "./pages/partner/PartnerRefundPolicy";
 
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";

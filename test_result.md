@@ -1,28 +1,14 @@
-# Test Results - Calendar/Booking Management Implementation
+# Test Results - Pricing Display Testing
 
 ## Test Focus
-Testing the new Calendar/Booking management feature for admins and resellers.
+Testing the pricing display functionality to verify prices are correctly fetched from admin settings and displayed in proper ZAR format (not cents).
 
 ## Backend Tests
-- task: "Admin Bookings List API"
-  endpoint: "/api/admin/bookings"
+- task: "Public Pricing API"
+  endpoint: "/api/pricing"
   working: true
   verified_via: "curl"
-
-- task: "Admin Confirm Booking API"
-  endpoint: "/api/admin/bookings/{id}/confirm"
-  working: true
-  verified_via: "curl"
-
-- task: "Admin Cancel Booking API"
-  endpoint: "/api/admin/bookings/{id}/cancel"
-  working: true
-  verified_via: "curl"
-
-- task: "Create Booking API"
-  endpoint: "/api/booking/create"
-  working: true
-  verified_via: "curl"
+  comment: "API returns correct pricing: Tier 1: R499, Tier 2: R999, Tier 3: R3000 - all in normal ZAR format, not cents"
 
 ## Frontend Tests - COMPLETED
 frontend:

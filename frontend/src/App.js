@@ -180,6 +180,10 @@ const AppContent = () => {
           <Route path="pricing" element={<PartnerPricing />} />
           <Route path="about" element={<PartnerAbout />} />
           <Route path="contact" element={<PartnerContact />} />
+          {/* Auth */}
+          <Route path="login" element={<PartnerLogin />} />
+          <Route path="register" element={<PartnerRegister />} />
+          <Route path="dashboard" element={<PartnerDashboard />} />
           {/* Tools - matching main site URLs */}
           <Route path="ats-checker" element={<PartnerATSChecker />} />
           <Route path="builder" element={<PartnerCVBuilder />} />

@@ -1183,6 +1183,8 @@ async def save_reseller_yoco_settings(
             "yoco_secret_key": secret_key,
             "use_custom_keys": settings.get("use_custom_keys", False),
             "is_live_mode": is_live_mode,
+            "success_redirect_url": settings.get("success_redirect_url", ""),
+            "cancel_redirect_url": settings.get("cancel_redirect_url", ""),
             "updated_at": datetime.utcnow().isoformat()
         }
         
@@ -1190,6 +1192,18 @@ async def save_reseller_yoco_settings(
             {"reseller_id": reseller["id"]},
             {"$set": update_data},
             upsert=True
+        )
+        
+        # Also update the reseller document with yoco_settings for quick access
+        await db.resellers.update_one(
+            {"id": reseller["id"]},
+            {"$set": {
+                "yoco_settings": {
+                    "use_custom_keys": settings.get("use_custom_keys", False),
+                    "success_redirect_url": settings.get("success_redirect_url", ""),
+                    "cancel_redirect_url": settings.get("cancel_redirect_url", "")
+                }
+            }}
         )
         
         logger.info(f"Yoco settings saved for reseller {reseller['id']}")

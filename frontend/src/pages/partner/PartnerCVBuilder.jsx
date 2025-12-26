@@ -120,7 +120,7 @@ const PartnerCVBuilder = () => {
     setShowSkillsSuggestions(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/ai-content/generate-skills`, {
+      const response = await fetch(`${API_URL}/api/ai-content/cv-builder-skills`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

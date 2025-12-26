@@ -21,7 +21,7 @@ import uuid
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://skill-craft-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://career-boost-136.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {

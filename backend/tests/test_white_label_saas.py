@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, Any, Tuple, Optional
 
 # Backend URL - using production endpoint
-BACKEND_URL = "https://skill-craft-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://career-boost-136.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {

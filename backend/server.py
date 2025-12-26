@@ -382,6 +382,40 @@ async def create_payment_checkout(
         # Get Yoco service with reseller credentials if available
         yoco = await get_yoco_service_for_reseller(db, reseller_id)
         
+        # Get reseller subdomain for redirect URLs
+        reseller_subdomain = None
+        if reseller_id:
+            reseller = await db.resellers.find_one({"id": reseller_id}, {"_id": 0, "subdomain": 1, "pricing": 1, "yoco_settings": 1})
+            if reseller:
+                reseller_subdomain = reseller.get("subdomain")
+        
+        # Build redirect URLs - use reseller's custom URLs if configured, otherwise default to partner path
+        frontend_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:3000')).rstrip('/')
+        
+        # Check if reseller has custom redirect URLs in their Yoco settings
+        custom_success_url = None
+        custom_cancel_url = None
+        
+        if reseller_id and reseller:
+            yoco_settings = reseller.get("yoco_settings", {})
+            custom_success_url = yoco_settings.get("success_redirect_url")
+            custom_cancel_url = yoco_settings.get("cancel_redirect_url")
+        
+        # Determine final redirect URLs
+        if custom_success_url:
+            success_url = custom_success_url
+        elif reseller_subdomain:
+            success_url = f"{frontend_url}/partner/{reseller_subdomain}/payment/success"
+        else:
+            success_url = f"{frontend_url}/payment/success"
+            
+        if custom_cancel_url:
+            cancel_url = custom_cancel_url
+        elif reseller_subdomain:
+            cancel_url = f"{frontend_url}/partner/{reseller_subdomain}/payment/cancel"
+        else:
+            cancel_url = f"{frontend_url}/payment/cancel"
+        
         # Get pricing from reseller or use defaults
         tiers = {
             "tier-1": {"name": "ATS Optimize", "price_cents": 89900},

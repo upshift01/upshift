@@ -1,65 +1,99 @@
-# Test Results - Partner Form & CRM Implementation
+# Test Results - CRM / Lead Management Implementation
 
 ## Test Focus
-Testing the ATS Score History feature fix - ensuring results are saved to database for authenticated users and displayed correctly.
+Testing the new CRM / Lead Management feature in the UpShift admin portal.
 
-## Bug Fixed
-**Root Cause**: The `/api/ats-check` endpoint was saving `user_id` as the user's email (from `payload.get("sub")`) instead of their actual UUID. The `/api/customer/ats-history` endpoint queries by the user's UUID, causing a mismatch.
+## Features to Test
+1. Super Admin Login
+2. CRM Page Navigation and Display
+3. Lead Management Functionality
+4. Partner Form Submission (White-Label Page)
+5. Integration between Partner Form and CRM
 
-**Fix Applied**:
-1. Modified `/app/backend/server.py` - `/api/ats-check` endpoint to:
-   - Properly decode JWT and look up user's actual ID from database
-   - Save results with correct `user_id` (UUID)
-   - Extract score correctly from `overall_score` or `score` field
-2. Modified `/app/frontend/src/pages/ATSChecker.jsx` to include Authorization header when user is logged in
-
-## Backend Tests
-- task: "ATS Score History - Backend"
-  endpoint: "/api/ats-check"
-  working: true
-  verified_via: "curl"
-  comment: "Results now saved with correct user_id (UUID). Score correctly extracted."
-
-- task: "ATS History Endpoint"
-  endpoint: "/api/customer/ats-history"
-  working: true
-  verified_via: "curl"
-  comment: "Returns saved ATS results correctly for authenticated user."
-
-## Frontend Tests - COMPLETED
-- task: "ATS Checker - Authorization Header"
-  file: "/app/frontend/src/pages/ATSChecker.jsx"
+## Frontend Tests
+- task: "Super Admin Login"
+  file: "/app/frontend/src/pages/Login.jsx"
   implemented: true
-  working: false
-  needs_testing: false
+  working: "NA"
+  needs_retesting: true
   stuck_count: 0
   priority: "high"
-  status_history:
-    - working: false
-      agent: "testing"
-      comment: "Authorization header implementation is correct, but ATS check fails due to OpenAI API quota exceeded errors. The frontend correctly includes Bearer token when user is logged in (lines 60-64). API returns 500 errors due to backend AI service failures."
+  status_history: []
 
-- task: "ATS Score History Display"
-  file: "/app/frontend/src/pages/customer/CustomerAnalytics.jsx"
+- task: "CRM Page Display"
+  file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
   implemented: true
-  working: true
-  needs_testing: false
+  working: "NA"
+  needs_retesting: true
   stuck_count: 0
   priority: "high"
-  status_history:
-    - working: true
-      agent: "testing"
-      comment: "ATS Score History display is working correctly. When ATS results exist in database, they are properly fetched via /api/customer/ats-history and displayed in the Analytics page. Shows score (85), filename (test_resume.txt), date, and status badge (Excellent). Main stats also update correctly (ATS Checks: 1, Avg ATS Score: 85%). Achievements unlock properly (First ATS Check, Score Above 70%)."
+  status_history: []
+
+- task: "Lead Details Panel"
+  file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
+  implemented: true
+  working: "NA"
+  needs_retesting: true
+  stuck_count: 0
+  priority: "high"
+  status_history: []
+
+- task: "Lead Status Updates"
+  file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
+  implemented: true
+  working: "NA"
+  needs_retesting: true
+  stuck_count: 0
+  priority: "high"
+  status_history: []
+
+- task: "Lead Notes Functionality"
+  file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
+  implemented: true
+  working: "NA"
+  needs_retesting: true
+  stuck_count: 0
+  priority: "high"
+  status_history: []
+
+- task: "Convert to Reseller"
+  file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
+  implemented: true
+  working: "NA"
+  needs_retesting: true
+  stuck_count: 0
+  priority: "high"
+  status_history: []
+
+- task: "Partner Form Submission"
+  file: "/app/frontend/src/pages/WhiteLabelPage.jsx"
+  implemented: true
+  working: "NA"
+  needs_retesting: true
+  stuck_count: 0
+  priority: "high"
+  status_history: []
+
+- task: "Form-CRM Integration"
+  file: "/app/frontend/src/pages/WhiteLabelPage.jsx"
+  implemented: true
+  working: "NA"
+  needs_retesting: true
+  stuck_count: 0
+  priority: "high"
+  status_history: []
 
 test_plan:
   current_focus:
-    - "OpenAI API Integration Issues"
-  stuck_tasks:
-    - "ATS Checker - Authorization Header"
+    - "Super Admin Login"
+    - "CRM Page Display"
+    - "Lead Management Functionality"
+    - "Partner Form Submission"
+    - "Form-CRM Integration"
+  stuck_tasks: []
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Fixed ATS Score History bug. Root cause was saving email instead of UUID as user_id. Frontend now includes auth token in ATS check requests. Ready for full testing."
-  - agent: "testing"
-    message: "TESTING COMPLETE: ATS Score History display feature is working correctly. However, ATS check functionality is blocked by OpenAI API quota issues. Frontend authorization implementation is correct. Backend properly saves results when AI service works. Need to resolve OpenAI API quota/billing to enable full end-to-end testing."
+    message: "Implemented CRM / Lead Management feature with AdminCRM page, lead management functionality, and partner form integration. Ready for comprehensive testing."

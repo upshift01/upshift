@@ -9,16 +9,21 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Download, Plus, Trash2, FileText } from 'lucide-react';
+import { Loader2, Download, Plus, Trash2, FileText, Sparkles, Wand2, X, Check } from 'lucide-react';
 import PartnerPaywall from '../../components/PartnerPaywall';
 import jsPDF from 'jspdf';
 
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
 const PartnerCVBuilder = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, getAuthHeader } = useAuth();
   const { brandName, primaryColor, secondaryColor, baseUrl } = usePartner();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
+  const [suggestedSkills, setSuggestedSkills] = useState([]);
+  const [showSkillsSuggestions, setShowSkillsSuggestions] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',

@@ -177,13 +177,18 @@ const AppContent = () => {
           <Route path="pricing" element={<PartnerPricing />} />
           <Route path="about" element={<PartnerAbout />} />
           <Route path="contact" element={<PartnerContact />} />
+          {/* Tools - matching main site URLs */}
           <Route path="ats-checker" element={<PartnerATSChecker />} />
-          <Route path="cv-builder" element={<PartnerCVBuilder />} />
+          <Route path="builder" element={<PartnerCVBuilder />} />
+          <Route path="improve" element={<PartnerResumeImprover />} />
           <Route path="cover-letter" element={<PartnerCoverLetterCreator />} />
-          <Route path="improve-resume" element={<PartnerResumeImprover />} />
           <Route path="skills-generator" element={<PartnerSkillsGenerator />} />
-          <Route path="cv-templates" element={<PartnerCVTemplates />} />
+          <Route path="templates" element={<PartnerCVTemplates />} />
           <Route path="cover-letter-templates" element={<PartnerCoverLetterTemplates />} />
+          {/* Aliases for backward compatibility */}
+          <Route path="cv-builder" element={<PartnerCVBuilder />} />
+          <Route path="improve-resume" element={<PartnerResumeImprover />} />
+          <Route path="cv-templates" element={<PartnerCVTemplates />} />
         </Route>
       </Routes>
       {!hideFooter && <Footer />}

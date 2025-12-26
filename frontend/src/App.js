@@ -178,6 +178,12 @@ const AppContent = () => {
           <Route path="about" element={<PartnerAbout />} />
           <Route path="contact" element={<PartnerContact />} />
           <Route path="ats-checker" element={<PartnerATSChecker />} />
+          <Route path="cv-builder" element={<PartnerCVBuilder />} />
+          <Route path="cover-letter" element={<PartnerCoverLetterCreator />} />
+          <Route path="improve-resume" element={<PartnerResumeImprover />} />
+          <Route path="skills-generator" element={<PartnerSkillsGenerator />} />
+          <Route path="cv-templates" element={<PartnerCVTemplates />} />
+          <Route path="cover-letter-templates" element={<PartnerCoverLetterTemplates />} />
         </Route>
       </Routes>
       {!hideFooter && <Footer />}

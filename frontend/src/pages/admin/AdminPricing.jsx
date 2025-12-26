@@ -492,12 +492,11 @@ const AdminPricing = () => {
                     <Input
                       id="monthly_sub"
                       type="number"
-                      step="0.01"
                       min="0"
-                      value={formatCents(whitelabelPricing.monthly_subscription)}
+                      value={whitelabelPricing.monthly_subscription}
                       onChange={(e) => setWhitelabelPricing({ 
                         ...whitelabelPricing, 
-                        monthly_subscription: parseCents(e.target.value) 
+                        monthly_subscription: parseInt(e.target.value) || 0 
                       })}
                       className="pl-8"
                     />
@@ -511,12 +510,11 @@ const AdminPricing = () => {
                     <Input
                       id="setup_fee"
                       type="number"
-                      step="0.01"
                       min="0"
-                      value={formatCents(whitelabelPricing.setup_fee)}
+                      value={whitelabelPricing.setup_fee}
                       onChange={(e) => setWhitelabelPricing({ 
                         ...whitelabelPricing, 
-                        setup_fee: parseCents(e.target.value) 
+                        setup_fee: parseInt(e.target.value) || 0 
                       })}
                       className="pl-8"
                     />

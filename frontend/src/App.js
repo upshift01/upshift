@@ -84,6 +84,12 @@ import PartnerTermsOfService from "./pages/partner/PartnerTermsOfService";
 import PartnerRefundPolicy from "./pages/partner/PartnerRefundPolicy";
 import PartnerPaymentSuccess from "./pages/partner/PartnerPaymentSuccess";
 import PartnerPaymentCancel from "./pages/partner/PartnerPaymentCancel";
+import PartnerDocuments from "./pages/partner/PartnerDocuments";
+import PartnerAnalytics from "./pages/partner/PartnerAnalytics";
+import PartnerBilling from "./pages/partner/PartnerBilling";
+import PartnerSettings from "./pages/partner/PartnerSettings";
+import PartnerJobTracker from "./pages/partner/PartnerJobTracker";
+import PartnerInterviewPrep from "./pages/partner/PartnerInterviewPrep";
 
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";

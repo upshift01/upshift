@@ -74,6 +74,9 @@ import PartnerResumeImprover from "./pages/partner/PartnerResumeImprover";
 import PartnerSkillsGenerator from "./pages/partner/PartnerSkillsGenerator";
 import PartnerCVTemplates from "./pages/partner/PartnerCVTemplates";
 import PartnerCoverLetterTemplates from "./pages/partner/PartnerCoverLetterTemplates";
+import PartnerLogin from "./pages/partner/PartnerLogin";
+import PartnerRegister from "./pages/partner/PartnerRegister";
+import PartnerDashboard from "./pages/partner/PartnerDashboard";
 
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";

@@ -450,8 +450,11 @@ async def create_payment_checkout(
                 "user_name": current_user.full_name,
                 "tier_id": tier_id,
                 "tier_name": tier["name"],
-                "reseller_id": reseller_id or "platform"
-            }
+                "reseller_id": reseller_id or "platform",
+                "reseller_subdomain": reseller_subdomain or ""
+            },
+            success_url=success_url,
+            cancel_url=cancel_url
         )
         
         # Save pending payment to database

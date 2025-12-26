@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { usePartner } from '../../context/PartnerContext';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -7,11 +9,13 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Download, Plus, Trash2, FileText, Sparkles } from 'lucide-react';
+import { Loader2, Download, Plus, Trash2, FileText, Lock, ArrowRight } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 const PartnerCVBuilder = () => {
-  const { brandName, primaryColor, secondaryColor } = usePartner();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { brandName, primaryColor, secondaryColor, baseUrl } = usePartner();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,6 +28,70 @@ const PartnerCVBuilder = () => {
     education: [{ degree: '', institution: '', year: '' }],
     skills: [''],
   });
+
+  // Check if user has access (needs to be logged in with an active tier)
+  const hasAccess = isAuthenticated && user?.active_tier;
+
+  // Paywall component
+  const PaywallOverlay = () => (
+    <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex items-center justify-center">
+      <Card className="max-w-md mx-4 shadow-xl border-2" style={{ borderColor: primaryColor }}>
+        <CardHeader className="text-center">
+          <div 
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: `${primaryColor}15` }}
+          >
+            <Lock className="h-8 w-8" style={{ color: primaryColor }} />
+          </div>
+          <CardTitle className="text-xl">Unlock CV Builder</CardTitle>
+          <CardDescription>
+            {!isAuthenticated 
+              ? "Please login to access the CV Builder"
+              : "Upgrade to a paid plan to build professional CVs"
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ul className="space-y-2 text-sm text-gray-600">
+            <li className="flex items-center gap-2">
+              <FileText className="h-4 w-4" style={{ color: primaryColor }} />
+              Professional CV templates
+            </li>
+            <li className="flex items-center gap-2">
+              <FileText className="h-4 w-4" style={{ color: primaryColor }} />
+              Download as PDF
+            </li>
+            <li className="flex items-center gap-2">
+              <FileText className="h-4 w-4" style={{ color: primaryColor }} />
+              ATS-optimised formatting
+            </li>
+          </ul>
+          
+          {!isAuthenticated ? (
+            <div className="flex gap-2">
+              <Link to={`${baseUrl}/login`} className="flex-1">
+                <Button className="w-full" style={{ backgroundColor: primaryColor }}>
+                  Login
+                </Button>
+              </Link>
+              <Link to={`${baseUrl}/register`} className="flex-1">
+                <Button variant="outline" className="w-full">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <Link to={`${baseUrl}/pricing`}>
+              <Button className="w-full text-white" style={{ backgroundColor: primaryColor }}>
+                View Pricing Plans
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -81,6 +149,15 @@ const PartnerCVBuilder = () => {
   };
 
   const generatePDF = () => {
+    if (!hasAccess) {
+      toast({
+        title: "Upgrade Required",
+        description: "Please purchase a plan to download your CV.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const doc = new jsPDF();
@@ -203,8 +280,11 @@ const PartnerCVBuilder = () => {
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <Card>
+      <div className="max-w-4xl mx-auto px-4 py-8 relative">
+        {/* Paywall overlay if no access */}
+        {!hasAccess && <PaywallOverlay />}
+
+        <Card className={!hasAccess ? 'opacity-50 pointer-events-none' : ''}>
           <CardHeader>
             <CardTitle>Build Your CV</CardTitle>
             <CardDescription>Fill in your details below to generate a professional CV</CardDescription>
@@ -314,7 +394,7 @@ const PartnerCVBuilder = () => {
 
             {/* Generate Button */}
             <Button 
-              className="w-full" 
+              className="w-full text-white" 
               size="lg"
               onClick={generatePDF}
               disabled={isGenerating || !formData.fullName}

@@ -678,12 +678,11 @@ const AdminPricing = () => {
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
                       type="number"
-                      step="0.01"
                       min="0"
-                      value={formatCents(strategyCallPricing.price)}
+                      value={strategyCallPricing.price}
                       onChange={(e) => setStrategyCallPricing({ 
                         ...strategyCallPricing, 
-                        price: parseCents(e.target.value) 
+                        price: parseInt(e.target.value) || 0 
                       })}
                       className="pl-8"
                     />

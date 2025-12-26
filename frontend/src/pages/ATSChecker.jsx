@@ -56,8 +56,16 @@ const ATSChecker = () => {
     formData.append('file', file);
     
     try {
+      // Include auth token if user is logged in, so results get saved to history
+      const headers = {};
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ats-check`, {
         method: 'POST',
+        headers,
         body: formData
       });
       

@@ -28,12 +28,6 @@ const PartnerLinkedInTools = () => {
     { id: 'summary', name: 'Summary Writer', icon: FileText, description: 'Write a compelling About section' },
     { id: 'experience', name: 'Experience Optimizer', icon: Briefcase, description: 'Enhance your work experience descriptions' },
   ];
-            </Link>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
 
   const handleGenerate = async () => {
     if (!input.trim()) {

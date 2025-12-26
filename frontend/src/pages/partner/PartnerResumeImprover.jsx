@@ -141,7 +141,19 @@ const PartnerResumeImprover = () => {
 
       <div className="max-w-6xl mx-auto px-4 py-8 relative">
         {/* Paywall overlay if no access */}
-        {!hasAccess && <PaywallOverlay />}
+        {!hasAccess && (
+          <PartnerPaywall
+            title="Unlock Resume Improver"
+            icon={Sparkles}
+            features={[
+              "AI-powered content enhancement",
+              "Actionable improvement suggestions",
+              "ATS keyword optimization",
+              "Professional language upgrade",
+              "Achievement highlighting"
+            ]}
+          />
+        )}
 
         <div className={`grid md:grid-cols-2 gap-6 ${!hasAccess ? 'opacity-50 pointer-events-none' : ''}`}>
           {/* Input */}

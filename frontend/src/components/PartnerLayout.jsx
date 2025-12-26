@@ -1,169 +1,159 @@
 import React, { useState } from 'react';
-import { useParams, Outlet, Link, useNavigate } from 'react-router-dom';
+import { useParams, Outlet, Link, useLocation } from 'react-router-dom';
 import { PartnerProvider, usePartner } from '../context/PartnerContext';
-import { Loader2, AlertCircle, Home, ChevronDown, FileText, Sparkles, Target, Zap, Mail, Menu, X } from 'lucide-react';
+import { 
+  Loader2, AlertCircle, Home, Menu, X, Zap, LogOut, User,
+  Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube
+} from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { useAuth } from '../context/AuthContext';
 
-// Partner Navbar Component
+// Partner Navbar Component - Mirrors main site Navbar
 const PartnerNavbar = () => {
-  const { brandName, logoUrl, primaryColor, baseUrl, contactPhone } = usePartner();
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { brandName, logoUrl, primaryColor, secondaryColor, baseUrl, contactPhone } = usePartner();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+  const { user, logout, isAuthenticated } = useAuth();
 
+  // Same nav items as main site, but without white-label option
   const navItems = [
-    { name: 'Home', path: baseUrl || '/' },
-    { name: 'Services', path: `${baseUrl}/pricing` },
+    { name: 'AI Resume Builder', path: `${baseUrl}/builder` },
+    { name: 'Improve Resume', path: `${baseUrl}/improve` },
+    { name: 'Cover Letter', path: `${baseUrl}/cover-letter` },
+    { name: 'ATS Checker', path: `${baseUrl}/ats-checker`, isFree: true },
+    { name: 'Skills Generator', path: `${baseUrl}/skills-generator`, isFree: true },
     { name: 'About', path: `${baseUrl}/about` },
-    { name: 'Contact', path: `${baseUrl}/contact` },
+    { name: 'Contact', path: `${baseUrl}/contact` }
   ];
 
-  const toolsItems = [
-    { name: 'ATS Checker', path: `${baseUrl}/ats-checker`, icon: Target, badge: 'FREE' },
-    { name: 'CV Builder', path: `${baseUrl}/cv-builder`, icon: FileText },
-    { name: 'Cover Letter Creator', path: `${baseUrl}/cover-letter`, icon: Sparkles, badge: 'AI' },
-    { name: 'Improve Resume', path: `${baseUrl}/improve-resume`, icon: Zap, badge: 'AI' },
-    { name: 'Skills Generator', path: `${baseUrl}/skills-generator`, icon: Target, badge: 'FREE' },
-    { name: 'CV Templates', path: `${baseUrl}/cv-templates`, icon: FileText },
-    { name: 'Cover Letter Templates', path: `${baseUrl}/cover-letter-templates`, icon: Mail },
-  ];
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+  };
 
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to={baseUrl || '/'} className="flex items-center gap-2">
-              {logoUrl ? (
-                <img src={logoUrl} alt={brandName} className="h-8 w-auto" />
-              ) : (
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to={baseUrl} className="flex items-center space-x-2 group">
+            {logoUrl ? (
+              <img src={logoUrl} alt={brandName} className="h-10 w-auto" />
+            ) : (
+              <>
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center transform group-hover:scale-105 transition-transform"
+                  style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                >
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
                 <span 
-                  className="text-xl font-bold"
-                  style={{ color: primaryColor }}
+                  className="text-2xl font-bold bg-clip-text text-transparent"
+                  style={{ backgroundImage: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
                 >
                   {brandName}
                 </span>
-              )}
-            </Link>
-          </div>
-          
+              </>
+            )}
+          </Link>
+
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden lg:flex items-center space-x-6">
             {navItems.map((item) => (
               <Link
-                key={item.name}
+                key={item.path}
                 to={item.path}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                className={`text-sm font-medium transition-colors hover:text-blue-600 whitespace-nowrap ${
+                  location.pathname === item.path ? 'text-blue-600' : 'text-gray-700'
+                }`}
               >
                 {item.name}
+                {item.isFree && (
+                  <sup className="text-[8px] font-bold text-green-600">FREE</sup>
+                )}
               </Link>
             ))}
             
-            {/* Tools Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setToolsOpen(!toolsOpen)}
-                onBlur={() => setTimeout(() => setToolsOpen(false), 200)}
-                className="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-medium transition-colors"
-              >
-                Tools
-                <ChevronDown className={`h-4 w-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {toolsOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2 z-50">
-                  {toolsItems.map((tool) => (
-                    <Link
-                      key={tool.name}
-                      to={tool.path}
-                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors"
-                    >
-                      <tool.icon className="h-4 w-4 text-gray-500" />
-                      <span className="text-gray-700">{tool.name}</span>
-                      {tool.badge && (
-                        <span 
-                          className="ml-auto text-xs px-2 py-0.5 rounded-full"
-                          style={{ 
-                            backgroundColor: tool.badge === 'AI' ? `${primaryColor}20` : '#dcfce7',
-                            color: tool.badge === 'AI' ? primaryColor : '#16a34a'
-                          }}
-                        >
-                          {tool.badge}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {contactPhone && (
-              <a href={`tel:${contactPhone}`} className="hidden lg:block text-sm text-gray-600">
-                {contactPhone}
-              </a>
+            {isAuthenticated ? (
+              <>
+                <Link to={`${baseUrl}/dashboard`}>
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to={`${baseUrl}/login`}>
+                  <Button variant="ghost" size="sm">Login</Button>
+                </Link>
+                <Link to={`${baseUrl}/pricing`}>
+                  <Button 
+                    size="sm"
+                    style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                    className="text-white"
+                  >
+                    Get Started
+                  </Button>
+                </Link>
+              </>
             )}
-            <Link to={`${baseUrl}/login`} className="hidden sm:block">
-              <Button variant="outline" size="sm">Login</Button>
-            </Link>
-            <Link to={`${baseUrl}/register`} className="hidden sm:block">
-              <Button 
-                size="sm"
-                style={{ backgroundColor: primaryColor }}
-                className="text-white hover:opacity-90"
-              >
-                Get Started
-              </Button>
-            </Link>
-            
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden p-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
           </div>
+
+          {/* Mobile menu button */}
+          <button
+            className="lg:hidden p-2"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
-        
+
         {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t py-4">
+        {isMenuOpen && (
+          <div className="lg:hidden border-t py-4">
             <div className="space-y-2">
               {navItems.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.path}
                   to={item.path}
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
-                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
-                </Link>
-              ))}
-              <div className="px-4 py-2 text-sm font-semibold text-gray-400">Tools</div>
-              {toolsItems.map((tool) => (
-                <Link
-                  key={tool.name}
-                  to={tool.path}
-                  className="flex items-center gap-3 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <tool.icon className="h-4 w-4" />
-                  {tool.name}
-                  {tool.badge && (
-                    <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">
-                      {tool.badge}
-                    </span>
+                  {item.isFree && (
+                    <span className="ml-2 text-xs text-green-600 font-bold">FREE</span>
                   )}
                 </Link>
               ))}
               <div className="px-4 pt-4 flex gap-2">
-                <Link to={`${baseUrl}/login`} className="flex-1">
-                  <Button variant="outline" className="w-full">Login</Button>
-                </Link>
-                <Link to={`${baseUrl}/register`} className="flex-1">
-                  <Button className="w-full" style={{ backgroundColor: primaryColor }}>Get Started</Button>
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link to={`${baseUrl}/dashboard`} className="flex-1">
+                      <Button variant="outline" className="w-full">Dashboard</Button>
+                    </Link>
+                    <Button onClick={handleLogout} variant="outline" className="flex-1 text-red-600">Logout</Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to={`${baseUrl}/login`} className="flex-1">
+                      <Button variant="outline" className="w-full">Login</Button>
+                    </Link>
+                    <Link to={`${baseUrl}/pricing`} className="flex-1">
+                      <Button className="w-full" style={{ backgroundColor: primaryColor }}>Get Started</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -173,83 +163,168 @@ const PartnerNavbar = () => {
   );
 };
 
-// Partner Footer Component
+// Partner Footer Component - Mirrors main site Footer (without white-label link)
 const PartnerFooter = () => {
   const { 
     brandName, 
-    primaryColor, 
+    primaryColor,
+    secondaryColor,
     contactEmail, 
     contactPhone, 
     contactAddress,
+    contactWhatsapp,
     socialMedia,
     baseUrl 
   } = usePartner();
 
+  const currentYear = new Date().getFullYear();
+
+  const menuLinks = [
+    { name: 'Home', path: baseUrl },
+    { name: 'AI Resume Builder', path: `${baseUrl}/builder` },
+    { name: 'Improve Resume', path: `${baseUrl}/improve` },
+    { name: 'Cover Letter', path: `${baseUrl}/cover-letter` },
+    { name: 'Templates', path: `${baseUrl}/templates` },
+    { name: 'ATS Checker', path: `${baseUrl}/ats-checker` },
+  ];
+
+  const serviceLinks = [
+    { name: 'Pricing', path: `${baseUrl}/pricing` },
+    { name: 'CV Templates', path: `${baseUrl}/templates` },
+    { name: 'Cover Letter Templates', path: `${baseUrl}/cover-letter-templates` },
+    { name: 'Skills Generator', path: `${baseUrl}/skills-generator` },
+    { name: 'LinkedIn Tools', path: `${baseUrl}/linkedin-tools` },
+    { name: 'Book Strategy Call', path: `${baseUrl}/book-strategy-call` },
+    { name: 'Contact Us', path: `${baseUrl}/contact` },
+  ];
+
+  const legalLinks = [
+    { name: 'Privacy Policy', path: `${baseUrl}/privacy-policy` },
+    { name: 'Terms of Service', path: `${baseUrl}/terms-of-service` },
+    { name: 'Refund Policy', path: `${baseUrl}/refund-policy` },
+  ];
+
+  const socialIcons = [
+    socialMedia?.facebook && { name: 'Facebook', icon: Facebook, url: socialMedia.facebook },
+    socialMedia?.twitter && { name: 'Twitter', icon: Twitter, url: socialMedia.twitter },
+    socialMedia?.linkedin && { name: 'LinkedIn', icon: Linkedin, url: socialMedia.linkedin },
+    socialMedia?.instagram && { name: 'Instagram', icon: Instagram, url: socialMedia.instagram },
+    socialMedia?.youtube && { name: 'YouTube', icon: Youtube, url: socialMedia.youtube },
+  ].filter(Boolean);
+
   return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-1">
-            <h3 className="text-xl font-bold mb-4" style={{ color: primaryColor }}>
-              {brandName}
-            </h3>
-            <p className="text-gray-400 mb-4 text-sm">
-              Professional career services powered by AI technology.
+    <footer className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <Link to={baseUrl} className="flex items-center gap-2 mb-4">
+              <div 
+                className="h-10 w-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: primaryColor }}
+              >
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-2xl font-bold">{brandName}</span>
+            </Link>
+            <p className="text-gray-400 mb-6 max-w-md">
+              Empowering South African job seekers with AI-powered CV and career tools. 
+              Create professional, ATS-optimised CVs that get you noticed.
             </p>
-            {contactAddress && (
-              <p className="text-gray-400 text-sm">{contactAddress}</p>
+            
+            {/* Contact Info */}
+            <div className="space-y-3 text-gray-400">
+              {contactEmail && (
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                  <Mail className="h-4 w-4" />
+                  <span>{contactEmail}</span>
+                </a>
+              )}
+              {contactPhone && (
+                <a href={`tel:${contactPhone.replace(/\s/g, '')}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                  <Phone className="h-4 w-4" />
+                  <span>{contactPhone}</span>
+                </a>
+              )}
+              {contactAddress && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{contactAddress}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Social Links */}
+            {socialIcons.length > 0 && (
+              <div className="flex gap-4 mt-6">
+                {socialIcons.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <social.icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
             )}
           </div>
           
+          {/* Quick Links */}
           <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
-              <li><Link to={`${baseUrl}/pricing`} className="hover:text-white">Services</Link></li>
-              <li><Link to={`${baseUrl}/about`} className="hover:text-white">About Us</Link></li>
-              <li><Link to={`${baseUrl}/contact`} className="hover:text-white">Contact</Link></li>
-              <li><Link to={`${baseUrl}/terms`} className="hover:text-white">Terms</Link></li>
-              <li><Link to={`${baseUrl}/privacy`} className="hover:text-white">Privacy</Link></li>
+            <h4 className="font-semibold mb-4 text-white">Quick Links</h4>
+            <ul className="space-y-2">
+              {menuLinks.map((link) => (
+                <li key={link.path}>
+                  <Link to={link.path} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           
+          {/* Services */}
           <div>
-            <h4 className="font-semibold mb-4">Free Tools</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
-              <li><Link to={`${baseUrl}/ats-checker`} className="hover:text-white">ATS Checker</Link></li>
-              <li><Link to={`${baseUrl}/cv-builder`} className="hover:text-white">CV Builder</Link></li>
-              <li><Link to={`${baseUrl}/cover-letter`} className="hover:text-white">Cover Letter Creator</Link></li>
-              <li><Link to={`${baseUrl}/skills-generator`} className="hover:text-white">Skills Generator</Link></li>
-              <li><Link to={`${baseUrl}/improve-resume`} className="hover:text-white">Improve Resume</Link></li>
-              <li><Link to={`${baseUrl}/cv-templates`} className="hover:text-white">CV Templates</Link></li>
+            <h4 className="font-semibold mb-4 text-white">Services</h4>
+            <ul className="space-y-2">
+              {serviceLinks.map((link) => (
+                <li key={link.path}>
+                  <Link to={link.path} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           
+          {/* Legal */}
           <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
-              {contactEmail && (
-                <li>
-                  <a href={`mailto:${contactEmail}`} className="hover:text-white">
-                    {contactEmail}
-                  </a>
+            <h4 className="font-semibold mb-4 text-white">Legal</h4>
+            <ul className="space-y-2">
+              {legalLinks.map((link) => (
+                <li key={link.path}>
+                  <Link to={link.path} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    {link.name}
+                  </Link>
                 </li>
-              )}
-              {contactPhone && (
-                <li>
-                  <a href={`tel:${contactPhone}`} className="hover:text-white">
-                    {contactPhone}
-                  </a>
-                </li>
-              )}
+              ))}
             </ul>
           </div>
         </div>
         
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} {brandName}. All rights reserved.</p>
-          <p className="mt-2">
-            Powered by <a href="/" className="text-blue-400 hover:underline">UpShift</a>
-          </p>
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-400 text-sm">
+              &copy; {currentYear} {brandName}. All rights reserved.
+            </p>
+            <p className="text-gray-500 text-sm">
+              Powered by <a href="/" className="text-blue-400 hover:underline">UpShift</a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
@@ -261,7 +336,7 @@ const PartnerLoading = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="text-center">
       <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-      <p className="text-gray-600">Loading partner site...</p>
+      <p className="text-gray-600">Loading...</p>
     </div>
   </div>
 );

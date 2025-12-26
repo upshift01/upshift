@@ -15,7 +15,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  UserPlus
+  UserPlus,
+  Calendar
 } from 'lucide-react';
 
 const AdminLayout = () => {

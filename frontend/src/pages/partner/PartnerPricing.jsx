@@ -240,6 +240,30 @@ const PartnerPricing = () => {
           </Link>
         </div>
       </section>
+
+      {/* Processing Overlay */}
+      {isProcessing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: primaryColor }}></div>
+            <p className="text-gray-900 font-medium">Redirecting to payment...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Active Plan Banner */}
+      {user?.active_tier && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 mb-8">
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 text-center">
+            <h3 className="text-lg font-semibold text-green-900 mb-2">
+              Active Plan: {user.active_tier === 'tier-1' ? 'ATS Optimise' : user.active_tier === 'tier-2' ? 'Professional Package' : 'Executive Elite'}
+            </h3>
+            <p className="text-green-700">
+              You have full access to all features in your plan. Purchase additional services anytime!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

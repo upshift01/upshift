@@ -42,6 +42,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPricing from "./pages/admin/AdminPricing";
 import AdminContent from "./pages/admin/AdminContent";
+import AdminCRM from "./pages/admin/AdminCRM";
 
 // Reseller Pages
 import ResellerLayout from "./pages/reseller/ResellerLayout";

@@ -9,7 +9,8 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Copy, Check, FileText, Sparkles, Download, Lock, ArrowRight } from 'lucide-react';
+import { Loader2, Copy, Check, FileText, Sparkles, Download, Mail } from 'lucide-react';
+import PartnerPaywall from '../../components/PartnerPaywall';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -35,69 +36,6 @@ const PartnerCoverLetterCreator = () => {
 
   // Cover letter requires tier 2 or tier 3
   const hasAccess = isAuthenticated && user?.active_tier && ['tier-2', 'tier-3'].includes(user.active_tier);
-
-  // Paywall component
-  const PaywallOverlay = () => (
-    <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex items-center justify-center">
-      <Card className="max-w-md mx-4 shadow-xl border-2" style={{ borderColor: primaryColor }}>
-        <CardHeader className="text-center">
-          <div 
-            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: `${primaryColor}15` }}
-          >
-            <Lock className="h-8 w-8" style={{ color: primaryColor }} />
-          </div>
-          <CardTitle className="text-xl">Unlock Cover Letter Creator</CardTitle>
-          <CardDescription>
-            {!isAuthenticated 
-              ? "Please login to access the Cover Letter Creator"
-              : !user?.active_tier
-                ? "Upgrade to a paid plan to create cover letters"
-                : "Cover letter creation requires Professional Package or higher"
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
-              AI-powered personalized content
-            </li>
-            <li className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
-              Tailored to job descriptions
-            </li>
-            <li className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
-              Professional formatting
-            </li>
-          </ul>
-          
-          <Badge className="w-full justify-center py-2 bg-amber-100 text-amber-800">
-            Requires Professional Package or higher
-          </Badge>
-          
-          {!isAuthenticated ? (
-            <div className="flex gap-2">
-              <Link to={`${baseUrl}/login`} className="flex-1">
-                <Button className="w-full" style={{ backgroundColor: primaryColor }}>
-                  Login
-                </Button>
-              </Link>
-              <Link to={`${baseUrl}/register`} className="flex-1">
-                <Button variant="outline" className="w-full">
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <Link to={`${baseUrl}/pricing`}>
-              <Button className="w-full text-white" style={{ backgroundColor: primaryColor }}>
-                Upgrade to Professional
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          )}
         </CardContent>
       </Card>
     </div>

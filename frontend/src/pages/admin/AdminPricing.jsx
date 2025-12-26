@@ -136,9 +136,6 @@ const AdminPricing = () => {
     }
   };
 
-  const formatCents = (cents) => (cents / 100).toFixed(2);
-  const parseCents = (value) => Math.round(parseFloat(value || 0) * 100);
-
   const updatePlan = (planKey, field, value) => {
     setWhitelabelPlans(prev => ({
       ...prev,

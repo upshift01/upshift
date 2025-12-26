@@ -128,6 +128,7 @@ const AppContent = () => {
           <Route index element={<AdminDashboard />} />
           <Route path="resellers" element={<AdminResellers />} />
           <Route path="crm" element={<AdminCRM />} />
+          <Route path="calendar" element={<AdminCalendar />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="invoices" element={<AdminInvoices />} />
           <Route path="pricing" element={<AdminPricing />} />

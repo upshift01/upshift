@@ -388,6 +388,40 @@ async def submit_partner_enquiry(data: PartnerEnquiryRequest):
                 raise_exceptions=False
             )
             logger.info(f"Partner enquiry notification sent to {admin_email}")
+            
+            # Send confirmation email to the enquirer
+            confirmation_content = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #1e40af, #7c3aed); padding: 20px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">Thank You for Your Interest!</h1>
+                </div>
+                <div style="padding: 20px; background: #f9fafb;">
+                    <p>Dear {data.name},</p>
+                    <p>Thank you for your interest in partnering with UpShift! We've received your enquiry and our partnership team will review it shortly.</p>
+                    <p><strong>What happens next?</strong></p>
+                    <ul>
+                        <li>Our team will review your enquiry within 24-48 hours</li>
+                        <li>We'll reach out to schedule a discovery call</li>
+                        <li>You'll receive a personalised proposal based on your needs</li>
+                    </ul>
+                    <p>In the meantime, feel free to explore our <a href="https://www.upshift.works/white-label" style="color: #1e40af;">white-label solutions</a> or contact us if you have any questions.</p>
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+                    <p style="color: #6b7280; font-size: 12px;">
+                        This is an automated confirmation email. Please do not reply directly to this message.
+                    </p>
+                </div>
+            </body>
+            </html>
+            """
+            
+            await email_service.send_email(
+                to_email=data.email,
+                subject="We've Received Your Partnership Enquiry - UpShift",
+                html_body=confirmation_content,
+                raise_exceptions=False
+            )
+            logger.info(f"Partner enquiry confirmation sent to {data.email}")
         except Exception as email_error:
             logger.warning(f"Could not send partner enquiry notification: {str(email_error)}")
         

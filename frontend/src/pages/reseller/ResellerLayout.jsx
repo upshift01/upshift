@@ -73,6 +73,7 @@ const ResellerLayout = () => {
   const navItems = [
     { path: '/reseller-dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/reseller-dashboard/customers', icon: Users, label: 'Customers' },
+    { path: '/reseller-dashboard/calendar', icon: Calendar, label: 'Bookings' },
     { path: '/reseller-dashboard/revenue', icon: BarChart3, label: 'Analytics' },
     { path: '/reseller-dashboard/invoices', icon: Receipt, label: 'Invoices' },
     { path: '/reseller-dashboard/activity', icon: Activity, label: 'Activity Log', badge: 'New' },

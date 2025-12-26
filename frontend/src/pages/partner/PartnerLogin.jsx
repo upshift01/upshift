@@ -30,8 +30,8 @@ const PartnerLogin = () => {
     setIsLoading(true);
     setError('');
 
-    // Pass reseller_id to login so the backend knows which reseller this customer belongs to
-    const result = await login(formData.email, formData.password, resellerId);
+    // Login the user (reseller_id is stored in their account from registration)
+    const result = await login(formData.email, formData.password);
 
     if (result.success) {
       const userRole = result.user?.role;

@@ -2143,3 +2143,299 @@ async def test_openai_connection(admin: UserResponse = Depends(get_current_super
     except Exception as e:
         logger.error(f"Error testing OpenAI connection: {str(e)}")
         return {"success": False, "detail": str(e)}
+
+
+# ==================== CRM / Leads Management ====================
+
+class LeadStatusUpdate(BaseModel):
+    status: str  # new, contacted, qualified, converted, lost
+
+class LeadNote(BaseModel):
+    content: str
+
+
+@admin_router.get("/leads", response_model=dict)
+async def list_leads(
+    status_filter: Optional[str] = None,
+    source_filter: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """List all leads/partner enquiries"""
+    try:
+        query = {}
+        if status_filter:
+            query["status"] = status_filter
+        if source_filter:
+            query["business_type"] = source_filter
+        
+        leads = await db.partner_enquiries.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.partner_enquiries.count_documents(query)
+        
+        # Get status counts
+        status_counts = {
+            "new": await db.partner_enquiries.count_documents({"status": "new"}),
+            "contacted": await db.partner_enquiries.count_documents({"status": "contacted"}),
+            "qualified": await db.partner_enquiries.count_documents({"status": "qualified"}),
+            "converted": await db.partner_enquiries.count_documents({"status": "converted"}),
+            "lost": await db.partner_enquiries.count_documents({"status": "lost"})
+        }
+        
+        return {
+            "leads": leads,
+            "total": total,
+            "status_counts": status_counts,
+            "skip": skip,
+            "limit": limit
+        }
+    except Exception as e:
+        logger.error(f"Error listing leads: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/leads/{lead_id}", response_model=dict)
+async def get_lead(
+    lead_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get a specific lead by ID"""
+    try:
+        lead = await db.partner_enquiries.find_one({"id": lead_id}, {"_id": 0})
+        
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        
+        # Get notes for this lead
+        notes = await db.lead_notes.find(
+            {"lead_id": lead_id},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        
+        lead["notes"] = notes
+        
+        return {"lead": lead}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting lead: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.patch("/leads/{lead_id}/status", response_model=dict)
+async def update_lead_status(
+    lead_id: str,
+    data: LeadStatusUpdate,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Update lead status"""
+    try:
+        valid_statuses = ["new", "contacted", "qualified", "converted", "lost"]
+        if data.status not in valid_statuses:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+        
+        result = await db.partner_enquiries.update_one(
+            {"id": lead_id},
+            {
+                "$set": {
+                    "status": data.status,
+                    "status_updated_at": datetime.now(timezone.utc),
+                    "status_updated_by": admin.email
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        
+        # Add activity note
+        await db.lead_notes.insert_one({
+            "id": str(uuid.uuid4()),
+            "lead_id": lead_id,
+            "type": "status_change",
+            "content": f"Status changed to '{data.status}'",
+            "created_by": admin.email,
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        logger.info(f"Lead {lead_id} status updated to {data.status} by {admin.email}")
+        
+        return {"success": True, "message": f"Status updated to {data.status}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating lead status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/leads/{lead_id}/notes", response_model=dict)
+async def add_lead_note(
+    lead_id: str,
+    data: LeadNote,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Add a note to a lead"""
+    try:
+        # Verify lead exists
+        lead = await db.partner_enquiries.find_one({"id": lead_id})
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        
+        note = {
+            "id": str(uuid.uuid4()),
+            "lead_id": lead_id,
+            "type": "note",
+            "content": data.content,
+            "created_by": admin.email,
+            "created_at": datetime.now(timezone.utc)
+        }
+        
+        await db.lead_notes.insert_one(note)
+        
+        # Update lead's last activity
+        await db.partner_enquiries.update_one(
+            {"id": lead_id},
+            {"$set": {"last_activity": datetime.now(timezone.utc)}}
+        )
+        
+        logger.info(f"Note added to lead {lead_id} by {admin.email}")
+        
+        return {"success": True, "note": {k: v for k, v in note.items() if k != "_id"}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error adding lead note: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.delete("/leads/{lead_id}", response_model=dict)
+async def delete_lead(
+    lead_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Delete a lead"""
+    try:
+        result = await db.partner_enquiries.delete_one({"id": lead_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        
+        # Also delete associated notes
+        await db.lead_notes.delete_many({"lead_id": lead_id})
+        
+        logger.info(f"Lead {lead_id} deleted by {admin.email}")
+        
+        return {"success": True, "message": "Lead deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting lead: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/leads/{lead_id}/convert", response_model=dict)
+async def convert_lead_to_reseller(
+    lead_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Convert a lead to a reseller (creates a new reseller from lead info)"""
+    try:
+        lead = await db.partner_enquiries.find_one({"id": lead_id}, {"_id": 0})
+        
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        
+        if lead.get("status") == "converted":
+            raise HTTPException(status_code=400, detail="Lead has already been converted")
+        
+        # Generate subdomain from company name
+        subdomain = lead["company"].lower().replace(" ", "-").replace("_", "-")
+        subdomain = "".join(c for c in subdomain if c.isalnum() or c == "-")[:20]
+        
+        # Check if subdomain exists
+        existing = await db.resellers.find_one({"subdomain": subdomain})
+        if existing:
+            subdomain = f"{subdomain}-{str(uuid.uuid4())[:4]}"
+        
+        # Create reseller
+        reseller_id = str(uuid.uuid4())
+        new_reseller = {
+            "id": reseller_id,
+            "company_name": lead["company"],
+            "brand_name": lead["company"],
+            "subdomain": subdomain,
+            "custom_domain": None,
+            "status": "trial",
+            "branding": {
+                "logo_url": None,
+                "primary_color": "#1e40af",
+                "secondary_color": "#7c3aed",
+                "favicon_url": None
+            },
+            "contact_info": {
+                "name": lead["name"],
+                "email": lead["email"],
+                "phone": lead.get("phone", "")
+            },
+            "subscription": {
+                "plan": "starter",
+                "monthly_fee": 249900,
+                "is_trial": True,
+                "trial_start_date": datetime.now(timezone.utc),
+                "trial_end_date": datetime.now(timezone.utc) + timedelta(days=7)
+            },
+            "pricing": {
+                "tier1_price": 899,
+                "tier2_price": 1500,
+                "tier3_price": 3000
+            },
+            "legal": {
+                "terms_url": "/terms",
+                "privacy_url": "/privacy"
+            },
+            "created_at": datetime.now(timezone.utc),
+            "converted_from_lead": lead_id
+        }
+        
+        await db.resellers.insert_one(new_reseller)
+        
+        # Update lead status
+        await db.partner_enquiries.update_one(
+            {"id": lead_id},
+            {
+                "$set": {
+                    "status": "converted",
+                    "converted_to_reseller_id": reseller_id,
+                    "converted_at": datetime.now(timezone.utc),
+                    "converted_by": admin.email
+                }
+            }
+        )
+        
+        # Add conversion note
+        await db.lead_notes.insert_one({
+            "id": str(uuid.uuid4()),
+            "lead_id": lead_id,
+            "type": "conversion",
+            "content": f"Converted to reseller (ID: {reseller_id}, Subdomain: {subdomain})",
+            "created_by": admin.email,
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        logger.info(f"Lead {lead_id} converted to reseller {reseller_id} by {admin.email}")
+        
+        return {
+            "success": True,
+            "message": "Lead converted to reseller successfully",
+            "reseller_id": reseller_id,
+            "subdomain": subdomain
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error converting lead: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

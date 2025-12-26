@@ -14,7 +14,8 @@ import {
   FileText,
   Menu,
   X,
-  ChevronDown
+  ChevronDown,
+  UserPlus
 } from 'lucide-react';
 
 const AdminLayout = () => {

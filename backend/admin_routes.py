@@ -1978,7 +1978,7 @@ async def get_platform_pricing(admin: UserResponse = Depends(get_current_super_a
                 "currency": "ZAR"
             },
             "strategy_call_pricing": {
-                "price": 69900,
+                "price": 699,
                 "duration_minutes": 30,
                 "included_in_tier_3": True,
                 "enabled": True

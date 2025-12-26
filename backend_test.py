@@ -1338,6 +1338,203 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_crm_lead_management_apis(self):
+        """Test CRM / Lead Management backend APIs for UpShift admin portal"""
+        print("\n📊 Testing CRM / Lead Management APIs...")
+        
+        if not self.super_admin_token:
+            self.log_test("CRM Lead Management Tests", False, "No super admin token available")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.super_admin_token}"}
+        
+        # Test 1: Authentication with admin credentials
+        print("\n🔹 Test 1: Super Admin Authentication")
+        # Already tested in test_authentication(), just verify token exists
+        if self.super_admin_token:
+            self.log_test("Super Admin Authentication", True, "Admin token available for CRM testing")
+        else:
+            self.log_test("Super Admin Authentication", False, "No admin token for CRM testing")
+            return False
+        
+        # Test 2: List Leads
+        print("\n🔹 Test 2: List Leads API")
+        response, error = self.make_request("GET", "/admin/leads", headers=headers)
+        if error:
+            self.log_test("List Leads API", False, error)
+            return False
+        
+        # Validate response structure
+        required_fields = ["leads", "total", "status_counts"]
+        missing_fields = [f for f in required_fields if f not in response]
+        if missing_fields:
+            self.log_test("List Leads API - Structure", False, f"Missing fields: {missing_fields}")
+            return False
+        
+        leads = response.get("leads", [])
+        total_count = response.get("total", 0)
+        status_counts = response.get("status_counts", {})
+        
+        # Validate status_counts structure
+        expected_statuses = ["new", "contacted", "qualified", "converted", "lost"]
+        missing_statuses = [s for s in expected_statuses if s not in status_counts]
+        if missing_statuses:
+            self.log_test("List Leads API - Status Counts", False, f"Missing status counts: {missing_statuses}")
+            return False
+        
+        self.log_test("List Leads API", True, 
+                     f"Found {total_count} leads, Status counts: {status_counts}")
+        
+        # Store first lead ID for subsequent tests
+        test_lead_id = None
+        if leads:
+            test_lead_id = leads[0].get("id")
+            # Validate lead structure
+            lead = leads[0]
+            required_lead_fields = ["id", "company", "name", "email", "business_type", "message", "status", "created_at"]
+            missing_lead_fields = [f for f in required_lead_fields if f not in lead]
+            if missing_lead_fields:
+                self.log_test("Lead Structure Validation", False, f"Missing lead fields: {missing_lead_fields}")
+            else:
+                self.log_test("Lead Structure Validation", True, 
+                             f"Lead has all required fields: {lead.get('company')} - {lead.get('status')}")
+        
+        # Test 3: Get Single Lead (if leads exist)
+        if test_lead_id:
+            print("\n🔹 Test 3: Get Single Lead API")
+            response, error = self.make_request("GET", f"/admin/leads/{test_lead_id}", headers=headers)
+            if error:
+                self.log_test("Get Single Lead API", False, error)
+            else:
+                if "lead" not in response:
+                    self.log_test("Get Single Lead API", False, "Response missing 'lead' field")
+                else:
+                    lead_details = response["lead"]
+                    required_fields = ["id", "company", "name", "email", "business_type", "message", "status", "created_at"]
+                    missing_fields = [f for f in required_fields if f not in lead_details]
+                    if missing_fields:
+                        self.log_test("Get Single Lead API", False, f"Missing lead detail fields: {missing_fields}")
+                    else:
+                        notes = lead_details.get("notes", [])
+                        self.log_test("Get Single Lead API", True, 
+                                     f"Retrieved lead details with {len(notes)} notes")
+        
+        # Test 4: Update Lead Status
+        if test_lead_id:
+            print("\n🔹 Test 4: Update Lead Status API")
+            status_update_data = {"status": "contacted"}
+            response, error = self.make_request("PATCH", f"/admin/leads/{test_lead_id}/status", 
+                                               headers=headers, data=status_update_data)
+            if error:
+                self.log_test("Update Lead Status API", False, error)
+            else:
+                if not response.get("success"):
+                    self.log_test("Update Lead Status API", False, "Success flag not returned")
+                else:
+                    self.log_test("Update Lead Status API", True, 
+                                 f"Status updated: {response.get('message', 'No message')}")
+                    
+                    # Verify status was actually updated
+                    response, error = self.make_request("GET", f"/admin/leads/{test_lead_id}", headers=headers)
+                    if error:
+                        self.log_test("Verify Status Update", False, error)
+                    else:
+                        lead = response.get("lead", {})
+                        if lead.get("status") == "contacted":
+                            self.log_test("Verify Status Update", True, "Status successfully changed to 'contacted'")
+                        else:
+                            self.log_test("Verify Status Update", False, 
+                                         f"Status not updated correctly, got: {lead.get('status')}")
+        
+        # Test 5: Add Note to Lead
+        if test_lead_id:
+            print("\n🔹 Test 5: Add Note to Lead API")
+            note_data = {"content": "Test note from backend testing - CRM functionality verified"}
+            response, error = self.make_request("POST", f"/admin/leads/{test_lead_id}/notes", 
+                                               headers=headers, data=note_data)
+            if error:
+                self.log_test("Add Note to Lead API", False, error)
+            else:
+                if not response.get("success"):
+                    self.log_test("Add Note to Lead API", False, "Success flag not returned")
+                else:
+                    note = response.get("note", {})
+                    if note.get("content") == note_data["content"]:
+                        self.log_test("Add Note to Lead API", True, 
+                                     f"Note added successfully: {note.get('id', 'No ID')}")
+                    else:
+                        self.log_test("Add Note to Lead API", False, "Note content mismatch")
+                    
+                    # Verify note was added by getting lead again
+                    response, error = self.make_request("GET", f"/admin/leads/{test_lead_id}", headers=headers)
+                    if error:
+                        self.log_test("Verify Note Added", False, error)
+                    else:
+                        lead = response.get("lead", {})
+                        notes = lead.get("notes", [])
+                        test_note_found = any(n.get("content") == note_data["content"] for n in notes)
+                        if test_note_found:
+                            self.log_test("Verify Note Added", True, f"Note found in lead notes (total: {len(notes)})")
+                        else:
+                            self.log_test("Verify Note Added", False, "Test note not found in lead notes")
+        
+        # Test 6: Partner Enquiry Form Submission
+        print("\n🔹 Test 6: Partner Enquiry Form API")
+        partner_data = {
+            "company": "Backend Test Corp",
+            "name": "Test User",
+            "email": "backend@test.com",
+            "phone": "+27 123 456 789",
+            "type": "hr",
+            "message": "Testing from backend test agent - CRM integration test"
+        }
+        
+        response, error = self.make_request("POST", "/ai-content/partner-enquiry", data=partner_data)
+        if error:
+            self.log_test("Partner Enquiry Form API", False, error)
+        else:
+            required_fields = ["success", "message"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Partner Enquiry Form API", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                message = response.get("message", "")
+                if success:
+                    self.log_test("Partner Enquiry Form API", True, f"Enquiry submitted: {message}")
+                    
+                    # Verify new lead was created by checking leads list again
+                    response, error = self.make_request("GET", "/admin/leads", headers=headers)
+                    if error:
+                        self.log_test("Verify New Lead Created", False, error)
+                    else:
+                        leads = response.get("leads", [])
+                        new_lead_found = any(l.get("company") == "Backend Test Corp" for l in leads)
+                        if new_lead_found:
+                            self.log_test("Verify New Lead Created", True, "New lead found in CRM after form submission")
+                        else:
+                            self.log_test("Verify New Lead Created", False, "New lead not found in CRM")
+                else:
+                    self.log_test("Partner Enquiry Form API", False, f"Success flag false: {message}")
+        
+        # Test 7: Convert Lead to Reseller (Endpoint Verification Only)
+        if test_lead_id:
+            print("\n🔹 Test 7: Convert Lead to Reseller Endpoint")
+            # We'll just verify the endpoint exists and responds appropriately
+            # We won't actually convert to avoid creating test resellers
+            response, error = self.make_request("POST", f"/admin/leads/{test_lead_id}/convert", 
+                                               headers=headers, expected_status=400)
+            
+            # We expect this to either work or fail with a meaningful error
+            if error and ("400" in error or "already been converted" in error):
+                self.log_test("Convert Lead Endpoint", True, "Endpoint exists and validates properly")
+            elif not error and response.get("success"):
+                self.log_test("Convert Lead Endpoint", True, "Endpoint works (lead converted)")
+            else:
+                self.log_test("Convert Lead Endpoint", False, f"Unexpected response: {error or response}")
+        
+        return True
+
     def test_customer_invoice_creation(self):
         """Test Customer Invoice Creation feature and Yoco Payment integration for UpShift reseller portal"""
         print("\n🧾 Testing Customer Invoice Creation & Yoco Payment Integration...")

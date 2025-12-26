@@ -326,6 +326,61 @@ agent_communication:
         agent: "testing"
         comment: "✅ VERIFIED: Footer Free Tools section working correctly! Free Tools heading found in footer. All 6 expected tool links present: ATS Checker, CV Builder, Cover Letter Creator, Skills Generator, Improve Resume, CV Templates. Footer navigation and tool accessibility working as designed."
 
+## Current Tests - Partner Site Paywalls - IN PROGRESS
+
+  - task: "Partner CV Builder Paywall (Logged Out)"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/builder"
+    expected: "Should display paywall modal 'Unlock CV Builder' with 'Please login to access the CV Builder' message and Login/Sign Up buttons"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Screenshot confirmed paywall modal appears for logged-out users with correct messaging. Need to test logged-in free user state."
+
+  - task: "Partner Resume Improver Paywall (Logged Out)"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/improve"
+    expected: "Should display paywall modal 'Unlock Resume Improver' with 'Please login to access the Resume Improver' message"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Browser crashed during screenshot attempt. Need testing agent to verify."
+
+  - task: "Partner Cover Letter Creator Paywall (Logged Out)"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/cover-letter"
+    expected: "Should display paywall modal 'Unlock Cover Letter Creator' with 'Please login to access the Cover Letter Creator' message"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Browser crashed during screenshot attempt (same as handoff issue). Need testing agent to verify."
+
+  - task: "Partner Tools Paywall (Free User)"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/builder"
+    test_credentials: "customer@yottanet.co.za / password123"
+    expected: "Should display paywall modal prompting upgrade to paid plan for CV Builder and Resume Improver. Cover Letter should require tier-2 or tier-3."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Need to test with free user credentials to verify paywall shows upgrade prompt."
+
   - task: "Partner Home Page"
     implemented: true
     working: true

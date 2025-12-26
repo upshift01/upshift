@@ -2312,3 +2312,149 @@ async def save_reseller_site_settings(data: dict, context: dict = Depends(get_cu
         raise HTTPException(status_code=500, detail=str(e))
 
         raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== Reseller Booking Management ====================
+
+@reseller_router.get("/bookings", response_model=dict)
+async def list_reseller_bookings(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+    request: Request = None
+):
+    """List bookings for the reseller's customers"""
+    try:
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        query = {"reseller_id": reseller["id"]}
+        
+        if start_date:
+            query["date"] = {"$gte": start_date}
+        if end_date:
+            if "date" in query:
+                query["date"]["$lte"] = end_date
+            else:
+                query["date"] = {"$lte": end_date}
+        if status_filter:
+            query["status"] = status_filter
+        
+        bookings = await db.bookings.find(
+            query,
+            {"_id": 0}
+        ).sort([("date", 1), ("time", 1)]).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.bookings.count_documents(query)
+        
+        return {
+            "bookings": bookings,
+            "total": total
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing reseller bookings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/bookings/{booking_id}/confirm", response_model=dict)
+async def confirm_reseller_booking(
+    booking_id: str,
+    request: Request = None
+):
+    """Confirm a booking for this reseller"""
+    try:
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        booking = await db.bookings.find_one(
+            {"id": booking_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        if booking["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Cannot confirm a cancelled booking")
+        
+        # Get meeting link from reseller settings
+        meeting_link = None
+        reseller_settings = await db.reseller_site_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0, "meeting_link": 1}
+        )
+        if reseller_settings and reseller_settings.get("meeting_link"):
+            meeting_link = reseller_settings["meeting_link"]
+        else:
+            meeting_link = f"https://meet.upshift.works/call/{booking_id[:8]}"
+        
+        await db.bookings.update_one(
+            {"id": booking_id},
+            {
+                "$set": {
+                    "status": "confirmed",
+                    "is_paid": True,
+                    "meeting_link": meeting_link,
+                    "confirmed_at": datetime.now(timezone.utc),
+                    "confirmed_by": context["user"].email
+                }
+            }
+        )
+        
+        logger.info(f"Reseller {reseller['id']} confirmed booking {booking_id}")
+        
+        return {
+            "success": True,
+            "message": "Booking confirmed",
+            "meeting_link": meeting_link
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error confirming reseller booking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/bookings/{booking_id}/cancel", response_model=dict)
+async def cancel_reseller_booking(
+    booking_id: str,
+    request: Request = None
+):
+    """Cancel a booking for this reseller"""
+    try:
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        booking = await db.bookings.find_one(
+            {"id": booking_id, "reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        if booking["status"] == "cancelled":
+            raise HTTPException(status_code=400, detail="Booking is already cancelled")
+        
+        await db.bookings.update_one(
+            {"id": booking_id},
+            {
+                "$set": {
+                    "status": "cancelled",
+                    "cancelled_at": datetime.now(timezone.utc),
+                    "cancelled_by": context["user"].email
+                }
+            }
+        )
+        
+        logger.info(f"Reseller {reseller['id']} cancelled booking {booking_id}")
+        
+        return {"success": True, "message": "Booking cancelled"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error cancelling reseller booking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

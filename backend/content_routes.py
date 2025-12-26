@@ -688,3 +688,74 @@ async def admin_delete_industry(industry_id: str, request: Request):
     logger.info(f"Industry deleted: {industry_id}")
     return {"success": True, "message": "Industry deleted"}
 
+
+
+# ==================== About Page Content ====================
+
+@content_router.get("/about")
+async def get_about_content():
+    """Get about page content - can be customised by admin"""
+    try:
+        # Check for custom about content
+        about_config = await db.platform_settings.find_one(
+            {"key": "about_content"},
+            {"_id": 0}
+        )
+        
+        if about_config and about_config.get("value"):
+            return about_config["value"]
+        
+        # Return default content
+        return {
+            "hero": {
+                "title": "Empowering South African Careers",
+                "subtitle": "We're on a mission to help job seekers stand out in today's competitive market with AI-powered tools designed specifically for the South African job market."
+            },
+            "mission": {
+                "title": "Our Mission",
+                "description": "To democratise access to professional career tools and help every South African job seeker present their best self to potential employers."
+            },
+            "story": {
+                "title": "Our Story",
+                "paragraphs": [
+                    "UpShift was born from a simple observation: too many talented South Africans were being overlooked by employers simply because their CVs weren't optimised for modern hiring systems.",
+                    "We built UpShift to level the playing field. Our AI-powered tools help job seekers create professional, ATS-friendly CVs that get noticed by recruiters and hiring managers.",
+                    "Today, we're proud to serve thousands of job seekers across South Africa, helping them take the next step in their careers."
+                ]
+            },
+            "values": [
+                {
+                    "icon": "Target",
+                    "title": "Results-Driven",
+                    "description": "Every feature we build is designed to help you land more interviews and job offers."
+                },
+                {
+                    "icon": "Shield",
+                    "title": "Privacy First",
+                    "description": "Your data is yours. We never sell or share your personal information with third parties."
+                },
+                {
+                    "icon": "Heart",
+                    "title": "Accessible",
+                    "description": "Professional career tools shouldn't be expensive. We offer free tools alongside premium services."
+                },
+                {
+                    "icon": "Globe",
+                    "title": "Local Focus",
+                    "description": "Built specifically for the South African job market, with local industry knowledge."
+                }
+            ],
+            "stats": [
+                {"value": "10,000+", "label": "CVs Created"},
+                {"value": "95%", "label": "ATS Pass Rate"},
+                {"value": "50+", "label": "Industries Covered"},
+                {"value": "24/7", "label": "AI Support"}
+            ],
+            "team": {
+                "title": "Built by Career Experts",
+                "description": "Our team combines expertise in HR, recruitment, technology, and AI to bring you the best career tools."
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching about content: {str(e)}")
+        return {}

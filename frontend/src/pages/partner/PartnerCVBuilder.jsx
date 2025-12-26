@@ -93,6 +93,116 @@ const PartnerCVBuilder = () => {
     setFormData({ ...formData, skills: newSkills });
   };
 
+  // AI Skills Generation
+  const generateAISkills = async () => {
+    // Get context from job titles and experience
+    const jobTitles = formData.experiences
+      .map(exp => exp.title)
+      .filter(Boolean)
+      .join(', ');
+    
+    const experienceDescriptions = formData.experiences
+      .map(exp => exp.description)
+      .filter(Boolean)
+      .join('. ');
+
+    if (!jobTitles && !experienceDescriptions && !formData.summary) {
+      toast({
+        title: "Add some context first",
+        description: "Please fill in your job titles, experience, or summary to generate relevant skills.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingSkills(true);
+    setSuggestedSkills([]);
+    setShowSkillsSuggestions(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/ai-content/generate-skills`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({
+          job_titles: jobTitles,
+          experience: experienceDescriptions,
+          summary: formData.summary,
+          current_skills: formData.skills.filter(Boolean)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const skills = data.skills || data.suggested_skills || [];
+        setSuggestedSkills(skills);
+      } else {
+        // Fallback to generic skills based on common patterns
+        const fallbackSkills = generateFallbackSkills(jobTitles, experienceDescriptions);
+        setSuggestedSkills(fallbackSkills);
+      }
+    } catch (error) {
+      console.error('Error generating skills:', error);
+      // Fallback skills
+      const fallbackSkills = generateFallbackSkills(jobTitles, experienceDescriptions);
+      setSuggestedSkills(fallbackSkills);
+    } finally {
+      setIsGeneratingSkills(false);
+    }
+  };
+
+  // Fallback skill generation based on keywords
+  const generateFallbackSkills = (jobTitles, experience) => {
+    const text = `${jobTitles} ${experience}`.toLowerCase();
+    const skillSets = {
+      developer: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'Agile', 'REST APIs', 'Problem Solving'],
+      manager: ['Leadership', 'Team Management', 'Project Management', 'Strategic Planning', 'Budgeting', 'Communication', 'Decision Making'],
+      marketing: ['Digital Marketing', 'SEO', 'Content Strategy', 'Social Media', 'Analytics', 'Brand Management', 'Campaign Management'],
+      sales: ['Negotiation', 'CRM', 'Lead Generation', 'Client Relations', 'Presentation Skills', 'Closing Deals', 'Pipeline Management'],
+      design: ['UI/UX Design', 'Figma', 'Adobe Creative Suite', 'Wireframing', 'Prototyping', 'User Research', 'Visual Design'],
+      finance: ['Financial Analysis', 'Excel', 'Budgeting', 'Forecasting', 'Accounting', 'Risk Management', 'Financial Reporting'],
+      hr: ['Recruitment', 'Employee Relations', 'Performance Management', 'Training', 'HRIS', 'Compliance', 'Onboarding'],
+      admin: ['Microsoft Office', 'Scheduling', 'Data Entry', 'Customer Service', 'Organization', 'Time Management', 'Communication']
+    };
+
+    let relevantSkills = ['Communication', 'Problem Solving', 'Team Collaboration', 'Time Management'];
+    
+    for (const [keyword, skills] of Object.entries(skillSets)) {
+      if (text.includes(keyword)) {
+        relevantSkills = [...skills, ...relevantSkills];
+        break;
+      }
+    }
+
+    // Remove duplicates and existing skills
+    const existingSkills = formData.skills.map(s => s.toLowerCase());
+    return [...new Set(relevantSkills)]
+      .filter(skill => !existingSkills.includes(skill.toLowerCase()))
+      .slice(0, 10);
+  };
+
+  const addSuggestedSkill = (skill) => {
+    if (!formData.skills.includes(skill)) {
+      const newSkills = formData.skills[0] === '' 
+        ? [skill] 
+        : [...formData.skills, skill];
+      setFormData({ ...formData, skills: newSkills });
+      setSuggestedSkills(suggestedSkills.filter(s => s !== skill));
+      toast({ title: `Added "${skill}"` });
+    }
+  };
+
+  const addAllSuggestedSkills = () => {
+    const existingSkills = formData.skills.filter(Boolean);
+    const newSkills = [...existingSkills, ...suggestedSkills];
+    setFormData({ ...formData, skills: newSkills });
+    setSuggestedSkills([]);
+    setShowSkillsSuggestions(false);
+    toast({ title: `Added ${suggestedSkills.length} skills` });
+  };
+
   const generatePDF = () => {
     if (!hasAccess) {
       toast({

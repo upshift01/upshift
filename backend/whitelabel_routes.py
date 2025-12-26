@@ -459,3 +459,140 @@ async def submit_contact_form(data: ContactFormSubmission, request: Request, bac
     except Exception as e:
         logger.error(f"Error submitting contact form: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to submit contact form. Please try again.")
+
+
+# ==================== URL-Based Partner/Subdomain Routing ====================
+
+@whitelabel_router.get("/partner/{subdomain}", response_model=dict)
+async def get_partner_config(subdomain: str):
+    """
+    Get white-label configuration for a partner by subdomain.
+    Used for URL-based routing (e.g., /partner/yottanet)
+    This is an alternative to actual subdomain routing when DNS wildcards are not available.
+    """
+    try:
+        # Clean the subdomain
+        subdomain = subdomain.lower().strip()
+        
+        # Look up reseller by subdomain
+        reseller = await db.resellers.find_one(
+            {"subdomain": subdomain},
+            {"_id": 0}
+        )
+        
+        if not reseller:
+            raise HTTPException(status_code=404, detail=f"Partner '{subdomain}' not found")
+        
+        # Check if reseller is active or in trial
+        if reseller.get("status") not in ["active", "trial"]:
+            raise HTTPException(status_code=403, detail="This partner account is not currently active")
+        
+        # Check trial expiry
+        if reseller.get("status") == "trial":
+            subscription = reseller.get("subscription", {})
+            trial_end = subscription.get("trial_end_date")
+            if trial_end:
+                from datetime import datetime, timezone
+                if isinstance(trial_end, str):
+                    trial_end = datetime.fromisoformat(trial_end.replace('Z', '+00:00'))
+                if trial_end < datetime.now(timezone.utc):
+                    raise HTTPException(status_code=403, detail="This partner's trial has expired")
+        
+        # Fetch reseller's site settings
+        reseller_site_settings = await db.reseller_site_settings.find_one(
+            {"reseller_id": reseller["id"]},
+            {"_id": 0}
+        )
+        
+        # Build the config
+        branding = reseller.get("branding", {})
+        pricing = reseller.get("pricing", {})
+        legal = reseller.get("legal", {})
+        contact = reseller.get("contact_info", {})
+        
+        # Override with site settings if available
+        if reseller_site_settings:
+            site_contact = reseller_site_settings.get("contact", {})
+            site_social = reseller_site_settings.get("social_media", {})
+            business_hours = reseller_site_settings.get("business_hours", "")
+            site_seo = reseller_site_settings.get("seo", {})
+        else:
+            site_contact = {}
+            site_social = {}
+            business_hours = ""
+            site_seo = {}
+        
+        return {
+            "success": True,
+            "is_white_label": True,
+            "reseller_id": reseller["id"],
+            "subdomain": subdomain,
+            "brand_name": reseller.get("brand_name", reseller.get("company_name")),
+            "company_name": reseller.get("company_name"),
+            "tagline": site_seo.get("tagline", "Professional Career Services"),
+            "logo_url": branding.get("logo_url"),
+            "primary_color": branding.get("primary_color", "#1e40af"),
+            "secondary_color": branding.get("secondary_color", "#7c3aed"),
+            "favicon_url": branding.get("favicon_url"),
+            "contact_email": site_contact.get("email") or contact.get("email", ""),
+            "contact_phone": site_contact.get("phone") or contact.get("phone", ""),
+            "contact_address": site_contact.get("address", ""),
+            "contact_whatsapp": site_contact.get("whatsapp", ""),
+            "business_hours": business_hours,
+            "social_media": {
+                "facebook": site_social.get("facebook", ""),
+                "twitter": site_social.get("twitter", ""),
+                "linkedin": site_social.get("linkedin", ""),
+                "instagram": site_social.get("instagram", ""),
+                "youtube": site_social.get("youtube", ""),
+                "tiktok": site_social.get("tiktok", "")
+            },
+            "terms_url": legal.get("terms_url", "/terms"),
+            "privacy_url": legal.get("privacy_url", "/privacy"),
+            "pricing": {
+                "tier_1_price": pricing.get("tier1_price", 899),
+                "tier_2_price": pricing.get("tier2_price", 1500),
+                "tier_3_price": pricing.get("tier3_price", 3000),
+                "currency": "ZAR"
+            },
+            "status": reseller.get("status"),
+            "base_url": f"/partner/{subdomain}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting partner config for {subdomain}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@whitelabel_router.get("/partners", response_model=dict)
+async def list_active_partners():
+    """
+    List all active partner subdomains (for directory/discovery purposes).
+    Only returns basic public info.
+    """
+    try:
+        resellers = await db.resellers.find(
+            {"status": {"$in": ["active", "trial"]}},
+            {"_id": 0, "subdomain": 1, "brand_name": 1, "company_name": 1, "branding.logo_url": 1}
+        ).to_list(100)
+        
+        partners = []
+        for r in resellers:
+            if r.get("subdomain"):
+                partners.append({
+                    "subdomain": r["subdomain"],
+                    "brand_name": r.get("brand_name", r.get("company_name")),
+                    "logo_url": r.get("branding", {}).get("logo_url"),
+                    "url": f"/partner/{r['subdomain']}"
+                })
+        
+        return {
+            "success": True,
+            "partners": partners,
+            "count": len(partners)
+        }
+    except Exception as e:
+        logger.error(f"Error listing partners: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -89,7 +89,19 @@ const PartnerLinkedInTools = () => {
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-8 relative">
-        {!hasAccess && <PaywallOverlay />}
+        {!hasAccess && (
+          <PartnerPaywall
+            title="Unlock LinkedIn Tools"
+            icon={Linkedin}
+            features={[
+              "AI-powered headline generator",
+              "Professional summary writer",
+              "Experience optimization",
+              "Keyword suggestions",
+              "Profile strength analyzer"
+            ]}
+          />
+        )}
 
         <div className={!hasAccess ? 'opacity-50 pointer-events-none' : ''}>
           {/* Tool Tabs */}

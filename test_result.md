@@ -109,15 +109,17 @@ Testing the new CRM / Lead Management feature in the UpShift admin portal.
 
 test_plan:
   current_focus:
-    - "Super Admin Login"
+    - "CRM Frontend Data Display Issue"
+    - "Frontend Form Submission Success Handling"
+    - "Authentication Session Management"
+  stuck_tasks:
     - "CRM Page Display"
-    - "Lead Management Functionality"
     - "Partner Form Submission"
-    - "Form-CRM Integration"
-  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
     message: "Implemented CRM / Lead Management feature with AdminCRM page, lead management functionality, and partner form integration. Ready for comprehensive testing."
+  - agent: "testing"
+    message: "TESTING COMPLETE: Backend CRM functionality is working perfectly - API endpoints, data storage, and lead management all functional. However, frontend has critical issues: 1) CRM page not displaying leads despite 5 leads in database, 2) Partner form submission not showing success feedback, 3) Authentication sessions expiring frequently. Backend integration between form and CRM is working correctly. Main issues are frontend data fetching/rendering and form submission handling."

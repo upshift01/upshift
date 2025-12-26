@@ -77,6 +77,44 @@ const PartnerPricing = () => {
     return `R${price.toLocaleString()}`;
   };
 
+  const handleTierSelect = async (tier) => {
+    if (!isAuthenticated) {
+      // Redirect to register if not logged in
+      navigate(`${baseUrl}/register`, { state: { selectedTier: tier.id } });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Create checkout with backend - Yoco payment
+      const response = await axios.post(
+        `${API_URL}/api/payments/create-checkout?tier_id=${tier.id}`,
+        {},
+        { headers: getAuthHeader() }
+      );
+
+      // Handle both snake_case (from our backend) and camelCase (from Yoco directly)
+      const redirectUrl = response.data.redirect_url || response.data.redirectUrl;
+
+      if (redirectUrl) {
+        // Redirect to Yoco payment page
+        window.location.href = redirectUrl;
+      } else {
+        throw new Error('No redirect URL received from payment gateway');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to initiate payment. Please try again.';
+      toast({
+        title: 'Payment Error',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}

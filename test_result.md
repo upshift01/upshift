@@ -14,74 +14,98 @@ Testing the new CRM / Lead Management feature in the UpShift admin portal.
 - task: "Super Admin Login"
   file: "/app/frontend/src/pages/Login.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
+  working: true
+  needs_retesting: false
   stuck_count: 0
   priority: "high"
-  status_history: []
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "Super admin login working correctly. Successfully logs in with admin@upshift.works/admin123 and redirects to /super-admin dashboard. Authentication tokens are properly generated."
 
 - task: "CRM Page Display"
   file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
-  stuck_count: 0
+  working: false
+  needs_retesting: false
+  stuck_count: 1
   priority: "high"
-  status_history: []
+  status_history:
+    - working: false
+      agent: "testing"
+      comment: "CRM page structure is implemented correctly with header 'CRM - Lead Management', 5 status cards (New, Contacted, Qualified, Converted, Lost), search bar, and lead details panel. However, leads are not displaying in the frontend despite being present in the database (verified via API - 5 leads exist). Authentication session expires frequently causing redirects to login page."
 
 - task: "Lead Details Panel"
   file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
-  stuck_count: 0
+  working: false
+  needs_retesting: false
+  stuck_count: 1
   priority: "high"
-  status_history: []
+  status_history:
+    - working: false
+      agent: "testing"
+      comment: "Lead details panel structure is implemented but cannot be tested due to leads not displaying in the list. Panel shows 'Select a lead to view details' message correctly."
 
 - task: "Lead Status Updates"
   file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
-  stuck_count: 0
+  working: false
+  needs_retesting: false
+  stuck_count: 1
   priority: "high"
-  status_history: []
+  status_history:
+    - working: false
+      agent: "testing"
+      comment: "Status update functionality cannot be tested due to leads not displaying in the frontend list, despite backend API working correctly."
 
 - task: "Lead Notes Functionality"
   file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
-  stuck_count: 0
+  working: false
+  needs_retesting: false
+  stuck_count: 1
   priority: "high"
-  status_history: []
+  status_history:
+    - working: false
+      agent: "testing"
+      comment: "Notes functionality cannot be tested due to leads not displaying in the frontend list."
 
 - task: "Convert to Reseller"
   file: "/app/frontend/src/pages/admin/AdminCRM.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
-  stuck_count: 0
+  working: false
+  needs_retesting: false
+  stuck_count: 1
   priority: "high"
-  status_history: []
+  status_history:
+    - working: false
+      agent: "testing"
+      comment: "Convert to Reseller functionality cannot be tested due to leads not displaying in the frontend list."
 
 - task: "Partner Form Submission"
   file: "/app/frontend/src/pages/WhiteLabelPage.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
-  stuck_count: 0
+  working: false
+  needs_retesting: false
+  stuck_count: 1
   priority: "high"
-  status_history: []
+  status_history:
+    - working: false
+      agent: "testing"
+      comment: "Partner form is properly implemented with all required fields (Company, Name, Email, Phone, Business Type, Message). Form submission works at backend level (verified via direct API call), but frontend form submission does not show success message or reset form. Backend API /api/ai-content/partner-enquiry works correctly and creates leads in database."
 
 - task: "Form-CRM Integration"
   file: "/app/frontend/src/pages/WhiteLabelPage.jsx"
   implemented: true
-  working: "NA"
-  needs_retesting: true
+  working: true
+  needs_retesting: false
   stuck_count: 0
   priority: "high"
-  status_history: []
+  status_history:
+    - working: true
+      agent: "testing"
+      comment: "Backend integration between partner form and CRM is working correctly. Partner enquiries submitted via API are properly stored in database and accessible via /api/admin/leads endpoint. Created 2 test leads successfully. Email notifications are attempted but fail due to SMTP authentication issues (non-critical)."
 
 test_plan:
   current_focus:

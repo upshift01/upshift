@@ -46,11 +46,16 @@ const ATSChecker = () => {
     maxFiles: 1
   });
 
+  const [notice, setNotice] = useState(null);
+  const [usedFallback, setUsedFallback] = useState(false);
+
   const analyzeResume = async () => {
     if (!file) return;
     
     setIsAnalyzing(true);
     setError(null);
+    setNotice(null);
+    setUsedFallback(false);
     
     const formData = new FormData();
     formData.append('file', file);
@@ -71,11 +76,26 @@ const ATSChecker = () => {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to analyse resume');
+        // Provide user-friendly error messages
+        let errorMessage = errorData.detail || 'Failed to analyse resume';
+        if (response.status === 503) {
+          errorMessage = "Our AI service is temporarily busy. Please try again in a few minutes.";
+        } else if (response.status === 504) {
+          errorMessage = "The analysis timed out. Please try with a smaller document.";
+        }
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
       setResult(data.analysis);
+      
+      // Check if fallback was used
+      if (data.used_fallback) {
+        setUsedFallback(true);
+        setNotice(data.notice || "Showing basic analysis. Full AI analysis temporarily unavailable.");
+      } else if (data.used_cache) {
+        setNotice("Results loaded from cache for faster response.");
+      }
     } catch (err) {
       setError(err.message);
     } finally {

@@ -786,11 +786,16 @@ async def ats_resume_check(
     FREE ATS Resume Checker - Analyzes resume for ATS compliance
     No authentication required - available to all users
     Results are saved to history if user is logged in
+    Features:
+    - Caching: Similar resumes use cached results to reduce API calls
+    - Fallback: Basic rule-based analysis when AI quota is exceeded
     """
     try:
         import PyPDF2
         import io
+        import hashlib
         from datetime import timezone
+        from ai_service import QuotaExceededError, AIServiceError, fallback_ats_analysis
         
         # Try to get current user (optional - for saving history)
         current_user_id = None
@@ -837,8 +842,60 @@ async def ats_resume_check(
                 detail="Could not extract text from the uploaded file. Please ensure the file contains readable text."
             )
         
-        # Perform ATS analysis
-        analysis = await ai_service.ats_resume_check(resume_text)
+        # Generate hash for caching
+        resume_hash = hashlib.md5(resume_text.encode()).hexdigest()
+        
+        # Check cache first (results valid for 24 hours)
+        cached_result = await db.ats_cache.find_one({
+            "resume_hash": resume_hash,
+            "created_at": {"$gte": datetime.now(timezone.utc) - timedelta(hours=24)}
+        }, {"_id": 0})
+        
+        analysis = None
+        used_cache = False
+        used_fallback = False
+        error_message = None
+        
+        if cached_result:
+            analysis = cached_result.get("analysis")
+            used_cache = True
+            logger.info(f"ATS check using cached result for hash: {resume_hash[:8]}")
+        else:
+            # Try AI analysis, fall back to basic analysis if quota exceeded
+            try:
+                analysis = await ai_service.ats_resume_check(resume_text)
+                
+                # Cache the successful result
+                await db.ats_cache.update_one(
+                    {"resume_hash": resume_hash},
+                    {
+                        "$set": {
+                            "resume_hash": resume_hash,
+                            "analysis": analysis,
+                            "created_at": datetime.now(timezone.utc)
+                        }
+                    },
+                    upsert=True
+                )
+                logger.info(f"ATS check result cached for hash: {resume_hash[:8]}")
+                
+            except QuotaExceededError as qe:
+                logger.warning(f"ATS quota exceeded, using fallback analysis: {str(qe)}")
+                analysis = fallback_ats_analysis(resume_text)
+                used_fallback = True
+                error_message = "AI service temporarily unavailable. Showing basic analysis results."
+                
+            except AIServiceError as ae:
+                logger.warning(f"AI service error, using fallback analysis: {str(ae)}")
+                analysis = fallback_ats_analysis(resume_text)
+                used_fallback = True
+                error_message = str(ae)
+                
+            except Exception as e:
+                logger.error(f"Unexpected error in ATS check, using fallback: {str(e)}")
+                analysis = fallback_ats_analysis(resume_text)
+                used_fallback = True
+                error_message = "Unable to perform full AI analysis. Showing basic analysis results."
         
         # Save to history if user is logged in
         if current_user_id:
@@ -851,6 +908,7 @@ async def ats_resume_check(
                     "filename": file.filename,
                     "score": score,
                     "analysis": analysis,
+                    "used_fallback": used_fallback,
                     "created_at": datetime.now(timezone.utc)
                 }
                 await db.ats_results.insert_one(ats_result)
@@ -858,19 +916,44 @@ async def ats_resume_check(
             except Exception as save_error:
                 logger.warning(f"Failed to save ATS result: {save_error}")
         
-        logger.info(f"ATS check performed for file: {file.filename}")
+        logger.info(f"ATS check performed for file: {file.filename} (cache: {used_cache}, fallback: {used_fallback})")
         
-        return {
+        response_data = {
             "success": True,
             "filename": file.filename,
             "analysis": analysis,
-            "saved_to_history": current_user_id is not None
+            "saved_to_history": current_user_id is not None,
+            "used_cache": used_cache,
+            "used_fallback": used_fallback
         }
+        
+        if error_message:
+            response_data["notice"] = error_message
+        
+        return response_data
+        
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error performing ATS check: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        
+        # Provide user-friendly error messages
+        error_str = str(e).lower()
+        if 'quota' in error_str or 'exceeded' in error_str or 'rate limit' in error_str:
+            raise HTTPException(
+                status_code=503,
+                detail="Our AI service is currently experiencing high demand. Please try again in a few minutes, or your analysis will use our basic checker."
+            )
+        elif 'timeout' in error_str:
+            raise HTTPException(
+                status_code=504,
+                detail="The analysis is taking longer than expected. Please try again with a shorter document."
+            )
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail="We encountered an issue analysing your CV. Please try again or contact support if the problem persists."
+            )
 
 
 # ==================== Cover Letter Endpoints ====================

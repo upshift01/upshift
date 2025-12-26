@@ -189,11 +189,11 @@ const PartnerFooter = () => {
     <footer className="bg-gray-900 text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
+          <div className="col-span-1 md:col-span-1">
             <h3 className="text-xl font-bold mb-4" style={{ color: primaryColor }}>
               {brandName}
             </h3>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-400 mb-4 text-sm">
               Professional career services powered by AI technology.
             </p>
             {contactAddress && (
@@ -203,9 +203,9 @@ const PartnerFooter = () => {
           
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-gray-400">
+            <ul className="space-y-2 text-gray-400 text-sm">
               <li><Link to={`${baseUrl}/pricing`} className="hover:text-white">Services</Link></li>
-              <li><Link to={`${baseUrl}/ats-checker`} className="hover:text-white">ATS Checker</Link></li>
+              <li><Link to={`${baseUrl}/about`} className="hover:text-white">About Us</Link></li>
               <li><Link to={`${baseUrl}/contact`} className="hover:text-white">Contact</Link></li>
               <li><Link to={`${baseUrl}/terms`} className="hover:text-white">Terms</Link></li>
               <li><Link to={`${baseUrl}/privacy`} className="hover:text-white">Privacy</Link></li>
@@ -213,8 +213,20 @@ const PartnerFooter = () => {
           </div>
           
           <div>
+            <h4 className="font-semibold mb-4">Free Tools</h4>
+            <ul className="space-y-2 text-gray-400 text-sm">
+              <li><Link to={`${baseUrl}/ats-checker`} className="hover:text-white">ATS Checker</Link></li>
+              <li><Link to={`${baseUrl}/cv-builder`} className="hover:text-white">CV Builder</Link></li>
+              <li><Link to={`${baseUrl}/cover-letter`} className="hover:text-white">Cover Letter Creator</Link></li>
+              <li><Link to={`${baseUrl}/skills-generator`} className="hover:text-white">Skills Generator</Link></li>
+              <li><Link to={`${baseUrl}/improve-resume`} className="hover:text-white">Improve Resume</Link></li>
+              <li><Link to={`${baseUrl}/cv-templates`} className="hover:text-white">CV Templates</Link></li>
+            </ul>
+          </div>
+          
+          <div>
             <h4 className="font-semibold mb-4">Contact</h4>
-            <ul className="space-y-2 text-gray-400">
+            <ul className="space-y-2 text-gray-400 text-sm">
               {contactEmail && (
                 <li>
                   <a href={`mailto:${contactEmail}`} className="hover:text-white">

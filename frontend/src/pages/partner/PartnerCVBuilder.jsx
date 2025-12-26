@@ -222,7 +222,19 @@ const PartnerCVBuilder = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-8 relative">
         {/* Paywall overlay if no access */}
-        {!hasAccess && <PaywallOverlay />}
+        {!hasAccess && (
+          <PartnerPaywall
+            title="Unlock CV Builder"
+            icon={FileText}
+            features={[
+              "Professional CV templates",
+              "Download as high-quality PDF",
+              "ATS-optimised formatting",
+              "Unlimited revisions",
+              "Multiple export formats"
+            ]}
+          />
+        )}
 
         <Card className={!hasAccess ? 'opacity-50 pointer-events-none' : ''}>
           <CardHeader>

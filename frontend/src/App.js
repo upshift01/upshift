@@ -206,6 +206,9 @@ const AppContent = () => {
           <Route path="privacy-policy" element={<PartnerPrivacyPolicy />} />
           <Route path="terms-of-service" element={<PartnerTermsOfService />} />
           <Route path="refund-policy" element={<PartnerRefundPolicy />} />
+          {/* Payment Pages */}
+          <Route path="payment/success" element={<PartnerPaymentSuccess />} />
+          <Route path="payment/cancel" element={<PartnerPaymentCancel />} />
           {/* Aliases for backward compatibility */}
           <Route path="cv-builder" element={<PartnerCVBuilder />} />
           <Route path="improve-resume" element={<PartnerResumeImprover />} />

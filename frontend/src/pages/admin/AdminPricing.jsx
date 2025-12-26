@@ -589,12 +589,11 @@ const AdminPricing = () => {
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
                       type="number"
-                      step="0.01"
                       min="0"
-                      value={formatCents(defaultTierPricing.tier_1_price)}
+                      value={defaultTierPricing.tier_1_price}
                       onChange={(e) => setDefaultTierPricing({ 
                         ...defaultTierPricing, 
-                        tier_1_price: parseCents(e.target.value) 
+                        tier_1_price: parseInt(e.target.value) || 0 
                       })}
                       className="pl-8"
                     />
@@ -616,12 +615,11 @@ const AdminPricing = () => {
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
                       type="number"
-                      step="0.01"
                       min="0"
-                      value={formatCents(defaultTierPricing.tier_2_price)}
+                      value={defaultTierPricing.tier_2_price}
                       onChange={(e) => setDefaultTierPricing({ 
                         ...defaultTierPricing, 
-                        tier_2_price: parseCents(e.target.value) 
+                        tier_2_price: parseInt(e.target.value) || 0 
                       })}
                       className="pl-8"
                     />
@@ -643,12 +641,11 @@ const AdminPricing = () => {
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
                       type="number"
-                      step="0.01"
                       min="0"
-                      value={formatCents(defaultTierPricing.tier_3_price)}
+                      value={defaultTierPricing.tier_3_price}
                       onChange={(e) => setDefaultTierPricing({ 
                         ...defaultTierPricing, 
-                        tier_3_price: parseCents(e.target.value) 
+                        tier_3_price: parseInt(e.target.value) || 0 
                       })}
                       className="pl-8"
                     />

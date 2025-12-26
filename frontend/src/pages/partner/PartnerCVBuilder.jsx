@@ -440,11 +440,90 @@ const PartnerCVBuilder = () => {
             {/* Skills */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg" style={{ color: primaryColor }}>Skills</h3>
-                <Button variant="outline" size="sm" onClick={addSkill}>
-                  <Plus className="h-4 w-4 mr-1" /> Add
-                </Button>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-lg" style={{ color: primaryColor }}>Skills</h3>
+                  <Badge variant="outline" className="text-xs">
+                    {formData.skills.filter(Boolean).length} added
+                  </Badge>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={generateAISkills}
+                    disabled={isGeneratingSkills}
+                    className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                  >
+                    {isGeneratingSkills ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Generating...</>
+                    ) : (
+                      <><Wand2 className="h-4 w-4 mr-1" /> AI Suggest</>
+                    )}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={addSkill}>
+                    <Plus className="h-4 w-4 mr-1" /> Add
+                  </Button>
+                </div>
               </div>
+
+              {/* AI Suggested Skills */}
+              {showSkillsSuggestions && (
+                <Card className="border-purple-200 bg-purple-50/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-medium text-purple-900">AI Suggested Skills</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setShowSkillsSuggestions(false)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {isGeneratingSkills ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
+                        <span className="ml-2 text-sm text-purple-700">Analyzing your experience...</span>
+                      </div>
+                    ) : suggestedSkills.length > 0 ? (
+                      <>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {suggestedSkills.map((skill, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => addSuggestedSkill(skill)}
+                              className="px-3 py-1.5 text-sm bg-white border border-purple-200 rounded-full hover:bg-purple-100 hover:border-purple-300 transition-colors flex items-center gap-1 group"
+                            >
+                              <Plus className="h-3 w-3 text-purple-500 group-hover:text-purple-700" />
+                              {skill}
+                            </button>
+                          ))}
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={addAllSuggestedSkills}
+                          className="w-full text-white"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Add All ({suggestedSkills.length} skills)
+                        </Button>
+                      </>
+                    ) : (
+                      <p className="text-sm text-purple-700 text-center py-2">
+                        No additional skills to suggest. Try adding more experience details.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Current Skills */}
               <div className="flex flex-wrap gap-2">
                 {formData.skills.map((skill, index) => (
                   <div key={index} className="flex items-center gap-1">
@@ -457,6 +536,11 @@ const PartnerCVBuilder = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Helper text */}
+              <p className="text-xs text-gray-500">
+                💡 Tip: Click "AI Suggest" to get skill recommendations based on your job experience
+              </p>
             </div>
 
             {/* Generate Button */}

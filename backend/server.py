@@ -724,16 +724,18 @@ async def ats_resume_check(
         # Save to history if user is logged in
         if current_user_id:
             try:
+                # Extract score - AI may return it as 'overall_score' or 'score'
+                score = analysis.get("overall_score", analysis.get("score", 0))
                 ats_result = {
                     "id": str(uuid.uuid4()),
                     "user_id": current_user_id,
                     "filename": file.filename,
-                    "score": analysis.get("score", 0),
+                    "score": score,
                     "analysis": analysis,
                     "created_at": datetime.now(timezone.utc)
                 }
                 await db.ats_results.insert_one(ats_result)
-                logger.info(f"ATS result saved for user: {current_user_id}")
+                logger.info(f"ATS result saved for user: {current_user_id}, score: {score}")
             except Exception as save_error:
                 logger.warning(f"Failed to save ATS result: {save_error}")
         

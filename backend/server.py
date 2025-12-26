@@ -671,6 +671,7 @@ async def ats_resume_check(
     try:
         import PyPDF2
         import io
+        from datetime import timezone
         
         # Try to get current user (optional - for saving history)
         current_user_id = None
@@ -678,11 +679,18 @@ async def ats_resume_check(
             auth_header = request.headers.get("Authorization", "") if request else ""
             if auth_header.startswith("Bearer "):
                 token = auth_header.split(" ")[1]
-                from auth import decode_access_token
-                payload = decode_access_token(token)
+                from jose import jwt
+                payload = jwt.decode(token, os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production'), algorithms=["HS256"])
                 if payload:
-                    current_user_id = payload.get("sub")
-        except Exception:
+                    email = payload.get("sub")
+                    # Fetch the actual user ID from the database using email
+                    if email:
+                        user = await db.users.find_one({"email": email}, {"_id": 0, "id": 1})
+                        if user:
+                            current_user_id = user["id"]
+                            logger.info(f"ATS check for authenticated user: {email} (id: {current_user_id})")
+        except Exception as auth_error:
+            logger.debug(f"ATS check: User not authenticated - {auth_error}")
             pass  # User not logged in, that's fine
         
         # Read file content

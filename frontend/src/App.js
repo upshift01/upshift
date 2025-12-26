@@ -68,6 +68,12 @@ import PartnerPricing from "./pages/partner/PartnerPricing";
 import PartnerAbout from "./pages/partner/PartnerAbout";
 import PartnerContact from "./pages/partner/PartnerContact";
 import PartnerATSChecker from "./pages/partner/PartnerATSChecker";
+import PartnerCVBuilder from "./pages/partner/PartnerCVBuilder";
+import PartnerCoverLetterCreator from "./pages/partner/PartnerCoverLetterCreator";
+import PartnerResumeImprover from "./pages/partner/PartnerResumeImprover";
+import PartnerSkillsGenerator from "./pages/partner/PartnerSkillsGenerator";
+import PartnerCVTemplates from "./pages/partner/PartnerCVTemplates";
+import PartnerCoverLetterTemplates from "./pages/partner/PartnerCoverLetterTemplates";
 
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";

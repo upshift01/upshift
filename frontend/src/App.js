@@ -22,6 +22,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import ATSChecker from "./pages/ATSChecker";
 import Contact from "./pages/Contact";
+import About from "./pages/About";
 import LinkedInTools from "./pages/LinkedInTools";
 import SkillsGenerator from "./pages/SkillsGenerator";
 import PrivacyPolicy from "./pages/PrivacyPolicy";

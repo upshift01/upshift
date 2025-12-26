@@ -1924,12 +1924,12 @@ async def get_platform_pricing(admin: UserResponse = Depends(get_current_super_a
             {"_id": 0}
         )
         
-        # Default values
+        # Default values (in normal ZAR amounts, not cents)
         default_config = {
             "whitelabel_plans": {
                 "starter": {
                     "name": "Starter",
-                    "price": 249900,
+                    "price": 2499,
                     "active_users_limit": 50,
                     "custom_subdomain": True,
                     "custom_domain": False,
@@ -1941,7 +1941,7 @@ async def get_platform_pricing(admin: UserResponse = Depends(get_current_super_a
                 },
                 "professional": {
                     "name": "Professional",
-                    "price": 499900,
+                    "price": 4999,
                     "active_users_limit": 200,
                     "custom_subdomain": True,
                     "custom_domain": True,
@@ -1966,15 +1966,15 @@ async def get_platform_pricing(admin: UserResponse = Depends(get_current_super_a
                 }
             },
             "whitelabel_pricing": {
-                "monthly_subscription": 250000,
+                "monthly_subscription": 2500,
                 "setup_fee": 0,
                 "per_transaction_fee": 0,
                 "minimum_commitment_months": 1
             },
             "default_tier_pricing": {
-                "tier_1_price": 89900,
-                "tier_2_price": 150000,
-                "tier_3_price": 300000,
+                "tier_1_price": 899,
+                "tier_2_price": 1500,
+                "tier_3_price": 3000,
                 "currency": "ZAR"
             },
             "strategy_call_pricing": {

@@ -19,7 +19,7 @@ const PartnerNavbar = () => {
 
   const toolsItems = [
     { name: 'ATS Checker', path: `${baseUrl}/ats-checker`, icon: Target, badge: 'FREE' },
-    { name: 'CV Builder', path: `${baseUrl}/cv-builder`, icon: FileText, badge: 'FREE' },
+    { name: 'CV Builder', path: `${baseUrl}/cv-builder`, icon: FileText },
     { name: 'Cover Letter Creator', path: `${baseUrl}/cover-letter`, icon: Sparkles, badge: 'AI' },
     { name: 'Improve Resume', path: `${baseUrl}/improve-resume`, icon: Zap, badge: 'AI' },
     { name: 'Skills Generator', path: `${baseUrl}/skills-generator`, icon: Target, badge: 'FREE' },

@@ -272,6 +272,12 @@ async def create_reseller(
         
         await db.resellers.insert_one(reseller)
         
+        # Update the owner user with the reseller_id
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"reseller_id": reseller_id}}
+        )
+        
         logger.info(f"Reseller created by admin: {data['company_name']} (trial: {is_trial})")
         
         return {

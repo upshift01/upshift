@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Linkedin, Copy, Check, Sparkles, User, Briefcase, FileText, Lock, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Loader2, Linkedin, Copy, Check, Sparkles, User, Briefcase, FileText } from 'lucide-react';
+import PartnerPaywall from '../../components/PartnerPaywall';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -28,56 +28,6 @@ const PartnerLinkedInTools = () => {
     { id: 'summary', name: 'Summary Writer', icon: FileText, description: 'Write a compelling About section' },
     { id: 'experience', name: 'Experience Optimizer', icon: Briefcase, description: 'Enhance your work experience descriptions' },
   ];
-
-  const PaywallOverlay = () => (
-    <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex items-center justify-center">
-      <Card className="max-w-md mx-4 shadow-xl border-2" style={{ borderColor: primaryColor }}>
-        <CardHeader className="text-center">
-          <div 
-            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: `${primaryColor}15` }}
-          >
-            <Lock className="h-8 w-8" style={{ color: primaryColor }} />
-          </div>
-          <CardTitle className="text-xl">Unlock LinkedIn Tools</CardTitle>
-          <CardDescription>
-            {!isAuthenticated 
-              ? "Please login to access LinkedIn Tools"
-              : "Upgrade to a paid plan to optimize your LinkedIn profile"
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
-              AI-powered headline generator
-            </li>
-            <li className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
-              Professional summary writer
-            </li>
-            <li className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
-              Experience optimization
-            </li>
-          </ul>
-          
-          {!isAuthenticated ? (
-            <div className="flex gap-2">
-              <Link to={`${baseUrl}/login`} className="flex-1">
-                <Button className="w-full" style={{ backgroundColor: primaryColor }}>Login</Button>
-              </Link>
-              <Link to={`${baseUrl}/register`} className="flex-1">
-                <Button variant="outline" className="w-full">Sign Up</Button>
-              </Link>
-            </div>
-          ) : (
-            <Link to={`${baseUrl}/pricing`}>
-              <Button className="w-full text-white" style={{ backgroundColor: primaryColor }}>
-                View Pricing Plans
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
             </Link>
           )}
         </CardContent>

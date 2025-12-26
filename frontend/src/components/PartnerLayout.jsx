@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Outlet, Link, useNavigate } from 'react-router-dom';
 import { PartnerProvider, usePartner } from '../context/PartnerContext';
-import { Loader2, AlertCircle, ArrowLeft, Home } from 'lucide-react';
+import { Loader2, AlertCircle, Home, ChevronDown, FileText, Sparkles, Target, Zap, Mail, Menu, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
 // Partner Navbar Component
 const PartnerNavbar = () => {
   const { brandName, logoUrl, primaryColor, baseUrl, contactPhone } = usePartner();
-  const navigate = useNavigate();
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { name: 'Home', path: baseUrl || '/' },
     { name: 'Services', path: `${baseUrl}/pricing` },
-    { name: 'ATS Checker', path: `${baseUrl}/ats-checker` },
+    { name: 'About', path: `${baseUrl}/about` },
     { name: 'Contact', path: `${baseUrl}/contact` },
+  ];
+
+  const toolsItems = [
+    { name: 'ATS Checker', path: `${baseUrl}/ats-checker`, icon: Target, badge: 'FREE' },
+    { name: 'CV Builder', path: `${baseUrl}/cv-builder`, icon: FileText, badge: 'FREE' },
+    { name: 'Cover Letter Creator', path: `${baseUrl}/cover-letter`, icon: Sparkles, badge: 'AI' },
+    { name: 'Improve Resume', path: `${baseUrl}/improve-resume`, icon: Zap, badge: 'AI' },
+    { name: 'Skills Generator', path: `${baseUrl}/skills-generator`, icon: Target, badge: 'FREE' },
+    { name: 'CV Templates', path: `${baseUrl}/cv-templates`, icon: FileText },
+    { name: 'Cover Letter Templates', path: `${baseUrl}/cover-letter-templates`, icon: Mail },
   ];
 
   return (
@@ -35,6 +46,7 @@ const PartnerNavbar = () => {
             </Link>
           </div>
           
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {navItems.map((item) => (
               <Link
@@ -45,18 +57,56 @@ const PartnerNavbar = () => {
                 {item.name}
               </Link>
             ))}
+            
+            {/* Tools Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setToolsOpen(!toolsOpen)}
+                onBlur={() => setTimeout(() => setToolsOpen(false), 200)}
+                className="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                Tools
+                <ChevronDown className={`h-4 w-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {toolsOpen && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2 z-50">
+                  {toolsItems.map((tool) => (
+                    <Link
+                      key={tool.name}
+                      to={tool.path}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors"
+                    >
+                      <tool.icon className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-700">{tool.name}</span>
+                      {tool.badge && (
+                        <span 
+                          className="ml-auto text-xs px-2 py-0.5 rounded-full"
+                          style={{ 
+                            backgroundColor: tool.badge === 'AI' ? `${primaryColor}20` : '#dcfce7',
+                            color: tool.badge === 'AI' ? primaryColor : '#16a34a'
+                          }}
+                        >
+                          {tool.badge}
+                        </span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-4">
             {contactPhone && (
-              <a href={`tel:${contactPhone}`} className="hidden md:block text-sm text-gray-600">
+              <a href={`tel:${contactPhone}`} className="hidden lg:block text-sm text-gray-600">
                 {contactPhone}
               </a>
             )}
-            <Link to={`${baseUrl}/login`}>
+            <Link to={`${baseUrl}/login`} className="hidden sm:block">
               <Button variant="outline" size="sm">Login</Button>
             </Link>
-            <Link to={`${baseUrl}/register`}>
+            <Link to={`${baseUrl}/register`} className="hidden sm:block">
               <Button 
                 size="sm"
                 style={{ backgroundColor: primaryColor }}
@@ -65,8 +115,59 @@ const PartnerNavbar = () => {
                 Get Started
               </Button>
             </Link>
+            
+            {/* Mobile menu button */}
+            <button
+              className="md:hidden p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
+        
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t py-4">
+            <div className="space-y-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <div className="px-4 py-2 text-sm font-semibold text-gray-400">Tools</div>
+              {toolsItems.map((tool) => (
+                <Link
+                  key={tool.name}
+                  to={tool.path}
+                  className="flex items-center gap-3 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <tool.icon className="h-4 w-4" />
+                  {tool.name}
+                  {tool.badge && (
+                    <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">
+                      {tool.badge}
+                    </span>
+                  )}
+                </Link>
+              ))}
+              <div className="px-4 pt-4 flex gap-2">
+                <Link to={`${baseUrl}/login`} className="flex-1">
+                  <Button variant="outline" className="w-full">Login</Button>
+                </Link>
+                <Link to={`${baseUrl}/register`} className="flex-1">
+                  <Button className="w-full" style={{ backgroundColor: primaryColor }}>Get Started</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

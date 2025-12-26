@@ -183,16 +183,25 @@ const PartnerPricing = () => {
                     ))}
                   </ul>
                   
-                  <Link to={`${baseUrl}/register?tier=${tier.id}`}>
-                    <Button 
-                      className="w-full"
-                      style={tier.popular ? { backgroundColor: primaryColor } : {}}
-                      variant={tier.popular ? 'default' : 'outline'}
-                    >
-                      Get Started
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button 
+                    className="w-full"
+                    style={tier.popular ? { backgroundColor: primaryColor } : {}}
+                    variant={tier.popular ? 'default' : 'outline'}
+                    onClick={() => handleTierSelect(tier)}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        Get Started
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             ))}

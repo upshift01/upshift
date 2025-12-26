@@ -550,3 +550,95 @@ Generate the skills now:"""
     except Exception as e:
         logger.error(f"Error generating skills: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate skills. Please try again.")
+
+
+# ==================== CV BUILDER SKILL SUGGESTIONS ====================
+
+class CVBuilderSkillsRequest(BaseModel):
+    job_titles: Optional[str] = ""
+    experience: Optional[str] = ""
+    summary: Optional[str] = ""
+    current_skills: Optional[List[str]] = []
+
+
+@ai_content_router.post("/cv-builder-skills", response_model=dict)
+async def generate_cv_builder_skills(request: CVBuilderSkillsRequest):
+    """
+    Generate AI-powered skill suggestions for CV Builder based on user's experience and job titles.
+    """
+    try:
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Build context from the request
+        context_parts = []
+        if request.job_titles:
+            context_parts.append(f"Job Titles: {request.job_titles}")
+        if request.experience:
+            context_parts.append(f"Experience: {request.experience[:500]}")  # Limit length
+        if request.summary:
+            context_parts.append(f"Summary: {request.summary[:300]}")
+        
+        current_skills_str = ", ".join(request.current_skills) if request.current_skills else "None"
+        
+        prompt = f"""You are an expert resume writer and career coach.
+Based on the following professional profile, suggest 10 relevant skills that would strengthen their resume.
+
+{chr(10).join(context_parts)}
+
+Current Skills: {current_skills_str}
+
+Instructions:
+1. Suggest 10 skills that are DIFFERENT from the current skills
+2. Include a mix of technical/hard skills and soft skills
+3. Make skills ATS-friendly and industry-relevant
+4. Use concise, professional terminology
+5. Return ONLY a JSON array of skill strings, nothing else
+
+Example output format:
+["Project Management", "Data Analysis", "Team Leadership", "Python", "Agile Methodology"]
+
+Generate skills now:"""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            model="anthropic/claude-sonnet-4-20250514"
+        )
+        
+        response = chat.send_message(UserMessage(text=prompt))
+        response_text = response.text.strip()
+        
+        # Parse the JSON array from response
+        import json
+        import re
+        
+        # Try to extract JSON array from response
+        json_match = re.search(r'\[.*?\]', response_text, re.DOTALL)
+        if json_match:
+            skills = json.loads(json_match.group())
+        else:
+            # Fallback: split by newlines or commas
+            skills = [s.strip().strip('"\'- ') for s in response_text.split('\n') if s.strip()]
+            skills = [s for s in skills if s and len(s) < 50][:10]
+        
+        # Filter out duplicates and current skills
+        current_lower = [s.lower() for s in request.current_skills] if request.current_skills else []
+        unique_skills = []
+        seen = set(current_lower)
+        for skill in skills:
+            skill_lower = skill.lower()
+            if skill_lower not in seen and skill:
+                unique_skills.append(skill)
+                seen.add(skill_lower)
+        
+        return {
+            "success": True,
+            "skills": unique_skills[:10],
+            "suggested_skills": unique_skills[:10]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating CV builder skills: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate skills. Please try again.")

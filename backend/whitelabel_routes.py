@@ -317,8 +317,8 @@ async def get_whitelabel_plans():
             formatted_plans.append({
                 "key": "starter",
                 "name": starter.get("name", "Starter"),
-                "price": starter.get("price", 249900),
-                "price_display": f"R{starter.get('price', 249900) / 100:,.0f}",
+                "price": starter.get("price", 2499),
+                "price_display": f"R{starter.get('price', 2499):,.0f}",
                 "period": "/month",
                 "description": "Perfect for small agencies and coaches starting out",
                 "active_users_limit": starter.get("active_users_limit", 50),
@@ -352,8 +352,8 @@ async def get_whitelabel_plans():
             formatted_plans.append({
                 "key": "professional",
                 "name": professional.get("name", "Professional"),
-                "price": professional.get("price", 499900),
-                "price_display": f"R{professional.get('price', 499900) / 100:,.0f}",
+                "price": professional.get("price", 4999),
+                "price_display": f"R{professional.get('price', 4999):,.0f}",
                 "period": "/month",
                 "description": "For growing businesses with higher volume needs",
                 "active_users_limit": professional.get("active_users_limit", 200),

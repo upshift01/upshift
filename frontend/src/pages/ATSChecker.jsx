@@ -318,12 +318,57 @@ const ATSChecker = () => {
                 <p className="text-red-700">{error}</p>
               </div>
             )}
+
+            {notice && !error && (
+              <div className={`mt-6 p-4 rounded-lg flex items-start gap-3 ${
+                usedFallback 
+                  ? 'bg-amber-50 border border-amber-200' 
+                  : 'bg-blue-50 border border-blue-200'
+              }`}>
+                <AlertTriangle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
+                  usedFallback ? 'text-amber-500' : 'text-blue-500'
+                }`} />
+                <div>
+                  <p className={usedFallback ? 'text-amber-700' : 'text-blue-700'}>{notice}</p>
+                  {usedFallback && (
+                    <p className="text-sm text-amber-600 mt-1">
+                      This is a basic rule-based analysis. For detailed AI-powered insights, please try again later.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Results Section */}
         {result && (
           <div className="space-y-6">
+            {/* Fallback Notice Banner */}
+            {result.is_fallback && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-amber-800">Basic Analysis Mode</h4>
+                  <p className="text-amber-700 text-sm mt-1">
+                    {result.fallback_notice || "Our AI service is temporarily unavailable. This is a basic rule-based analysis that checks for common ATS requirements."}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={analyzeResume}
+                    className="mt-3 text-amber-700 border-amber-300 hover:bg-amber-100"
+                    disabled={isAnalyzing}
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} />
+                    Try Full AI Analysis
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Score Overview */}
             <Card>
               <CardContent className="p-8">
@@ -348,6 +393,11 @@ const ATSChecker = () => {
                       {result.overall_score < 60 && (
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
                           <AlertTriangle className="h-4 w-4" /> Needs Improvement
+                        </span>
+                      )}
+                      {result.is_fallback && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                          Basic Analysis
                         </span>
                       )}
                     </div>

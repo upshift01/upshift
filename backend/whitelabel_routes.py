@@ -261,11 +261,11 @@ async def get_whitelabel_plans():
             {"_id": 0}
         )
         
-        # Default plans if not configured
+        # Default plans if not configured (prices in normal ZAR amounts, not cents)
         default_plans = {
             "starter": {
                 "name": "Starter",
-                "price": 249900,
+                "price": 2499,
                 "active_users_limit": 50,
                 "custom_subdomain": True,
                 "custom_domain": False,
@@ -277,7 +277,7 @@ async def get_whitelabel_plans():
             },
             "professional": {
                 "name": "Professional",
-                "price": 499900,
+                "price": 4999,
                 "active_users_limit": 200,
                 "custom_subdomain": True,
                 "custom_domain": True,

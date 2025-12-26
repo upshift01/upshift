@@ -13,7 +13,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from models import Resume, ResumeCreate, CoverLetter, CoverLetterCreate, ResumeAnalysisResult

@@ -151,6 +151,7 @@ const AppContent = () => {
           <Route path="campaigns" element={<EmailCampaigns />} />
           <Route path="domain-setup" element={<DomainSetup />} />
           <Route path="email-templates" element={<EmailTemplates />} />
+          <Route path="calendar" element={<ResellerCalendar />} />
         </Route>
       </Routes>
       {!hideFooter && <Footer />}

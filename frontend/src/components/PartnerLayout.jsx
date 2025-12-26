@@ -372,6 +372,10 @@ const PartnerError = ({ error, subdomain }) => (
 // Partner Content Wrapper (inside the provider)
 const PartnerContent = () => {
   const { loading, error, isPartner, subdomain } = usePartner();
+  const location = useLocation();
+  
+  // Check if we're on a dashboard/portal route - these have their own layout
+  const isDashboardRoute = location.pathname.includes('/dashboard');
 
   if (loading) {
     return <PartnerLoading />;
@@ -379,6 +383,11 @@ const PartnerContent = () => {
 
   if (error || !isPartner) {
     return <PartnerError error={error} subdomain={subdomain} />;
+  }
+
+  // For dashboard routes, render without navbar/footer (they have their own layout)
+  if (isDashboardRoute) {
+    return <Outlet />;
   }
 
   return (

@@ -232,12 +232,14 @@ const PartnerPricing = () => {
           <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
             Try our free ATS checker first to see how your current CV performs.
           </p>
-          <Link to={`${baseUrl}/ats-checker`}>
-            <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
-              Free ATS Check
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+          <Button 
+            size="lg" 
+            className="bg-white text-gray-900 hover:bg-gray-100"
+            onClick={() => navigate(`${baseUrl}/ats-checker`)}
+          >
+            Free ATS Check
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
         </div>
       </section>
 

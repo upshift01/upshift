@@ -61,6 +61,14 @@ import DomainSetup from "./pages/reseller/DomainSetup";
 import EmailTemplates from "./pages/reseller/EmailTemplates";
 import ResellerCalendar from "./pages/reseller/ResellerCalendar";
 
+// Partner Pages (White-Label URL-based routing)
+import PartnerLayout from "./components/PartnerLayout";
+import PartnerHome from "./pages/partner/PartnerHome";
+import PartnerPricing from "./pages/partner/PartnerPricing";
+import PartnerAbout from "./pages/partner/PartnerAbout";
+import PartnerContact from "./pages/partner/PartnerContact";
+import PartnerATSChecker from "./pages/partner/PartnerATSChecker";
+
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";

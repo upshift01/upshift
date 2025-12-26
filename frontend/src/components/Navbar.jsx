@@ -10,7 +10,6 @@ const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
 
   const navItems = [
-    { name: 'Home', path: '/' },
     { name: 'AI Resume Builder', path: '/builder' },
     { name: 'Improve Resume', path: '/improve' },
     { name: 'Cover Letter', path: '/cover-letter' },

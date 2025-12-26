@@ -25,8 +25,15 @@ export const PartnerProvider = ({ children, subdomain }) => {
       const response = await fetch(`${API_URL}/api/white-label/partner/${subdomain}`);
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Partner not found');
+        let errorMessage = 'Partner not found';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, use default error message
+          console.error('Error parsing error response:', parseError);
+        }
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();

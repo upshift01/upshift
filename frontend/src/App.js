@@ -84,7 +84,8 @@ const AppContent = () => {
   const location = useLocation();
   const hideNavbar = location.pathname.startsWith('/super-admin') || 
                      location.pathname.startsWith('/reseller-dashboard') ||
-                     location.pathname.startsWith('/dashboard');
+                     location.pathname.startsWith('/dashboard') ||
+                     location.pathname.startsWith('/partner/');
   const hideFooter = hideNavbar; // Hide footer on same pages as navbar
 
   return (

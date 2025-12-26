@@ -320,8 +320,287 @@ Return ONLY valid JSON without any markdown formatting."""
             
             return json.loads(clean_response.strip())
         except Exception as e:
+            error_str = str(e).lower()
             logger.error(f"Error performing ATS check: {str(e)}")
-            raise
+            
+            # Check for quota/rate limit errors and provide user-friendly message
+            if any(keyword in error_str for keyword in ['quota', 'rate limit', 'insufficient', 'exceeded', '429', '402', 'billing', 'credit']):
+                raise QuotaExceededError("AI service quota exceeded. Please try again later or contact support.")
+            elif 'timeout' in error_str or 'timed out' in error_str:
+                raise AIServiceError("The AI service is taking too long to respond. Please try again.")
+            elif '502' in error_str or '503' in error_str or 'bad gateway' in error_str:
+                raise AIServiceError("The AI service is temporarily unavailable. Please try again in a few minutes.")
+            else:
+                raise AIServiceError(f"Unable to analyse resume: {str(e)}")
+
+
+# Custom exceptions for better error handling
+class QuotaExceededError(Exception):
+    """Raised when API quota is exceeded"""
+    pass
+
+class AIServiceError(Exception):
+    """Raised for general AI service errors"""
+    pass
+
+
+# Basic fallback ATS analysis (rule-based, no AI needed)
+def fallback_ats_analysis(resume_text: str) -> Dict:
+    """
+    Performs a basic rule-based ATS analysis when AI is unavailable.
+    This provides immediate value to users even when API quota is exceeded.
+    """
+    import re
+    
+    text_lower = resume_text.lower()
+    text_length = len(resume_text)
+    
+    # Initialize scores
+    scores = {
+        "format_compatibility": 70,
+        "contact_information": 50,
+        "keywords_skills": 50,
+        "work_experience": 50,
+        "education": 50,
+        "overall_structure": 60
+    }
+    
+    findings = {
+        "format_compatibility": [],
+        "contact_information": [],
+        "keywords_skills": [],
+        "work_experience": [],
+        "education": [],
+        "overall_structure": []
+    }
+    
+    detected_skills = []
+    strengths = []
+    critical_issues = []
+    recommendations = []
+    
+    # Contact Information Analysis
+    email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    phone_pattern = r'[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}'
+    
+    has_email = bool(re.search(email_pattern, resume_text))
+    has_phone = bool(re.search(phone_pattern, resume_text))
+    has_linkedin = 'linkedin' in text_lower
+    
+    if has_email:
+        scores["contact_information"] += 20
+        findings["contact_information"].append("✓ Email address detected")
+    else:
+        findings["contact_information"].append("✗ No email address found")
+        critical_issues.append("Missing email address")
+    
+    if has_phone:
+        scores["contact_information"] += 20
+        findings["contact_information"].append("✓ Phone number detected")
+    else:
+        findings["contact_information"].append("✗ No phone number found")
+        critical_issues.append("Missing phone number")
+    
+    if has_linkedin:
+        scores["contact_information"] += 10
+        findings["contact_information"].append("✓ LinkedIn profile mentioned")
+        strengths.append("LinkedIn profile included")
+    else:
+        findings["contact_information"].append("○ Consider adding LinkedIn profile")
+        recommendations.append("Add your LinkedIn profile URL")
+    
+    # Keywords & Skills Analysis
+    common_skills = [
+        'python', 'java', 'javascript', 'sql', 'excel', 'word', 'powerpoint',
+        'management', 'leadership', 'communication', 'teamwork', 'problem solving',
+        'project management', 'data analysis', 'customer service', 'sales',
+        'marketing', 'finance', 'accounting', 'microsoft office', 'sap',
+        'html', 'css', 'react', 'node', 'aws', 'azure', 'agile', 'scrum'
+    ]
+    
+    for skill in common_skills:
+        if skill in text_lower:
+            detected_skills.append(skill.title())
+            scores["keywords_skills"] += 3
+    
+    scores["keywords_skills"] = min(scores["keywords_skills"], 100)
+    
+    if len(detected_skills) > 10:
+        strengths.append(f"Good variety of skills detected ({len(detected_skills)} skills)")
+        findings["keywords_skills"].append(f"✓ {len(detected_skills)} relevant skills detected")
+    elif len(detected_skills) > 5:
+        findings["keywords_skills"].append(f"○ {len(detected_skills)} skills detected - consider adding more")
+        recommendations.append("Add more industry-specific keywords and skills")
+    else:
+        findings["keywords_skills"].append("✗ Few skills detected - add more keywords")
+        critical_issues.append("Insufficient keywords and skills")
+    
+    # Work Experience Analysis
+    experience_keywords = ['experience', 'work history', 'employment', 'career', 'position', 'role']
+    achievement_words = ['achieved', 'improved', 'increased', 'reduced', 'managed', 'led', 'developed', 'created', 'implemented']
+    
+    has_experience_section = any(keyword in text_lower for keyword in experience_keywords)
+    achievement_count = sum(1 for word in achievement_words if word in text_lower)
+    
+    if has_experience_section:
+        scores["work_experience"] += 20
+        findings["work_experience"].append("✓ Work experience section detected")
+    else:
+        findings["work_experience"].append("✗ No clear work experience section")
+        critical_issues.append("Missing or unclear work experience section")
+    
+    if achievement_count > 5:
+        scores["work_experience"] += 30
+        findings["work_experience"].append(f"✓ Strong action verbs used ({achievement_count} found)")
+        strengths.append("Good use of action verbs and achievements")
+    elif achievement_count > 2:
+        scores["work_experience"] += 15
+        findings["work_experience"].append(f"○ Some action verbs used ({achievement_count} found)")
+        recommendations.append("Use more action verbs (achieved, improved, managed)")
+    else:
+        findings["work_experience"].append("✗ Few action verbs - add quantifiable achievements")
+        recommendations.append("Add quantifiable achievements (e.g., 'Increased sales by 20%')")
+    
+    # Education Analysis
+    education_keywords = ['education', 'qualification', 'degree', 'diploma', 'certificate', 'university', 'college', 'matric', 'bachelor', 'master', 'honours']
+    
+    education_count = sum(1 for keyword in education_keywords if keyword in text_lower)
+    
+    if education_count >= 3:
+        scores["education"] += 40
+        findings["education"].append("✓ Education section well documented")
+        strengths.append("Education section is comprehensive")
+    elif education_count >= 1:
+        scores["education"] += 20
+        findings["education"].append("○ Education section present but could be enhanced")
+    else:
+        findings["education"].append("✗ Education section missing or unclear")
+        recommendations.append("Add clear education section with qualifications")
+    
+    # Overall Structure Analysis
+    section_headers = ['experience', 'education', 'skills', 'summary', 'profile', 'objective', 'references', 'contact']
+    sections_found = sum(1 for header in section_headers if header in text_lower)
+    
+    if sections_found >= 5:
+        scores["overall_structure"] += 30
+        findings["overall_structure"].append(f"✓ Well-structured with {sections_found} clear sections")
+        strengths.append("CV has clear, well-defined sections")
+    elif sections_found >= 3:
+        scores["overall_structure"] += 15
+        findings["overall_structure"].append(f"○ {sections_found} sections detected - consider adding more")
+    else:
+        findings["overall_structure"].append("✗ Few clear sections - improve document structure")
+        critical_issues.append("Poor document structure")
+    
+    # Length check
+    if 1500 < text_length < 5000:
+        scores["overall_structure"] += 10
+        findings["overall_structure"].append("✓ CV length is appropriate")
+    elif text_length < 500:
+        findings["overall_structure"].append("✗ CV appears too short")
+        critical_issues.append("CV is too short - add more detail")
+    elif text_length > 8000:
+        findings["overall_structure"].append("✗ CV may be too long")
+        recommendations.append("Consider condensing to 2 pages maximum")
+    
+    # Format compatibility (basic checks)
+    if '|' in resume_text or '\t\t\t' in resume_text:
+        scores["format_compatibility"] -= 10
+        findings["format_compatibility"].append("○ Possible table or complex formatting detected")
+        recommendations.append("Avoid tables - use simple formatting for better ATS parsing")
+    else:
+        findings["format_compatibility"].append("✓ No complex tables detected")
+    
+    # Calculate overall score
+    overall_score = int(sum(scores.values()) / len(scores))
+    
+    # Determine status for each category
+    def get_status(score):
+        if score >= 70:
+            return "pass"
+        elif score >= 50:
+            return "warning"
+        return "fail"
+    
+    # Build checklist
+    checklist = []
+    if not has_email:
+        checklist.append({
+            "item": "Email address missing",
+            "status": "fail",
+            "priority": "high",
+            "recommendation": "Add a professional email address",
+            "impact": "+15% ATS Score"
+        })
+    if not has_phone:
+        checklist.append({
+            "item": "Phone number missing",
+            "status": "fail",
+            "priority": "high",
+            "recommendation": "Add a contact phone number",
+            "impact": "+10% ATS Score"
+        })
+    if len(detected_skills) < 5:
+        checklist.append({
+            "item": "Insufficient keywords",
+            "status": "warning",
+            "priority": "high",
+            "recommendation": "Add more industry-specific skills and keywords",
+            "impact": "+20% ATS Score"
+        })
+    if achievement_count < 3:
+        checklist.append({
+            "item": "Weak action verbs",
+            "status": "warning",
+            "priority": "medium",
+            "recommendation": "Use strong action verbs (achieved, implemented, managed)",
+            "impact": "+10% ATS Score"
+        })
+    
+    return {
+        "overall_score": overall_score,
+        "summary": f"Basic ATS analysis complete. Your CV scored {overall_score}/100. {'This is a good foundation!' if overall_score >= 70 else 'There is room for improvement.' if overall_score >= 50 else 'Significant improvements needed.'}",
+        "categories": {
+            "format_compatibility": {
+                "score": min(scores["format_compatibility"], 100),
+                "status": get_status(scores["format_compatibility"]),
+                "findings": findings["format_compatibility"]
+            },
+            "contact_information": {
+                "score": min(scores["contact_information"], 100),
+                "status": get_status(scores["contact_information"]),
+                "findings": findings["contact_information"]
+            },
+            "keywords_skills": {
+                "score": min(scores["keywords_skills"], 100),
+                "status": get_status(scores["keywords_skills"]),
+                "findings": findings["keywords_skills"],
+                "detected_skills": detected_skills[:20]  # Limit to 20 skills
+            },
+            "work_experience": {
+                "score": min(scores["work_experience"], 100),
+                "status": get_status(scores["work_experience"]),
+                "findings": findings["work_experience"]
+            },
+            "education": {
+                "score": min(scores["education"], 100),
+                "status": get_status(scores["education"]),
+                "findings": findings["education"]
+            },
+            "overall_structure": {
+                "score": min(scores["overall_structure"], 100),
+                "status": get_status(scores["overall_structure"]),
+                "findings": findings["overall_structure"]
+            }
+        },
+        "checklist": checklist,
+        "strengths": strengths if strengths else ["CV uploaded successfully"],
+        "critical_issues": critical_issues if critical_issues else [],
+        "recommendations": recommendations[:5] if recommendations else ["Keep your CV updated regularly"],
+        "is_fallback": True,
+        "fallback_notice": "This is a basic analysis. For detailed AI-powered insights, please try again later when the service is available."
+    }
+
 
 # Initialize AI service
 ai_service = AIService()

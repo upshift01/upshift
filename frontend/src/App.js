@@ -164,6 +164,15 @@ const AppContent = () => {
           <Route path="email-templates" element={<EmailTemplates />} />
           <Route path="calendar" element={<ResellerCalendar />} />
         </Route>
+
+        {/* Partner/White-Label Routes (URL-based subdomain routing) */}
+        <Route path="/partner/:subdomain" element={<PartnerLayout />}>
+          <Route index element={<PartnerHome />} />
+          <Route path="pricing" element={<PartnerPricing />} />
+          <Route path="about" element={<PartnerAbout />} />
+          <Route path="contact" element={<PartnerContact />} />
+          <Route path="ats-checker" element={<PartnerATSChecker />} />
+        </Route>
       </Routes>
       {!hideFooter && <Footer />}
       <AIAssistantBot />

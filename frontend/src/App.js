@@ -196,7 +196,14 @@ const AppContent = () => {
           {/* Auth */}
           <Route path="login" element={<PartnerLogin />} />
           <Route path="register" element={<PartnerRegister />} />
+          {/* Dashboard and Portal Pages */}
           <Route path="dashboard" element={<PartnerDashboard />} />
+          <Route path="dashboard/documents" element={<PartnerDocuments />} />
+          <Route path="dashboard/analytics" element={<PartnerAnalytics />} />
+          <Route path="dashboard/billing" element={<PartnerBilling />} />
+          <Route path="dashboard/settings" element={<PartnerSettings />} />
+          <Route path="dashboard/jobs" element={<PartnerJobTracker />} />
+          <Route path="dashboard/interview-prep" element={<PartnerInterviewPrep />} />
           {/* Tools - matching main site URLs */}
           <Route path="ats-checker" element={<PartnerATSChecker />} />
           <Route path="builder" element={<PartnerCVBuilder />} />

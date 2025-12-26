@@ -131,7 +131,27 @@ const PartnerCoverLetterCreator = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-8 relative">
         {/* Paywall overlay if no access */}
-        {!hasAccess && <PaywallOverlay />}
+        {!hasAccess && (
+          <PartnerPaywall
+            title="Unlock Cover Letter Creator"
+            icon={Mail}
+            description={
+              !isAuthenticated 
+                ? undefined
+                : !user?.active_tier
+                  ? "Upgrade to a paid plan to create cover letters"
+                  : "Cover letter creation requires Professional Package or higher"
+            }
+            requiredTier="tier-2"
+            features={[
+              "AI-powered personalized content",
+              "Tailored to job descriptions",
+              "Professional formatting",
+              "Multiple tone options",
+              "Download as PDF or Word"
+            ]}
+          />
+        )}
 
         <div className={`grid md:grid-cols-2 gap-6 ${!hasAccess ? 'opacity-50 pointer-events-none' : ''}`}>
           {/* Input Form */}

@@ -22,7 +22,7 @@ const AdminPricing = () => {
   const [whitelabelPlans, setWhitelabelPlans] = useState({
     starter: {
       name: 'Starter',
-      price: 249900, // R2,499 in cents
+      price: 2499, // R2,499 (normal amount)
       active_users_limit: 50,
       custom_subdomain: true,
       custom_domain: false,
@@ -34,7 +34,7 @@ const AdminPricing = () => {
     },
     professional: {
       name: 'Professional',
-      price: 499900, // R4,999 in cents
+      price: 4999, // R4,999 (normal amount)
       active_users_limit: 200,
       custom_subdomain: true,
       custom_domain: true,
@@ -61,7 +61,7 @@ const AdminPricing = () => {
 
   // Legacy white-label pricing (kept for backwards compatibility)
   const [whitelabelPricing, setWhitelabelPricing] = useState({
-    monthly_subscription: 250000,
+    monthly_subscription: 2500,
     setup_fee: 0,
     per_transaction_fee: 0,
     minimum_commitment_months: 1
@@ -69,15 +69,15 @@ const AdminPricing = () => {
 
   // Default tier pricing (suggested prices for resellers)
   const [defaultTierPricing, setDefaultTierPricing] = useState({
-    tier_1_price: 89900,
-    tier_2_price: 150000,
-    tier_3_price: 300000,
+    tier_1_price: 899,
+    tier_2_price: 1500,
+    tier_3_price: 3000,
     currency: 'ZAR'
   });
 
   // Strategy Call pricing
   const [strategyCallPricing, setStrategyCallPricing] = useState({
-    price: 69900,
+    price: 699,
     duration_minutes: 30,
     included_in_tier_3: true,
     enabled: true

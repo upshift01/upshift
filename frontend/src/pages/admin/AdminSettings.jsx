@@ -618,7 +618,10 @@ const AdminSettings = () => {
         setSiteSettings({
           contact: data.contact || { email: '', phone: '', address: '', whatsapp: '' },
           social_media: data.social_media || { facebook: '', twitter: '', linkedin: '', instagram: '', youtube: '', tiktok: '' },
-          business_hours: data.business_hours || ''
+          business_hours: data.business_hours || '',
+          vat_number: data.vat_number || '',
+          company_registration: data.company_registration || '',
+          meeting_link: data.meeting_link || ''
         });
       }
     } catch (error) {

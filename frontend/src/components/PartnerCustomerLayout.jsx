@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePartner } from '../context/PartnerContext';
 import { 
@@ -24,9 +24,16 @@ import { Badge } from '../components/ui/badge';
 
 const PartnerCustomerLayout = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { brandName, primaryColor, secondaryColor, baseUrl, logoUrl } = usePartner();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    // Redirect to partner home page after logout
+    navigate(baseUrl);
+  };
 
   const navItems = [
     { path: `${baseUrl}/dashboard`, icon: LayoutDashboard, label: 'Dashboard', exact: true },

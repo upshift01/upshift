@@ -506,7 +506,7 @@ async def get_partner_config(subdomain: str):
         
         # Build the config
         branding = reseller.get("branding", {})
-        pricing = reseller.get("pricing", {})
+        reseller_pricing = reseller.get("pricing", {})
         legal = reseller.get("legal", {})
         contact = reseller.get("contact_info", {})
         
@@ -521,6 +521,31 @@ async def get_partner_config(subdomain: str):
             site_social = {}
             business_hours = ""
             site_seo = {}
+        
+        # Get pricing - prefer reseller pricing, fallback to platform pricing
+        tier_1_price = reseller_pricing.get("tier1_price") or reseller_pricing.get("tier_1_price")
+        tier_2_price = reseller_pricing.get("tier2_price") or reseller_pricing.get("tier_2_price")
+        tier_3_price = reseller_pricing.get("tier3_price") or reseller_pricing.get("tier_3_price")
+        
+        # If reseller doesn't have custom pricing, fetch platform defaults
+        if not tier_1_price or not tier_2_price or not tier_3_price:
+            platform_pricing = await db.platform_settings.find_one(
+                {"key": "platform_pricing"},
+                {"_id": 0}
+            )
+            if platform_pricing and platform_pricing.get("value"):
+                platform_tier_pricing = platform_pricing["value"].get("default_tier_pricing", {})
+                if not tier_1_price:
+                    tier_1_price = platform_tier_pricing.get("tier_1_price", 499)
+                if not tier_2_price:
+                    tier_2_price = platform_tier_pricing.get("tier_2_price", 899)
+                if not tier_3_price:
+                    tier_3_price = platform_tier_pricing.get("tier_3_price", 2999)
+            else:
+                # Absolute defaults if nothing is configured
+                tier_1_price = tier_1_price or 499
+                tier_2_price = tier_2_price or 899
+                tier_3_price = tier_3_price or 2999
         
         return {
             "success": True,
@@ -550,9 +575,9 @@ async def get_partner_config(subdomain: str):
             "terms_url": legal.get("terms_url", "/terms"),
             "privacy_url": legal.get("privacy_url", "/privacy"),
             "pricing": {
-                "tier_1_price": pricing.get("tier1_price", 899),
-                "tier_2_price": pricing.get("tier2_price", 1500),
-                "tier_3_price": pricing.get("tier3_price", 3000),
+                "tier_1_price": tier_1_price,
+                "tier_2_price": tier_2_price,
+                "tier_3_price": tier_3_price,
                 "currency": "ZAR"
             },
             "status": reseller.get("status"),

@@ -245,6 +245,176 @@ async def get_current_user_info(current_user: UserResponse = Depends(get_current
     return current_user
 
 
+# ==================== Password Reset Endpoints ====================
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: dict):
+    """Request a password reset email"""
+    import secrets
+    from datetime import timedelta
+    
+    try:
+        email = data.get("email", "").lower().strip()
+        if not email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        
+        # Find user
+        user = await db.users.find_one({"email": email})
+        
+        # Always return success to prevent email enumeration
+        if not user:
+            logger.info(f"Password reset requested for non-existent email: {email}")
+            return {"message": "If an account exists with this email, you will receive a password reset link."}
+        
+        # Generate reset token
+        reset_token = secrets.token_urlsafe(32)
+        reset_expiry = datetime.now(timezone.utc) + timedelta(hours=24)
+        
+        # Store reset token in database
+        await db.password_resets.update_one(
+            {"email": email},
+            {
+                "$set": {
+                    "email": email,
+                    "token": reset_token,
+                    "expires_at": reset_expiry,
+                    "used": False,
+                    "created_at": datetime.now(timezone.utc)
+                }
+            },
+            upsert=True
+        )
+        
+        # Build reset URL
+        frontend_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:3000')).rstrip('/')
+        
+        # Check if user belongs to a reseller for correct redirect URL
+        reseller_subdomain = None
+        if user.get("reseller_id"):
+            reseller = await db.resellers.find_one({"id": user["reseller_id"]}, {"_id": 0, "subdomain": 1})
+            if reseller:
+                reseller_subdomain = reseller.get("subdomain")
+        
+        if reseller_subdomain:
+            reset_url = f"{frontend_url}/partner/{reseller_subdomain}/reset-password?token={reset_token}"
+        else:
+            reset_url = f"{frontend_url}/reset-password?token={reset_token}"
+        
+        # Send email if configured
+        if email_service.is_configured:
+            html_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #1e40af;">Password Reset Request</h1>
+                </div>
+                <p>Hi {user.get('full_name', 'there')},</p>
+                <p>We received a request to reset your password. Click the button below to create a new password:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}" style="background: linear-gradient(135deg, #1e40af, #7c3aed); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">Reset Password</a>
+                </div>
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #666; font-size: 14px;">{reset_url}</p>
+                <p><strong>This link will expire in 24 hours.</strong></p>
+                <p>If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                <p style="color: #888; font-size: 12px;">This email was sent by UpShift. If you have any questions, please contact support.</p>
+            </body>
+            </html>
+            """
+            
+            await email_service.send_email(
+                to_email=email,
+                subject="Reset Your Password - UpShift",
+                html_body=html_body,
+                text_body=f"Reset your password by visiting: {reset_url}\n\nThis link expires in 24 hours."
+            )
+            logger.info(f"Password reset email sent to: {email}")
+        else:
+            # Log the reset URL for development/testing
+            logger.warning(f"Email not configured. Reset URL for {email}: {reset_url}")
+        
+        return {"message": "If an account exists with this email, you will receive a password reset link."}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in forgot password: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred. Please try again.")
+
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: dict):
+    """Reset password using token"""
+    try:
+        token = data.get("token", "").strip()
+        new_password = data.get("password", "")
+        
+        if not token:
+            raise HTTPException(status_code=400, detail="Reset token is required")
+        
+        if not new_password or len(new_password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        # Find valid reset token
+        reset_record = await db.password_resets.find_one({
+            "token": token,
+            "used": False,
+            "expires_at": {"$gt": datetime.now(timezone.utc)}
+        })
+        
+        if not reset_record:
+            raise HTTPException(status_code=400, detail="Invalid or expired reset link. Please request a new password reset.")
+        
+        email = reset_record["email"]
+        
+        # Update user password
+        hashed_password = get_password_hash(new_password)
+        result = await db.users.update_one(
+            {"email": email},
+            {"$set": {"hashed_password": hashed_password}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="Unable to update password. Please try again.")
+        
+        # Mark token as used
+        await db.password_resets.update_one(
+            {"token": token},
+            {"$set": {"used": True, "used_at": datetime.now(timezone.utc)}}
+        )
+        
+        logger.info(f"Password reset successful for: {email}")
+        
+        return {"message": "Your password has been reset successfully. You can now log in with your new password."}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in reset password: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred. Please try again.")
+
+
+@api_router.get("/auth/verify-reset-token")
+async def verify_reset_token(token: str):
+    """Verify if a reset token is valid"""
+    try:
+        reset_record = await db.password_resets.find_one({
+            "token": token,
+            "used": False,
+            "expires_at": {"$gt": datetime.now(timezone.utc)}
+        })
+        
+        if not reset_record:
+            return {"valid": False, "message": "Invalid or expired reset link."}
+        
+        return {"valid": True, "email": reset_record["email"]}
+        
+    except Exception as e:
+        logger.error(f"Error verifying reset token: {str(e)}")
+        return {"valid": False, "message": "An error occurred."}
+
+
 # ==================== Public Pricing Endpoint ====================
 
 @api_router.get("/pricing")

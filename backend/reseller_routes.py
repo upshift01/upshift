@@ -189,22 +189,44 @@ async def get_reseller_profile(context: dict = Depends(get_current_reseller_admi
                 "enabled": True
             }
     
+    # Default values for optional fields
+    default_branding = {
+        "logo_url": None,
+        "primary_color": "#1e40af",
+        "secondary_color": "#7c3aed",
+        "favicon_url": None
+    }
+    
+    default_stats = {
+        "total_customers": 0,
+        "active_customers": 0,
+        "total_revenue": 0,
+        "this_month_revenue": 0
+    }
+    
+    default_subscription = {
+        "plan": "monthly",
+        "status": "trial",
+        "is_trial": True
+    }
+    
     return {
         "id": reseller["id"],
-        "company_name": reseller["company_name"],
-        "brand_name": reseller["brand_name"],
-        "subdomain": reseller["subdomain"],
+        "company_name": reseller.get("company_name", ""),
+        "brand_name": reseller.get("brand_name", ""),
+        "subdomain": reseller.get("subdomain", ""),
         "custom_domain": reseller.get("custom_domain"),
-        "status": reseller["status"],
-        "branding": reseller["branding"],
+        "status": reseller.get("status", "active"),
+        "branding": reseller.get("branding", default_branding),
         "pricing": pricing,
         "strategy_call_pricing": strategy_call_pricing,
-        "contact_info": reseller["contact_info"],
+        "tier_config": reseller.get("tier_config"),
+        "contact_info": reseller.get("contact_info", {}),
         "legal": reseller.get("legal", {}),
-        "subscription": reseller["subscription"],
-        "stats": reseller["stats"],
-        "api_key": reseller["api_key"],
-        "created_at": reseller["created_at"]
+        "subscription": reseller.get("subscription", default_subscription),
+        "stats": reseller.get("stats", default_stats),
+        "api_key": reseller.get("api_key", ""),
+        "created_at": reseller.get("created_at")
     }
 
 

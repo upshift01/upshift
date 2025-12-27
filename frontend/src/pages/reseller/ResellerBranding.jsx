@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Palette, Save, Upload } from 'lucide-react';
+import { Palette, Save, Upload, X, Image, FileImage, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -18,6 +18,10 @@ const ResellerBranding = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [uploading, setUploading] = useState({ logo: false, favicon: false });
+  
+  const logoInputRef = useRef(null);
+  const faviconInputRef = useRef(null);
 
   useEffect(() => {
     fetchBranding();

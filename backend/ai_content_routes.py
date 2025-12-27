@@ -830,7 +830,12 @@ Write ONLY the summary text, no introduction, explanation, or quotes."""
         ).with_model("openai", "gpt-4o")
         
         response = await chat.send_message(UserMessage(text=prompt))
-        summary_text = response.text.strip()
+        
+        # Handle response - could be string or object with text attribute
+        if hasattr(response, 'text'):
+            summary_text = response.text.strip()
+        else:
+            summary_text = str(response).strip()
         
         # Clean up the response if it has quotes or extra formatting
         summary_text = summary_text.strip('"\'')

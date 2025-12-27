@@ -280,12 +280,28 @@ const CustomerDocuments = () => {
                   {new Date(doc.updated_at || doc.created_at).toLocaleDateString()}
                 </p>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4" />
+                  {doc.type === 'cv' && doc.cv_data && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleEdit(doc)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDownload(doc)}
+                    disabled={downloadingId === doc.id}
+                  >
+                    {downloadingId === doc.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
                   </Button>
                   <Button 
                     variant="ghost" 

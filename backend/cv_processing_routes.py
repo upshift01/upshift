@@ -91,8 +91,8 @@ async def analyze_cv(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="No file provided")
         
         file_ext = file.filename.lower().split('.')[-1]
-        if file_ext not in ['pdf', 'docx', 'doc']:
-            raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported")
+        if file_ext not in ['pdf', 'docx', 'doc', 'txt']:
+            raise HTTPException(status_code=400, detail="Only PDF, DOCX, and TXT files are supported")
         
         # Read file content
         content = await file.read()
@@ -100,6 +100,12 @@ async def analyze_cv(file: UploadFile = File(...)):
         # Extract text based on file type
         if file_ext == 'pdf':
             extracted_text = extract_text_from_pdf(content)
+        elif file_ext == 'txt':
+            # Handle TXT files directly
+            try:
+                extracted_text = content.decode('utf-8')
+            except UnicodeDecodeError:
+                extracted_text = content.decode('latin-1')
         else:
             extracted_text = extract_text_from_docx(content)
         

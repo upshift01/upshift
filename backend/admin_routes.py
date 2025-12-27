@@ -1176,9 +1176,9 @@ async def list_users(
         if reseller_ids:
             resellers = await db.resellers.find(
                 {"id": {"$in": reseller_ids}},
-                {"_id": 0, "id": 1, "brand_name": 1}
+                {"_id": 0, "id": 1, "company_name": 1}
             ).to_list(len(reseller_ids))
-            reseller_map = {r["id"]: r["brand_name"] for r in resellers}
+            reseller_map = {r["id"]: r.get("company_name", "Unknown") for r in resellers}
         
         # Add reseller name to each user
         for user in users:

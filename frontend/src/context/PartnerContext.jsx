@@ -50,16 +50,23 @@ export const PartnerProvider = ({ children, subdomain }) => {
       setPartner(data);
       
       // Apply partner branding to document
-      if (data.primary_color) {
+43|      if (data.primary_color) {
         document.documentElement.style.setProperty('--partner-primary', data.primary_color);
       }
       if (data.secondary_color) {
         document.documentElement.style.setProperty('--partner-secondary', data.secondary_color);
       }
-      if (data.favicon_url) {
+      // Set favicon - handle relative URLs
+      const faviconUrl = getFullUrl(data.favicon_url);
+      if (faviconUrl) {
         const favicon = document.querySelector("link[rel='icon']");
         if (favicon) {
-          favicon.href = data.favicon_url;
+          favicon.href = faviconUrl;
+        }
+        // Also update shortcut icon if it exists
+        const shortcutIcon = document.querySelector("link[rel='shortcut icon']");
+        if (shortcutIcon) {
+          shortcutIcon.href = faviconUrl;
         }
       }
       if (data.brand_name) {

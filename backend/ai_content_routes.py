@@ -829,7 +829,7 @@ Write ONLY the summary text, no introduction, explanation, or quotes."""
             system_message=system_message
         ).with_model("openai", "gpt-4o")
         
-        response = chat.send_message(UserMessage(text=prompt))
+        response = await chat.send_message(UserMessage(text=prompt))
         summary_text = response.text.strip()
         
         # Clean up the response if it has quotes or extra formatting

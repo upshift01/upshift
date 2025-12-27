@@ -17,7 +17,8 @@ import {
   LogOut,
   Sparkles,
   Zap,
-  Mail
+  Mail,
+  Lock
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';

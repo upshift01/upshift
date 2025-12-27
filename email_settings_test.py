@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 
 # Backend URL
-BACKEND_URL = "https://white-label-cv.preview.emergentagent.com/api"
+BACKEND_URL = "https://ats-partner.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {

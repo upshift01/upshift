@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePartner } from '../../context/PartnerContext';
 import { Button } from '../../components/ui/button';
@@ -7,9 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
-import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Download, Plus, Trash2, FileText, Sparkles, Wand2, X, Check, Upload } from 'lucide-react';
+import { Loader2, Download, Plus, Trash2, Upload, Sparkles, Wand2, Check, X } from 'lucide-react';
 import PartnerPaywall from '../../components/PartnerPaywall';
 import jsPDF from 'jspdf';
 
@@ -17,15 +16,17 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PartnerCVBuilder = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, getAuthHeader, token } = useAuth();
+  const { user, isAuthenticated, token } = useAuth();
   const { brandName, primaryColor, secondaryColor, baseUrl } = usePartner();
   const { toast } = useToast();
   const fileInputRef = useRef(null);
+  
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
   const [isExtractingCV, setIsExtractingCV] = useState(false);
+  const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
   const [suggestedSkills, setSuggestedSkills] = useState([]);
   const [showSkillsSuggestions, setShowSkillsSuggestions] = useState(false);
+  
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -45,7 +46,6 @@ const PartnerCVBuilder = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     const allowedExtensions = ['.pdf', '.txt', '.doc', '.docx'];
     const isValidType = allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
     
@@ -58,7 +58,6 @@ const PartnerCVBuilder = () => {
       return;
     }
 
-    // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast({
         title: 'File Too Large',
@@ -75,9 +74,7 @@ const PartnerCVBuilder = () => {
 
       const response = await fetch(`${API_URL}/api/ai-content/extract-cv-data`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload
       });
 
@@ -85,8 +82,6 @@ const PartnerCVBuilder = () => {
       
       if (response.ok && data.success) {
         const extracted = data.data;
-        
-        // Map extracted data to form
         setFormData({
           fullName: extracted.fullName || '',
           email: extracted.email || '',
@@ -110,10 +105,9 @@ const PartnerCVBuilder = () => {
             : [{ degree: '', institution: '', year: '' }],
           skills: extracted.skills?.length > 0 ? extracted.skills : ['']
         });
-
         toast({
           title: 'CV Data Imported',
-          description: 'Your CV data has been extracted and populated. Review and edit as needed.',
+          description: 'Your CV data has been extracted and populated.',
         });
       } else {
         throw new Error(data.detail || 'Failed to extract CV data');
@@ -126,10 +120,7 @@ const PartnerCVBuilder = () => {
       });
     } finally {
       setIsExtractingCV(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -190,271 +181,238 @@ const PartnerCVBuilder = () => {
 
   // AI Skills Generation
   const generateAISkills = async () => {
-    // Get context from job titles and experience
-    const jobTitles = formData.experiences
-      .map(exp => exp.title)
-      .filter(Boolean)
-      .join(', ');
+    const jobTitles = formData.experiences.map(exp => exp.title).filter(Boolean).join(', ');
+    const experienceDescriptions = formData.experiences.map(exp => exp.description).filter(Boolean).join(' ');
     
-    const experienceDescriptions = formData.experiences
-      .map(exp => exp.description)
-      .filter(Boolean)
-      .join('. ');
-
-    if (!jobTitles && !experienceDescriptions && !formData.summary) {
+    if (!jobTitles && !experienceDescriptions) {
       toast({
-        title: "Add some context first",
-        description: "Please fill in your job titles, experience, or summary to generate relevant skills.",
-        variant: "destructive"
+        title: 'Add Experience First',
+        description: 'Please add at least one job title or experience description to generate relevant skills.',
+        variant: 'destructive'
       });
       return;
     }
 
     setIsGeneratingSkills(true);
-    setSuggestedSkills([]);
-    setShowSkillsSuggestions(true);
-
     try {
-      const response = await fetch(`${API_URL}/api/ai-content/cv-builder-skills`, {
+      const response = await fetch(`${API_URL}/api/ai-content/generate-cv-skills`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...getAuthHeader()
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           job_titles: jobTitles,
-          experience: experienceDescriptions,
-          summary: formData.summary,
-          current_skills: formData.skills.filter(Boolean)
+          experience_descriptions: experienceDescriptions
         })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const skills = data.skills || data.suggested_skills || [];
-        setSuggestedSkills(skills);
+      const data = await response.json();
+      
+      if (response.ok && data.skills) {
+        setSuggestedSkills(data.skills);
+        setShowSkillsSuggestions(true);
+        toast({ title: 'Skills Generated', description: 'AI has suggested relevant skills for your profile.' });
       } else {
-        // Fallback to generic skills based on common patterns
-        const fallbackSkills = generateFallbackSkills(jobTitles, experienceDescriptions);
-        setSuggestedSkills(fallbackSkills);
+        throw new Error(data.detail || 'Failed to generate skills');
       }
     } catch (error) {
-      console.error('Error generating skills:', error);
-      // Fallback skills
-      const fallbackSkills = generateFallbackSkills(jobTitles, experienceDescriptions);
-      setSuggestedSkills(fallbackSkills);
+      toast({
+        title: 'Generation Failed',
+        description: error.message || 'Could not generate skills. Please try again.',
+        variant: 'destructive'
+      });
     } finally {
       setIsGeneratingSkills(false);
     }
   };
 
-  // Fallback skill generation based on keywords
-  const generateFallbackSkills = (jobTitles, experience) => {
-    const text = `${jobTitles} ${experience}`.toLowerCase();
-    const skillSets = {
-      developer: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'Agile', 'REST APIs', 'Problem Solving'],
-      manager: ['Leadership', 'Team Management', 'Project Management', 'Strategic Planning', 'Budgeting', 'Communication', 'Decision Making'],
-      marketing: ['Digital Marketing', 'SEO', 'Content Strategy', 'Social Media', 'Analytics', 'Brand Management', 'Campaign Management'],
-      sales: ['Negotiation', 'CRM', 'Lead Generation', 'Client Relations', 'Presentation Skills', 'Closing Deals', 'Pipeline Management'],
-      design: ['UI/UX Design', 'Figma', 'Adobe Creative Suite', 'Wireframing', 'Prototyping', 'User Research', 'Visual Design'],
-      finance: ['Financial Analysis', 'Excel', 'Budgeting', 'Forecasting', 'Accounting', 'Risk Management', 'Financial Reporting'],
-      hr: ['Recruitment', 'Employee Relations', 'Performance Management', 'Training', 'HRIS', 'Compliance', 'Onboarding'],
-      admin: ['Microsoft Office', 'Scheduling', 'Data Entry', 'Customer Service', 'Organization', 'Time Management', 'Communication']
-    };
-
-    let relevantSkills = ['Communication', 'Problem Solving', 'Team Collaboration', 'Time Management'];
-    
-    for (const [keyword, skills] of Object.entries(skillSets)) {
-      if (text.includes(keyword)) {
-        relevantSkills = [...skills, ...relevantSkills];
-        break;
-      }
-    }
-
-    // Remove duplicates and existing skills
-    const existingSkills = formData.skills.map(s => s.toLowerCase());
-    return [...new Set(relevantSkills)]
-      .filter(skill => !existingSkills.includes(skill.toLowerCase()))
-      .slice(0, 10);
-  };
-
   const addSuggestedSkill = (skill) => {
     if (!formData.skills.includes(skill)) {
-      const newSkills = formData.skills[0] === '' 
-        ? [skill] 
-        : [...formData.skills, skill];
-      setFormData({ ...formData, skills: newSkills });
-      setSuggestedSkills(suggestedSkills.filter(s => s !== skill));
-      toast({ title: `Added "${skill}"` });
+      const emptyIndex = formData.skills.findIndex(s => !s.trim());
+      if (emptyIndex >= 0) {
+        const newSkills = [...formData.skills];
+        newSkills[emptyIndex] = skill;
+        setFormData({ ...formData, skills: newSkills });
+      } else {
+        setFormData({ ...formData, skills: [...formData.skills, skill] });
+      }
     }
-  };
-
-  const addAllSuggestedSkills = () => {
-    const existingSkills = formData.skills.filter(Boolean);
-    const newSkills = [...existingSkills, ...suggestedSkills];
-    setFormData({ ...formData, skills: newSkills });
-    setSuggestedSkills([]);
-    setShowSkillsSuggestions(false);
-    toast({ title: `Added ${suggestedSkills.length} skills` });
+    setSuggestedSkills(suggestedSkills.filter(s => s !== skill));
   };
 
   const generatePDF = () => {
-    if (!hasAccess) {
-      toast({
-        title: "Upgrade Required",
-        description: "Please purchase a plan to download your CV.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsGenerating(true);
+
     try {
       const doc = new jsPDF();
-      let yPos = 20;
-      
-      // Header
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      let yPosition = 20;
+
+      // Header - Name
       doc.setFontSize(24);
-      doc.setTextColor(30, 64, 175);
-      doc.text(formData.fullName || 'Your Name', 105, yPos, { align: 'center' });
-      yPos += 10;
-      
-      // Contact Info
+      doc.setFont('helvetica', 'bold');
+      doc.text(formData.fullName || 'Your Name', margin, yPosition);
+      yPosition += 10;
+
+      // Contact Information
       doc.setFontSize(10);
-      doc.setTextColor(100);
-      const contactLine = [formData.email, formData.phone, formData.address].filter(Boolean).join(' | ');
-      doc.text(contactLine, 105, yPos, { align: 'center' });
-      yPos += 15;
-      
+      doc.setFont('helvetica', 'normal');
+      if (formData.email) {
+        doc.text(formData.email, margin, yPosition);
+        yPosition += 5;
+      }
+      if (formData.phone) {
+        doc.text(formData.phone, margin, yPosition);
+        yPosition += 5;
+      }
+      if (formData.address) {
+        doc.text(formData.address, margin, yPosition);
+        yPosition += 5;
+      }
+      yPosition += 5;
+
       // Summary
       if (formData.summary) {
-        doc.setFontSize(12);
-        doc.setTextColor(30, 64, 175);
-        doc.text('Professional Summary', 20, yPos);
-        yPos += 7;
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PROFESSIONAL SUMMARY', margin, yPosition);
+        yPosition += 7;
         doc.setFontSize(10);
-        doc.setTextColor(60);
-        const summaryLines = doc.splitTextToSize(formData.summary, 170);
-        doc.text(summaryLines, 20, yPos);
-        yPos += summaryLines.length * 5 + 10;
+        doc.setFont('helvetica', 'normal');
+        const summaryLines = doc.splitTextToSize(formData.summary, pageWidth - 2 * margin);
+        doc.text(summaryLines, margin, yPosition);
+        yPosition += summaryLines.length * 5 + 5;
       }
-      
+
       // Experience
-      const validExperiences = formData.experiences.filter(exp => exp.title || exp.company);
-      if (validExperiences.length > 0) {
-        doc.setFontSize(12);
-        doc.setTextColor(30, 64, 175);
-        doc.text('Work Experience', 20, yPos);
-        yPos += 7;
-        
-        validExperiences.forEach(exp => {
-          doc.setFontSize(11);
-          doc.setTextColor(40);
-          doc.text(`${exp.title} at ${exp.company}`, 20, yPos);
-          yPos += 5;
-          doc.setFontSize(9);
-          doc.setTextColor(100);
-          doc.text(exp.duration, 20, yPos);
-          yPos += 5;
-          if (exp.description) {
-            doc.setTextColor(60);
-            const descLines = doc.splitTextToSize(exp.description, 170);
-            doc.text(descLines, 20, yPos);
-            yPos += descLines.length * 4 + 5;
+      if (formData.experiences.some(exp => exp.title || exp.company)) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('WORK EXPERIENCE', margin, yPosition);
+        yPosition += 7;
+
+        formData.experiences.forEach((exp) => {
+          if (exp.title || exp.company) {
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(exp.title || 'Position', margin, yPosition);
+            yPosition += 5;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${exp.company || 'Company'} | ${exp.duration || 'Duration'}`, margin, yPosition);
+            yPosition += 5;
+            if (exp.description) {
+              const descLines = doc.splitTextToSize(exp.description, pageWidth - 2 * margin);
+              doc.text(descLines, margin, yPosition);
+              yPosition += descLines.length * 5;
+            }
+            yPosition += 3;
           }
-          yPos += 3;
         });
-        yPos += 5;
+        yPosition += 2;
       }
-      
+
       // Education
-      const validEducation = formData.education.filter(edu => edu.degree || edu.institution);
-      if (validEducation.length > 0) {
-        doc.setFontSize(12);
-        doc.setTextColor(30, 64, 175);
-        doc.text('Education', 20, yPos);
-        yPos += 7;
-        
-        validEducation.forEach(edu => {
-          doc.setFontSize(11);
-          doc.setTextColor(40);
-          doc.text(`${edu.degree} - ${edu.institution}`, 20, yPos);
-          yPos += 5;
-          doc.setFontSize(9);
-          doc.setTextColor(100);
-          doc.text(edu.year, 20, yPos);
-          yPos += 8;
+      if (formData.education.some(edu => edu.degree || edu.institution)) {
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('EDUCATION', margin, yPosition);
+        yPosition += 7;
+
+        formData.education.forEach((edu) => {
+          if (edu.degree || edu.institution) {
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(edu.degree || 'Degree', margin, yPosition);
+            yPosition += 5;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${edu.institution || 'Institution'} | ${edu.year || 'Year'}`, margin, yPosition);
+            yPosition += 6;
+          }
         });
-        yPos += 5;
+        yPosition += 2;
       }
-      
+
       // Skills
-      const validSkills = formData.skills.filter(Boolean);
-      if (validSkills.length > 0) {
-        doc.setFontSize(12);
-        doc.setTextColor(30, 64, 175);
-        doc.text('Skills', 20, yPos);
-        yPos += 7;
+      const nonEmptySkills = formData.skills.filter(skill => skill.trim());
+      if (nonEmptySkills.length > 0) {
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SKILLS', margin, yPosition);
+        yPosition += 7;
         doc.setFontSize(10);
-        doc.setTextColor(60);
-        doc.text(validSkills.join(' • '), 20, yPos);
+        doc.setFont('helvetica', 'normal');
+        nonEmptySkills.forEach((skill) => {
+          doc.text(`• ${skill}`, margin, yPosition);
+          yPosition += 5;
+        });
       }
-      
-      doc.save(`${formData.fullName || 'cv'}_resume.pdf`);
-      toast({ title: 'Success', description: 'Your CV has been downloaded!' });
+
+      // Save PDF
+      doc.save(`${formData.fullName || 'CV'}_Resume.pdf`);
+
+      toast({
+        title: "CV Generated Successfully!",
+        description: "Your professional CV has been downloaded as a PDF file.",
+      });
     } catch (error) {
-      toast({ title: 'Error', description: 'Failed to generate PDF', variant: 'destructive' });
+      toast({
+        title: "Error Generating PDF",
+        description: "There was an error creating your CV. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section 
-        className="py-12"
-        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-      >
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <Badge className="mb-4 bg-white/20 text-white border-none">
-            <FileText className="mr-1 h-3 w-3" />
-            Professional Tool
-          </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            CV Builder
+    <div className="min-h-screen bg-gray-50 py-12 px-4 relative">
+      {/* Paywall overlay if no access */}
+      {!hasAccess && (
+        <PartnerPaywall
+          title="Unlock CV Builder"
+          icon={Download}
+          features={[
+            "Professional CV templates",
+            "Download as high-quality PDF",
+            "ATS-optimised formatting",
+            "AI-powered skills suggestions",
+            "Import existing CV data"
+          ]}
+        />
+      )}
+
+      <div className={`max-w-4xl mx-auto ${!hasAccess ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Online CV Builder / Creator
           </h1>
-          <p className="text-lg text-white/80">
-            Create a professional CV in minutes with our easy-to-use builder
+          <p className="text-gray-700 max-w-2xl mx-auto">
+            Create your professional CV in minutes. Fill out the form below and download your CV as a PDF file. Fast, easy, and ATS-optimized!
           </p>
         </div>
-      </section>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 relative">
-        {/* Paywall overlay if no access */}
-        {!hasAccess && (
-          <PartnerPaywall
-            title="Unlock CV Builder"
-            icon={FileText}
-            features={[
-              "Professional CV templates",
-              "Download as high-quality PDF",
-              "ATS-optimised formatting",
-              "Unlimited revisions",
-              "Multiple export formats"
-            ]}
-          />
-        )}
-
-        <Card className={!hasAccess ? 'opacity-50 pointer-events-none' : ''}>
+        <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <CardTitle>Build Your CV</CardTitle>
-                <CardDescription>Fill in your details below or import from an existing CV</CardDescription>
+                <CardDescription>
+                  Fill in your information below or import from an existing CV. All fields are optional.
+                </CardDescription>
               </div>
-              
-              {/* Upload CV Button */}
               <div>
                 <input
                   ref={fileInputRef}
@@ -487,206 +445,304 @@ const PartnerCVBuilder = () => {
           <CardContent className="space-y-6">
             {/* Personal Information */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg" style={{ color: primaryColor }}>Personal Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Full Name</Label>
-                  <Input name="fullName" value={formData.fullName} onChange={handleChange} placeholder="John Smith" />
+                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                  />
                 </div>
                 <div>
-                  <Label>Email</Label>
-                  <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="john@example.com" />
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="john.doe@example.com"
+                  />
                 </div>
                 <div>
-                  <Label>Phone</Label>
-                  <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="+27 12 345 6789" />
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+27 (0) 12 345 6789"
+                  />
                 </div>
                 <div>
-                  <Label>Address</Label>
-                  <Input name="address" value={formData.address} onChange={handleChange} placeholder="Johannesburg, South Africa" />
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="Johannesburg, South Africa"
+                  />
                 </div>
               </div>
-              <div>
-                <Label>Professional Summary</Label>
-                <Textarea name="summary" value={formData.summary} onChange={handleChange} placeholder="A brief summary of your professional background..." rows={3} />
-              </div>
+            </div>
+
+            {/* Professional Summary */}
+            <div className="space-y-2">
+              <Label htmlFor="summary">Professional Summary</Label>
+              <Textarea
+                id="summary"
+                name="summary"
+                value={formData.summary}
+                onChange={handleChange}
+                placeholder="Write a brief summary of your professional experience and goals..."
+                rows={4}
+              />
             </div>
 
             {/* Work Experience */}
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg" style={{ color: primaryColor }}>Work Experience</h3>
-                <Button variant="outline" size="sm" onClick={addExperience}>
-                  <Plus className="h-4 w-4 mr-1" /> Add
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Work Experience</h3>
+                <Button onClick={addExperience} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Experience
                 </Button>
               </div>
               {formData.experiences.map((exp, index) => (
-                <Card key={index} className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Input placeholder="Job Title" value={exp.title} onChange={(e) => handleExperienceChange(index, 'title', e.target.value)} />
-                    <Input placeholder="Company" value={exp.company} onChange={(e) => handleExperienceChange(index, 'company', e.target.value)} />
-                    <Input placeholder="Duration (e.g., 2020 - Present)" value={exp.duration} onChange={(e) => handleExperienceChange(index, 'duration', e.target.value)} />
-                    <div className="flex items-center">
+                <Card key={index} className="bg-gray-50">
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-gray-900">Experience {index + 1}</h4>
                       {formData.experiences.length > 1 && (
-                        <Button variant="ghost" size="sm" onClick={() => removeExperience(index)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                        <Button
+                          onClick={() => removeExperience(index)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
-                  </div>
-                  <Textarea className="mt-3" placeholder="Job description and achievements..." value={exp.description} onChange={(e) => handleExperienceChange(index, 'description', e.target.value)} rows={2} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Job Title</Label>
+                        <Input
+                          value={exp.title}
+                          onChange={(e) => handleExperienceChange(index, 'title', e.target.value)}
+                          placeholder="Software Developer"
+                        />
+                      </div>
+                      <div>
+                        <Label>Company</Label>
+                        <Input
+                          value={exp.company}
+                          onChange={(e) => handleExperienceChange(index, 'company', e.target.value)}
+                          placeholder="Tech Corp"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Duration</Label>
+                      <Input
+                        value={exp.duration}
+                        onChange={(e) => handleExperienceChange(index, 'duration', e.target.value)}
+                        placeholder="Jan 2020 - Present"
+                      />
+                    </div>
+                    <div>
+                      <Label>Description</Label>
+                      <Textarea
+                        value={exp.description}
+                        onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
+                        placeholder="Describe your responsibilities and achievements..."
+                        rows={3}
+                      />
+                    </div>
+                  </CardContent>
                 </Card>
               ))}
             </div>
 
             {/* Education */}
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg" style={{ color: primaryColor }}>Education</h3>
-                <Button variant="outline" size="sm" onClick={addEducation}>
-                  <Plus className="h-4 w-4 mr-1" /> Add
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Education</h3>
+                <Button onClick={addEducation} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Education
                 </Button>
               </div>
               {formData.education.map((edu, index) => (
-                <Card key={index} className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Input placeholder="Degree" value={edu.degree} onChange={(e) => handleEducationChange(index, 'degree', e.target.value)} />
-                    <Input placeholder="Institution" value={edu.institution} onChange={(e) => handleEducationChange(index, 'institution', e.target.value)} />
-                    <div className="flex gap-2">
-                      <Input placeholder="Year" value={edu.year} onChange={(e) => handleEducationChange(index, 'year', e.target.value)} />
+                <Card key={index} className="bg-gray-50">
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-gray-900">Education {index + 1}</h4>
                       {formData.education.length > 1 && (
-                        <Button variant="ghost" size="sm" onClick={() => removeEducation(index)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                        <Button
+                          onClick={() => removeEducation(index)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Degree</Label>
+                        <Input
+                          value={edu.degree}
+                          onChange={(e) => handleEducationChange(index, 'degree', e.target.value)}
+                          placeholder="Bachelor of Science"
+                        />
+                      </div>
+                      <div>
+                        <Label>Institution</Label>
+                        <Input
+                          value={edu.institution}
+                          onChange={(e) => handleEducationChange(index, 'institution', e.target.value)}
+                          placeholder="University Name"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Year</Label>
+                      <Input
+                        value={edu.year}
+                        onChange={(e) => handleEducationChange(index, 'year', e.target.value)}
+                        placeholder="2016 - 2020"
+                      />
+                    </div>
+                  </CardContent>
                 </Card>
               ))}
             </div>
 
             {/* Skills */}
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-lg" style={{ color: primaryColor }}>Skills</h3>
-                  <Badge variant="outline" className="text-xs">
-                    {formData.skills.filter(Boolean).length} added
-                  </Badge>
-                </div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Skills</h3>
                 <div className="flex gap-2">
                   <Button 
+                    onClick={generateAISkills} 
                     variant="outline" 
-                    size="sm" 
-                    onClick={generateAISkills}
+                    size="sm"
                     disabled={isGeneratingSkills}
-                    className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
                   >
                     {isGeneratingSkills ? (
-                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Generating...</>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                     ) : (
-                      <><Wand2 className="h-4 w-4 mr-1" /> AI Suggest</>
+                      <Wand2 className="h-4 w-4 mr-1" />
                     )}
+                    AI Suggest
                   </Button>
-                  <Button variant="outline" size="sm" onClick={addSkill}>
-                    <Plus className="h-4 w-4 mr-1" /> Add
+                  <Button onClick={addSkill} variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Skill
                   </Button>
                 </div>
               </div>
-
+              
               {/* AI Suggested Skills */}
-              {showSkillsSuggestions && (
-                <Card className="border-purple-200 bg-purple-50/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm font-medium text-purple-900">AI Suggested Skills</span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => setShowSkillsSuggestions(false)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+              {showSkillsSuggestions && suggestedSkills.length > 0 && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-purple-600" />
+                      <span className="text-sm font-medium text-purple-900">AI Suggested Skills</span>
                     </div>
-                    
-                    {isGeneratingSkills ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
-                        <span className="ml-2 text-sm text-purple-700">Analyzing your experience...</span>
-                      </div>
-                    ) : suggestedSkills.length > 0 ? (
-                      <>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {suggestedSkills.map((skill, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => addSuggestedSkill(skill)}
-                              className="px-3 py-1.5 text-sm bg-white border border-purple-200 rounded-full hover:bg-purple-100 hover:border-purple-300 transition-colors flex items-center gap-1 group"
-                            >
-                              <Plus className="h-3 w-3 text-purple-500 group-hover:text-purple-700" />
-                              {skill}
-                            </button>
-                          ))}
-                        </div>
-                        <Button 
-                          size="sm" 
-                          onClick={addAllSuggestedSkills}
-                          className="w-full text-white"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          Add All ({suggestedSkills.length} skills)
-                        </Button>
-                      </>
-                    ) : (
-                      <p className="text-sm text-purple-700 text-center py-2">
-                        No additional skills to suggest. Try adding more experience details.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowSkillsSuggestions(false)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedSkills.map((skill, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => addSuggestedSkill(skill)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-purple-200 rounded-full text-sm text-purple-700 hover:bg-purple-100 transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                        {skill}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
-
-              {/* Current Skills */}
-              <div className="flex flex-wrap gap-2">
+              
+              <div className="space-y-2">
                 {formData.skills.map((skill, index) => (
-                  <div key={index} className="flex items-center gap-1">
-                    <Input className="w-40" placeholder="Skill" value={skill} onChange={(e) => handleSkillChange(index, e.target.value)} />
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={skill}
+                      onChange={(e) => handleSkillChange(index, e.target.value)}
+                      placeholder="e.g., JavaScript, Project Management, etc."
+                    />
                     {formData.skills.length > 1 && (
-                      <Button variant="ghost" size="sm" onClick={() => removeSkill(index)}>
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                      <Button
+                        onClick={() => removeSkill(index)}
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
                 ))}
               </div>
-
-              {/* Helper text */}
-              <p className="text-xs text-gray-500">
-                💡 Tip: Click "AI Suggest" to get skill recommendations based on your job experience
-              </p>
             </div>
 
             {/* Generate Button */}
-            <Button 
-              className="w-full text-white" 
-              size="lg"
-              onClick={generatePDF}
-              disabled={isGenerating || !formData.fullName}
-              style={{ backgroundColor: primaryColor }}
-            >
-              {isGenerating ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
-              ) : (
-                <><Download className="mr-2 h-4 w-4" /> Download CV as PDF</>
+            <div className="pt-6">
+              <Button
+                onClick={generatePDF}
+                disabled={isGenerating || !formData.fullName}
+                className="w-full text-white"
+                style={{ backgroundColor: primaryColor }}
+                size="lg"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-5 w-5" />
+                    Generate & Download CV (PDF)
+                  </>
+                )}
+              </Button>
+              {!formData.fullName && (
+                <p className="text-sm text-red-600 mt-2 text-center">
+                  Please enter your full name to generate CV
+                </p>
               )}
-            </Button>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Info Section */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="font-semibold text-blue-900 mb-2">Privacy & Security</h3>
+          <p className="text-sm text-blue-800">
+            Your data is processed locally in your browser. We do not store or save any of your personal information on our servers. Your CV is generated directly on your device and downloaded as a PDF file.
+          </p>
+        </div>
       </div>
     </div>
   );

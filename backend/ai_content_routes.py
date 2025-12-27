@@ -768,3 +768,81 @@ Return ONLY the JSON object, no explanation."""
     except Exception as e:
         logger.error(f"Error extracting CV data: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to extract CV data. Please try again.")
+
+
+# ==================== CV PROFESSIONAL SUMMARY GENERATION ====================
+
+class CVSummaryRequest(BaseModel):
+    full_name: Optional[str] = ""
+    job_titles: Optional[str] = ""
+    companies: Optional[str] = ""
+    experience_descriptions: Optional[str] = ""
+    skills: Optional[str] = ""
+    education: Optional[str] = ""
+
+@ai_content_router.post("/generate-cv-summary")
+async def generate_cv_summary(
+    request: CVSummaryRequest,
+    current_user = Depends(get_current_user_with_db)
+):
+    """
+    Generate a professional summary for a CV based on user's experience and skills.
+    Requires any paid tier.
+    """
+    try:
+        # Check if user has active tier
+        if not current_user.active_tier:
+            raise HTTPException(status_code=403, detail="Please purchase a plan to use AI features")
+        
+        if not request.job_titles and not request.experience_descriptions:
+            raise HTTPException(status_code=400, detail="Please provide job titles or experience descriptions")
+        
+        session_id = f"cv-summary-{current_user.id}-{uuid.uuid4()}"
+        
+        system_message = """You are an expert CV writer specializing in creating compelling professional summaries for the South African job market. 
+Your summaries are:
+- Concise (3-4 sentences, around 50-80 words)
+- Achievement-focused and impactful
+- Written in first person without using "I"
+- ATS-optimized with relevant keywords
+- Professional and confident in tone
+- Tailored to the person's experience level and industry
+
+Write ONLY the summary text, no introduction or explanation."""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id,
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        prompt = f"""Create a professional summary for this person's CV:
+
+Name: {request.full_name or 'Not provided'}
+Job Titles: {request.job_titles or 'Not provided'}
+Companies: {request.companies or 'Not provided'}
+Experience: {request.experience_descriptions[:1500] if request.experience_descriptions else 'Not provided'}
+Skills: {request.skills or 'Not provided'}
+Education: {request.education or 'Not provided'}
+
+Write a compelling 3-4 sentence professional summary that highlights their key strengths and experience."""
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        summary_text = response.text.strip()
+        
+        # Clean up the response if it has quotes or extra formatting
+        summary_text = summary_text.strip('"\'')
+        
+        logger.info(f"CV summary generated for user {current_user.email}")
+        
+        return {
+            "success": True,
+            "summary": summary_text
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating CV summary: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate summary. Please try again.")

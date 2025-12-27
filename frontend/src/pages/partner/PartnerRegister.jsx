@@ -54,7 +54,7 @@ const PartnerRegister = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name,
+          full_name: formData.name,
           email: formData.email,
           password: formData.password,
           reseller_id: resellerId // Associate with this reseller

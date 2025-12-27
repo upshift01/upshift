@@ -852,3 +852,96 @@ Write ONLY the summary text, no introduction, explanation, or quotes."""
     except Exception as e:
         logger.error(f"Error generating CV summary: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate summary. Please try again.")
+
+
+# ==================== CV SKILLS GENERATION ====================
+
+class CVSkillsRequest(BaseModel):
+    job_titles: Optional[str] = ""
+    experience_descriptions: Optional[str] = ""
+
+@ai_content_router.post("/generate-cv-skills")
+async def generate_cv_skills(
+    request: CVSkillsRequest,
+    current_user = Depends(get_current_user_with_db)
+):
+    """
+    Generate relevant skills for a CV based on job titles and experience descriptions.
+    Requires any paid tier.
+    """
+    try:
+        # Check if user has active tier
+        if not current_user.active_tier:
+            raise HTTPException(status_code=403, detail="Please purchase a plan to use AI features")
+        
+        if not request.job_titles and not request.experience_descriptions:
+            raise HTTPException(status_code=400, detail="Please provide job titles or experience descriptions")
+        
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        prompt = f"""You are an expert CV writer and ATS optimization specialist.
+Based on the following professional profile, suggest 8-12 relevant skills for their CV.
+
+Job Titles: {request.job_titles or 'Not provided'}
+Experience Descriptions: {request.experience_descriptions[:1500] if request.experience_descriptions else 'Not provided'}
+
+Instructions:
+- Generate 8-12 skills that are relevant to the job titles and experience
+- Include a mix of technical/hard skills and soft skills
+- Make skills ATS-friendly and industry-relevant
+- Use concise, professional terminology
+- Return ONLY a JSON array of skill strings, nothing else
+
+Example output format:
+["Project Management", "Data Analysis", "Team Leadership", "Python", "Agile Methodology"]
+
+Generate skills now:"""
+
+        system_message = """You are an expert CV writer and ATS optimization specialist."""
+        
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"cv-skills-{current_user.id}",
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        response = await chat.send_message(UserMessage(text=prompt))
+        
+        # Handle response - could be string or object with text attribute
+        if hasattr(response, 'text'):
+            response_text = response.text.strip()
+        else:
+            response_text = str(response).strip()
+        
+        # Parse the JSON array from response
+        import json
+        import re
+        
+        # Try to extract JSON array from response
+        json_match = re.search(r'\[.*?\]', response_text, re.DOTALL)
+        if json_match:
+            skills = json.loads(json_match.group())
+        else:
+            # Fallback: split by newlines or commas
+            skills = [s.strip().strip('"\'- ') for s in response_text.split('\n') if s.strip()]
+            skills = [s for s in skills if s and len(s) < 50][:12]
+        
+        # Clean up skills
+        clean_skills = []
+        for skill in skills:
+            if isinstance(skill, str) and skill.strip():
+                clean_skills.append(skill.strip())
+        
+        logger.info(f"CV skills generated for user {current_user.email}")
+        
+        return {
+            "success": True,
+            "skills": clean_skills[:12]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating CV skills: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate skills. Please try again.")

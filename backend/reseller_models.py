@@ -16,12 +16,25 @@ class StrategyCallPricing(BaseModel):
     included_in_tier_3: bool = True
     enabled: bool = True
 
+class TierFeatures(BaseModel):
+    name: str = "Package"
+    description: str = ""
+    price: int = 0  # in cents
+    features: List[str] = []
+    enabled: bool = True
+
+class TierConfig(BaseModel):
+    tier_1: Optional[TierFeatures] = None
+    tier_2: Optional[TierFeatures] = None
+    tier_3: Optional[TierFeatures] = None
+
 class ResellerPricing(BaseModel):
     tier_1_price: int = 89900  # R899 in cents
     tier_2_price: int = 150000  # R1500
     tier_3_price: int = 300000  # R3000
     currency: str = "ZAR"
     strategy_call_pricing: Optional[StrategyCallPricing] = None
+    tier_config: Optional[TierConfig] = None
 
 class ResellerContactInfo(BaseModel):
     email: EmailStr

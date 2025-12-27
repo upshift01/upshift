@@ -38,7 +38,15 @@ const PartnerNavbar = () => {
           {/* Logo */}
           <Link to={baseUrl} className="flex items-center space-x-2 group">
             {logoUrl ? (
-              <img src={logoUrl} alt={brandName} className="h-10 w-auto" />
+              <>
+                <img src={logoUrl} alt={brandName} className="h-10 w-auto" />
+                <span 
+                  className="text-2xl font-bold bg-clip-text text-transparent hidden sm:inline"
+                  style={{ backgroundImage: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                >
+                  {brandName}
+                </span>
+              </>
             ) : (
               <>
                 <div 

@@ -898,11 +898,11 @@ agent_communication:
         agent: "testing"
         comment: "✅ VERIFIED: Save functionality present! Found 'Save All Changes' button prominently displayed at bottom right of page. Save functionality implemented and ready for configuration updates."
 
-## Current Tests - Improve CV and Cover Letter AI Features - TESTING IN PROGRESS
+## Current Tests - Improve CV and Cover Letter AI Features - COMPLETED
 
   - task: "Improve CV - AI Analysis"
     implemented: true
-    working: false
+    working: true
     url: "/partner/yottanet/improve"
     test_credentials: "customer@yottanet.co.za / password123"
     expected: "Should allow uploading a PDF/DOCX/TXT resume file. AI should analyze the CV and provide: overall score, ATS score, impact score, clarity score, keyword score, and specific improvement suggestions categorized by severity (high/medium/low)."
@@ -916,10 +916,13 @@ agent_communication:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE: Frontend/backend mismatch. Frontend accepts TXT files but backend only accepts PDF/DOCX files (file_ext not in ['pdf', 'docx', 'doc']). Tested with tier-2 user (customer@yottanet.co.za) - login successful, no paywall detected, file upload works, but analysis fails due to unsupported file type. Backend API /api/cv/analyze returns 400 'Only PDF and DOCX files are supported' for TXT files. Frontend shows TXT support in UI but backend rejects it."
+      - working: true
+        agent: "testing"
+        comment: "✅ BUG FIX VERIFIED: TXT file support now working correctly! Successfully tested with tier-2 user (customer@yottanet.co.za). Login successful, no paywall detected, TXT file upload works, AI analysis completes successfully. Backend now accepts TXT files (line 94: file_ext not in ['pdf', 'docx', 'doc', 'txt'] and line 104-108 handles TXT decoding). Analysis results display correctly with Overall Score: 75%, ATS Compatibility: 80%, Impact Score: 70%, Clarity Score: 85%, and detailed improvement suggestions with severity levels (HIGH/MEDIUM/LOW) and specific recommendations. Backend logs show successful API call: POST /api/cv/analyze HTTP/1.1 200 OK."
 
   - task: "Cover Letter Creator - AI Generation"
     implemented: true
-    working: false
+    working: true
     url: "/partner/yottanet/cover-letter"
     test_credentials: "customer@yottanet.co.za / password123"
     expected: "Should have form fields for: your name, job title, company name, hiring manager, your experience, key skills, why interested, and job description. AI should generate a professional cover letter based on input. Requires tier-2 or tier-3."
@@ -934,6 +937,9 @@ agent_communication:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE: Frontend/backend field name mismatch. Frontend sends {your_name, hiring_manager, your_experience} but backend expects {full_name, email, recipient_name}. Tested with tier-2 user - login successful, no paywall detected, all 8 form fields filled correctly, but API returns 422 'Field required' for missing full_name and email fields. Backend API works when correct field names used (tested via curl - generates professional cover letter successfully). Frontend form needs to map field names correctly or backend needs to accept frontend field names."
+      - working: true
+        agent: "testing"
+        comment: "✅ BUG FIX VERIFIED: Field mapping now working correctly! Successfully tested with tier-2 user (customer@yottanet.co.za). Login successful, no paywall detected, all form fields fill correctly (Your Name, Job Title, Company Name, Hiring Manager, Your Experience, Key Skills, Why Interested, Job Description). Frontend now correctly maps field names to backend API (line 70: full_name: formData.your_name, line 73: recipient_name: formData.hiring_manager, etc.). Cover letter generation successful with 1668 characters of professional content. Backend logs show successful API call: POST /api/ai-content/generate-cover-letter HTTP/1.1 200 OK."
 
 ## Current Tests - AI Features in Partner CV Builder - COMPLETED
 

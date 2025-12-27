@@ -1,0 +1,10 @@
+John Doe
+Software Developer
+john@email.com | +27 123 456 7890
+
+EXPERIENCE
+Senior Developer at Tech Corp (2020-Present)
+- Built web applications
+
+SKILLS
+JavaScript, React, Python

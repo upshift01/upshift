@@ -179,38 +179,50 @@ const PartnerCustomerLayout = ({ children }) => {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Tools
               </p>
-              {toolItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`
-                    flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium
-                    transition-colors duration-150
-                    ${isActive(item.path)
-                      ? 'text-white'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                    }
-                  `}
-                  style={isActive(item.path) ? { backgroundColor: primaryColor } : {}}
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon className="h-5 w-5" />
-                    {item.label}
-                  </div>
-                  {item.badge && (
-                    <Badge className={`text-xs ${
-                      isActive(item.path) 
-                        ? 'bg-white/20 text-white' 
-                        : item.badge === 'FREE' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {item.badge}
-                    </Badge>
-                  )}
-                </Link>
-              ))}
+              {toolItems.map((item) => {
+                const isPaidTool = item.badge === 'PRO';
+                const isLocked = isPaidTool && !user?.active_tier;
+                
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium
+                      transition-colors duration-150
+                      ${isActive(item.path)
+                        ? 'text-white'
+                        : isLocked
+                          ? 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }
+                    `}
+                    style={isActive(item.path) ? { backgroundColor: primaryColor } : {}}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon className={`h-5 w-5 ${isLocked && !isActive(item.path) ? 'opacity-50' : ''}`} />
+                      {item.label}
+                      {isLocked && !isActive(item.path) && (
+                        <Lock className="h-3 w-3 text-gray-400" />
+                      )}
+                    </div>
+                    {item.badge && (
+                      <Badge className={`text-xs ${
+                        isActive(item.path) 
+                          ? 'bg-white/20 text-white' 
+                          : item.badge === 'FREE' 
+                            ? 'bg-green-100 text-green-700' 
+                            : isLocked
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </nav>
 

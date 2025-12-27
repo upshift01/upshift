@@ -57,8 +57,11 @@ const PartnerCVBuilder = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExtractingCV, setIsExtractingCV] = useState(false);
   const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [suggestedSkills, setSuggestedSkills] = useState([]);
   const [showSkillsSuggestions, setShowSkillsSuggestions] = useState(false);
+  const [suggestedSummary, setSuggestedSummary] = useState('');
+  const [showSummarySuggestion, setShowSummarySuggestion] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   

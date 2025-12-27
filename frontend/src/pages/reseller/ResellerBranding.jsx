@@ -246,35 +246,148 @@ const ResellerBranding = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Logo Upload */}
             <div>
-              <label className="block text-sm font-medium mb-2">Logo URL</label>
-              <Input
-                value={branding.logo_url || ''}
-                onChange={(e) => setBranding({ ...branding, logo_url: e.target.value })}
-                placeholder="https://example.com/logo.png"
+              <label className="block text-sm font-medium mb-2">Company Logo</label>
+              <input
+                type="file"
+                ref={logoInputRef}
+                className="hidden"
+                accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                onChange={(e) => handleFileUpload(e.target.files[0], 'logo')}
               />
-              <p className="text-xs text-gray-500 mt-1">Recommended size: 200x50px, PNG or SVG</p>
-              {branding.logo_url && (
-                <div className="mt-3 p-4 bg-gray-100 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-2">Preview:</p>
-                  <img 
-                    src={branding.logo_url} 
-                    alt="Logo preview" 
-                    className="max-h-12 w-auto"
-                    onError={(e) => e.target.style.display = 'none'}
-                  />
+              
+              {branding.logo_url ? (
+                <div className="relative border rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0 bg-white p-2 rounded border">
+                      <img 
+                        src={getFullImageUrl(branding.logo_url)} 
+                        alt="Logo preview" 
+                        className="max-h-12 w-auto object-contain"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-600 truncate">Logo uploaded</p>
+                      <p className="text-xs text-gray-400">Click to change or remove</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={uploading.logo}
+                      >
+                        {uploading.logo ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteFile('logo')}
+                        disabled={uploading.logo}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => logoInputRef.current?.click()}
+                  className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+                >
+                  {uploading.logo ? (
+                    <Loader2 className="h-8 w-8 mx-auto text-blue-500 animate-spin mb-2" />
+                  ) : (
+                    <Image className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                  )}
+                  <p className="text-sm font-medium text-gray-700">
+                    {uploading.logo ? 'Uploading...' : 'Click to upload logo'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, SVG, or WEBP (max 5MB)</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Recommended: 200×50px</p>
                 </div>
               )}
             </div>
 
+            {/* Favicon Upload */}
             <div>
-              <label className="block text-sm font-medium mb-2">Favicon URL</label>
-              <Input
-                value={branding.favicon_url || ''}
-                onChange={(e) => setBranding({ ...branding, favicon_url: e.target.value })}
-                placeholder="https://example.com/favicon.ico"
+              <label className="block text-sm font-medium mb-2">Favicon</label>
+              <input
+                type="file"
+                ref={faviconInputRef}
+                className="hidden"
+                accept="image/png,image/jpeg,image/x-icon,image/vnd.microsoft.icon,image/svg+xml"
+                onChange={(e) => handleFileUpload(e.target.files[0], 'favicon')}
               />
-              <p className="text-xs text-gray-500 mt-1">Recommended size: 32x32px, ICO or PNG</p>
+              
+              {branding.favicon_url ? (
+                <div className="relative border rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0 bg-white p-2 rounded border">
+                      <img 
+                        src={getFullImageUrl(branding.favicon_url)} 
+                        alt="Favicon preview" 
+                        className="h-8 w-8 object-contain"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-600 truncate">Favicon uploaded</p>
+                      <p className="text-xs text-gray-400">Click to change or remove</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => faviconInputRef.current?.click()}
+                        disabled={uploading.favicon}
+                      >
+                        {uploading.favicon ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteFile('favicon')}
+                        disabled={uploading.favicon}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => faviconInputRef.current?.click()}
+                  className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+                >
+                  {uploading.favicon ? (
+                    <Loader2 className="h-8 w-8 mx-auto text-blue-500 animate-spin mb-2" />
+                  ) : (
+                    <FileImage className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                  )}
+                  <p className="text-sm font-medium text-gray-700">
+                    {uploading.favicon ? 'Uploading...' : 'Click to upload favicon'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">PNG, ICO, or SVG (max 5MB)</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Recommended: 32×32px</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

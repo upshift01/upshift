@@ -22,7 +22,8 @@ import {
   MessageSquare,
   ChevronRight,
   Loader2,
-  Circle
+  Circle,
+  Lock
 } from 'lucide-react';
 import PartnerCustomerLayout from '../../components/PartnerCustomerLayout';
 

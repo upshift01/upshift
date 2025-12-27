@@ -19,34 +19,36 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 // CV Templates
 const TEMPLATES = [
+  // General Templates
   {
     id: 'professional',
     name: 'Professional',
     description: 'Clean and traditional format, perfect for corporate roles',
     color: '#1e40af',
-    category: 'professional'
+    category: 'general'
   },
   {
     id: 'modern',
     name: 'Modern',
     description: 'Contemporary design with accent colors',
     color: '#7c3aed',
-    category: 'modern'
+    category: 'general'
   },
   {
     id: 'creative',
     name: 'Creative',
     description: 'Stand out with unique styling',
     color: '#059669',
-    category: 'creative'
+    category: 'general'
   },
   {
     id: 'executive',
     name: 'Executive',
     description: 'Sophisticated for senior roles',
     color: '#991b1b',
-    category: 'professional'
+    category: 'general'
   },
+  // ATS Templates
   {
     id: 'ats-classic',
     name: 'ATS Classic',
@@ -60,6 +62,87 @@ const TEMPLATES = [
     description: 'ATS-friendly with a modern touch',
     color: '#2563eb',
     category: 'ats'
+  },
+  // Industry-specific ATS Templates
+  {
+    id: 'ats-tech',
+    name: 'ATS Tech/IT',
+    description: 'Optimised for technology and software roles',
+    color: '#0891b2',
+    category: 'ats-industry',
+    industry: 'Technology'
+  },
+  {
+    id: 'ats-finance',
+    name: 'ATS Finance/Banking',
+    description: 'Professional format for financial services',
+    color: '#0f766e',
+    category: 'ats-industry',
+    industry: 'Finance'
+  },
+  {
+    id: 'ats-healthcare',
+    name: 'ATS Healthcare/Medical',
+    description: 'Clean format for healthcare professionals',
+    color: '#dc2626',
+    category: 'ats-industry',
+    industry: 'Healthcare'
+  },
+  {
+    id: 'ats-engineering',
+    name: 'ATS Engineering',
+    description: 'Structured format for engineering roles',
+    color: '#ea580c',
+    category: 'ats-industry',
+    industry: 'Engineering'
+  },
+  {
+    id: 'ats-sales',
+    name: 'ATS Sales/Marketing',
+    description: 'Results-focused format for sales professionals',
+    color: '#c026d3',
+    category: 'ats-industry',
+    industry: 'Sales & Marketing'
+  },
+  {
+    id: 'ats-education',
+    name: 'ATS Education/Academic',
+    description: 'Academic format for teaching and research',
+    color: '#4f46e5',
+    category: 'ats-industry',
+    industry: 'Education'
+  },
+  {
+    id: 'ats-legal',
+    name: 'ATS Legal/Law',
+    description: 'Formal format for legal professionals',
+    color: '#1e3a5f',
+    category: 'ats-industry',
+    industry: 'Legal'
+  },
+  {
+    id: 'ats-hospitality',
+    name: 'ATS Hospitality/Tourism',
+    description: 'Friendly format for service industry roles',
+    color: '#b45309',
+    category: 'ats-industry',
+    industry: 'Hospitality'
+  },
+  {
+    id: 'ats-retail',
+    name: 'ATS Retail/Customer Service',
+    description: 'Customer-focused format for retail roles',
+    color: '#be185d',
+    category: 'ats-industry',
+    industry: 'Retail'
+  },
+  {
+    id: 'ats-manufacturing',
+    name: 'ATS Manufacturing/Operations',
+    description: 'Practical format for production roles',
+    color: '#4d7c0f',
+    category: 'ats-industry',
+    industry: 'Manufacturing'
   }
 ];
 

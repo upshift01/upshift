@@ -463,6 +463,76 @@ const PartnerCVBuilder = () => {
           </p>
         </div>
 
+        {/* Template Selection */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Layout className="h-5 w-5" style={{ color: primaryColor }} />
+              Choose Your Template
+            </CardTitle>
+            <CardDescription>
+              Select a professional template that matches your industry and style preferences.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {templates.map((template) => (
+                <div
+                  key={template.id}
+                  className={`relative cursor-pointer rounded-lg border-2 transition-all duration-200 ${
+                    selectedTemplate === template.id
+                      ? 'border-blue-500 ring-2 ring-blue-200'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setSelectedTemplate(template.id)}
+                >
+                  {selectedTemplate === template.id && (
+                    <div className="absolute -top-2 -right-2 z-10">
+                      <div className="bg-blue-500 rounded-full p-1">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="aspect-[3/4] bg-gray-100 rounded-t-lg overflow-hidden">
+                    <img
+                      src={template.preview}
+                      alt={`${template.name} template preview`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  <div className="p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: template.color }}
+                      />
+                      <h3 className="font-medium text-gray-900">{template.name}</h3>
+                    </div>
+                    <p className="text-xs text-gray-600">{template.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-1">Template Features</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• ATS-optimized formatting for better job application success</li>
+                    <li>• Professional layouts designed for South African employers</li>
+                    <li>• Clean, readable design that highlights your strengths</li>
+                    <li>• Customizable colors and styling options</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Upload & Enhance Section */}
         <Card className="mb-6" style={{ backgroundColor: `${primaryColor}08` }}>
           <CardHeader>

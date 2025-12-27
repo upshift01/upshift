@@ -50,7 +50,7 @@ export const PartnerProvider = ({ children, subdomain }) => {
       setPartner(data);
       
       // Apply partner branding to document
-43|      if (data.primary_color) {
+      if (data.primary_color) {
         document.documentElement.style.setProperty('--partner-primary', data.primary_color);
       }
       if (data.secondary_color) {

@@ -740,10 +740,74 @@ const PartnerCVBuilder = () => {
         {/* Professional Summary */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Professional Summary</CardTitle>
-            <CardDescription>Write a compelling summary that highlights your key strengths</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Professional Summary</CardTitle>
+                <CardDescription>Write a compelling summary that highlights your key strengths</CardDescription>
+              </div>
+              <Button 
+                onClick={generateAISummary} 
+                variant="outline" 
+                size="sm"
+                disabled={isGeneratingSummary}
+                className="text-purple-600 border-purple-200 hover:bg-purple-50"
+              >
+                {isGeneratingSummary ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Wand2 className="h-4 w-4 mr-1" />
+                )}
+                AI Suggest
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* AI Suggested Summary */}
+            {showSummarySuggestion && suggestedSummary && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    <span className="text-sm font-medium text-purple-900">AI-Generated Summary</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowSummarySuggestion(false)}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+                  {suggestedSummary}
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={applySuggestedSummary}
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Use This Summary
+                  </Button>
+                  <Button 
+                    onClick={generateAISummary}
+                    variant="outline"
+                    size="sm"
+                    disabled={isGeneratingSummary}
+                  >
+                    {isGeneratingSummary ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Wand2 className="h-4 w-4 mr-1" />
+                    )}
+                    Regenerate
+                  </Button>
+                </div>
+              </div>
+            )}
+            
             <Textarea
               id="summary"
               name="summary"

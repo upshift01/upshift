@@ -161,6 +161,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
   const [isEnhancingAll, setIsEnhancingAll] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [editingDocId, setEditingDocId] = useState(null);
+  const [templateCategory, setTemplateCategory] = useState('all');
   
   // AI enhancement states
   const [isEnhancingSummary, setIsEnhancingSummary] = useState(false);

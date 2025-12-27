@@ -64,13 +64,27 @@ const PartnerCoverLetterCreator = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      
+      // Transform form data to match backend API expectations
+      const apiPayload = {
+        full_name: formData.your_name || 'Applicant',
+        email: user?.email || '',
+        phone: '',
+        recipient_name: formData.hiring_manager || 'Hiring Manager',
+        company_name: formData.company_name,
+        job_title: formData.job_title,
+        job_description: formData.job_description || '',
+        key_skills: `${formData.key_skills || ''}\n\nExperience: ${formData.your_experience || ''}`.trim(),
+        why_interested: formData.why_interested || ''
+      };
+      
       const response = await fetch(`${API_URL}/api/ai-content/generate-cover-letter`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(apiPayload)
       });
 
       const data = await response.json();

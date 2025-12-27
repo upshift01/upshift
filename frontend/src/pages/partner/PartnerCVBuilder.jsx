@@ -448,8 +448,41 @@ const PartnerCVBuilder = () => {
 
         <Card className={!hasAccess ? 'opacity-50 pointer-events-none' : ''}>
           <CardHeader>
-            <CardTitle>Build Your CV</CardTitle>
-            <CardDescription>Fill in your details below to generate a professional CV</CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle>Build Your CV</CardTitle>
+                <CardDescription>Fill in your details below or import from an existing CV</CardDescription>
+              </div>
+              
+              {/* Upload CV Button */}
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  onChange={handleCVUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isExtractingCV}
+                  className="gap-2"
+                >
+                  {isExtractingCV ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Extracting...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      Import Existing CV
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Personal Information */}

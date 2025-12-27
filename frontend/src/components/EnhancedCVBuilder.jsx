@@ -615,8 +615,6 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
 
   // Render template selection
   const renderTemplateSelection = () => {
-    const [templateCategory, setTemplateCategory] = useState('all');
-    
     const filteredTemplates = templateCategory === 'all' 
       ? TEMPLATES 
       : TEMPLATES.filter(t => t.category === templateCategory || (templateCategory === 'ats-all' && t.category.startsWith('ats')));

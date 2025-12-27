@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Depends, status, Request
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -1286,6 +1287,12 @@ async def get_templates():
 
 # Include the router in the main app
 app.include_router(api_router)
+
+# Mount static files for uploads
+uploads_path = ROOT_DIR / "uploads"
+if not uploads_path.exists():
+    uploads_path.mkdir(parents=True, exist_ok=True)
+app.mount("/api/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
 
 # Include reseller and admin routers
 app.include_router(reseller_router)

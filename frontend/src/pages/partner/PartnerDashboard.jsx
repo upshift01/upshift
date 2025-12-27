@@ -84,10 +84,10 @@ const PartnerDashboard = () => {
   const quickActions = [
     { icon: Target, label: 'ATS Checker', link: `${baseUrl}/ats-checker`, badge: 'FREE', color: 'green' },
     { icon: Sparkles, label: 'Skills Generator', link: `${baseUrl}/skills-generator`, badge: 'FREE', color: 'emerald' },
-    { icon: FileText, label: 'Build CV', link: `${baseUrl}/builder`, color: 'blue' },
-    { icon: Zap, label: 'Improve CV', link: `${baseUrl}/improve`, color: 'purple' },
-    { icon: Mail, label: 'Cover Letter', link: `${baseUrl}/cover-letter`, color: 'pink' },
-    { icon: Linkedin, label: 'LinkedIn Tools', link: `${baseUrl}/linkedin-tools`, badge: 'NEW', color: 'blue' },
+    { icon: FileText, label: 'AI Resume Builder', link: `${baseUrl}/builder`, badge: 'PRO', color: 'blue' },
+    { icon: Zap, label: 'Improve CV', link: `${baseUrl}/improve`, badge: 'PRO', color: 'purple' },
+    { icon: Mail, label: 'Cover Letter', link: `${baseUrl}/cover-letter`, badge: 'PRO', color: 'pink' },
+    { icon: Linkedin, label: 'LinkedIn Tools', link: `${baseUrl}/linkedin-tools`, badge: 'PRO', color: 'blue' },
     { icon: Briefcase, label: 'Job Tracker', link: `${baseUrl}/dashboard/jobs`, badge: 'NEW', color: 'indigo' }
   ];
 

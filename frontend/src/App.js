@@ -76,6 +76,8 @@ import PartnerCVTemplates from "./pages/partner/PartnerCVTemplates";
 import PartnerCoverLetterTemplates from "./pages/partner/PartnerCoverLetterTemplates";
 import PartnerLogin from "./pages/partner/PartnerLogin";
 import PartnerRegister from "./pages/partner/PartnerRegister";
+import PartnerForgotPassword from "./pages/partner/PartnerForgotPassword";
+import PartnerResetPassword from "./pages/partner/PartnerResetPassword";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerLinkedInTools from "./pages/partner/PartnerLinkedInTools";
 import PartnerBookStrategyCall from "./pages/partner/PartnerBookStrategyCall";
@@ -90,6 +92,10 @@ import PartnerBilling from "./pages/partner/PartnerBilling";
 import PartnerSettings from "./pages/partner/PartnerSettings";
 import PartnerJobTracker from "./pages/partner/PartnerJobTracker";
 import PartnerInterviewPrep from "./pages/partner/PartnerInterviewPrep";
+
+// Main Site Password Reset
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // Customer Portal Pages
 import CustomerLayout from "./components/CustomerLayout";

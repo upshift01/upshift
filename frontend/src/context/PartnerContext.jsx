@@ -4,6 +4,16 @@ const PartnerContext = createContext(null);
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+// Helper to convert relative URLs to full URLs
+const getFullUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/api/uploads')) {
+    return `${API_URL}${url}`;
+  }
+  return url;
+};
+
 export const PartnerProvider = ({ children, subdomain }) => {
   const [partner, setPartner] = useState(null);
   const [loading, setLoading] = useState(true);

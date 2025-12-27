@@ -309,27 +309,60 @@ const PartnerCVBuilder = () => {
       const margin = 20;
       let yPosition = 20;
 
-      // Header - Name
+      // Get template configuration
+      const template = templates.find(t => t.id === selectedTemplate);
+      const templateColor = template?.color || '#1e40af';
+
+      // Header - Name with template styling
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
-      doc.text(formData.fullName || 'Your Name', margin, yPosition);
-      yPosition += 10;
+      
+      // Apply template-specific styling
+      if (selectedTemplate === 'modern' || selectedTemplate === 'creative') {
+        // Add colored header background for modern/creative templates
+        doc.setFillColor(templateColor);
+        doc.rect(0, 0, pageWidth, 35, 'F');
+        doc.setTextColor(255, 255, 255); // White text on colored background
+      } else {
+        doc.setTextColor(0, 0, 0); // Black text for professional/executive
+      }
+      
+      doc.text(formData.fullName || 'Your Name', margin, yPosition + 10);
+      yPosition += 15;
 
       // Contact Information
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
+      if (selectedTemplate === 'modern' || selectedTemplate === 'creative') {
+        doc.setTextColor(255, 255, 255); // Keep white for contact info on colored background
+      } else {
+        doc.setTextColor(100, 100, 100); // Gray for professional/executive
+      }
+      
       const contactInfo = [formData.email, formData.phone, formData.address].filter(Boolean).join(' | ');
       if (contactInfo) {
-        doc.text(contactInfo, margin, yPosition);
-        yPosition += 8;
+        doc.text(contactInfo, margin, yPosition + 5);
+        yPosition += 15;
+      } else {
+        yPosition += 10;
       }
 
-      // Summary
+      // Reset text color for body content
+      doc.setTextColor(0, 0, 0);
+
+      // Summary with template styling
       if (formData.summary) {
         yPosition += 5;
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
+        
+        // Section headers with template color
+        if (selectedTemplate === 'creative') {
+          doc.setTextColor(templateColor);
+        }
         doc.text('PROFESSIONAL SUMMARY', margin, yPosition);
+        doc.setTextColor(0, 0, 0); // Reset to black
+        
         yPosition += 7;
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
@@ -338,11 +371,17 @@ const PartnerCVBuilder = () => {
         yPosition += summaryLines.length * 5 + 5;
       }
 
-      // Experience
+      // Experience with template styling
       if (formData.experiences.some(exp => exp.title || exp.company)) {
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
+        
+        if (selectedTemplate === 'creative') {
+          doc.setTextColor(templateColor);
+        }
         doc.text('WORK EXPERIENCE', margin, yPosition);
+        doc.setTextColor(0, 0, 0);
+        
         yPosition += 7;
 
         formData.experiences.forEach((exp) => {
@@ -353,7 +392,14 @@ const PartnerCVBuilder = () => {
             yPosition += 5;
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
+            
+            // Company info with template styling
+            if (selectedTemplate === 'modern') {
+              doc.setTextColor(100, 100, 100);
+            }
             doc.text(`${exp.company || 'Company'} | ${exp.duration || 'Duration'}`, margin, yPosition);
+            doc.setTextColor(0, 0, 0);
+            
             yPosition += 5;
             if (exp.description) {
               const descLines = doc.splitTextToSize(exp.description, pageWidth - 2 * margin);
@@ -366,7 +412,7 @@ const PartnerCVBuilder = () => {
         yPosition += 2;
       }
 
-      // Education
+      // Education with template styling
       if (formData.education.some(edu => edu.degree || edu.institution)) {
         if (yPosition > 250) {
           doc.addPage();
@@ -374,7 +420,13 @@ const PartnerCVBuilder = () => {
         }
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
+        
+        if (selectedTemplate === 'creative') {
+          doc.setTextColor(templateColor);
+        }
         doc.text('EDUCATION', margin, yPosition);
+        doc.setTextColor(0, 0, 0);
+        
         yPosition += 7;
 
         formData.education.forEach((edu) => {
@@ -385,14 +437,20 @@ const PartnerCVBuilder = () => {
             yPosition += 5;
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
+            
+            if (selectedTemplate === 'modern') {
+              doc.setTextColor(100, 100, 100);
+            }
             doc.text(`${edu.institution || 'Institution'} | ${edu.year || 'Year'}`, margin, yPosition);
+            doc.setTextColor(0, 0, 0);
+            
             yPosition += 6;
           }
         });
         yPosition += 2;
       }
 
-      // Skills
+      // Skills with template styling
       const nonEmptySkills = formData.skills.filter(skill => skill.trim());
       if (nonEmptySkills.length > 0) {
         if (yPosition > 250) {
@@ -401,7 +459,13 @@ const PartnerCVBuilder = () => {
         }
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
+        
+        if (selectedTemplate === 'creative') {
+          doc.setTextColor(templateColor);
+        }
         doc.text('SKILLS', margin, yPosition);
+        doc.setTextColor(0, 0, 0);
+        
         yPosition += 7;
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
@@ -410,12 +474,13 @@ const PartnerCVBuilder = () => {
         doc.text(skillsLines, margin, yPosition);
       }
 
-      // Save PDF
-      doc.save(`${formData.fullName || 'CV'}_Resume.pdf`);
+      // Save PDF with template name
+      const templateName = template?.name || 'Professional';
+      doc.save(`${formData.fullName || 'CV'}_${templateName}_Resume.pdf`);
 
       toast({
         title: "CV Generated Successfully!",
-        description: "Your professional CV has been downloaded as a PDF file.",
+        description: `Your ${templateName} CV has been downloaded as a PDF file.`,
       });
     } catch (error) {
       toast({

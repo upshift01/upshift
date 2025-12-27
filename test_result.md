@@ -894,6 +894,35 @@ agent_communication:
         agent: "testing"
         comment: "✅ VERIFIED: Save functionality present! Found 'Save All Changes' button prominently displayed at bottom right of page. Save functionality implemented and ready for configuration updates."
 
+## Current Tests - AI Features in Partner CV Builder - TESTING IN PROGRESS
+
+  - task: "AI Professional Summary Generation"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/builder"
+    test_credentials: "customer@yottanet.co.za / password123"
+    expected: "Should have 'AI Suggest' button in Professional Summary section. When clicked with job experience filled in, should generate a professional summary and show it in a purple suggestion box with 'Use This Summary' and 'Regenerate' buttons."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Feature implemented with endpoint POST /api/ai-content/generate-cv-summary. Requires paid tier. Frontend has AI Suggest button in summary section."
+
+  - task: "AI Skills Suggestion"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/builder"
+    expected: "Should have 'AI Suggest' button in Skills section. When clicked with job experience filled in, should generate relevant skills and show them with option to add to the CV."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Feature uses endpoint POST /api/ai-content/cv-suggestion with field='skills'. Requires paid tier."
+
 ## Current Tests - Reseller Branding File Upload Feature - COMPLETED
 
   - task: "Reseller Branding File Upload - Logo"

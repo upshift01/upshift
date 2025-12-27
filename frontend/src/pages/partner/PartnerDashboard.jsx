@@ -251,21 +251,47 @@ const PartnerDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            {quickActions.map((action) => (
-              <Link key={action.link} to={action.link}>
-                <div className="p-4 border rounded-lg hover:shadow-md transition-all hover:border-blue-300 text-center">
-                  <div className={`w-10 h-10 mx-auto mb-2 rounded-lg bg-${action.color}-100 flex items-center justify-center`}>
-                    <action.icon className={`h-5 w-5 text-${action.color}-600`} />
+            {quickActions.map((action) => {
+              const isPaidTool = action.badge === 'PRO';
+              const isLocked = isPaidTool && !user?.active_tier;
+              
+              return (
+                <Link key={action.link} to={action.link}>
+                  <div className={`p-4 border rounded-lg hover:shadow-md transition-all text-center relative ${
+                    isLocked 
+                      ? 'border-gray-200 bg-gray-50 hover:border-blue-300' 
+                      : 'hover:border-blue-300'
+                  }`}>
+                    {isLocked && (
+                      <div className="absolute top-2 right-2">
+                        <Lock className="h-3.5 w-3.5 text-gray-400" />
+                      </div>
+                    )}
+                    <div className={`w-10 h-10 mx-auto mb-2 rounded-lg bg-${action.color}-100 flex items-center justify-center ${
+                      isLocked ? 'opacity-60' : ''
+                    }`}>
+                      <action.icon className={`h-5 w-5 text-${action.color}-600`} />
+                    </div>
+                    <p className={`text-sm font-medium ${isLocked ? 'text-gray-500' : 'text-gray-900'}`}>
+                      {action.label}
+                    </p>
+                    {action.badge && (
+                      <Badge className={`mt-1 text-xs ${
+                        action.badge === 'FREE' 
+                          ? 'bg-green-100 text-green-700' 
+                          : action.badge === 'PRO'
+                            ? isLocked 
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-blue-100 text-blue-700'
+                            : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {action.badge}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm font-medium text-gray-900">{action.label}</p>
-                  {action.badge && (
-                    <Badge className={`mt-1 text-xs ${action.badge === 'FREE' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {action.badge}
-                    </Badge>
-                  )}
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

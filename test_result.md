@@ -919,18 +919,21 @@ agent_communication:
 
   - task: "Cover Letter Creator - AI Generation"
     implemented: true
-    working: "NEEDS_TESTING"
+    working: false
     url: "/partner/yottanet/cover-letter"
     test_credentials: "customer@yottanet.co.za / password123"
     expected: "Should have form fields for: your name, job title, company name, hiring manager, your experience, key skills, why interested, and job description. AI should generate a professional cover letter based on input. Requires tier-2 or tier-3."
     priority: "high"
     stuck_count: 0
-    needs_retesting: true
-    note: "User has tier-1, may need tier-2 user for testing cover letter"
+    needs_retesting: false
+    note: "User has tier-2 access confirmed"
     status_history:
       - working: "NEEDS_TESTING"
         agent: "main"
         comment: "Uses endpoint POST /api/ai-content/generate-cover-letter. Requires tier-2 or tier-3. User customer@yottanet.co.za has tier-1 only."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Frontend/backend field name mismatch. Frontend sends {your_name, hiring_manager, your_experience} but backend expects {full_name, email, recipient_name}. Tested with tier-2 user - login successful, no paywall detected, all 8 form fields filled correctly, but API returns 422 'Field required' for missing full_name and email fields. Backend API works when correct field names used (tested via curl - generates professional cover letter successfully). Frontend form needs to map field names correctly or backend needs to accept frontend field names."
 
 ## Current Tests - AI Features in Partner CV Builder - COMPLETED
 

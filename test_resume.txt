@@ -1,39 +1,31 @@
 John Smith
-Software Engineer
-
-Contact Information:
+Software Developer
 Email: john.smith@email.com
-Phone: +1-555-123-4567
-Location: San Francisco, CA
+Phone: +27 11 123 4567
 
-Professional Summary:
-Experienced software engineer with 5+ years of experience in full-stack development. Proficient in JavaScript, Python, React, and Node.js. Strong background in building scalable web applications and working in agile environments.
+PROFESSIONAL SUMMARY
+Experienced software developer with 5 years of experience in web development using React, JavaScript, and Node.js. Passionate about creating innovative solutions and working in collaborative environments.
 
-Work Experience:
-
-Senior Software Engineer | TechCorp Inc. | 2021 - Present
+WORK EXPERIENCE
+Senior Software Developer - Tech Corp (2020 - Present)
 - Developed and maintained web applications using React and Node.js
-- Led a team of 3 junior developers on multiple projects
-- Implemented CI/CD pipelines reducing deployment time by 40%
-- Collaborated with product managers and designers to deliver user-centric solutions
+- Led a team of 3 junior developers
+- Improved application performance by 30%
+- Implemented automated testing procedures
 
-Software Engineer | StartupXYZ | 2019 - 2021
-- Built responsive web applications using modern JavaScript frameworks
-- Optimized database queries improving application performance by 30%
-- Participated in code reviews and mentored new team members
-- Worked closely with QA team to ensure high-quality deliverables
+Junior Developer - StartupXYZ (2018 - 2020)
+- Built responsive web interfaces using HTML, CSS, and JavaScript
+- Collaborated with design team to implement user-friendly interfaces
+- Participated in code reviews and agile development processes
 
-Education:
+EDUCATION
 Bachelor of Science in Computer Science
-University of California, Berkeley | 2019
+University of Cape Town (2014 - 2017)
 
-Skills:
-- Programming Languages: JavaScript, Python, Java, TypeScript
-- Frontend: React, Vue.js, HTML5, CSS3, Sass
-- Backend: Node.js, Express.js, Django, Flask
-- Databases: PostgreSQL, MongoDB, Redis
-- Tools: Git, Docker, AWS, Jenkins, Jira
-
-Certifications:
-- AWS Certified Developer Associate (2022)
-- Certified Scrum Master (2021)
+SKILLS
+- JavaScript, React, Node.js
+- HTML, CSS, Bootstrap
+- Git, GitHub
+- Agile Development
+- Problem Solving
+- Team Leadership

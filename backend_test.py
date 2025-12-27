@@ -1340,6 +1340,334 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_reseller_branding_file_upload(self):
+        """Test Reseller Branding File Upload Feature"""
+        print("\n🎨 Testing Reseller Branding File Upload Feature...")
+        
+        # Test credentials from review request
+        reseller_creds = {
+            "email": "owner@yottanet.com",
+            "password": "password123"
+        }
+        
+        # Login as reseller admin
+        response, error = self.make_request("POST", "/auth/login", data=reseller_creds)
+        if error:
+            self.log_test("Reseller Login for File Upload", False, error)
+            return False
+        
+        if not response.get("access_token"):
+            self.log_test("Reseller Login for File Upload", False, "No access token returned")
+            return False
+        
+        user = response.get("user", {})
+        if user.get("role") != "reseller_admin":
+            self.log_test("Reseller Login for File Upload", False, f"Expected role 'reseller_admin', got '{user.get('role')}'")
+            return False
+        
+        reseller_token = response["access_token"]
+        self.log_test("Reseller Login for File Upload", True, f"Logged in as: {user.get('email')}")
+        
+        headers = {"Authorization": f"Bearer {reseller_token}"}
+        
+        # Test 1: Logo File Upload
+        print("\n🔹 Test 1: Logo File Upload")
+        
+        # Create a test image file (PNG)
+        import tempfile
+        import os
+        from PIL import Image
+        
+        try:
+            # Create a simple test image
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+                # Create a 100x100 red square PNG
+                img = Image.new('RGB', (100, 100), color='red')
+                img.save(temp_file.name, 'PNG')
+                temp_file_path = temp_file.name
+            
+            # Upload logo file
+            url = f"{BACKEND_URL}/reseller/upload-branding-file?file_type=logo"
+            
+            with open(temp_file_path, 'rb') as file:
+                files = {'file': ('test_logo.png', file, 'image/png')}
+                
+                try:
+                    response = requests.post(url, files=files, headers=headers, timeout=30)
+                    
+                    if response.status_code == 200:
+                        try:
+                            data = response.json()
+                            
+                            # Validate response structure
+                            required_fields = ["success", "url", "file_type"]
+                            missing_fields = [f for f in required_fields if f not in data]
+                            
+                            if missing_fields:
+                                self.log_test("Logo File Upload - Response Structure", False, 
+                                            f"Missing fields: {missing_fields}")
+                            else:
+                                success = data.get("success")
+                                file_url = data.get("url")
+                                file_type = data.get("file_type")
+                                
+                                if success and file_url and file_type == "logo":
+                                    self.log_test("Logo File Upload", True, 
+                                                f"Logo uploaded successfully: {file_url}")
+                                    
+                                    # Test 2: Verify uploaded file is accessible
+                                    print("\n🔹 Test 2: Verify Logo File Access")
+                                    
+                                    # Try to access the uploaded file
+                                    file_access_url = f"https://ats-partner.preview.emergentagent.com{file_url}"
+                                    try:
+                                        file_response = requests.get(file_access_url, timeout=10)
+                                        if file_response.status_code == 200:
+                                            if file_response.headers.get('content-type', '').startswith('image/'):
+                                                self.log_test("Logo File Access", True, 
+                                                            f"Logo file accessible at: {file_url}")
+                                            else:
+                                                self.log_test("Logo File Access", False, 
+                                                            f"File accessible but wrong content-type: {file_response.headers.get('content-type')}")
+                                        else:
+                                            self.log_test("Logo File Access", False, 
+                                                        f"File not accessible, status: {file_response.status_code}")
+                                    except Exception as e:
+                                        self.log_test("Logo File Access", False, f"Error accessing file: {str(e)}")
+                                    
+                                else:
+                                    self.log_test("Logo File Upload", False, 
+                                                f"Invalid response: success={success}, url={file_url}, type={file_type}")
+                        
+                        except json.JSONDecodeError as e:
+                            self.log_test("Logo File Upload", False, f"Invalid JSON response: {str(e)}")
+                    else:
+                        error_msg = f"Status {response.status_code}"
+                        try:
+                            error_detail = response.json()
+                            error_msg += f" - {error_detail.get('detail', 'No detail')}"
+                        except:
+                            error_msg += f" - {response.text[:200]}"
+                        
+                        self.log_test("Logo File Upload", False, error_msg)
+                        
+                except requests.exceptions.Timeout:
+                    self.log_test("Logo File Upload", False, "Request timeout (30s)")
+                except requests.exceptions.ConnectionError:
+                    self.log_test("Logo File Upload", False, "Connection error - backend may be down")
+                except Exception as e:
+                    self.log_test("Logo File Upload", False, f"Request error: {str(e)}")
+        
+        finally:
+            # Clean up temporary file
+            try:
+                if 'temp_file_path' in locals():
+                    os.unlink(temp_file_path)
+            except:
+                pass
+        
+        # Test 3: Favicon File Upload
+        print("\n🔹 Test 3: Favicon File Upload")
+        
+        try:
+            # Create a test favicon file (ICO format simulation with PNG)
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+                # Create a 32x32 blue square PNG (simulating favicon)
+                img = Image.new('RGB', (32, 32), color='blue')
+                img.save(temp_file.name, 'PNG')
+                temp_file_path = temp_file.name
+            
+            # Upload favicon file
+            url = f"{BACKEND_URL}/reseller/upload-branding-file?file_type=favicon"
+            
+            with open(temp_file_path, 'rb') as file:
+                files = {'file': ('test_favicon.png', file, 'image/png')}
+                
+                try:
+                    response = requests.post(url, files=files, headers=headers, timeout=30)
+                    
+                    if response.status_code == 200:
+                        try:
+                            data = response.json()
+                            
+                            # Validate response structure
+                            required_fields = ["success", "url", "file_type"]
+                            missing_fields = [f for f in required_fields if f not in data]
+                            
+                            if missing_fields:
+                                self.log_test("Favicon File Upload - Response Structure", False, 
+                                            f"Missing fields: {missing_fields}")
+                            else:
+                                success = data.get("success")
+                                file_url = data.get("url")
+                                file_type = data.get("file_type")
+                                
+                                if success and file_url and file_type == "favicon":
+                                    self.log_test("Favicon File Upload", True, 
+                                                f"Favicon uploaded successfully: {file_url}")
+                                else:
+                                    self.log_test("Favicon File Upload", False, 
+                                                f"Invalid response: success={success}, url={file_url}, type={file_type}")
+                        
+                        except json.JSONDecodeError as e:
+                            self.log_test("Favicon File Upload", False, f"Invalid JSON response: {str(e)}")
+                    else:
+                        error_msg = f"Status {response.status_code}"
+                        try:
+                            error_detail = response.json()
+                            error_msg += f" - {error_detail.get('detail', 'No detail')}"
+                        except:
+                            error_msg += f" - {response.text[:200]}"
+                        
+                        self.log_test("Favicon File Upload", False, error_msg)
+                        
+                except requests.exceptions.Timeout:
+                    self.log_test("Favicon File Upload", False, "Request timeout (30s)")
+                except requests.exceptions.ConnectionError:
+                    self.log_test("Favicon File Upload", False, "Connection error - backend may be down")
+                except Exception as e:
+                    self.log_test("Favicon File Upload", False, f"Request error: {str(e)}")
+        
+        finally:
+            # Clean up temporary file
+            try:
+                if 'temp_file_path' in locals():
+                    os.unlink(temp_file_path)
+            except:
+                pass
+        
+        # Test 4: Delete Logo File
+        print("\n🔹 Test 4: Delete Logo File")
+        
+        response, error = self.make_request("DELETE", "/reseller/delete-branding-file/logo", headers=headers)
+        if error:
+            self.log_test("Delete Logo File", False, error)
+        else:
+            required_fields = ["success", "message"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Delete Logo File", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success")
+                message = response.get("message")
+                if success:
+                    self.log_test("Delete Logo File", True, f"Logo deleted: {message}")
+                else:
+                    self.log_test("Delete Logo File", False, f"Delete failed: {message}")
+        
+        # Test 5: Delete Favicon File
+        print("\n🔹 Test 5: Delete Favicon File")
+        
+        response, error = self.make_request("DELETE", "/reseller/delete-branding-file/favicon", headers=headers)
+        if error:
+            self.log_test("Delete Favicon File", False, error)
+        else:
+            required_fields = ["success", "message"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Delete Favicon File", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success")
+                message = response.get("message")
+                if success:
+                    self.log_test("Delete Favicon File", True, f"Favicon deleted: {message}")
+                else:
+                    self.log_test("Delete Favicon File", False, f"Delete failed: {message}")
+        
+        # Test 6: File Size Validation (Test with oversized file)
+        print("\n🔹 Test 6: File Size Validation")
+        
+        try:
+            # Create a large test image (over 5MB)
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+                # Create a large image that will exceed 5MB when saved
+                img = Image.new('RGB', (3000, 3000), color='green')
+                img.save(temp_file.name, 'PNG')
+                temp_file_path = temp_file.name
+            
+            # Try to upload oversized file
+            url = f"{BACKEND_URL}/reseller/upload-branding-file?file_type=logo"
+            
+            with open(temp_file_path, 'rb') as file:
+                files = {'file': ('large_logo.png', file, 'image/png')}
+                
+                try:
+                    response = requests.post(url, files=files, headers=headers, timeout=30)
+                    
+                    if response.status_code == 400:
+                        try:
+                            data = response.json()
+                            detail = data.get('detail', '')
+                            if '5MB' in detail or 'size' in detail.lower():
+                                self.log_test("File Size Validation", True, 
+                                            f"Correctly rejected oversized file: {detail}")
+                            else:
+                                self.log_test("File Size Validation", False, 
+                                            f"Rejected but wrong error message: {detail}")
+                        except:
+                            self.log_test("File Size Validation", False, "Rejected but no JSON error detail")
+                    else:
+                        self.log_test("File Size Validation", False, 
+                                    f"Should reject oversized file, got status: {response.status_code}")
+                        
+                except Exception as e:
+                    self.log_test("File Size Validation", False, f"Request error: {str(e)}")
+        
+        finally:
+            # Clean up temporary file
+            try:
+                if 'temp_file_path' in locals():
+                    os.unlink(temp_file_path)
+            except:
+                pass
+        
+        # Test 7: Invalid File Type Validation
+        print("\n🔹 Test 7: Invalid File Type Validation")
+        
+        try:
+            # Create a text file (invalid type)
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
+                temp_file.write("This is not an image file")
+                temp_file_path = temp_file.name
+            
+            # Try to upload invalid file type
+            url = f"{BACKEND_URL}/reseller/upload-branding-file?file_type=logo"
+            
+            with open(temp_file_path, 'rb') as file:
+                files = {'file': ('invalid.txt', file, 'text/plain')}
+                
+                try:
+                    response = requests.post(url, files=files, headers=headers, timeout=30)
+                    
+                    if response.status_code == 400:
+                        try:
+                            data = response.json()
+                            detail = data.get('detail', '')
+                            if 'not allowed' in detail.lower() or 'file type' in detail.lower():
+                                self.log_test("File Type Validation", True, 
+                                            f"Correctly rejected invalid file type: {detail}")
+                            else:
+                                self.log_test("File Type Validation", False, 
+                                            f"Rejected but wrong error message: {detail}")
+                        except:
+                            self.log_test("File Type Validation", False, "Rejected but no JSON error detail")
+                    else:
+                        self.log_test("File Type Validation", False, 
+                                    f"Should reject invalid file type, got status: {response.status_code}")
+                        
+                except Exception as e:
+                    self.log_test("File Type Validation", False, f"Request error: {str(e)}")
+        
+        finally:
+            # Clean up temporary file
+            try:
+                if 'temp_file_path' in locals():
+                    os.unlink(temp_file_path)
+            except:
+                pass
+        
+        return True
+
     def test_crm_lead_management_apis(self):
         """Test CRM / Lead Management backend APIs for UpShift admin portal"""
         print("\n📊 Testing CRM / Lead Management APIs...")

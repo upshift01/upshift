@@ -204,6 +204,8 @@ const AppContent = () => {
           {/* Auth */}
           <Route path="login" element={<PartnerLogin />} />
           <Route path="register" element={<PartnerRegister />} />
+          <Route path="forgot-password" element={<PartnerForgotPassword />} />
+          <Route path="reset-password" element={<PartnerResetPassword />} />
           {/* Dashboard and Portal Pages */}
           <Route path="dashboard" element={<PartnerDashboard />} />
           <Route path="dashboard/documents" element={<PartnerDocuments />} />

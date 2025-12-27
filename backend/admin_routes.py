@@ -1918,6 +1918,105 @@ async def send_admin_test_email(to_email: str, admin: UserResponse = Depends(get
         return {"success": False, "error": str(e)}
 
 
+# ==================== Failed Password Resets ====================
+
+@admin_router.get("/failed-password-resets", response_model=dict)
+async def get_failed_password_resets(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get list of password reset requests where email failed to send"""
+    try:
+        # Find password resets where email failed
+        failed_resets = await db.password_resets.find(
+            {
+                "$or": [
+                    {"email_sent": False},
+                    {"email_error": {"$exists": True, "$ne": None}}
+                ],
+                "used": False,
+                "expires_at": {"$gt": datetime.now(timezone.utc)}
+            },
+            {"_id": 0}
+        ).sort("created_at", -1).limit(50).to_list(50)
+        
+        return {
+            "success": True,
+            "failed_resets": failed_resets,
+            "count": len(failed_resets)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching failed password resets: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/email-status", response_model=dict)
+async def get_email_status(admin: UserResponse = Depends(get_current_super_admin)):
+    """Get current email service status and recent email logs"""
+    try:
+        # Get current settings
+        settings = await db.platform_settings.find_one({"key": "email"}, {"_id": 0})
+        
+        # Get recent email logs
+        recent_logs = await db.email_logs.find(
+            {},
+            {"_id": 0}
+        ).sort("sent_at", -1).limit(20).to_list(20)
+        
+        # Count stats
+        total_sent = await db.email_logs.count_documents({"status": "sent"})
+        total_failed = await db.email_logs.count_documents({"status": "failed"})
+        
+        # Check if SMTP connection works
+        smtp_status = "unknown"
+        smtp_error = None
+        
+        if settings and settings.get("smtp_host") and settings.get("smtp_user"):
+            try:
+                import smtplib
+                encryption = settings.get("encryption", "tls")
+                
+                if encryption == "ssl":
+                    import ssl
+                    context = ssl.create_default_context()
+                    with smtplib.SMTP_SSL(settings["smtp_host"], settings["smtp_port"], context=context, timeout=5) as server:
+                        server.login(settings["smtp_user"], settings["smtp_password"])
+                    smtp_status = "connected"
+                elif encryption == "tls":
+                    with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=5) as server:
+                        server.starttls()
+                        server.login(settings["smtp_user"], settings["smtp_password"])
+                    smtp_status = "connected"
+                else:
+                    with smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=5) as server:
+                        server.login(settings["smtp_user"], settings["smtp_password"])
+                    smtp_status = "connected"
+            except smtplib.SMTPAuthenticationError as e:
+                smtp_status = "auth_failed"
+                smtp_error = "Authentication failed - check username/password"
+            except smtplib.SMTPConnectError as e:
+                smtp_status = "connection_failed"
+                smtp_error = "Could not connect to SMTP server"
+            except Exception as e:
+                smtp_status = "error"
+                smtp_error = str(e)
+        else:
+            smtp_status = "not_configured"
+        
+        return {
+            "success": True,
+            "is_configured": settings.get("is_configured", False) if settings else False,
+            "smtp_host": settings.get("smtp_host", "") if settings else "",
+            "smtp_user": settings.get("smtp_user", "") if settings else "",
+            "smtp_status": smtp_status,
+            "smtp_error": smtp_error,
+            "stats": {
+                "total_sent": total_sent,
+                "total_failed": total_failed
+            },
+            "recent_logs": recent_logs
+        }
+    except Exception as e:
+        logger.error(f"Error fetching email status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ==================== Platform Pricing Routes ====================
 

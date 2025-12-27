@@ -737,7 +737,14 @@ Return ONLY the JSON object, no explanation."""
 
         user_message = UserMessage(text=prompt)
         response = await chat.send_message(user_message)
-        response_text = response.text.strip()
+        
+        # Handle response - could be string or object with text/content attribute
+        if hasattr(response, 'text'):
+            response_text = response.text.strip()
+        elif hasattr(response, 'content'):
+            response_text = response.content.strip()
+        else:
+            response_text = str(response).strip()
         
         # Parse JSON from response
         # Remove markdown code blocks if present

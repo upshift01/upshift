@@ -45,6 +45,99 @@ const ResellerBranding = () => {
     }
   };
 
+  const handleFileUpload = async (file, fileType) => {
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon'];
+    if (!allowedTypes.includes(file.type)) {
+      setMessage(`Invalid file type. Allowed: PNG, JPG, SVG, WEBP, ICO`);
+      return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('File size must be less than 5MB');
+      return;
+    }
+    
+    setUploading(prev => ({ ...prev, [fileType]: true }));
+    setMessage('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('file_type', fileType);
+      
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/reseller/upload-branding-file?file_type=${fileType}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const urlField = fileType === 'logo' ? 'logo_url' : 'favicon_url';
+        setBranding(prev => ({ ...prev, [urlField]: data.url }));
+        setMessage(`${fileType === 'logo' ? 'Logo' : 'Favicon'} uploaded successfully!`);
+        fetchWhiteLabelConfig();
+      } else {
+        const error = await response.json();
+        setMessage(error.detail || `Failed to upload ${fileType}`);
+      }
+    } catch (error) {
+      setMessage(`Error uploading ${fileType}`);
+      console.error('Upload error:', error);
+    } finally {
+      setUploading(prev => ({ ...prev, [fileType]: false }));
+    }
+  };
+
+  const handleDeleteFile = async (fileType) => {
+    setUploading(prev => ({ ...prev, [fileType]: true }));
+    setMessage('');
+    
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/reseller/delete-branding-file/${fileType}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const urlField = fileType === 'logo' ? 'logo_url' : 'favicon_url';
+        setBranding(prev => ({ ...prev, [urlField]: '' }));
+        setMessage(`${fileType === 'logo' ? 'Logo' : 'Favicon'} removed successfully!`);
+        fetchWhiteLabelConfig();
+      } else {
+        const error = await response.json();
+        setMessage(error.detail || `Failed to delete ${fileType}`);
+      }
+    } catch (error) {
+      setMessage(`Error deleting ${fileType}`);
+    } finally {
+      setUploading(prev => ({ ...prev, [fileType]: false }));
+    }
+  };
+
+  const getFullImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/api/uploads')) {
+      return `${process.env.REACT_APP_BACKEND_URL}${url}`;
+    }
+    return url;
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setMessage('');

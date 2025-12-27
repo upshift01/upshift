@@ -142,7 +142,8 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
 
       if (extractResponse.ok) {
         const extractData = await extractResponse.json();
-        setExtractedData(extractData.cv_data);
+        const cvData = extractData.cv_data || extractData.data;
+        setExtractedData(cvData);
       }
 
       setActiveStep('analysis');

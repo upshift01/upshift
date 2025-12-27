@@ -613,15 +613,58 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
   };
 
   // Render template selection
-  const renderTemplateSelection = () => (
+  const renderTemplateSelection = () => {
+    const [templateCategory, setTemplateCategory] = useState('all');
+    
+    const filteredTemplates = templateCategory === 'all' 
+      ? TEMPLATES 
+      : TEMPLATES.filter(t => t.category === templateCategory || (templateCategory === 'ats-all' && t.category.startsWith('ats')));
+    
+    return (
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Template</h2>
         <p className="text-gray-600">Select a professional template for your CV</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {TEMPLATES.map((template) => (
+      {/* Category Filter */}
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
+        <Button
+          variant={templateCategory === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTemplateCategory('all')}
+          style={templateCategory === 'all' ? { backgroundColor: primaryColor } : {}}
+        >
+          All Templates
+        </Button>
+        <Button
+          variant={templateCategory === 'general' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTemplateCategory('general')}
+          style={templateCategory === 'general' ? { backgroundColor: primaryColor } : {}}
+        >
+          General
+        </Button>
+        <Button
+          variant={templateCategory === 'ats-all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTemplateCategory('ats-all')}
+          style={templateCategory === 'ats-all' ? { backgroundColor: primaryColor } : {}}
+        >
+          ATS-Optimised
+        </Button>
+        <Button
+          variant={templateCategory === 'ats-industry' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTemplateCategory('ats-industry')}
+          style={templateCategory === 'ats-industry' ? { backgroundColor: primaryColor } : {}}
+        >
+          Industry-Specific
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredTemplates.map((template) => (
           <Card 
             key={template.id}
             className={`cursor-pointer transition-all hover:shadow-lg ${
@@ -635,30 +678,35 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
             }}
             onClick={() => setSelectedTemplate(template)}
           >
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div 
-                className="h-32 rounded-lg mb-3 flex items-center justify-center"
+                className="h-24 rounded-lg mb-2 flex items-center justify-center"
                 style={{ backgroundColor: `${template.color}15` }}
               >
                 <div 
-                  className="w-16 h-20 rounded shadow-sm bg-white border-t-4"
+                  className="w-12 h-16 rounded shadow-sm bg-white border-t-4"
                   style={{ borderColor: template.color }}
                 >
                   <div className="p-1">
-                    <div className="h-2 rounded mb-1" style={{ backgroundColor: template.color, width: '70%' }}></div>
-                    <div className="h-1 bg-gray-200 rounded mb-0.5"></div>
-                    <div className="h-1 bg-gray-200 rounded mb-0.5" style={{ width: '80%' }}></div>
-                    <div className="h-1 bg-gray-200 rounded" style={{ width: '60%' }}></div>
+                    <div className="h-1.5 rounded mb-0.5" style={{ backgroundColor: template.color, width: '70%' }}></div>
+                    <div className="h-0.5 bg-gray-200 rounded mb-0.5"></div>
+                    <div className="h-0.5 bg-gray-200 rounded mb-0.5" style={{ width: '80%' }}></div>
+                    <div className="h-0.5 bg-gray-200 rounded" style={{ width: '60%' }}></div>
                   </div>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-gray-900">{template.name}</h3>
-                  <p className="text-xs text-gray-500">{template.description}</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-sm truncate">{template.name}</h3>
+                  <p className="text-xs text-gray-500 truncate">{template.description}</p>
+                  {template.industry && (
+                    <Badge variant="outline" className="mt-1 text-xs" style={{ borderColor: template.color, color: template.color }}>
+                      {template.industry}
+                    </Badge>
+                  )}
                 </div>
                 {selectedTemplate.id === template.id && (
-                  <CheckCircle className="h-5 w-5" style={{ color: template.color }} />
+                  <CheckCircle className="h-5 w-5 flex-shrink-0 ml-1" style={{ color: template.color }} />
                 )}
               </div>
             </CardContent>

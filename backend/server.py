@@ -301,7 +301,10 @@ async def forgot_password(data: dict):
         else:
             reset_url = f"{frontend_url}/reset-password?token={reset_token}"
         
-        # Send email if configured
+        # Check if email service is configured
+        email_sent = False
+        email_error = None
+        
         if email_service.is_configured:
             html_body = f"""
             <html>
@@ -325,21 +328,38 @@ async def forgot_password(data: dict):
             """
             
             try:
-                await email_service.send_email(
+                email_sent = await email_service.send_email(
                     to_email=email,
                     subject="Reset Your Password - UpShift",
                     html_body=html_body,
                     text_body=f"Reset your password by visiting: {reset_url}\n\nThis link expires in 24 hours.",
                     raise_exceptions=False
                 )
-                logger.info(f"Password reset email sent to: {email}")
+                if email_sent:
+                    logger.info(f"Password reset email sent to: {email}")
+                else:
+                    email_error = "SMTP authentication or delivery failed"
+                    logger.warning(f"Password reset email failed for {email}: {email_error}")
             except Exception as email_err:
-                logger.error(f"Failed to send password reset email: {str(email_err)}")
-                # Continue anyway - don't fail the request if email fails
+                email_error = str(email_err)
+                logger.error(f"Failed to send password reset email: {email_error}")
         else:
-            # Log the reset URL for development/testing
+            email_error = "Email service not configured"
             logger.warning(f"Email not configured. Reset URL for {email}: {reset_url}")
         
+        # Store the email status for potential admin review
+        await db.password_resets.update_one(
+            {"email": email, "token": reset_token},
+            {
+                "$set": {
+                    "email_sent": email_sent,
+                    "email_error": email_error,
+                    "reset_url": reset_url  # Store for manual recovery if needed
+                }
+            }
+        )
+        
+        # Return success message (don't reveal if email failed to prevent enumeration)
         return {"message": "If an account exists with this email, you will receive a password reset link."}
         
     except HTTPException:

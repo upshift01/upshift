@@ -902,17 +902,20 @@ agent_communication:
 
   - task: "Improve CV - AI Analysis"
     implemented: true
-    working: "NEEDS_TESTING"
+    working: false
     url: "/partner/yottanet/improve"
     test_credentials: "customer@yottanet.co.za / password123"
     expected: "Should allow uploading a PDF/DOCX/TXT resume file. AI should analyze the CV and provide: overall score, ATS score, impact score, clarity score, keyword score, and specific improvement suggestions categorized by severity (high/medium/low)."
     priority: "high"
     stuck_count: 0
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NEEDS_TESTING"
         agent: "main"
         comment: "Uses endpoint POST /api/cv/analyze. Requires paid tier (tier-1+). Frontend accepts file upload via drag-drop or click."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Frontend/backend mismatch. Frontend accepts TXT files but backend only accepts PDF/DOCX files (file_ext not in ['pdf', 'docx', 'doc']). Tested with tier-2 user (customer@yottanet.co.za) - login successful, no paywall detected, file upload works, but analysis fails due to unsupported file type. Backend API /api/cv/analyze returns 400 'Only PDF and DOCX files are supported' for TXT files. Frontend shows TXT support in UI but backend rejects it."
 
   - task: "Cover Letter Creator - AI Generation"
     implemented: true

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePartner } from '../../context/PartnerContext';
@@ -7,22 +7,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Upload, FileText, Sparkles, Copy, Check, Zap } from 'lucide-react';
+import { Loader2, Upload, FileText, Sparkles, Copy, Check, Zap, ArrowRight, X } from 'lucide-react';
 import PartnerPaywall from '../../components/PartnerPaywall';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PartnerResumeImprover = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, token } = useAuth();
   const { brandName, primaryColor, secondaryColor, baseUrl } = usePartner();
   const { toast } = useToast();
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [resumeText, setResumeText] = useState('');
   const [improvedResume, setImprovedResume] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [dragActive, setDragActive] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
 
   // Resume improver requires any paid tier
   const hasAccess = isAuthenticated && user?.active_tier;
@@ -47,16 +50,105 @@ const PartnerResumeImprover = () => {
     }
   }, []);
 
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
   const handleFile = async (file) => {
-    if (file.type === 'text/plain') {
+    // Check file type
+    const allowedTypes = ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const allowedExtensions = ['.pdf', '.txt', '.doc', '.docx'];
+    
+    const isValidType = allowedTypes.includes(file.type) || allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+    
+    if (!isValidType) {
+      toast({
+        title: 'Invalid File Type',
+        description: 'Please upload a PDF, DOC, DOCX, or TXT file.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'File Too Large',
+        description: 'Please upload a file smaller than 10MB.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setUploadedFile(file);
+
+    // For text files, read directly
+    if (file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt')) {
       const text = await file.text();
       setResumeText(text);
-    } else {
       toast({
-        title: 'File Type',
-        description: 'For best results, paste your resume text directly or upload a .txt file.',
-        variant: 'default'
+        title: 'File Loaded',
+        description: 'Your resume content has been loaded.',
       });
+      return;
+    }
+
+    // For PDF/DOC files, send to backend for extraction
+    if (!hasAccess) {
+      toast({
+        title: 'Upgrade Required',
+        description: 'Please purchase a plan to upload PDF/DOC files.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setExtracting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${API_URL}/api/ai-content/extract-cv-data`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Use raw_text for the resume improver
+        setResumeText(data.raw_text || '');
+        toast({
+          title: 'File Processed',
+          description: 'Your resume content has been extracted.',
+        });
+      } else {
+        throw new Error(data.detail || 'Failed to extract file content');
+      }
+    } catch (error) {
+      toast({
+        title: 'Extraction Failed',
+        description: error.message || 'Could not extract text from the file.',
+        variant: 'destructive'
+      });
+      setUploadedFile(null);
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const clearFile = () => {
+    setUploadedFile(null);
+    setResumeText('');
+    setImprovedResume('');
+    setSuggestions([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -74,7 +166,7 @@ const PartnerResumeImprover = () => {
     if (!resumeText.trim()) {
       toast({
         title: 'No Content',
-        description: 'Please paste your resume content first.',
+        description: 'Please paste your resume content or upload a file first.',
         variant: 'destructive'
       });
       return;
@@ -82,7 +174,6 @@ const PartnerResumeImprover = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/ai-content/improve-resume`, {
         method: 'POST',
         headers: { 
@@ -134,7 +225,7 @@ const PartnerResumeImprover = () => {
             Resume Improver
           </h1>
           <p className="text-lg text-white/80">
-            Get AI-powered suggestions to enhance your resume and stand out
+            Upload your CV and get AI-powered suggestions to enhance it
           </p>
         </div>
       </section>
@@ -146,11 +237,11 @@ const PartnerResumeImprover = () => {
             title="Unlock Resume Improver"
             icon={Sparkles}
             features={[
+              "Upload PDF, DOC, DOCX files",
               "AI-powered content enhancement",
               "Actionable improvement suggestions",
               "ATS keyword optimization",
-              "Professional language upgrade",
-              "Achievement highlighting"
+              "Professional language upgrade"
             ]}
           />
         )}
@@ -160,45 +251,83 @@ const PartnerResumeImprover = () => {
           <Card>
             <CardHeader>
               <CardTitle>Your Current Resume</CardTitle>
-              <CardDescription>Paste your resume content or upload a file</CardDescription>
+              <CardDescription>Upload your CV file or paste content below</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* File Upload Area */}
               <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                  dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                  dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
               >
-                <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">Drag and drop a .txt file here</p>
-                <p className="text-xs text-gray-400 mt-1">or paste your resume below</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                
+                {extracting ? (
+                  <div className="py-4">
+                    <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin" style={{ color: primaryColor }} />
+                    <p className="text-sm text-gray-600">Extracting content...</p>
+                  </div>
+                ) : uploadedFile ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <FileText className="h-8 w-8" style={{ color: primaryColor }} />
+                    <div className="text-left">
+                      <p className="font-medium text-gray-900">{uploadedFile.name}</p>
+                      <p className="text-xs text-gray-500">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => { e.stopPropagation(); clearFile(); }}
+                      className="ml-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm font-medium text-gray-700">
+                      Drop your CV here or click to browse
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Supports PDF, DOC, DOCX, TXT (Max 10MB)
+                    </p>
+                  </>
+                )}
               </div>
               
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-2 text-gray-500">or paste your resume</span>
+                </div>
+              </div>
+
               <Textarea
                 value={resumeText}
                 onChange={(e) => setResumeText(e.target.value)}
-                placeholder="Paste your resume content here...
-
-Example:
-John Smith
-Software Developer
-
-Experience:
-- Senior Developer at ABC Corp (2020-Present)
-- Junior Developer at XYZ Inc (2018-2020)
-
-Skills: Python, JavaScript, React..."
-                rows={16}
+                placeholder="Paste your resume content here..."
+                rows={12}
                 className="font-mono text-sm"
               />
               
               <Button 
                 className="w-full text-white" 
                 onClick={handleImprove}
-                disabled={loading || !resumeText.trim()}
+                disabled={loading || extracting || !resumeText.trim()}
                 style={{ backgroundColor: primaryColor }}
               >
                 {loading ? (
@@ -245,7 +374,7 @@ Skills: Python, JavaScript, React..."
               ) : (
                 <div className="text-center py-16 text-gray-500">
                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Paste your resume and click improve to get AI suggestions</p>
+                  <p>Upload your CV or paste content and click improve to get AI suggestions</p>
                 </div>
               )}
             </CardContent>

@@ -170,7 +170,7 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
           Authorization: `Bearer ${token}` 
         },
         body: JSON.stringify({
-          fullName: extractedData.full_name,
+          fullName: extractedData.fullName || extractedData.full_name,
           email: extractedData.email,
           phone: extractedData.phone,
           summary: extractedData.summary,

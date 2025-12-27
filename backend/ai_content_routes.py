@@ -642,3 +642,129 @@ Generate skills now:"""
     except Exception as e:
         logger.error(f"Error generating CV builder skills: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate skills. Please try again.")
+
+
+# ==================== CV DATA EXTRACTION FROM FILE ====================
+
+from fastapi import UploadFile, File
+
+@ai_content_router.post("/extract-cv-data")
+async def extract_cv_data(
+    file: UploadFile = File(...),
+    current_user = Depends(get_current_user_with_db)
+):
+    """
+    Extract structured CV data from an uploaded PDF or text file.
+    Requires any paid tier.
+    """
+    try:
+        import PyPDF2
+        import io
+        import json
+        import re
+        
+        # Check if user has active tier
+        if not current_user.active_tier:
+            raise HTTPException(status_code=403, detail="Please purchase a plan to use this feature")
+        
+        # Read file content
+        content = await file.read()
+        resume_text = ""
+        
+        # Extract text based on file type
+        if file.filename.lower().endswith('.pdf'):
+            try:
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(content))
+                for page in pdf_reader.pages:
+                    resume_text += page.extract_text() or ""
+            except Exception as pdf_error:
+                logger.warning(f"PDF extraction failed: {pdf_error}, trying as text")
+                resume_text = content.decode('utf-8', errors='ignore')
+        elif file.filename.lower().endswith(('.txt', '.doc', '.docx')):
+            resume_text = content.decode('utf-8', errors='ignore')
+        else:
+            resume_text = content.decode('utf-8', errors='ignore')
+        
+        if not resume_text or len(resume_text.strip()) < 50:
+            raise HTTPException(
+                status_code=400, 
+                detail="Could not extract text from the uploaded file. Please ensure the file contains readable text."
+            )
+        
+        # Use AI to extract structured data from the resume
+        session_id = f"cv-extract-{current_user.id}-{uuid.uuid4()}"
+        
+        system_message = """You are an expert CV parser. Extract structured data from the resume text provided.
+Return ONLY a valid JSON object with the following structure (use null for missing fields):
+
+{
+    "fullName": "string",
+    "email": "string or null",
+    "phone": "string or null",
+    "address": "string or null",
+    "summary": "string or null - professional summary if present",
+    "experiences": [
+        {
+            "title": "job title",
+            "company": "company name",
+            "duration": "date range e.g. Jan 2020 - Present",
+            "description": "job responsibilities and achievements"
+        }
+    ],
+    "education": [
+        {
+            "degree": "degree name",
+            "institution": "school/university name",
+            "year": "graduation year or date range"
+        }
+    ],
+    "skills": ["skill1", "skill2", "skill3"]
+}
+
+Be accurate and extract real data. Do not make up information."""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id,
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        prompt = f"""Parse this resume and extract the structured data:
+
+{resume_text[:8000]}
+
+Return ONLY the JSON object, no explanation."""
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        response_text = response.text.strip()
+        
+        # Parse JSON from response
+        # Remove markdown code blocks if present
+        if response_text.startswith('```'):
+            response_text = re.sub(r'^```(?:json)?\n?', '', response_text)
+            response_text = re.sub(r'\n?```$', '', response_text)
+        
+        try:
+            extracted_data = json.loads(response_text)
+        except json.JSONDecodeError:
+            # Try to find JSON in the response
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                extracted_data = json.loads(json_match.group())
+            else:
+                raise HTTPException(status_code=500, detail="Failed to parse CV data. Please try again.")
+        
+        logger.info(f"CV data extracted for user {current_user.email}")
+        
+        return {
+            "success": True,
+            "data": extracted_data,
+            "raw_text": resume_text[:2000]  # Return first 2000 chars for reference
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error extracting CV data: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to extract CV data. Please try again.")

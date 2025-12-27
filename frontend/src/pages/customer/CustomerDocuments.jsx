@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Input } from '../../components/ui/input';
+import { useToast } from '../../hooks/use-toast';
 import { 
   FileText, 
   Download, 
@@ -18,7 +20,8 @@ import {
   MoreVertical,
   Share2,
   Copy,
-  Loader2
+  Loader2,
+  Edit
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -26,11 +29,13 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const CustomerDocuments = () => {
   const { token, getAuthHeader } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -38,13 +43,35 @@ const CustomerDocuments = () => {
 
   const fetchDocuments = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/customer/documents`, {
-        headers: getAuthHeader()
+      // Try new CV documents endpoint first
+      const cvResponse = await fetch(`${API_URL}/api/cv/documents`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.ok) {
-        const data = await response.json();
-        setDocuments(data.documents || []);
+      
+      let cvDocs = [];
+      if (cvResponse.ok) {
+        const cvData = await cvResponse.json();
+        cvDocs = cvData.documents || [];
       }
+
+      // Also try old endpoint for backward compatibility
+      const oldResponse = await fetch(`${API_URL}/api/customer/documents`, {
+        headers: getAuthHeader ? getAuthHeader() : { Authorization: `Bearer ${token}` }
+      });
+      
+      let oldDocs = [];
+      if (oldResponse.ok) {
+        const oldData = await oldResponse.json();
+        oldDocs = oldData.documents || [];
+      }
+
+      // Merge and dedupe
+      const allDocs = [...cvDocs, ...oldDocs];
+      const uniqueDocs = allDocs.filter((doc, index, self) => 
+        index === self.findIndex(d => d.id === doc.id)
+      );
+
+      setDocuments(uniqueDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
     } finally {
@@ -55,14 +82,61 @@ const CustomerDocuments = () => {
   const handleDelete = async (docId) => {
     if (!window.confirm('Are you sure you want to delete this document?')) return;
     try {
-      await fetch(`${API_URL}/api/customer/documents/${docId}`, {
+      // Try new endpoint first
+      let response = await fetch(`${API_URL}/api/cv/documents/${docId}`, {
         method: 'DELETE',
-        headers: getAuthHeader()
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setDocuments(documents.filter(d => d.id !== docId));
+
+      if (!response.ok) {
+        // Fallback to old endpoint
+        response = await fetch(`${API_URL}/api/customer/documents/${docId}`, {
+          method: 'DELETE',
+          headers: getAuthHeader ? getAuthHeader() : { Authorization: `Bearer ${token}` }
+        });
+      }
+
+      if (response.ok) {
+        setDocuments(documents.filter(d => d.id !== docId));
+        toast({ title: 'Deleted', description: 'Document deleted successfully' });
+      }
     } catch (error) {
       console.error('Error deleting document:', error);
+      toast({ title: 'Error', description: 'Failed to delete document', variant: 'destructive' });
     }
+  };
+
+  const handleDownload = async (doc) => {
+    setDownloadingId(doc.id);
+    try {
+      const response = await fetch(`${API_URL}/api/cv/documents/${doc.id}/download`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${doc.name || 'document'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast({ title: 'Downloaded', description: 'Document downloaded successfully' });
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast({ title: 'Error', description: 'Failed to download document', variant: 'destructive' });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleEdit = (doc) => {
+    navigate(`/builder?edit=${doc.id}`);
   };
 
   const getDocIcon = (type) => {

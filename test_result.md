@@ -894,6 +894,48 @@ agent_communication:
         agent: "testing"
         comment: "✅ VERIFIED: Save functionality present! Found 'Save All Changes' button prominently displayed at bottom right of page. Save functionality implemented and ready for configuration updates."
 
+## Current Tests - Reseller Branding File Upload Feature - TESTING IN PROGRESS
+
+  - task: "Reseller Branding File Upload - Logo"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/reseller-dashboard/branding"
+    test_credentials: "owner@yottanet.com / password123"
+    expected: "Should display file upload dropzone for logo instead of URL input. Should allow uploading PNG/JPG/SVG/WEBP files up to 5MB. After upload, should show preview with change/delete buttons."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Implemented file upload feature for logo. Backend endpoint tested successfully via curl - returns proper URL. Frontend UI modified to show dropzone upload interface instead of URL input. Need UI verification."
+
+  - task: "Reseller Branding File Upload - Favicon"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/reseller-dashboard/branding"
+    expected: "Should display file upload dropzone for favicon instead of URL input. Should allow uploading PNG/ICO/SVG files up to 5MB. After upload, should show preview with change/delete buttons."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Implemented file upload feature for favicon alongside logo feature."
+
+  - task: "Reseller Branding File Delete"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/reseller-dashboard/branding"
+    expected: "Should be able to delete uploaded logo/favicon by clicking the X button. Should clear the preview and allow re-upload."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Implemented delete functionality via DELETE /api/reseller/delete-branding-file/{file_type} endpoint."
+
 agent_communication:
   - agent: "main"
     message: "🔄 FILE UPLOAD FEATURE - Added file upload to both PartnerResumeImprover (PDF/DOCX upload with text extraction) and PartnerCVBuilder (Import CV button that extracts and populates form). Created new backend endpoint POST /api/ai-content/extract-cv-data that uses AI to parse CV files and return structured data. Both frontend components updated with drag-drop and click-to-upload functionality."

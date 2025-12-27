@@ -769,6 +769,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
       </div>
     </div>
   );
+  };
 
   // Main render
   if (!hasAccess) {

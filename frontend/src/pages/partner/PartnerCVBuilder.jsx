@@ -60,6 +60,7 @@ const PartnerCVBuilder = () => {
   const [suggestedSkills, setSuggestedSkills] = useState([]);
   const [showSkillsSuggestions, setShowSkillsSuggestions] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('professional');
   
   const [formData, setFormData] = useState({
     fullName: '',

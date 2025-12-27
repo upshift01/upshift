@@ -16,51 +16,174 @@ logger = logging.getLogger(__name__)
 TEMPLATES = {
     'professional': {
         'name': 'Professional',
+        'description': 'Clean and traditional format, perfect for corporate roles',
         'primary_color': colors.HexColor('#1e40af'),
         'secondary_color': colors.HexColor('#374151'),
         'accent_color': colors.HexColor('#dbeafe'),
         'header_style': 'centered',
         'section_style': 'underlined',
+        'category': 'general'
     },
     'modern': {
         'name': 'Modern',
+        'description': 'Contemporary design with accent colors',
         'primary_color': colors.HexColor('#7c3aed'),
         'secondary_color': colors.HexColor('#4b5563'),
         'accent_color': colors.HexColor('#ede9fe'),
         'header_style': 'left-accent',
         'section_style': 'boxed',
+        'category': 'general'
     },
     'creative': {
         'name': 'Creative',
+        'description': 'Stand out with unique styling',
         'primary_color': colors.HexColor('#059669'),
         'secondary_color': colors.HexColor('#1f2937'),
         'accent_color': colors.HexColor('#d1fae5'),
         'header_style': 'sidebar',
         'section_style': 'colored',
+        'category': 'general'
     },
     'executive': {
         'name': 'Executive',
+        'description': 'Sophisticated for senior roles',
         'primary_color': colors.HexColor('#991b1b'),
         'secondary_color': colors.HexColor('#1f2937'),
         'accent_color': colors.HexColor('#fee2e2'),
         'header_style': 'elegant',
         'section_style': 'classic',
+        'category': 'general'
     },
     'ats-classic': {
         'name': 'ATS Classic',
+        'description': 'Optimised to pass Applicant Tracking Systems',
         'primary_color': colors.HexColor('#000000'),
         'secondary_color': colors.HexColor('#333333'),
         'accent_color': colors.HexColor('#f3f4f6'),
         'header_style': 'simple',
         'section_style': 'plain',
+        'category': 'ats'
     },
     'ats-modern': {
         'name': 'ATS Modern',
+        'description': 'ATS-friendly with a modern touch',
         'primary_color': colors.HexColor('#2563eb'),
         'secondary_color': colors.HexColor('#374151'),
         'accent_color': colors.HexColor('#eff6ff'),
         'header_style': 'simple',
         'section_style': 'underlined',
+        'category': 'ats'
+    },
+    # Industry-specific ATS Templates
+    'ats-tech': {
+        'name': 'ATS Tech/IT',
+        'description': 'Optimised for technology and software roles',
+        'primary_color': colors.HexColor('#0891b2'),
+        'secondary_color': colors.HexColor('#164e63'),
+        'accent_color': colors.HexColor('#cffafe'),
+        'header_style': 'simple',
+        'section_style': 'underlined',
+        'category': 'ats-industry',
+        'industry': 'technology'
+    },
+    'ats-finance': {
+        'name': 'ATS Finance/Banking',
+        'description': 'Professional format for financial services',
+        'primary_color': colors.HexColor('#0f766e'),
+        'secondary_color': colors.HexColor('#134e4a'),
+        'accent_color': colors.HexColor('#ccfbf1'),
+        'header_style': 'simple',
+        'section_style': 'plain',
+        'category': 'ats-industry',
+        'industry': 'finance'
+    },
+    'ats-healthcare': {
+        'name': 'ATS Healthcare/Medical',
+        'description': 'Clean format for healthcare professionals',
+        'primary_color': colors.HexColor('#dc2626'),
+        'secondary_color': colors.HexColor('#7f1d1d'),
+        'accent_color': colors.HexColor('#fecaca'),
+        'header_style': 'simple',
+        'section_style': 'underlined',
+        'category': 'ats-industry',
+        'industry': 'healthcare'
+    },
+    'ats-engineering': {
+        'name': 'ATS Engineering',
+        'description': 'Structured format for engineering roles',
+        'primary_color': colors.HexColor('#ea580c'),
+        'secondary_color': colors.HexColor('#7c2d12'),
+        'accent_color': colors.HexColor('#fed7aa'),
+        'header_style': 'simple',
+        'section_style': 'plain',
+        'category': 'ats-industry',
+        'industry': 'engineering'
+    },
+    'ats-sales': {
+        'name': 'ATS Sales/Marketing',
+        'description': 'Results-focused format for sales professionals',
+        'primary_color': colors.HexColor('#c026d3'),
+        'secondary_color': colors.HexColor('#701a75'),
+        'accent_color': colors.HexColor('#f5d0fe'),
+        'header_style': 'simple',
+        'section_style': 'underlined',
+        'category': 'ats-industry',
+        'industry': 'sales'
+    },
+    'ats-education': {
+        'name': 'ATS Education/Academic',
+        'description': 'Academic format for teaching and research',
+        'primary_color': colors.HexColor('#4f46e5'),
+        'secondary_color': colors.HexColor('#3730a3'),
+        'accent_color': colors.HexColor('#e0e7ff'),
+        'header_style': 'simple',
+        'section_style': 'plain',
+        'category': 'ats-industry',
+        'industry': 'education'
+    },
+    'ats-legal': {
+        'name': 'ATS Legal/Law',
+        'description': 'Formal format for legal professionals',
+        'primary_color': colors.HexColor('#1e3a5f'),
+        'secondary_color': colors.HexColor('#0c1929'),
+        'accent_color': colors.HexColor('#dbeafe'),
+        'header_style': 'simple',
+        'section_style': 'plain',
+        'category': 'ats-industry',
+        'industry': 'legal'
+    },
+    'ats-hospitality': {
+        'name': 'ATS Hospitality/Tourism',
+        'description': 'Friendly format for service industry roles',
+        'primary_color': colors.HexColor('#b45309'),
+        'secondary_color': colors.HexColor('#78350f'),
+        'accent_color': colors.HexColor('#fef3c7'),
+        'header_style': 'simple',
+        'section_style': 'underlined',
+        'category': 'ats-industry',
+        'industry': 'hospitality'
+    },
+    'ats-retail': {
+        'name': 'ATS Retail/Customer Service',
+        'description': 'Customer-focused format for retail roles',
+        'primary_color': colors.HexColor('#be185d'),
+        'secondary_color': colors.HexColor('#831843'),
+        'accent_color': colors.HexColor('#fce7f3'),
+        'header_style': 'simple',
+        'section_style': 'underlined',
+        'category': 'ats-industry',
+        'industry': 'retail'
+    },
+    'ats-manufacturing': {
+        'name': 'ATS Manufacturing/Operations',
+        'description': 'Practical format for production roles',
+        'primary_color': colors.HexColor('#4d7c0f'),
+        'secondary_color': colors.HexColor('#365314'),
+        'accent_color': colors.HexColor('#ecfccb'),
+        'header_style': 'simple',
+        'section_style': 'plain',
+        'category': 'ats-industry',
+        'industry': 'manufacturing'
     }
 }
 

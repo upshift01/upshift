@@ -797,26 +797,12 @@ async def generate_cv_summary(
         if not request.job_titles and not request.experience_descriptions:
             raise HTTPException(status_code=400, detail="Please provide job titles or experience descriptions")
         
-        session_id = f"cv-summary-{current_user.id}-{uuid.uuid4()}"
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
         
-        system_message = """You are an expert CV writer specializing in creating compelling professional summaries for the South African job market. 
-Your summaries are:
-- Concise (3-4 sentences, around 50-80 words)
-- Achievement-focused and impactful
-- Written in first person without using "I"
-- ATS-optimized with relevant keywords
-- Professional and confident in tone
-- Tailored to the person's experience level and industry
+        prompt = f"""You are an expert CV writer specializing in creating compelling professional summaries for the South African job market.
 
-Write ONLY the summary text, no introduction or explanation."""
-
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=session_id,
-            system_message=system_message
-        ).with_model("openai", "gpt-4o")
-        
-        prompt = f"""Create a professional summary for this person's CV:
+Create a professional summary for this person's CV:
 
 Name: {request.full_name or 'Not provided'}
 Job Titles: {request.job_titles or 'Not provided'}
@@ -825,10 +811,22 @@ Experience: {request.experience_descriptions[:1500] if request.experience_descri
 Skills: {request.skills or 'Not provided'}
 Education: {request.education or 'Not provided'}
 
-Write a compelling 3-4 sentence professional summary that highlights their key strengths and experience."""
+Instructions:
+- Write 3-4 sentences (50-80 words)
+- Be achievement-focused and impactful
+- Write in first person without using "I" (e.g., "Results-driven professional..." not "I am a results-driven...")
+- Include relevant keywords for ATS systems
+- Use professional and confident tone
+- Tailor to the person's experience level
 
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+Write ONLY the summary text, no introduction, explanation, or quotes."""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            model="anthropic/claude-sonnet-4-20250514"
+        )
+        
+        response = chat.send_message(UserMessage(text=prompt))
         summary_text = response.text.strip()
         
         # Clean up the response if it has quotes or extra formatting

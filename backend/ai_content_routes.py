@@ -823,8 +823,8 @@ Write ONLY the summary text, no introduction, explanation, or quotes."""
 
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
-            model="anthropic/claude-sonnet-4-20250514"
-        )
+            session_id=f"cv-summary-{current_user.id}"
+        ).with_model("openai", "gpt-4o")
         
         response = chat.send_message(UserMessage(text=prompt))
         summary_text = response.text.strip()

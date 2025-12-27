@@ -48,10 +48,10 @@ const PartnerCustomerLayout = ({ children }) => {
   const toolItems = [
     { path: `${baseUrl}/ats-checker`, icon: Target, label: 'ATS Checker', badge: 'FREE' },
     { path: `${baseUrl}/skills-generator`, icon: Sparkles, label: 'Skills Generator', badge: 'FREE' },
-    { path: `${baseUrl}/improve`, icon: Zap, label: 'Improve CV' },
-    { path: `${baseUrl}/cover-letter`, icon: Mail, label: 'Cover Letter' },
-    { path: `${baseUrl}/linkedin-tools`, icon: Linkedin, label: 'LinkedIn Tools' },
-    { path: `${baseUrl}/builder`, icon: FileText, label: 'Build CV' },
+    { path: `${baseUrl}/builder`, icon: FileText, label: 'AI Resume Builder', badge: 'PRO' },
+    { path: `${baseUrl}/improve`, icon: Zap, label: 'Improve CV', badge: 'PRO' },
+    { path: `${baseUrl}/cover-letter`, icon: Mail, label: 'Cover Letter', badge: 'PRO' },
+    { path: `${baseUrl}/linkedin-tools`, icon: Linkedin, label: 'LinkedIn Tools', badge: 'PRO' },
   ];
 
   const isActive = (path, exact = false) => {

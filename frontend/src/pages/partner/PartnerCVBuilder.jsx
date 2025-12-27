@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePartner } from '../../context/PartnerContext';
 import { Button } from '../../components/ui/button';
@@ -9,11 +9,43 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Download, Plus, Trash2, Upload, Sparkles, Wand2, Check, X, FileText, Layout } from 'lucide-react';
+import { Loader2, Download, Plus, Trash2, Upload, Sparkles, Wand2, Check, X, FileText, Layout, CheckCircle } from 'lucide-react';
 import PartnerPaywall from '../../components/PartnerPaywall';
 import jsPDF from 'jspdf';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
+// CV Templates
+const templates = [
+  {
+    id: 'professional',
+    name: 'Professional',
+    description: 'Clean and traditional format',
+    color: '#1e40af',
+    preview: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=200&h=280&fit=crop'
+  },
+  {
+    id: 'modern',
+    name: 'Modern',
+    description: 'Contemporary design with accent colors',
+    color: '#7c3aed',
+    preview: 'https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=200&h=280&fit=crop'
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    description: 'Stand out with unique styling',
+    color: '#059669',
+    preview: 'https://images.unsplash.com/photo-1586281380614-e5e3c8f3f7e3?w=200&h=280&fit=crop'
+  },
+  {
+    id: 'executive',
+    name: 'Executive',
+    description: 'Sophisticated for senior roles',
+    color: '#dc2626',
+    preview: 'https://images.unsplash.com/photo-1586281380923-45e0d5c4a0c8?w=200&h=280&fit=crop'
+  }
+];
 
 const PartnerCVBuilder = () => {
   const navigate = useNavigate();

@@ -898,6 +898,37 @@ agent_communication:
         agent: "testing"
         comment: "✅ VERIFIED: Save functionality present! Found 'Save All Changes' button prominently displayed at bottom right of page. Save functionality implemented and ready for configuration updates."
 
+## Current Tests - Improve CV and Cover Letter AI Features - TESTING IN PROGRESS
+
+  - task: "Improve CV - AI Analysis"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/improve"
+    test_credentials: "customer@yottanet.co.za / password123"
+    expected: "Should allow uploading a PDF/DOCX/TXT resume file. AI should analyze the CV and provide: overall score, ATS score, impact score, clarity score, keyword score, and specific improvement suggestions categorized by severity (high/medium/low)."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Uses endpoint POST /api/cv/analyze. Requires paid tier (tier-1+). Frontend accepts file upload via drag-drop or click."
+
+  - task: "Cover Letter Creator - AI Generation"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/cover-letter"
+    test_credentials: "customer@yottanet.co.za / password123"
+    expected: "Should have form fields for: your name, job title, company name, hiring manager, your experience, key skills, why interested, and job description. AI should generate a professional cover letter based on input. Requires tier-2 or tier-3."
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    note: "User has tier-1, may need tier-2 user for testing cover letter"
+    status_history:
+      - working: "NEEDS_TESTING"
+        agent: "main"
+        comment: "Uses endpoint POST /api/ai-content/generate-cover-letter. Requires tier-2 or tier-3. User customer@yottanet.co.za has tier-1 only."
+
 ## Current Tests - AI Features in Partner CV Builder - COMPLETED
 
   - task: "AI Professional Summary Generation"

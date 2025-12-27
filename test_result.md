@@ -190,9 +190,100 @@ metadata:
         agent: "testing"
         comment: "✅ VERIFIED: Cache functionality implemented correctly. Backend uses resume hash (MD5) to cache results for 24 hours in ats_cache collection. When cached results are found, used_cache flag is set and notice 'Results loaded from cache for faster response' is returned. Frontend displays appropriate notices based on used_cache and used_fallback flags with proper styling (blue for cache, amber for fallback)."
 
+## Current Tests - Enhanced AI CV Builder Testing - CRITICAL ISSUES FOUND
+
+  - task: "Enhanced AI CV Builder - Template Selection"
+    implemented: true
+    working: false
+    url: "/partner/yottanet/builder"
+    expected: "Should display 6 templates (Professional, Modern, Creative, Executive, ATS Classic, ATS Modern) with ability to select Modern template and continue to Personal tab"
+    priority: "high"
+    stuck_count: 1
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ACCESS ISSUE: CV Builder shows persistent 'Unlock AI Resume Builder' paywall modal even for logged-in user customer@yottanet.co.za / password123. User successfully logs in and is redirected to dashboard, but CV Builder access is blocked by paywall. When briefly accessible, all 6 templates were verified: Professional, Modern, Creative, Executive, ATS Classic, ATS Modern. Template selection UI appears correct but access is blocked by authentication/tier issues."
+
+  - task: "Enhanced AI CV Builder - User Authentication & Tier Access"
+    implemented: true
+    working: false
+    url: "/partner/yottanet/login"
+    expected: "User customer@yottanet.co.za / password123 should have tier-2 access to CV Builder without paywall restrictions"
+    priority: "high"
+    stuck_count: 1
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ AUTHENTICATION & TIER ISSUES: 1) User authentication not persistent across page navigations, 2) User appears to have Free tier instead of expected tier-2 access, 3) Session management issues causing paywall to appear for logged-in users, 4) Previous tests showed user had tier-1 access but now showing as Free tier. CRITICAL: CV Builder functionality cannot be properly tested until user tier configuration and authentication persistence are fixed."
+
+  - task: "Enhanced AI CV Builder - Personal Information & AI Summary"
+    implemented: true
+    working: "NA"
+    expected: "Should allow filling personal info form and test AI Professional Summary generation with 'AI Suggest' button, purple suggestion box, and 'Use This' functionality"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING BLOCKED: Cannot test Personal Information tab and AI Summary functionality due to paywall blocking CV Builder access. UI structure appears correct when briefly accessible, but comprehensive testing requires authentication/tier issues to be resolved first."
+
+  - task: "Enhanced AI CV Builder - Experience & AI Enhancements"
+    implemented: true
+    working: "NA"
+    expected: "Should allow filling work experience and test AI Enhance for descriptions and AI Suggest for key achievements"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING BLOCKED: Cannot test Experience tab AI enhancements due to paywall blocking CV Builder access. Previous tests showed AI Professional Summary working but Skills AI blocked by paywall - similar issues may affect Experience AI features."
+
+  - task: "Enhanced AI CV Builder - Education & Skills"
+    implemented: true
+    working: "NA"
+    expected: "Should allow filling education info and adding skills with AI Skills suggestion functionality"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING BLOCKED: Cannot test Education and Skills tabs due to paywall blocking CV Builder access. Previous tests identified critical issue with Skills AI being blocked by paywall even for paid users - this needs to be resolved."
+
+  - task: "Enhanced AI CV Builder - PDF Generation & Download"
+    implemented: true
+    working: "NA"
+    expected: "Should generate PDF with 'AI Create & Download CV (PDF)' button and show success toast"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING BLOCKED: Cannot test PDF generation functionality due to paywall blocking CV Builder access. PDF generation is the core feature that needs comprehensive testing once access issues are resolved."
+
+  - task: "Enhanced AI CV Builder - Document Saving & My Documents"
+    implemented: true
+    working: "NA"
+    expected: "Should save CV to My Documents with CV badge and allow editing via Edit button that loads CV builder with saved data"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING BLOCKED: Cannot test document saving and My Documents functionality due to paywall blocking CV Builder access. Document management is critical feature requiring full CV Builder access to test properly."
+
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Enhanced AI CV Builder - User Authentication & Tier Access"
+    - "Enhanced AI CV Builder - Template Selection"
+  stuck_tasks:
+    - "Enhanced AI CV Builder - User Authentication & Tier Access"
   test_all: false
   test_priority: "high_first"
 

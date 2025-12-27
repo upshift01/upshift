@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePartner } from '../../context/PartnerContext';
@@ -9,7 +9,7 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
-import { Loader2, Download, Plus, Trash2, FileText, Sparkles, Wand2, X, Check } from 'lucide-react';
+import { Loader2, Download, Plus, Trash2, FileText, Sparkles, Wand2, X, Check, Upload } from 'lucide-react';
 import PartnerPaywall from '../../components/PartnerPaywall';
 import jsPDF from 'jspdf';
 
@@ -17,11 +17,13 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PartnerCVBuilder = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, getAuthHeader } = useAuth();
+  const { user, isAuthenticated, getAuthHeader, token } = useAuth();
   const { brandName, primaryColor, secondaryColor, baseUrl } = usePartner();
   const { toast } = useToast();
+  const fileInputRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
+  const [isExtractingCV, setIsExtractingCV] = useState(false);
   const [suggestedSkills, setSuggestedSkills] = useState([]);
   const [showSkillsSuggestions, setShowSkillsSuggestions] = useState(false);
   const [formData, setFormData] = useState({
@@ -37,6 +39,99 @@ const PartnerCVBuilder = () => {
 
   // Check if user has access (needs to be logged in with an active tier)
   const hasAccess = isAuthenticated && user?.active_tier;
+
+  // Handle CV file upload and extraction
+  const handleCVUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    const allowedExtensions = ['.pdf', '.txt', '.doc', '.docx'];
+    const isValidType = allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+    
+    if (!isValidType) {
+      toast({
+        title: 'Invalid File Type',
+        description: 'Please upload a PDF, DOC, DOCX, or TXT file.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'File Too Large',
+        description: 'Please upload a file smaller than 10MB.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsExtractingCV(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const response = await fetch(`${API_URL}/api/ai-content/extract-cv-data`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formDataUpload
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        const extracted = data.data;
+        
+        // Map extracted data to form
+        setFormData({
+          fullName: extracted.fullName || '',
+          email: extracted.email || '',
+          phone: extracted.phone || '',
+          address: extracted.address || '',
+          summary: extracted.summary || '',
+          experiences: extracted.experiences?.length > 0 
+            ? extracted.experiences.map(exp => ({
+                title: exp.title || '',
+                company: exp.company || '',
+                duration: exp.duration || '',
+                description: exp.description || ''
+              }))
+            : [{ title: '', company: '', duration: '', description: '' }],
+          education: extracted.education?.length > 0
+            ? extracted.education.map(edu => ({
+                degree: edu.degree || '',
+                institution: edu.institution || '',
+                year: edu.year || ''
+              }))
+            : [{ degree: '', institution: '', year: '' }],
+          skills: extracted.skills?.length > 0 ? extracted.skills : ['']
+        });
+
+        toast({
+          title: 'CV Data Imported',
+          description: 'Your CV data has been extracted and populated. Review and edit as needed.',
+        });
+      } else {
+        throw new Error(data.detail || 'Failed to extract CV data');
+      }
+    } catch (error) {
+      toast({
+        title: 'Extraction Failed',
+        description: error.message || 'Could not extract data from the file.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsExtractingCV(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

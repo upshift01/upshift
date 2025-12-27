@@ -303,6 +303,68 @@ const PartnerCVBuilder = () => {
     setSuggestedSkills(suggestedSkills.filter(s => s !== skill));
   };
 
+  // AI Professional Summary Generation
+  const generateAISummary = async () => {
+    const jobTitles = formData.experiences.map(exp => exp.title).filter(Boolean).join(', ');
+    const companies = formData.experiences.map(exp => exp.company).filter(Boolean).join(', ');
+    const experienceDescriptions = formData.experiences.map(exp => exp.description).filter(Boolean).join(' ');
+    const skills = formData.skills.filter(Boolean).join(', ');
+    const education = formData.education.map(edu => `${edu.degree} from ${edu.institution}`).filter(e => e !== ' from ').join(', ');
+    
+    if (!jobTitles && !experienceDescriptions) {
+      toast({
+        title: 'Add Experience First',
+        description: 'Please add at least one job title or experience to generate a professional summary.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsGeneratingSummary(true);
+    try {
+      const response = await fetch(`${API_URL}/api/ai-content/generate-cv-summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          job_titles: jobTitles,
+          companies: companies,
+          experience_descriptions: experienceDescriptions,
+          skills: skills,
+          education: education
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.summary) {
+        setSuggestedSummary(data.summary);
+        setShowSummarySuggestion(true);
+        toast({ title: 'Summary Generated', description: 'AI has created a professional summary for you.' });
+      } else {
+        throw new Error(data.detail || 'Failed to generate summary');
+      }
+    } catch (error) {
+      toast({
+        title: 'Generation Failed',
+        description: error.message || 'Could not generate summary. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
+  const applySuggestedSummary = () => {
+    setFormData({ ...formData, summary: suggestedSummary });
+    setShowSummarySuggestion(false);
+    setSuggestedSummary('');
+    toast({ title: 'Summary Applied', description: 'The AI-generated summary has been added to your CV.' });
+  };
+
   const generatePDF = () => {
     setIsGenerating(true);
 

@@ -946,6 +946,12 @@ const PartnerCVBuilder = () => {
         {/* Generate Button */}
         <Card>
           <CardContent className="pt-6">
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Layout className="h-4 w-4" />
+                <span>Selected Template: <strong>{templates.find(t => t.id === selectedTemplate)?.name}</strong></span>
+              </div>
+            </div>
             <Button
               onClick={generatePDF}
               disabled={isGenerating || !formData.fullName}

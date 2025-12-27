@@ -330,45 +330,116 @@ async def update_branding(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@reseller_router.post("/upload-logo", response_model=dict)
-async def upload_logo(
+@reseller_router.post("/upload-branding-file", response_model=dict)
+async def upload_branding_file(
     file: UploadFile = File(...),
+    file_type: str = "logo",  # "logo" or "favicon"
     context: dict = Depends(get_current_reseller_admin)
 ):
-    """Upload reseller logo"""
+    """Upload reseller logo or favicon file"""
+    import os
+    from pathlib import Path
+    
     try:
         reseller = context["reseller"]
+        reseller_id = reseller["id"]
         
         # Validate file type
-        if not file.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail="File must be an image")
+        allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp", "image/x-icon", "image/vnd.microsoft.icon"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"File type '{file.content_type}' not allowed. Allowed types: PNG, JPG, SVG, WEBP, ICO"
+            )
         
-        # Read file content
+        # Validate file size (max 5MB)
         content = await file.read()
+        if len(content) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File size must be less than 5MB")
         
-        # In production, upload to cloud storage (S3, GCS, etc.)
-        # For now, save locally and return a placeholder URL
-        import base64
-        logo_data = base64.b64encode(content).decode()
-        logo_url = f"data:{file.content_type};base64,{logo_data[:100]}..."  # Truncated for demo
+        # Create reseller directory if it doesn't exist
+        upload_dir = Path(__file__).parent / "uploads" / "resellers" / reseller_id
+        upload_dir.mkdir(parents=True, exist_ok=True)
         
-        # Update branding with logo URL
+        # Generate filename with extension
+        ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+        filename = f"{file_type}.{ext}"
+        file_path = upload_dir / filename
+        
+        # Save file
+        with open(file_path, "wb") as f:
+            f.write(content)
+        
+        # Generate public URL (relative to the static mount)
+        file_url = f"/api/uploads/resellers/{reseller_id}/{filename}"
+        
+        # Update branding in database
+        branding_field = "branding.logo_url" if file_type == "logo" else "branding.favicon_url"
         await db.resellers.update_one(
-            {"id": reseller["id"]},
+            {"id": reseller_id},
             {
                 "$set": {
-                    "branding.logo_url": logo_url,
+                    branding_field: file_url,
                     "updated_at": datetime.now(timezone.utc)
                 }
             }
         )
         
-        logger.info(f"Logo uploaded for reseller: {reseller['id']}")
-        return {"success": True, "logo_url": logo_url}
+        logger.info(f"{file_type.capitalize()} uploaded for reseller: {reseller_id}")
+        return {"success": True, "url": file_url, "file_type": file_type}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error uploading logo: {str(e)}")
+        logger.error(f"Error uploading {file_type}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.delete("/delete-branding-file/{file_type}", response_model=dict)
+async def delete_branding_file(
+    file_type: str,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Delete reseller logo or favicon file"""
+    import os
+    from pathlib import Path
+    
+    try:
+        reseller = context["reseller"]
+        reseller_id = reseller["id"]
+        
+        if file_type not in ["logo", "favicon"]:
+            raise HTTPException(status_code=400, detail="Invalid file type. Use 'logo' or 'favicon'")
+        
+        # Get current URL to find the file
+        branding = reseller.get("branding", {})
+        url_field = "logo_url" if file_type == "logo" else "favicon_url"
+        current_url = branding.get(url_field)
+        
+        if current_url and current_url.startswith("/api/uploads/"):
+            # Extract path and delete file
+            relative_path = current_url.replace("/api/uploads/", "")
+            file_path = Path(__file__).parent / "uploads" / relative_path
+            if file_path.exists():
+                os.remove(file_path)
+        
+        # Clear URL in database
+        branding_field = f"branding.{url_field}"
+        await db.resellers.update_one(
+            {"id": reseller_id},
+            {
+                "$set": {
+                    branding_field: None,
+                    "updated_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        logger.info(f"{file_type.capitalize()} deleted for reseller: {reseller_id}")
+        return {"success": True, "message": f"{file_type.capitalize()} deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting {file_type}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

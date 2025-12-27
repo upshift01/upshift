@@ -821,9 +821,12 @@ Instructions:
 
 Write ONLY the summary text, no introduction, explanation, or quotes."""
 
+        system_message = """You are an expert CV writer specializing in creating compelling professional summaries for the South African job market."""
+        
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
-            session_id=f"cv-summary-{current_user.id}"
+            session_id=f"cv-summary-{current_user.id}",
+            system_message=system_message
         ).with_model("openai", "gpt-4o")
         
         response = chat.send_message(UserMessage(text=prompt))

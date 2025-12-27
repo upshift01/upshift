@@ -683,3 +683,35 @@ agent_communication:
       - working: true
         agent: "testing"
         comment: "✅ VERIFIED: Partner page navigation working perfectly! Tested all 5 main navigation links: AI Resume Builder, Improve Resume, Cover Letter, ATS Checker, and Skills Generator. All links navigate to correct partner URLs (/partner/yottanet/*) and pages load properly. Navigation system maintains partner context throughout the site. All routing functionality working as expected."
+
+## Current Tests - Partner Registration Fix - IN PROGRESS
+
+  - task: "Partner Registration Form"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/partner/yottanet/register"
+    expected: "Registration form should successfully create new user account with reseller_id associated"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Bug identified: PartnerRegister.jsx was sending 'name' field but backend expects 'full_name'. Fixed by changing body JSON to use 'full_name: formData.name'. API tested via curl - registration now works correctly with reseller_id being assigned."
+
+  - task: "Admin Users List"
+    implemented: true
+    working: "NEEDS_TESTING"
+    url: "/super-admin/users"
+    expected: "Super admin should be able to see all platform users including those with reseller associations"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Bug identified: admin_routes.py was looking for 'brand_name' field in resellers collection but field is 'company_name'. Fixed by changing the field reference. API tested via curl - users list now returns 24 users correctly."
+
+agent_communication:
+  - agent: "main"
+    message: "🔄 PARTNER REGISTRATION BUG FIX - Fixed two issues: 1) PartnerRegister.jsx was sending 'name' but backend expects 'full_name' - FIXED, 2) admin_routes.py was looking for 'brand_name' but resellers have 'company_name' - FIXED. Both fixes tested via curl. Need frontend testing agent to verify the complete registration flow."

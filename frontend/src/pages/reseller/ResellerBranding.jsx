@@ -405,7 +405,7 @@ const ResellerBranding = () => {
           >
             <div className="flex items-center gap-3 mb-4">
               {branding.logo_url ? (
-                <img src={branding.logo_url} alt="Logo" className="h-8 w-auto" />
+                <img src={getFullImageUrl(branding.logo_url)} alt="Logo" className="h-8 w-auto" />
               ) : (
                 <div className="h-8 w-8 bg-white/20 rounded" />
               )}

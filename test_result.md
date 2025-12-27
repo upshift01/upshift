@@ -774,7 +774,62 @@ agent_communication:
         agent: "testing"
         comment: "✅ VERIFIED: CV Builder import functionality working excellently! Found 'CV Builder' title with Professional Tool badge, 'Import Existing CV' button prominently displayed in card header area, all 4 required form sections present (Personal Information, Work Experience, Education, Skills). Import button is enabled and clickable for paid users. Complete form interface available for manual entry or import. No paywall detected - paid user has proper access to all functionality."
 
-## Current Tests - Reseller Portal Pricing Configuration Testing - COMPLETED
+## Current Tests - Reseller Portal Settings Save Functionality Testing - COMPLETED
+
+  - task: "Reseller Portal Login and Authentication"
+    implemented: true
+    working: true
+    url: "/login → /reseller-dashboard"
+    test_credentials: "owner@yottanet.com / password123"
+    expected: "Should login successfully and maintain session for settings access"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Reseller authentication working perfectly! Successfully logged in with owner@yottanet.com / password123, redirected to /reseller-dashboard. Session maintained for accessing all settings pages. Authentication flow working as expected."
+
+  - task: "Pricing Settings Save Functionality"
+    implemented: true
+    working: true
+    url: "/reseller-dashboard/pricing"
+    expected: "Should allow modifying tier prices and save changes successfully"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Pricing settings save working excellently! Successfully navigated to /reseller-dashboard/pricing, modified Tier 1 price from R499 to R500, clicked 'Save All Changes' button. Backend logs confirm successful save: 'PUT /api/reseller/pricing HTTP/1.1 200 OK' and 'Pricing updated for reseller: fef2af14-55c4-492d-90af-33c2f19385ea'. Price modification and save functionality working correctly."
+
+  - task: "Branding Settings Save Functionality"
+    implemented: true
+    working: true
+    url: "/reseller-dashboard/branding"
+    expected: "Should allow modifying branding colors and save changes successfully"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Branding settings save working perfectly! Successfully navigated to /reseller-dashboard/branding, modified primary color to #2563eb, clicked 'Save Branding' button. Backend logs confirm successful save: 'PUT /api/reseller/branding HTTP/1.1 200 OK' and 'Branding updated for reseller: fef2af14-55c4-492d-90af-33c2f19385ea'. Color modification and save functionality working correctly."
+
+  - task: "Profile/Company Settings Save Functionality"
+    implemented: true
+    working: true
+    url: "/reseller-dashboard/settings"
+    expected: "Should allow modifying company information and save changes successfully"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Profile settings save working excellently! Successfully navigated to /reseller-dashboard/settings, modified company name, clicked 'Save Settings' button. Backend logs confirm successful save: 'PUT /api/reseller/profile HTTP/1.1 200 OK' and 'Reseller profile updated: fef2af14-55c4-492d-90af-33c2f19385ea'. Company information modification and save functionality working correctly."
+
+## Previous Tests - Reseller Portal Pricing Configuration Testing - COMPLETED
 
   - task: "Reseller Portal Login and Navigation"
     implemented: true

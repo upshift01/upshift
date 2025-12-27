@@ -15,7 +15,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://career-ai-hub-4.preview.emergentagent.com/api"
+BACKEND_URL = "https://white-label-cv.preview.emergentagent.com/api"
 
 # Test customer credentials
 TEST_CUSTOMER_CREDS = {

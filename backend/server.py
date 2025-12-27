@@ -323,13 +323,18 @@ async def forgot_password(data: dict):
             </html>
             """
             
-            await email_service.send_email(
-                to_email=email,
-                subject="Reset Your Password - UpShift",
-                html_body=html_body,
-                text_body=f"Reset your password by visiting: {reset_url}\n\nThis link expires in 24 hours."
-            )
-            logger.info(f"Password reset email sent to: {email}")
+            try:
+                await email_service.send_email(
+                    to_email=email,
+                    subject="Reset Your Password - UpShift",
+                    html_body=html_body,
+                    text_body=f"Reset your password by visiting: {reset_url}\n\nThis link expires in 24 hours.",
+                    raise_exceptions=False
+                )
+                logger.info(f"Password reset email sent to: {email}")
+            except Exception as email_err:
+                logger.error(f"Failed to send password reset email: {str(email_err)}")
+                # Continue anyway - don't fail the request if email fails
         else:
             # Log the reset URL for development/testing
             logger.warning(f"Email not configured. Reset URL for {email}: {reset_url}")

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePartner } from '../../context/PartnerContext';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Input } from '../../components/ui/input';
+import { useToast } from '../../hooks/use-toast';
 import { 
   FileText, 
   Download, 
@@ -16,19 +17,23 @@ import {
   Plus,
   File,
   FileType,
-  Loader2
+  Loader2,
+  Edit
 } from 'lucide-react';
 import PartnerCustomerLayout from '../../components/PartnerCustomerLayout';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PartnerDocuments = () => {
-  const { getAuthHeader } = useAuth();
+  const { token, getAuthHeader } = useAuth();
   const { primaryColor, baseUrl } = usePartner();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -36,13 +41,35 @@ const PartnerDocuments = () => {
 
   const fetchDocuments = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/customer/documents`, {
-        headers: getAuthHeader()
+      // Try new CV documents endpoint first
+      const cvResponse = await fetch(`${API_URL}/api/cv/documents`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.ok) {
-        const data = await response.json();
-        setDocuments(data.documents || []);
+      
+      let cvDocs = [];
+      if (cvResponse.ok) {
+        const cvData = await cvResponse.json();
+        cvDocs = cvData.documents || [];
       }
+
+      // Also try old endpoint for backward compatibility
+      const oldResponse = await fetch(`${API_URL}/api/customer/documents`, {
+        headers: getAuthHeader ? getAuthHeader() : { Authorization: `Bearer ${token}` }
+      });
+      
+      let oldDocs = [];
+      if (oldResponse.ok) {
+        const oldData = await oldResponse.json();
+        oldDocs = oldData.documents || [];
+      }
+
+      // Merge and dedupe
+      const allDocs = [...cvDocs, ...oldDocs];
+      const uniqueDocs = allDocs.filter((doc, index, self) => 
+        index === self.findIndex(d => d.id === doc.id)
+      );
+
+      setDocuments(uniqueDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
     } finally {
@@ -53,14 +80,59 @@ const PartnerDocuments = () => {
   const handleDelete = async (docId) => {
     if (!window.confirm('Are you sure you want to delete this document?')) return;
     try {
-      await fetch(`${API_URL}/api/customer/documents/${docId}`, {
+      let response = await fetch(`${API_URL}/api/cv/documents/${docId}`, {
         method: 'DELETE',
-        headers: getAuthHeader()
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setDocuments(documents.filter(d => d.id !== docId));
+
+      if (!response.ok) {
+        response = await fetch(`${API_URL}/api/customer/documents/${docId}`, {
+          method: 'DELETE',
+          headers: getAuthHeader ? getAuthHeader() : { Authorization: `Bearer ${token}` }
+        });
+      }
+
+      if (response.ok) {
+        setDocuments(documents.filter(d => d.id !== docId));
+        toast({ title: 'Deleted', description: 'Document deleted successfully' });
+      }
     } catch (error) {
       console.error('Error deleting document:', error);
+      toast({ title: 'Error', description: 'Failed to delete document', variant: 'destructive' });
     }
+  };
+
+  const handleDownload = async (doc) => {
+    setDownloadingId(doc.id);
+    try {
+      const response = await fetch(`${API_URL}/api/cv/documents/${doc.id}/download`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${doc.name || 'document'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast({ title: 'Downloaded', description: 'Document downloaded successfully' });
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast({ title: 'Error', description: 'Failed to download document', variant: 'destructive' });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleEdit = (doc) => {
+    navigate(`${baseUrl}/builder?edit=${doc.id}`);
   };
 
   const getDocIcon = (type) => {
@@ -199,11 +271,28 @@ const PartnerDocuments = () => {
                     {new Date(doc.updated_at || doc.created_at).toLocaleDateString()}
                   </p>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Eye className="h-4 w-4 mr-1" /> View
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4" />
+                    {doc.type === 'cv' && doc.cv_data && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleEdit(doc)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDownload(doc)}
+                      disabled={downloadingId === doc.id}
+                    >
+                      {downloadingId === doc.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
                     </Button>
                     <Button 
                       variant="ghost" 

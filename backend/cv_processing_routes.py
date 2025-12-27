@@ -368,3 +368,336 @@ async def enhance_cv_section(section: str, content: str, context: Optional[str] 
     except Exception as e:
         logger.error(f"Section enhancement error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Enhancement failed: {str(e)}")
+
+
+# Import the PDF service
+from cv_pdf_service import generate_cv_pdf, TEMPLATES
+
+# Auth dependency
+from auth import get_current_user, oauth2_scheme
+
+async def get_current_user_with_db(token: str = Depends(oauth2_scheme)):
+    """Get current user with database access"""
+    return await get_current_user(token, db)
+
+
+class CVGenerateRequest(BaseModel):
+    template_id: str = "professional"
+    cv_data: Dict[str, Any]
+    save_to_documents: bool = True
+    document_name: Optional[str] = None
+
+
+@cv_processing_router.get("/templates")
+async def get_cv_templates():
+    """Get available CV templates"""
+    templates_list = []
+    for tid, tdata in TEMPLATES.items():
+        templates_list.append({
+            "id": tid,
+            "name": tdata['name'],
+            "primary_color": str(tdata['primary_color']),
+            "preview_url": f"/api/cv/template-preview/{tid}"
+        })
+    return {"templates": templates_list}
+
+
+@cv_processing_router.post("/generate-pdf")
+async def generate_cv_pdf_endpoint(
+    request: CVGenerateRequest,
+    current_user = Depends(get_current_user_with_db)
+):
+    """
+    Generate a CV PDF using the specified template and optionally save to user's documents.
+    """
+    try:
+        # Check if user has active tier
+        if not current_user.active_tier:
+            raise HTTPException(status_code=403, detail="Please purchase a plan to generate CVs")
+        
+        # Generate PDF
+        pdf_bytes = generate_cv_pdf(request.cv_data, request.template_id)
+        
+        # Save to documents if requested
+        doc_id = None
+        if request.save_to_documents:
+            import base64
+            doc_id = str(uuid4())
+            doc_name = request.document_name or f"CV - {request.cv_data.get('full_name', 'Untitled')}"
+            
+            # Store document metadata and PDF content
+            await db.user_documents.insert_one({
+                "id": doc_id,
+                "user_id": current_user.id,
+                "name": doc_name,
+                "type": "cv",
+                "template_id": request.template_id,
+                "cv_data": request.cv_data,
+                "pdf_content": base64.b64encode(pdf_bytes).decode('utf-8'),
+                "file_size": len(pdf_bytes),
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
+            })
+            
+            logger.info(f"CV saved to documents for user {current_user.id}: {doc_id}")
+        
+        # Return PDF as base64 for download
+        import base64
+        return {
+            "success": True,
+            "pdf_base64": base64.b64encode(pdf_bytes).decode('utf-8'),
+            "filename": f"{request.cv_data.get('full_name', 'CV').replace(' ', '_')}_CV.pdf",
+            "document_id": doc_id,
+            "message": "CV generated successfully" + (" and saved to documents" if request.save_to_documents else "")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"PDF generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+
+
+@cv_processing_router.get("/documents")
+async def get_user_documents(
+    current_user = Depends(get_current_user_with_db),
+    doc_type: Optional[str] = None
+):
+    """Get user's saved documents"""
+    try:
+        query = {"user_id": current_user.id}
+        if doc_type:
+            query["type"] = doc_type
+        
+        documents = await db.user_documents.find(
+            query,
+            {"_id": 0, "pdf_content": 0}  # Exclude large PDF content
+        ).sort("updated_at", -1).to_list(100)
+        
+        return {"documents": documents}
+        
+    except Exception as e:
+        logger.error(f"Error fetching documents: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@cv_processing_router.get("/documents/{doc_id}")
+async def get_document(
+    doc_id: str,
+    current_user = Depends(get_current_user_with_db)
+):
+    """Get a specific document with its data for editing"""
+    try:
+        document = await db.user_documents.find_one(
+            {"id": doc_id, "user_id": current_user.id},
+            {"_id": 0}
+        )
+        
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        return document
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching document: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@cv_processing_router.put("/documents/{doc_id}")
+async def update_document(
+    doc_id: str,
+    request: CVGenerateRequest,
+    current_user = Depends(get_current_user_with_db)
+):
+    """Update an existing document and regenerate PDF"""
+    try:
+        # Verify ownership
+        existing = await db.user_documents.find_one(
+            {"id": doc_id, "user_id": current_user.id}
+        )
+        if not existing:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        # Generate new PDF
+        pdf_bytes = generate_cv_pdf(request.cv_data, request.template_id)
+        
+        import base64
+        doc_name = request.document_name or existing.get("name", f"CV - {request.cv_data.get('full_name', 'Untitled')}")
+        
+        # Update document
+        await db.user_documents.update_one(
+            {"id": doc_id},
+            {
+                "$set": {
+                    "name": doc_name,
+                    "template_id": request.template_id,
+                    "cv_data": request.cv_data,
+                    "pdf_content": base64.b64encode(pdf_bytes).decode('utf-8'),
+                    "file_size": len(pdf_bytes),
+                    "updated_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        logger.info(f"Document updated: {doc_id}")
+        
+        return {
+            "success": True,
+            "pdf_base64": base64.b64encode(pdf_bytes).decode('utf-8'),
+            "filename": f"{request.cv_data.get('full_name', 'CV').replace(' ', '_')}_CV.pdf",
+            "document_id": doc_id,
+            "message": "Document updated successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating document: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@cv_processing_router.delete("/documents/{doc_id}")
+async def delete_document(
+    doc_id: str,
+    current_user = Depends(get_current_user_with_db)
+):
+    """Delete a document"""
+    try:
+        result = await db.user_documents.delete_one(
+            {"id": doc_id, "user_id": current_user.id}
+        )
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        return {"success": True, "message": "Document deleted"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting document: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@cv_processing_router.get("/documents/{doc_id}/download")
+async def download_document(
+    doc_id: str,
+    current_user = Depends(get_current_user_with_db)
+):
+    """Download document PDF"""
+    from fastapi.responses import Response
+    import base64
+    
+    try:
+        document = await db.user_documents.find_one(
+            {"id": doc_id, "user_id": current_user.id}
+        )
+        
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        pdf_content = base64.b64decode(document["pdf_content"])
+        filename = f"{document.get('name', 'CV').replace(' ', '_')}.pdf"
+        
+        return Response(
+            content=pdf_content,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error downloading document: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@cv_processing_router.post("/ai-enhance-all")
+async def ai_enhance_all_sections(
+    cv_data: Dict[str, Any],
+    current_user = Depends(get_current_user_with_db)
+):
+    """
+    AI enhance all sections of the CV at once.
+    Improves summary, descriptions, achievements, and suggests skills.
+    """
+    try:
+        if not current_user.active_tier:
+            raise HTTPException(status_code=403, detail="Please purchase a plan to use AI features")
+        
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Build context from existing data
+        job_titles = [exp.get('title', '') for exp in cv_data.get('experiences', []) if exp.get('title')]
+        companies = [exp.get('company', '') for exp in cv_data.get('experiences', []) if exp.get('company')]
+        existing_skills = [s for s in cv_data.get('skills', []) if s and s.strip()]
+        
+        enhance_prompt = f"""Enhance this CV data professionally. Return ONLY valid JSON with the same structure but improved content.
+
+Current CV Data:
+- Name: {cv_data.get('full_name', 'Professional')}
+- Current Summary: {cv_data.get('summary', 'No summary provided')}
+- Job Titles: {', '.join(job_titles) if job_titles else 'Not specified'}
+- Companies: {', '.join(companies) if companies else 'Not specified'}
+- Current Skills: {', '.join(existing_skills) if existing_skills else 'None listed'}
+
+Experiences to enhance:
+{cv_data.get('experiences', [])}
+
+Return JSON with:
+{{
+    "summary": "<enhanced 2-3 sentence professional summary>",
+    "experiences": [
+        {{
+            "title": "<job title>",
+            "company": "<company>",
+            "duration": "<duration>",
+            "description": "<enhanced description with action verbs and metrics>",
+            "achievements": "<3-5 key achievements with quantifiable results>"
+        }}
+    ],
+    "skills": ["<enhanced skill 1>", "<skill 2>", "...", "<suggest 3-5 additional relevant skills>"]
+}}
+
+Focus on South African job market context. Use UK English spelling."""
+
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"cv-enhance-all-{uuid4()}",
+            system_message="You are an expert CV writer specializing in South African job market. Return only valid JSON."
+        ).with_model("openai", "gpt-4o")
+        
+        response = await chat.send_message(UserMessage(text=enhance_prompt))
+        
+        # Parse response
+        import json
+        try:
+            clean_response = response.strip()
+            if clean_response.startswith("```"):
+                clean_response = clean_response.split("```")[1]
+                if clean_response.startswith("json"):
+                    clean_response = clean_response[4:]
+            clean_response = clean_response.strip()
+            
+            enhanced_data = json.loads(clean_response)
+        except json.JSONDecodeError:
+            logger.error(f"Failed to parse enhancement response: {response[:500]}")
+            raise HTTPException(status_code=500, detail="Failed to process AI enhancement")
+        
+        return {
+            "success": True,
+            "enhanced_summary": enhanced_data.get("summary", cv_data.get("summary", "")),
+            "enhanced_experiences": enhanced_data.get("experiences", cv_data.get("experiences", [])),
+            "enhanced_skills": enhanced_data.get("skills", cv_data.get("skills", []))
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI enhance all error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Enhancement failed: {str(e)}")
+

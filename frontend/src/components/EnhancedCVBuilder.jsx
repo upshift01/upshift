@@ -315,21 +315,24 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
 
       if (response.ok) {
         const data = await response.json();
-        if (data.cv_data) {
+        const cvData = data.cv_data || data.data;
+        if (cvData) {
           // Merge extracted data with form
           setFormData(prev => ({
             ...prev,
-            fullName: data.cv_data.full_name || prev.fullName,
-            email: data.cv_data.email || prev.email,
-            phone: data.cv_data.phone || prev.phone,
-            address: data.cv_data.address || prev.address,
-            summary: data.cv_data.summary || prev.summary,
-            experiences: data.cv_data.experiences?.length > 0 ? data.cv_data.experiences : prev.experiences,
-            education: data.cv_data.education?.length > 0 ? data.cv_data.education : prev.education,
-            skills: data.cv_data.skills?.length > 0 ? data.cv_data.skills : prev.skills,
+            fullName: cvData.fullName || cvData.full_name || prev.fullName,
+            email: cvData.email || prev.email,
+            phone: cvData.phone || prev.phone,
+            address: cvData.address || prev.address,
+            summary: cvData.summary || prev.summary,
+            experiences: cvData.experiences?.length > 0 ? cvData.experiences : prev.experiences,
+            education: cvData.education?.length > 0 ? cvData.education : prev.education,
+            skills: cvData.skills?.length > 0 ? cvData.skills : prev.skills,
           }));
           setActiveTab('personal');
           toast({ title: 'CV Imported!', description: 'Your CV data has been extracted. Review and enhance it.' });
+        } else {
+          throw new Error('No CV data returned');
         }
       } else {
         throw new Error('Failed to extract CV data');

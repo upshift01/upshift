@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Search, Shield, Building2, UserCircle, Plus } from 'lucide-react';
+import { Users, Search, Shield, Building2, UserCircle, Plus, MoreVertical, Edit2, Trash2, KeyRound, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { useToast } from '../../components/ui/use-toast';
 
 const AdminUsers = () => {
   const { token } = useAuth();
+  const { toast } = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

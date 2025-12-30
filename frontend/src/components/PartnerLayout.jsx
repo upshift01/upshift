@@ -15,14 +15,13 @@ const PartnerNavbar = () => {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
 
-  // Same nav items as main site, but without white-label option
+  // Same nav items as main site, but without white-label option and About
   const navItems = [
     { name: 'AI Resume Builder', path: `${baseUrl}/builder` },
     { name: 'Improve Resume', path: `${baseUrl}/improve` },
     { name: 'Cover Letter', path: `${baseUrl}/cover-letter` },
     { name: 'ATS Checker', path: `${baseUrl}/ats-checker`, isFree: true },
     { name: 'Skills Generator', path: `${baseUrl}/skills-generator`, isFree: true },
-    { name: 'About', path: `${baseUrl}/about` },
     { name: 'Contact', path: `${baseUrl}/contact` }
   ];
 

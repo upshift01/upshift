@@ -1476,3 +1476,26 @@ Added the following new fields to the CV Builder and PDF generation:
 agent_communication:
   - agent: "main"
     message: "🔧 IMPLEMENTED NEW CV FIELDS - Added Photo upload, ID/Passport Number, and Languages fields to CV Builder. Updated PDF generation with professional enterprise styling including proper spacing, better fonts, and photo support. Need to test complete flow."
+
+## Multiple Bug Fixes Applied - Session Update
+
+### Fixed Issues:
+1. Moved "About" from navbar to footer Quick Links (main + partner)
+2. Added contactAddress, contactWhatsapp, socialMedia to PartnerContext
+3. Fixed partner footer to show reseller logo instead of default icon
+4. Removed "Add Customer" button from reseller dashboard
+5. Added user management to AdminUsers (Edit/Delete/Reset Password)
+6. Added backend endpoints: PUT /api/admin/users/{id}, DELETE /api/admin/users/{id}, POST /api/admin/users/{id}/reset-password
+
+### Files Modified:
+- /app/frontend/src/components/Navbar.jsx
+- /app/frontend/src/components/Footer.jsx
+- /app/frontend/src/components/PartnerLayout.jsx
+- /app/frontend/src/context/PartnerContext.jsx
+- /app/frontend/src/pages/reseller/ResellerDashboard.jsx
+- /app/frontend/src/pages/admin/AdminUsers.jsx
+- /app/backend/admin_routes.py
+
+agent_communication:
+  - agent: "main"
+    message: "Applied multiple UI fixes. Need to test: 1) About link moved to footer, 2) Partner footer shows logo, 3) Admin user management works, 4) Add Customer button removed from reseller dashboard."

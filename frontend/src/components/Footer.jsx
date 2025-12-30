@@ -20,6 +20,7 @@ const Footer = () => {
 
   const menuLinks = [
     { name: 'Contact Us', path: '/contact' },
+    { name: 'Help Center', path: '/help' },
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'AI Resume Builder', path: '/builder' },

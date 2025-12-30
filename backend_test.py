@@ -1340,6 +1340,105 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_help_center_apis(self):
+        """Test Help Center API endpoints"""
+        print("\n📚 Testing Help Center APIs...")
+        
+        # Test 1: GET /api/help/user-manual/pdf (PDF Manual Download)
+        print("\n🔹 Test 1: PDF Manual Download")
+        
+        pdf_content, error = self.make_pdf_request("GET", "/help/user-manual/pdf")
+        if error:
+            self.log_test("PDF Manual Download", False, error)
+        else:
+            if pdf_content and len(pdf_content) > 1000:  # PDF should be substantial
+                self.log_test("PDF Manual Download", True, f"PDF generated successfully, size: {len(pdf_content)} bytes")
+            else:
+                self.log_test("PDF Manual Download", False, f"PDF too small or empty: {len(pdf_content) if pdf_content else 0} bytes")
+        
+        # Test 2: GET /api/help/content (Help Content API)
+        print("\n🔹 Test 2: Help Content API")
+        
+        response, error = self.make_request("GET", "/help/content")
+        if error:
+            self.log_test("Help Content API", False, error)
+        else:
+            required_fields = ["user_guide", "reseller_guide"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Help Content API", False, f"Missing fields: {missing_fields}")
+            else:
+                user_guide = response.get("user_guide", {})
+                reseller_guide = response.get("reseller_guide", {})
+                
+                # Check if user guide has expected sections
+                expected_user_sections = ["cv_builder", "improve_cv", "ats_checker", "cover_letter", "linkedin_tools"]
+                user_sections_found = [s for s in expected_user_sections if s in user_guide]
+                
+                # Check if reseller guide has expected sections
+                expected_reseller_sections = ["reseller_dashboard", "customer_management", "branding_setup"]
+                reseller_sections_found = [s for s in expected_reseller_sections if s in reseller_guide]
+                
+                if len(user_sections_found) >= 3 and len(reseller_sections_found) >= 2:
+                    self.log_test("Help Content API", True, 
+                                f"User guide: {len(user_guide)} sections, Reseller guide: {len(reseller_guide)} sections")
+                else:
+                    self.log_test("Help Content API", False, 
+                                f"Missing expected sections. User: {user_sections_found}, Reseller: {reseller_sections_found}")
+        
+        # Test 3: GET /api/help/content/{section_key} (Individual Section API)
+        print("\n🔹 Test 3: Individual Section API")
+        
+        # Test getting a specific user guide section
+        response, error = self.make_request("GET", "/help/content/cv_builder")
+        if error:
+            self.log_test("Individual Section API - CV Builder", False, error)
+        else:
+            required_fields = ["title", "description", "steps", "tips"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Individual Section API - CV Builder", False, f"Missing fields: {missing_fields}")
+            else:
+                title = response.get("title", "")
+                steps = response.get("steps", [])
+                tips = response.get("tips", [])
+                
+                if title and len(steps) > 0 and len(tips) > 0:
+                    self.log_test("Individual Section API - CV Builder", True, 
+                                f"Title: '{title}', Steps: {len(steps)}, Tips: {len(tips)}")
+                else:
+                    self.log_test("Individual Section API - CV Builder", False, 
+                                f"Invalid section data: title='{title}', steps={len(steps)}, tips={len(tips)}")
+        
+        # Test getting a reseller guide section
+        response, error = self.make_request("GET", "/help/content/reseller_dashboard")
+        if error:
+            self.log_test("Individual Section API - Reseller Dashboard", False, error)
+        else:
+            required_fields = ["title", "description", "steps"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Individual Section API - Reseller Dashboard", False, f"Missing fields: {missing_fields}")
+            else:
+                title = response.get("title", "")
+                steps = response.get("steps", [])
+                
+                if title and len(steps) > 0:
+                    self.log_test("Individual Section API - Reseller Dashboard", True, 
+                                f"Title: '{title}', Steps: {len(steps)}")
+                else:
+                    self.log_test("Individual Section API - Reseller Dashboard", False, 
+                                f"Invalid section data: title='{title}', steps={len(steps)}")
+        
+        # Test getting a non-existent section (should return 404)
+        response, error = self.make_request("GET", "/help/content/non_existent_section", expected_status=404)
+        if error and "404" in error:
+            self.log_test("Individual Section API - 404 Handling", True, "Correctly returned 404 for non-existent section")
+        else:
+            self.log_test("Individual Section API - 404 Handling", False, f"Should return 404 for non-existent section, got: {error}")
+        
+        return True
+
     def test_references_feature_in_cv_builder(self):
         """Test References Field in CV Builder and PDF Generation Features"""
         print("\n📋 Testing References Feature in CV Builder...")

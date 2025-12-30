@@ -376,6 +376,26 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
     }
   };
 
+  // Reference handlers
+  const handleReferenceChange = (index, field, value) => {
+    const newReferences = [...formData.references];
+    newReferences[index] = { ...newReferences[index], [field]: value };
+    setFormData({ ...formData, references: newReferences });
+  };
+
+  const addReference = () => {
+    setFormData({
+      ...formData,
+      references: [...formData.references, { name: '', title: '', company: '', email: '', phone: '' }],
+    });
+  };
+
+  const removeReference = (index) => {
+    if (formData.references.length > 1) {
+      setFormData({ ...formData, references: formData.references.filter((_, i) => i !== index) });
+    }
+  };
+
   // Photo upload handler
   const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];

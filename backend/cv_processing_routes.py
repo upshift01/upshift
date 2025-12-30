@@ -52,6 +52,13 @@ class CVExtractResponse(BaseModel):
     enhanced_data: Dict[str, Any]
     suggestions: List[str]
 
+# Auth dependency - import early for use in endpoints
+from auth import get_current_user, oauth2_scheme
+
+async def get_current_user_with_db(token: str = Depends(oauth2_scheme)):
+    """Get current user with database access"""
+    return await get_current_user(token, db)
+
 
 def extract_text_from_pdf(file_content: bytes) -> str:
     """Extract text from PDF file"""

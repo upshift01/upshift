@@ -65,6 +65,8 @@ async def get_dashboard_stats(current_user = Depends(get_current_customer)):
     
     # Get document count
     documents_count = await db.documents.count_documents({"user_id": user_id})
+    user_documents_count = await db.user_documents.count_documents({"user_id": user_id})
+    total_docs = documents_count + user_documents_count
     
     # Get ATS checks count
     ats_checks = await db.ats_results.count_documents({"user_id": user_id})
@@ -78,12 +80,20 @@ async def get_dashboard_stats(current_user = Depends(get_current_customer)):
     # Check if user has used LinkedIn tools
     linkedin_used = await db.linkedin_activity.count_documents({"user_id": user_id}) > 0
     
+    # Get activity stats
+    from activity_service import get_activity_service
+    activity_service = get_activity_service(db)
+    activity_stats = await activity_service.get_user_stats(user_id)
+    
     return {
-        "total_documents": documents_count,
+        "total_documents": total_docs,
         "ats_checks": ats_checks,
         "ai_generations": ai_generations,
         "jobs_tracked": jobs_count,
-        "linkedin_used": linkedin_used
+        "linkedin_used": linkedin_used,
+        "this_month_activity": activity_stats.get("this_month", 0),
+        "total_activity": activity_stats.get("total_activities", 0),
+        "activity_by_type": activity_stats.get("by_type", {})
     }
 
 # Recent Activity

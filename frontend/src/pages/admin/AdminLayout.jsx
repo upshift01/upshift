@@ -38,6 +38,7 @@ const AdminLayout = () => {
     { path: '/super-admin/users', icon: Users, label: 'Users' },
     { path: '/super-admin/invoices', icon: Receipt, label: 'Invoices' },
     { path: '/super-admin/pricing', icon: DollarSign, label: 'Pricing' },
+    { path: '/super-admin/cv-templates', icon: Upload, label: 'CV Templates (.docx)' },
     { path: '/super-admin/content', icon: FileText, label: 'Content' },
     { path: '/super-admin/analytics', icon: BarChart3, label: 'Analytics' },
     { path: '/super-admin/settings', icon: Settings, label: 'Settings' },

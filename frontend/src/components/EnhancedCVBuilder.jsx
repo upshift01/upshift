@@ -658,12 +658,6 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
 
     setIsGenerating(true);
     try {
-      const endpoint = editingDocId 
-        ? `${API_URL}/api/cv/documents/${editingDocId}`
-        : `${API_URL}/api/cv/generate-pdf`;
-      
-      const method = editingDocId ? 'PUT' : 'POST';
-
       // Prepare CV data with photo as base64 if present
       const cvData = {
         full_name: formData.fullName,
@@ -679,18 +673,40 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
         skills: formData.skills.filter(Boolean)
       };
 
+      let endpoint, method, requestBody;
+
+      // Check if using a custom .docx template or built-in template
+      if (selectedTemplate.is_custom) {
+        // Use custom .docx template endpoint
+        endpoint = `${API_URL}/api/cv-templates/generate`;
+        method = 'POST';
+        requestBody = {
+          template_id: selectedTemplate.id,
+          cv_data: cvData,
+          output_format: 'pdf',
+          save_to_documents: true
+        };
+      } else {
+        // Use existing built-in template endpoint
+        endpoint = editingDocId 
+          ? `${API_URL}/api/cv/documents/${editingDocId}`
+          : `${API_URL}/api/cv/generate-pdf`;
+        method = editingDocId ? 'PUT' : 'POST';
+        requestBody = {
+          template_id: selectedTemplate.id,
+          cv_data: cvData,
+          save_to_documents: true,
+          document_name: `CV - ${formData.fullName}`
+        };
+      }
+
       const response = await fetch(endpoint, {
         method,
         headers: { 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}` 
         },
-        body: JSON.stringify({
-          template_id: selectedTemplate.id,
-          cv_data: cvData,
-          save_to_documents: true,
-          document_name: `CV - ${formData.fullName}`
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (response.ok) {
@@ -704,7 +720,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
         const url = URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = data.filename;
+        a.download = data.filename || `CV_${formData.fullName.replace(/\s+/g, '_')}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -712,11 +728,13 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
 
         toast({ 
           title: 'CV Created!', 
-          description: 'Your CV has been downloaded and saved to My Documents'
+          description: selectedTemplate.is_custom 
+            ? `Your CV has been generated using the "${selectedTemplate.name}" template`
+            : 'Your CV has been downloaded and saved to My Documents'
         });
 
-        // Update editing state
-        if (!editingDocId) {
+        // Update editing state for built-in templates
+        if (!editingDocId && !selectedTemplate.is_custom && data.document_id) {
           setEditingDocId(data.document_id);
         }
       } else {

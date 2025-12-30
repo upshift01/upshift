@@ -591,6 +591,21 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
       
       const method = editingDocId ? 'PUT' : 'POST';
 
+      // Prepare CV data with photo as base64 if present
+      const cvData = {
+        full_name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        id_number: formData.idNumber,
+        languages: formData.languages.filter(Boolean),
+        photo: formData.photoPreview || null,
+        summary: formData.summary,
+        experiences: formData.experiences,
+        education: formData.education,
+        skills: formData.skills.filter(Boolean)
+      };
+
       const response = await fetch(endpoint, {
         method,
         headers: { 
@@ -599,16 +614,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
         },
         body: JSON.stringify({
           template_id: selectedTemplate.id,
-          cv_data: {
-            full_name: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            address: formData.address,
-            summary: formData.summary,
-            experiences: formData.experiences,
-            education: formData.education,
-            skills: formData.skills.filter(Boolean)
-          },
+          cv_data: cvData,
           save_to_documents: true,
           document_name: `CV - ${formData.fullName}`
         })

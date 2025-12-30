@@ -379,6 +379,8 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
             email: cvData.email || prev.email,
             phone: cvData.phone || prev.phone,
             address: cvData.address || prev.address,
+            idNumber: cvData.idNumber || cvData.id_number || prev.idNumber,
+            languages: cvData.languages?.length > 0 ? cvData.languages : prev.languages,
             summary: cvData.summary || prev.summary,
             experiences: cvData.experiences?.length > 0 ? cvData.experiences : prev.experiences,
             education: cvData.education?.length > 0 ? cvData.education : prev.education,

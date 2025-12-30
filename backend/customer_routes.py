@@ -102,17 +102,34 @@ async def get_recent_activity(current_user = Depends(get_current_customer)):
     user_id = current_user.id
     activities = []
     
-    # Get recent ATS checks
+    # Get recent activities from user_activity collection (new system)
+    from activity_service import get_activity_service
+    activity_service = get_activity_service(db)
+    user_activities = await activity_service.get_user_activities(user_id, limit=10)
+    
+    for activity in user_activities:
+        activities.append({
+            "type": activity.get("type", "activity"),
+            "description": activity.get("description") or activity.get("title", "Activity"),
+            "icon": activity.get("icon", "Activity"),
+            "color": activity.get("color", "gray"),
+            "created_at": activity.get("created_at", datetime.now(timezone.utc)).isoformat() if isinstance(activity.get("created_at"), datetime) else activity.get("created_at", datetime.now(timezone.utc).isoformat())
+        })
+    
+    # Also get legacy activities from ATS checks and documents
     ats_results = await db.ats_results.find(
         {"user_id": user_id},
         {"_id": 0}
     ).sort("created_at", -1).limit(5).to_list(5)
     
     for result in ats_results:
+        created_at = result.get("created_at", datetime.now(timezone.utc))
         activities.append({
             "type": "ats",
             "description": f"ATS Check: Score {result.get('score', 0)}%",
-            "created_at": result.get("created_at", datetime.now(timezone.utc).isoformat())
+            "icon": "CheckCircle",
+            "color": "orange",
+            "created_at": created_at.isoformat() if isinstance(created_at, datetime) else created_at
         })
     
     # Get recent documents
@@ -122,16 +139,28 @@ async def get_recent_activity(current_user = Depends(get_current_customer)):
     ).sort("created_at", -1).limit(5).to_list(5)
     
     for doc in docs:
+        created_at = doc.get("created_at", datetime.now(timezone.utc))
         activities.append({
             "type": "document",
             "description": f"Created: {doc.get('name', 'Document')}",
-            "created_at": doc.get("created_at", datetime.now(timezone.utc).isoformat())
+            "icon": "FileText",
+            "color": "blue",
+            "created_at": created_at.isoformat() if isinstance(created_at, datetime) else created_at
         })
     
-    # Sort by date
+    # Sort by date and deduplicate
     activities.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     
-    return {"activities": activities[:10]}
+    # Remove duplicates (keeping most recent)
+    seen = set()
+    unique_activities = []
+    for activity in activities:
+        key = (activity["type"], activity["description"])
+        if key not in seen:
+            seen.add(key)
+            unique_activities.append(activity)
+    
+    return {"activities": unique_activities[:15]}
 
 # Documents
 @router.get("/documents")

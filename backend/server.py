@@ -1194,6 +1194,22 @@ async def ats_resume_check(
                 }
                 await db.ats_results.insert_one(ats_result)
                 logger.info(f"ATS result saved for user: {current_user_id}, score: {score}")
+                
+                # Log activity
+                try:
+                    activity_service = get_activity_service(db)
+                    user = await db.users.find_one({"id": current_user_id}, {"_id": 0, "reseller_id": 1})
+                    reseller_id = user.get("reseller_id") if user else None
+                    await activity_service.log_activity(
+                        user_id=current_user_id,
+                        activity_type="ats_check",
+                        description=f"ATS Check Score: {score}% for {file.filename}",
+                        metadata={"score": score, "filename": file.filename},
+                        reseller_id=reseller_id
+                    )
+                except Exception as log_error:
+                    logger.warning(f"Failed to log ATS activity: {log_error}")
+                    
             except Exception as save_error:
                 logger.warning(f"Failed to save ATS result: {save_error}")
         

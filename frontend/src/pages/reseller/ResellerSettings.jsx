@@ -567,6 +567,60 @@ const ResellerSettings = () => {
     }
   };
 
+  const fetchSubscriptionData = async () => {
+    try {
+      // Fetch available plans
+      const plansResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/subscription-plans`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (plansResponse.ok) {
+        const plansData = await plansResponse.json();
+        setSubscriptionPlans(plansData.plans || {});
+      }
+      
+      // Fetch current subscription
+      const subResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/my-subscription`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (subResponse.ok) {
+        const subData = await subResponse.json();
+        setCurrentSubscription(subData.subscription);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription data:', error);
+    }
+  };
+
+  const handleChangePlan = async (planId) => {
+    if (!window.confirm(`Are you sure you want to change to the ${subscriptionPlans[planId]?.name || planId} plan?`)) {
+      return;
+    }
+    
+    setChangingPlan(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/change-subscription`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ plan: planId })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message });
+        fetchSubscriptionData(); // Refresh subscription data
+      } else {
+        setMessage({ type: 'error', text: data.detail || 'Failed to change plan' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error changing subscription plan' });
+    } finally {
+      setChangingPlan(false);
+    }
+  };
+
   const handlePayInvoice = async (invoiceId) => {
     setPayingInvoice(invoiceId);
     try {

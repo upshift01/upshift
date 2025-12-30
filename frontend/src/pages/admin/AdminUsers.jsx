@@ -241,6 +241,39 @@ const AdminUsers = () => {
                       <td className="py-3 px-4 text-gray-500">
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
+                      <td className="py-3 px-4">
+                        <div className="relative">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setActionMenuUser(actionMenuUser === user.id ? null : user.id)}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                          {actionMenuUser === user.id && (
+                            <div className="absolute right-0 top-8 bg-white border rounded-lg shadow-lg z-10 py-1 min-w-[160px]">
+                              <button 
+                                onClick={() => { setEditingUser(user); setActionMenuUser(null); }}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Edit2 className="h-4 w-4" /> Edit User
+                              </button>
+                              <button 
+                                onClick={() => { setResetPasswordUser(user); setActionMenuUser(null); }}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <KeyRound className="h-4 w-4" /> Reset Password
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteUser(user)}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4" /> Delete User
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

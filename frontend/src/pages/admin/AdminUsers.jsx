@@ -203,6 +203,7 @@ const AdminUsers = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Reseller</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Joined</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>

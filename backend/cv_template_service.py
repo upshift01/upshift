@@ -402,7 +402,20 @@ class CVTemplateService:
         # Languages
         languages = cv_data.get("languages", [])
         if isinstance(languages, list):
-            replacements["{{LANGUAGES}}"] = ", ".join([l for l in languages if l])
+            # Handle both string and dict formats
+            lang_strings = []
+            for l in languages:
+                if isinstance(l, dict):
+                    lang_name = l.get("language", "")
+                    proficiency = l.get("proficiency", "")
+                    if lang_name:
+                        if proficiency:
+                            lang_strings.append(f"{lang_name} ({proficiency})")
+                        else:
+                            lang_strings.append(lang_name)
+                elif isinstance(l, str) and l:
+                    lang_strings.append(l)
+            replacements["{{LANGUAGES}}"] = ", ".join(lang_strings)
         else:
             replacements["{{LANGUAGES}}"] = str(languages)
         

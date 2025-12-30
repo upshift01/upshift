@@ -395,6 +395,100 @@ class EmailService:
         
         return await self.send_email(to_email, subject, html_body)
     
+    async def send_welcome_email(
+        self,
+        to_email: str,
+        user_name: str,
+        platform_name: str = "UpShift",
+        login_url: str = "",
+        features: List[str] = None
+    ) -> bool:
+        """Send welcome email to new user registration"""
+        if features is None:
+            features = [
+                "AI-powered CV Builder",
+                "ATS-optimized templates",
+                "Cover letter generator",
+                "Job application tracking"
+            ]
+        
+        subject = f"Welcome to {platform_name}! 🎉"
+        
+        features_html = "".join([f"<li style='margin: 8px 0;'>{feature}</li>" for feature in features])
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 0 auto; background: #ffffff;">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px;">Welcome to {platform_name}!</h1>
+                    <p style="margin: 15px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Your career journey starts here</p>
+                </div>
+                
+                <!-- Body -->
+                <div style="padding: 40px 30px;">
+                    <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px 0;">Hi {user_name},</p>
+                    
+                    <p style="font-size: 16px; color: #4b5563; line-height: 1.6; margin: 0 0 25px 0;">
+                        Thank you for joining {platform_name}! We're excited to help you take your career to the next level.
+                    </p>
+                    
+                    <div style="background: #f8fafc; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                        <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 16px;">Here's what you can do:</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #4b5563;">
+                            {features_html}
+                        </ul>
+                    </div>
+                    
+                    <!-- CTA Button -->
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{login_url}" style="display: inline-block; background: #1e40af; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 16px;">Get Started</a>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #6b7280; line-height: 1.6; margin: 25px 0 0 0;">
+                        If you have any questions, feel free to reach out to our support team. We're here to help!
+                    </p>
+                </div>
+                
+                <!-- Footer -->
+                <div style="background: #f8fafc; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                        © {datetime.now().year} {platform_name}. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        text_body = f"""
+Welcome to {platform_name}!
+
+Hi {user_name},
+
+Thank you for joining {platform_name}! We're excited to help you take your career to the next level.
+
+Here's what you can do:
+- AI-powered CV Builder
+- ATS-optimized templates
+- Cover letter generator
+- Job application tracking
+
+Get started: {login_url}
+
+If you have any questions, feel free to reach out to our support team.
+
+© {datetime.now().year} {platform_name}
+        """
+        
+        return await self.send_email(to_email, subject, html_body, text_body, raise_exceptions=False)
+    
     async def test_connection(self) -> Dict:
         """Test SMTP connection"""
         if not self.is_configured:

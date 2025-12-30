@@ -231,6 +231,60 @@ metadata:
         agent: "testing"
         comment: "✅ VERIFIED: Backend endpoint fix successful! The /api/cv/enhance-section endpoint now properly accepts JSON body with EnhanceSectionRequest model containing section, content, and context fields. Backend logs confirm successful API calls: 'Section experience enhanced' and 'Section achievements enhanced' with 200 OK responses. Previous 422 Unprocessable Entity errors have been resolved. The fix correctly handles both experience descriptions and achievements enhancement requests."
 
+## Current Tests - CV Builder New Fields Testing - COMPLETED SUCCESSFULLY
+
+  - task: "CV Builder New Fields - Profile Photo Upload"
+    implemented: true
+    working: true
+    url: "/partner/yottanet/builder"
+    expected: "Should display Profile Photo upload area with drag-drop functionality and file validation"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Profile Photo upload area working perfectly! Found upload interface with proper drag-drop zone, file validation (image files only, max 5MB), preview functionality, and remove photo option. Upload area displays correctly with 'Upload Photo' text and proper styling. File validation working correctly - accepts JPG/PNG files and rejects invalid formats with appropriate error messages."
+
+  - task: "CV Builder New Fields - ID/Passport Number Field"
+    implemented: true
+    working: true
+    url: "/partner/yottanet/builder"
+    expected: "Should display ID / Passport Number input field in Personal Information section"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: ID / Passport Number field working excellently! Field found in Personal Information section with proper label 'ID / Passport Number', placeholder text 'e.g., 8501015800089', and functional input validation. Successfully filled with test data '8501015800089' and field accepts input correctly. Field properly integrated into form data structure."
+
+  - task: "CV Builder New Fields - Languages Section"
+    implemented: true
+    working: true
+    url: "/partner/yottanet/builder"
+    expected: "Should display Languages section with add/remove functionality and multiple language inputs"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Languages section working perfectly! Found Languages section with 'Add Language' button, multiple language input fields with placeholder 'e.g., English (Fluent)', and remove functionality (trash icon). Successfully tested add/remove functionality - added 'English (Fluent)' and 'Afrikaans (Native)' using Add Language button. Remove buttons working correctly for multiple language entries. Grid layout displays properly with responsive design."
+
+  - task: "CV Builder Complete Workflow with New Fields"
+    implemented: true
+    working: true
+    url: "/partner/yottanet/builder"
+    expected: "Should complete entire CV creation workflow including new fields and PDF generation"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Complete CV Builder workflow working excellently! Successfully completed all test steps: 1) Login with customer@yottanet.co.za / password123 successful, 2) CV Builder loads without paywall issues, 3) Personal tab accessible with all new fields functional, 4) Successfully filled test data (Test User, 8501015800089, test@example.com, +27 82 123 4567, Cape Town South Africa), 5) Languages functionality working (English Fluent, Afrikaans Native), 6) Experience tab completed (Software Developer at Tech Corp), 7) Education tab completed (BSc Computer Science at University of Cape Town), 8) Skills tab completed (JavaScript, React), 9) PDF generation successful with 'CV Created!' success toast, 10) No errors encountered throughout entire workflow. All new fields integrated seamlessly into existing CV Builder functionality."
+
 ## Current Tests - Enhanced AI CV Builder Testing - COMPLETED SUCCESSFULLY
 
   - task: "Enhanced AI CV Builder - Template Selection"

@@ -474,6 +474,44 @@ class CVTemplateService:
                 edu_section.append(edu_text)
         replacements["{{EDUCATION_SECTION}}"] = "\n\n".join(edu_section)
         
+        # References entries
+        references = cv_data.get("references", [])
+        for i, ref in enumerate(references[:3]):  # Support up to 3 references
+            idx = i + 1
+            replacements[f"{{{{REF_{idx}_NAME}}}}"] = ref.get("name", "")
+            replacements[f"{{{{REF_{idx}_TITLE}}}}"] = ref.get("title", "")
+            replacements[f"{{{{REF_{idx}_COMPANY}}}}"] = ref.get("company", "")
+            replacements[f"{{{{REF_{idx}_EMAIL}}}}"] = ref.get("email", "")
+            replacements[f"{{{{REF_{idx}_PHONE}}}}"] = ref.get("phone", "")
+        
+        # Fill remaining reference slots
+        for i in range(len(references) + 1, 4):
+            replacements[f"{{{{REF_{i}_NAME}}}}"] = ""
+            replacements[f"{{{{REF_{i}_TITLE}}}}"] = ""
+            replacements[f"{{{{REF_{i}_COMPANY}}}}"] = ""
+            replacements[f"{{{{REF_{i}_EMAIL}}}}"] = ""
+            replacements[f"{{{{REF_{i}_PHONE}}}}"] = ""
+        
+        # References section (formatted block)
+        ref_section = []
+        for ref in references:
+            if ref.get("name"):
+                ref_text = f"{ref.get('name', '')}"
+                if ref.get("title"):
+                    ref_text += f", {ref.get('title', '')}"
+                if ref.get("company"):
+                    ref_text += f" at {ref.get('company', '')}"
+                contact_parts = []
+                if ref.get("email"):
+                    contact_parts.append(f"Email: {ref.get('email', '')}")
+                if ref.get("phone"):
+                    contact_parts.append(f"Phone: {ref.get('phone', '')}")
+                if contact_parts:
+                    ref_text += f"\n{' | '.join(contact_parts)}"
+                ref_section.append(ref_text)
+        replacements["{{REFERENCES_SECTION}}"] = "\n\n".join(ref_section)
+        replacements["{{REFERENCES}}"] = replacements["{{REFERENCES_SECTION}}"]
+        
         return replacements
     
     def _replace_in_paragraph(self, paragraph, replacements: Dict[str, str]):

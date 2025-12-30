@@ -227,12 +227,20 @@ const PartnerFooter = () => {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link to={baseUrl} className="flex items-center gap-2 mb-4">
-              <div 
-                className="h-10 w-10 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <Zap className="h-5 w-5 text-white" />
-              </div>
+              {logoUrl ? (
+                <img 
+                  src={logoUrl} 
+                  alt={brandName} 
+                  className="h-10 w-auto max-w-[120px] object-contain"
+                />
+              ) : (
+                <div 
+                  className="h-10 w-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  <Zap className="h-5 w-5 text-white" />
+                </div>
+              )}
               <span className="text-2xl font-bold">{brandName}</span>
             </Link>
             <p className="text-gray-400 mb-6 max-w-md">

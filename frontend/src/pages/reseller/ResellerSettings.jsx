@@ -1186,24 +1186,66 @@ const ResellerSettings = () => {
               <CardTitle>Subscription Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Plan</span>
-                  <span className="font-medium">Reseller Pro</span>
+              {currentSubscription ? (
+                <div className="space-y-4">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-gray-600">Current Plan</span>
+                      <span className="font-medium">{currentSubscription.plan_name}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-gray-600">Monthly Fee</span>
+                      <span className="font-medium">
+                        {currentSubscription.price > 0 ? formatPrice(currentSubscription.price * 100) : 'Contact Sales'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-gray-600">Billing Cycle</span>
+                      <span className="font-medium capitalize">{currentSubscription.billing_cycle}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-gray-600">Active Users Limit</span>
+                      <span className="font-medium">
+                        {currentSubscription.features?.active_users_limit === -1 ? 'Unlimited' : currentSubscription.features?.active_users_limit}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-gray-600">Status</span>
+                      <span className={`font-medium capitalize ${currentSubscription.status === 'active' ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {currentSubscription.status}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Plan Change Section */}
+                  {Object.keys(subscriptionPlans).length > 0 && (
+                    <div className="pt-4 border-t">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Change Plan</label>
+                      <div className="flex gap-2">
+                        <select 
+                          className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                          value={currentSubscription.plan}
+                          onChange={(e) => handleChangePlan(e.target.value)}
+                          disabled={changingPlan}
+                        >
+                          {Object.entries(subscriptionPlans).map(([planId, plan]) => (
+                            <option key={planId} value={planId}>
+                              {plan.name} - {plan.price > 0 ? `R${(plan.price).toLocaleString()}` : 'Contact Sales'}/month
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Plan changes take effect at the start of your next billing cycle.
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Monthly Fee</span>
-                  <span className="font-medium">{formatPrice(250000)}</span>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Loading subscription details...
                 </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Billing Cycle</span>
-                  <span className="font-medium">1st of each month</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-gray-600">Customers</span>
-                  <span className="font-medium">Unlimited</span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 

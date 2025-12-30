@@ -74,7 +74,7 @@ const POPIACompliance = () => {
             <div className="bg-gray-50 rounded-xl p-6 mb-6">
               <p className="text-gray-800"><strong>Information Officer:</strong> UpShift Privacy Team</p>
               <p className="text-gray-800"><strong>Email:</strong> privacy@upshift.works</p>
-              <p className="text-gray-800"><strong>Address:</strong> 123 Main Street, Sandton, Johannesburg, 2196</p>
+              <p className="text-gray-800"><strong>Address:</strong> 81 Botterklapper Street, The Willows, Pretoria</p>
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4 mt-8">How to Exercise Your Rights</h2>

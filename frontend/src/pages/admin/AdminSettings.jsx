@@ -870,7 +870,7 @@ const AdminSettings = () => {
                     ...siteSettings,
                     contact: { ...siteSettings.contact, address: e.target.value }
                   })}
-                  placeholder="123 Main Street, Sandton, Johannesburg, 2196, South Africa"
+                  placeholder="81 Botterklapper Street, The Willows, Pretoria"
                   rows={2}
                 />
               </div>

@@ -80,7 +80,7 @@ const PrivacyPolicy = () => {
               If you have questions about this Privacy Policy, please contact us at:
               <br /><br />
               <strong>Email:</strong> privacy@upshift.works<br />
-              <strong>Address:</strong> 123 Main Street, Sandton, Johannesburg, 2196, South Africa
+              <strong>Address:</strong> 81 Botterklapper Street, The Willows, Pretoria
             </p>
           </CardContent>
         </Card>

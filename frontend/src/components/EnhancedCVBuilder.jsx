@@ -188,23 +188,14 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
   const hasAccess = !loading && isAuthenticated && user?.active_tier;
   const isLoading = loading;
 
-  // Show loading state while auth is being checked
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    );
-  }
-
   // Load document if editing
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const docId = params.get('edit');
-    if (docId && token) {
+    if (docId && token && !loading) {
       loadDocument(docId);
     }
-  }, [location.search, token]);
+  }, [location.search, token, loading]);
 
   const loadDocument = async (docId) => {
     try {
@@ -223,6 +214,15 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
       console.error('Error loading document:', error);
     }
   };
+
+  // Show loading state while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   // Handlers
   const handleChange = (e) => {

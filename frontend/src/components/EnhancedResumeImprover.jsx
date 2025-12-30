@@ -66,15 +66,6 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
   // Check access - wait for loading to complete
   const hasAccess = !loading && isAuthenticated && user?.active_tier;
   const isLoading = loading;
-  
-  // Show loading state while auth is being checked
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    );
-  }
 
   // Handlers
   const handleDrag = useCallback((e) => {
@@ -95,6 +86,15 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
       handleFile(e.dataTransfer.files[0]);
     }
   }, []);
+
+  // Show loading state while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   const handleFile = (uploadedFile) => {
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];

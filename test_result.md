@@ -1285,3 +1285,15 @@ agent_communication:
 agent_communication:
   - agent: "main"
     message: "✅ BACKEND VERIFIED - All CV Builder APIs working. Applied frontend fix for TXT file validation. Need complete end-to-end frontend test to verify: 1) CV upload populates form, 2) PDF generation works from UI, 3) Documents appear in My Documents. Using authenticated user flow."
+
+## Authentication Loading Fix Applied
+- Fixed: EnhancedCVBuilder.jsx now properly waits for auth loading state before showing paywall
+- Fixed: EnhancedResumeImprover.jsx now properly waits for auth loading state before showing paywall
+- Changes made:
+  - Added `loading` to useAuth destructuring
+  - Added loading spinner while auth is being verified
+  - Early return for loading state placed after all hooks (to avoid React hooks rules violation)
+
+agent_communication:
+  - agent: "main"
+    message: "🔧 FIXED AUTH LOADING ISSUE - Both EnhancedCVBuilder and EnhancedResumeImprover now properly wait for authentication loading state to complete before showing paywall. This should resolve the persistent paywall issue for authenticated paid users. Need to re-test the complete flow."

@@ -77,6 +77,7 @@ const ResellerLayout = () => {
     { path: '/reseller-dashboard/calendar', icon: Calendar, label: 'Bookings' },
     { path: '/reseller-dashboard/revenue', icon: BarChart3, label: 'Analytics' },
     { path: '/reseller-dashboard/invoices', icon: Receipt, label: 'Invoices' },
+    { path: '/reseller-dashboard/cv-templates', icon: Upload, label: 'CV Templates (.docx)', badge: 'New' },
     { path: '/reseller-dashboard/activity', icon: Activity, label: 'Activity Log', badge: 'New' },
     { path: '/reseller-dashboard/campaigns', icon: Mail, label: 'Email Campaigns', badge: 'New' },
   ];

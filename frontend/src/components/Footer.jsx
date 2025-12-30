@@ -19,6 +19,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const menuLinks = [
+    { name: 'Contact Us', path: '/contact' },
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'AI Resume Builder', path: '/builder' },
@@ -36,7 +37,6 @@ const Footer = () => {
     { name: 'LinkedIn Tools', path: '/linkedin-tools' },
     { name: 'Book Strategy Call', path: '/book-strategy-call' },
     { name: 'White-Label Partners', path: '/white-label' },
-    { name: 'Contact Us', path: '/contact' },
   ];
 
   const legalLinks = [

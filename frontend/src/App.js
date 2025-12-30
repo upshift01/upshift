@@ -108,6 +108,7 @@ import CustomerBilling from "./pages/customer/CustomerBilling";
 import CustomerSettings from "./pages/customer/CustomerSettings";
 import JobTracker from "./pages/customer/JobTracker";
 import InterviewPrep from "./pages/customer/InterviewPrep";
+import CustomerStrategyCall from "./pages/customer/CustomerStrategyCall";
 import HelpCenter from "./pages/HelpCenter";
 
 // Wrapper to conditionally show Navbar and Footer
@@ -168,6 +169,7 @@ const AppContent = () => {
         <Route path="/dashboard/billing" element={<PrivateRoute><CustomerLayout><CustomerBilling /></CustomerLayout></PrivateRoute>} />
         <Route path="/dashboard/jobs" element={<PrivateRoute><CustomerLayout><JobTracker /></CustomerLayout></PrivateRoute>} />
         <Route path="/dashboard/interview-prep" element={<PrivateRoute><CustomerLayout><InterviewPrep /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/strategy-call" element={<PrivateRoute><CustomerLayout><CustomerStrategyCall /></CustomerLayout></PrivateRoute>} />
         <Route path="/dashboard/settings" element={<PrivateRoute><CustomerLayout><CustomerSettings /></CustomerLayout></PrivateRoute>} />
 
         {/* Super Admin Routes */}

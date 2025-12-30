@@ -3202,6 +3202,127 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_help_center_apis(self):
+        """Test Help Center API endpoints as per review request"""
+        print("\n📚 Testing Help Center APIs...")
+        
+        # Test 1: PDF Manual Download endpoint
+        print("\n🔹 Test 1: PDF Manual Download")
+        
+        pdf_content, error = self.make_pdf_request("GET", "/help/user-manual/pdf")
+        if error:
+            self.log_test("PDF Manual Download", False, error)
+        else:
+            # Validate PDF content
+            if pdf_content and len(pdf_content) > 10000:  # Check file size > 10KB
+                # Check if it's actually a PDF by looking for PDF header
+                if pdf_content.startswith(b'%PDF'):
+                    self.log_test("PDF Manual Download", True, 
+                                f"PDF generated successfully, size: {len(pdf_content)} bytes")
+                else:
+                    self.log_test("PDF Manual Download", False, 
+                                "Response is not a valid PDF file (missing PDF header)")
+            else:
+                self.log_test("PDF Manual Download", False, 
+                            f"PDF too small or empty, size: {len(pdf_content) if pdf_content else 0} bytes")
+        
+        # Test 2: Help Content API
+        print("\n🔹 Test 2: Help Content API")
+        
+        response, error = self.make_request("GET", "/help/content")
+        if error:
+            self.log_test("Help Content API", False, error)
+        else:
+            # Validate response structure
+            required_fields = ["user_guide", "reseller_guide"]
+            missing_fields = [f for f in required_fields if f not in response]
+            
+            if missing_fields:
+                self.log_test("Help Content API", False, f"Missing fields: {missing_fields}")
+            else:
+                user_guide = response.get("user_guide", {})
+                reseller_guide = response.get("reseller_guide", {})
+                
+                # Check if guides have content
+                if len(user_guide) > 0 and len(reseller_guide) > 0:
+                    # Validate structure of a sample section
+                    sample_section = list(user_guide.values())[0] if user_guide else {}
+                    required_section_fields = ["title", "description", "steps"]
+                    missing_section_fields = [f for f in required_section_fields if f not in sample_section]
+                    
+                    if missing_section_fields:
+                        self.log_test("Help Content API", False, 
+                                    f"Sample section missing fields: {missing_section_fields}")
+                    else:
+                        self.log_test("Help Content API", True, 
+                                    f"User guide: {len(user_guide)} sections, Reseller guide: {len(reseller_guide)} sections")
+                else:
+                    self.log_test("Help Content API", False, 
+                                f"Empty guides - User: {len(user_guide)}, Reseller: {len(reseller_guide)}")
+        
+        # Test 3: Individual Section API - Test with cv_builder section
+        print("\n🔹 Test 3: Individual Section API")
+        
+        response, error = self.make_request("GET", "/help/content/cv_builder")
+        if error:
+            self.log_test("Individual Section API - CV Builder", False, error)
+        else:
+            # Validate section structure
+            required_fields = ["title", "description", "steps"]
+            missing_fields = [f for f in required_fields if f not in response]
+            
+            if missing_fields:
+                self.log_test("Individual Section API - CV Builder", False, f"Missing fields: {missing_fields}")
+            else:
+                title = response.get("title", "")
+                description = response.get("description", "")
+                steps = response.get("steps", [])
+                tips = response.get("tips", [])
+                
+                if title and description and isinstance(steps, list) and len(steps) > 0:
+                    self.log_test("Individual Section API - CV Builder", True, 
+                                f"Title: '{title}', Steps: {len(steps)}, Tips: {len(tips)}")
+                else:
+                    self.log_test("Individual Section API - CV Builder", False, 
+                                f"Invalid section data - Title: '{title}', Steps: {len(steps) if isinstance(steps, list) else 'not list'}")
+        
+        # Test 4: Individual Section API - Test with non-existent section
+        print("\n🔹 Test 4: Individual Section API - Non-existent Section")
+        
+        response, error = self.make_request("GET", "/help/content/non_existent_section", expected_status=404)
+        if error and "404" in error:
+            self.log_test("Individual Section API - 404 Handling", True, "Correctly returned 404 for non-existent section")
+        else:
+            self.log_test("Individual Section API - 404 Handling", False, 
+                        f"Should return 404 for non-existent section, got: {response}, error: {error}")
+        
+        # Test 5: Individual Section API - Test with reseller section
+        print("\n🔹 Test 5: Individual Section API - Reseller Section")
+        
+        response, error = self.make_request("GET", "/help/content/reseller_dashboard")
+        if error:
+            self.log_test("Individual Section API - Reseller Dashboard", False, error)
+        else:
+            # Validate reseller section structure
+            required_fields = ["title", "description", "steps"]
+            missing_fields = [f for f in required_fields if f not in response]
+            
+            if missing_fields:
+                self.log_test("Individual Section API - Reseller Dashboard", False, f"Missing fields: {missing_fields}")
+            else:
+                title = response.get("title", "")
+                description = response.get("description", "")
+                steps = response.get("steps", [])
+                
+                if title and description and isinstance(steps, list) and len(steps) > 0:
+                    self.log_test("Individual Section API - Reseller Dashboard", True, 
+                                f"Reseller section - Title: '{title}', Steps: {len(steps)}")
+                else:
+                    self.log_test("Individual Section API - Reseller Dashboard", False, 
+                                f"Invalid reseller section data - Title: '{title}', Steps: {len(steps) if isinstance(steps, list) else 'not list'}")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Backend API Tests...")

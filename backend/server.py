@@ -919,19 +919,19 @@ async def generate_resume_pdf(resume_data: ResumeCreate):
             story.append(Spacer(1, 0.2*inch))
             story.append(Paragraph("REFERENCES", heading_style))
             for ref in resume_data.references:
-                if ref.get('name'):
-                    ref_text = f"<b>{ref.get('name', '')}</b>"
-                    if ref.get('title'):
-                        ref_text += f", {ref.get('title', '')}"
-                    if ref.get('company'):
-                        ref_text += f" at {ref.get('company', '')}"
+                if ref.name:
+                    ref_text = f"<b>{ref.name}</b>"
+                    if ref.title:
+                        ref_text += f", {ref.title}"
+                    if ref.company:
+                        ref_text += f" at {ref.company}"
                     story.append(Paragraph(ref_text, styles['Normal']))
                     
                     contact_info = []
-                    if ref.get('email'):
-                        contact_info.append(f"Email: {ref.get('email', '')}")
-                    if ref.get('phone'):
-                        contact_info.append(f"Phone: {ref.get('phone', '')}")
+                    if ref.email:
+                        contact_info.append(f"Email: {ref.email}")
+                    if ref.phone:
+                        contact_info.append(f"Phone: {ref.phone}")
                     
                     if contact_info:
                         story.append(Paragraph(" | ".join(contact_info), styles['Normal']))

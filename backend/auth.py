@@ -42,6 +42,8 @@ class UserInDB(BaseModel):
     reseller_id: Optional[str] = None  # For customers belonging to a reseller
     active_tier: Optional[str] = None
     tier_activation_date: Optional[datetime] = None
+    subscription_expires_at: Optional[datetime] = None  # 30 days from purchase
+    status: str = "active"  # active, suspended, cancelled
     created_at: datetime
     is_active: bool = True
 
@@ -54,6 +56,8 @@ class UserResponse(BaseModel):
     reseller_id: Optional[str] = None
     active_tier: Optional[str] = None
     tier_activation_date: Optional[datetime] = None
+    subscription_expires_at: Optional[datetime] = None
+    status: str = "active"
     created_at: datetime
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

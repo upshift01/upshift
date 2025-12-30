@@ -1245,6 +1245,136 @@ async def create_super_admin(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@admin_router.put("/users/{user_id}", response_model=dict)
+async def update_user(
+    user_id: str,
+    data: dict,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Update a user's details"""
+    try:
+        # Find the user
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Build update data
+        update_data = {}
+        
+        if "full_name" in data:
+            update_data["full_name"] = data["full_name"]
+        if "email" in data:
+            # Check if email is taken by another user
+            existing = await db.users.find_one({"email": data["email"], "id": {"$ne": user_id}})
+            if existing:
+                raise HTTPException(status_code=400, detail="Email already in use")
+            update_data["email"] = data["email"]
+        if "role" in data:
+            if data["role"] not in ["customer", "reseller_admin", "super_admin"]:
+                raise HTTPException(status_code=400, detail="Invalid role")
+            update_data["role"] = data["role"]
+        if "is_active" in data:
+            update_data["is_active"] = data["is_active"]
+        if "active_tier" in data:
+            update_data["active_tier"] = data["active_tier"]
+        
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"User {user_id} updated by admin {admin.email}")
+        
+        return {"success": True, "message": "User updated successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.delete("/users/{user_id}", response_model=dict)
+async def delete_user(
+    user_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Delete a user"""
+    try:
+        # Find the user
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Prevent deleting yourself
+        if user["email"] == admin.email:
+            raise HTTPException(status_code=400, detail="Cannot delete your own account")
+        
+        # If user is a reseller admin, check if they own a reseller
+        if user.get("role") == "reseller_admin" and user.get("reseller_id"):
+            reseller = await db.resellers.find_one({"id": user["reseller_id"]})
+            if reseller and reseller.get("owner_user_id") == user_id:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Cannot delete reseller owner. Delete the reseller first."
+                )
+        
+        # Delete the user
+        await db.users.delete_one({"id": user_id})
+        
+        logger.info(f"User {user_id} ({user.get('email')}) deleted by admin {admin.email}")
+        
+        return {"success": True, "message": "User deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/users/{user_id}/reset-password", response_model=dict)
+async def admin_reset_user_password(
+    user_id: str,
+    data: dict,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Reset a user's password (admin function)"""
+    try:
+        from auth import get_password_hash
+        
+        # Find the user
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        new_password = data.get("new_password")
+        if not new_password or len(new_password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        # Hash and update password
+        hashed_password = get_password_hash(new_password)
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {
+                "hashed_password": hashed_password,
+                "updated_at": datetime.now(timezone.utc)
+            }}
+        )
+        
+        logger.info(f"Password reset for user {user_id} ({user.get('email')}) by admin {admin.email}")
+        
+        return {"success": True, "message": "Password reset successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error resetting password: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============= YOCO PAYMENT SETTINGS =============
 
 @admin_router.get("/yoco-settings", response_model=dict)

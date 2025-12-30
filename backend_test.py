@@ -3230,7 +3230,8 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             self.test_reseller_branding_file_upload,  # Add Reseller Branding File Upload testing
             self.test_crm_lead_management_apis,  # Add CRM testing
             self.test_customer_invoice_creation,
-            self.test_trial_system  # Add the new trial system tests
+            self.test_trial_system,  # Add the new trial system tests
+            self.test_help_center_apis  # Add Help Center tests
         ]
         
         for test_suite in test_suites:

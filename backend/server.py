@@ -1399,6 +1399,7 @@ app.include_router(linkedin_router)
 app.include_router(customer_router)
 app.include_router(content_router)
 app.include_router(cv_template_router)
+app.include_router(help_router)
 
 app.add_middleware(
     CORSMiddleware,

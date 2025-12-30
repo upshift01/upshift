@@ -66,6 +66,10 @@ PLACEHOLDER_MAP = {
     # Education section markers
     "{{EDUCATION_SECTION}}": "education",
     
+    # References section marker
+    "{{REFERENCES_SECTION}}": "references",
+    "{{REFERENCES}}": "references",
+    
     # Individual experience placeholders (for templates with fixed slots)
     "{{EXP_1_TITLE}}": "experiences[0].title",
     "{{EXP_1_COMPANY}}": "experiences[0].company",
@@ -93,6 +97,25 @@ PLACEHOLDER_MAP = {
     "{{EDU_2_DEGREE}}": "education[1].degree",
     "{{EDU_2_INSTITUTION}}": "education[1].institution",
     "{{EDU_2_YEAR}}": "education[1].year",
+    
+    # Individual reference placeholders (for templates with fixed slots)
+    "{{REF_1_NAME}}": "references[0].name",
+    "{{REF_1_TITLE}}": "references[0].title",
+    "{{REF_1_COMPANY}}": "references[0].company",
+    "{{REF_1_EMAIL}}": "references[0].email",
+    "{{REF_1_PHONE}}": "references[0].phone",
+    
+    "{{REF_2_NAME}}": "references[1].name",
+    "{{REF_2_TITLE}}": "references[1].title",
+    "{{REF_2_COMPANY}}": "references[1].company",
+    "{{REF_2_EMAIL}}": "references[1].email",
+    "{{REF_2_PHONE}}": "references[1].phone",
+    
+    "{{REF_3_NAME}}": "references[2].name",
+    "{{REF_3_TITLE}}": "references[2].title",
+    "{{REF_3_COMPANY}}": "references[2].company",
+    "{{REF_3_EMAIL}}": "references[2].email",
+    "{{REF_3_PHONE}}": "references[2].phone",
 }
 
 

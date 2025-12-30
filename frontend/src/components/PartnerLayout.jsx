@@ -176,6 +176,7 @@ const PartnerFooter = () => {
     brandName, 
     primaryColor,
     secondaryColor,
+    logoUrl,
     contactEmail, 
     contactPhone, 
     contactAddress,

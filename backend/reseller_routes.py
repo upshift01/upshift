@@ -848,6 +848,23 @@ async def get_reseller_stats(context: dict = Depends(get_current_reseller_admin)
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@reseller_router.get("/activity-stats")
+async def get_reseller_activity_stats(context: dict = Depends(get_current_reseller_admin)):
+    """Get activity statistics for reseller dashboard"""
+    try:
+        reseller = context["reseller"]
+        reseller_id = reseller["id"]
+        
+        from activity_service import get_activity_service
+        activity_service = get_activity_service(db)
+        stats = await activity_service.get_reseller_stats(reseller_id)
+        
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting activity stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @reseller_router.get("/revenue", response_model=dict)
 async def get_revenue_breakdown(
     months: int = 6,

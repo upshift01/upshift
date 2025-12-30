@@ -94,11 +94,24 @@ class EmailService:
             if bcc:
                 recipients.extend(bcc)
             
-            # Connect and send
-            with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as server:
-                server.starttls()
-                server.login(self.smtp_user, self.smtp_password)
-                server.sendmail(self.from_email, recipients, msg.as_string())
+            # Connect and send based on encryption type
+            if self.encryption == 'ssl':
+                # Use SMTP_SSL for port 465
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, context=context, timeout=30) as server:
+                    server.login(self.smtp_user, self.smtp_password)
+                    server.sendmail(self.from_email, recipients, msg.as_string())
+            elif self.encryption == 'tls':
+                # Use SMTP with STARTTLS for port 587
+                with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as server:
+                    server.starttls()
+                    server.login(self.smtp_user, self.smtp_password)
+                    server.sendmail(self.from_email, recipients, msg.as_string())
+            else:
+                # No encryption
+                with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as server:
+                    server.login(self.smtp_user, self.smtp_password)
+                    server.sendmail(self.from_email, recipients, msg.as_string())
             
             logger.info(f"Email sent to {to_email}: {subject}")
             return True

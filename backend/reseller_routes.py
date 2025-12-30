@@ -148,6 +148,12 @@ async def register_reseller(data: ResellerCreate):
         
         await db.resellers.insert_one(reseller)
         
+        # Update the owner user with the reseller_id
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"reseller_id": reseller_id}}
+        )
+        
         logger.info(f"New reseller registered: {data.company_name} ({data.subdomain})")
         
         return {

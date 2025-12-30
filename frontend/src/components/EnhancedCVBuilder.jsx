@@ -1594,6 +1594,124 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
                   <Button variant="outline" onClick={() => setActiveTab('education')}>
                     Back
                   </Button>
+                  <Button onClick={() => setActiveTab('references')} style={{ backgroundColor: primaryColor }}>
+                    Next: References <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* References Tab */}
+          <TabsContent value="references" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>References</CardTitle>
+                <CardDescription>
+                  Add professional references who can vouch for your work. This section is optional.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {formData.references.map((ref, index) => (
+                  <div key={index} className="border rounded-lg p-4 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium text-gray-700">Reference {index + 1}</h4>
+                      {formData.references.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeReference(index)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Full Name</Label>
+                        <Input
+                          placeholder="John Smith"
+                          value={ref.name}
+                          onChange={(e) => handleReferenceChange(index, 'name', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label>Job Title</Label>
+                        <Input
+                          placeholder="Senior Manager"
+                          value={ref.title}
+                          onChange={(e) => handleReferenceChange(index, 'title', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Company / Organisation</Label>
+                      <Input
+                        placeholder="ABC Corporation"
+                        value={ref.company}
+                        onChange={(e) => handleReferenceChange(index, 'company', e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Email Address</Label>
+                        <Input
+                          type="email"
+                          placeholder="john.smith@company.com"
+                          value={ref.email}
+                          onChange={(e) => handleReferenceChange(index, 'email', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label>Phone Number</Label>
+                        <Input
+                          type="tel"
+                          placeholder="+27 12 345 6789"
+                          value={ref.phone}
+                          onChange={(e) => handleReferenceChange(index, 'phone', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <Button variant="outline" onClick={addReference} className="w-full gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Another Reference
+                </Button>
+
+                {/* Generate CV Button */}
+                <div className="border-t pt-6 mt-6">
+                  <div className="text-center">
+                    <p className="text-gray-600 mb-4">Ready to create your CV?</p>
+                    <Button 
+                      onClick={generatePDF} 
+                      disabled={isGenerating || !formData.fullName}
+                      className="gap-2 px-8 py-6 text-lg"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {isGenerating ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <Download className="h-5 w-5" />
+                      )}
+                      Generate & Download CV (PDF)
+                    </Button>
+                  </div>
+                  
+                  {!formData.fullName && (
+                    <p className="text-sm text-red-600 mt-2 text-center">Please enter your full name first</p>
+                  )}
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <Button variant="outline" onClick={() => setActiveTab('skills')}>
+                    Back
+                  </Button>
                 </div>
               </CardContent>
             </Card>

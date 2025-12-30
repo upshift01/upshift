@@ -653,6 +653,7 @@ def generate_cv_pdf(cv_data, template_id='professional'):
             - education (list)
             - skills (list)
             - certifications (optional list)
+            - references (optional list of {name, title, company, email, phone})
         template_id: Template identifier
     
     Returns:

@@ -1316,6 +1316,12 @@ if not uploads_path.exists():
     uploads_path.mkdir(parents=True, exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
 
+# Mount public uploads (CV templates and generated CVs)
+public_uploads_path = Path("/app/public/uploads")
+if not public_uploads_path.exists():
+    public_uploads_path.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(public_uploads_path)), name="public_uploads")
+
 # Include reseller and admin routers
 app.include_router(reseller_router)
 app.include_router(admin_router)

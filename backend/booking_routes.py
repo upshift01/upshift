@@ -129,7 +129,7 @@ async def get_holidays():
 @booking_router.post("/create", response_model=dict)
 async def create_booking(
     booking: BookingCreate,
-    request = None
+    request: Request = None
 ):
     """
     Create a new booking.
@@ -137,7 +137,6 @@ async def create_booking(
     - Other users: requires payment (R699)
     - Associates booking with user's reseller_id for reseller calendar visibility
     """
-    from fastapi import Request
     try:
         # Try to get current user (optional - can book without login for addon)
         user = None
@@ -145,7 +144,7 @@ async def create_booking(
         user_reseller_id = None
         
         try:
-            from auth import oauth2_scheme, get_current_user
+            from auth import get_current_user
             if request:
                 auth_header = request.headers.get("Authorization")
                 if auth_header and auth_header.startswith("Bearer "):
@@ -155,8 +154,9 @@ async def create_booking(
                     if user_doc:
                         user_tier = user_doc.get("active_tier")
                         user_reseller_id = user_doc.get("reseller_id")
-        except:
-            pass
+                        logger.info(f"Booking user identified: {user.email}, tier: {user_tier}, reseller_id: {user_reseller_id}")
+        except Exception as auth_error:
+            logger.warning(f"Auth error during booking (proceeding without user): {str(auth_error)}")
         
         # Validate date and time
         if not is_business_day(booking.date):

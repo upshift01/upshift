@@ -124,6 +124,7 @@ async def register(user_data: UserRegister):
         
         # Validate reseller_id if provided
         reseller_id = user_data.reseller_id
+        reseller = None
         if reseller_id:
             reseller = await db.resellers.find_one({"id": reseller_id, "status": "active"})
             if not reseller:
@@ -164,6 +165,27 @@ async def register(user_data: UserRegister):
                 "customer_email": user_data.email,
                 "created_at": datetime.now(timezone.utc)
             })
+        
+        # Send welcome email
+        try:
+            platform_name = "UpShift"
+            login_url = os.environ.get("REACT_APP_FRONTEND_URL", "https://upshift.works") + "/login"
+            
+            # If reseller registration, get partner site URL and branding
+            if reseller and reseller.get("partner_site_url"):
+                platform_name = reseller.get("company_name", "UpShift Partner")
+                login_url = f"{reseller['partner_site_url']}/login"
+            
+            await email_service.send_welcome_email(
+                to_email=user_data.email,
+                user_name=user_data.full_name.split()[0],  # First name only
+                platform_name=platform_name,
+                login_url=login_url
+            )
+            logger.info(f"Welcome email sent to: {user_data.email}")
+        except Exception as email_error:
+            logger.warning(f"Failed to send welcome email to {user_data.email}: {str(email_error)}")
+            # Don't fail registration if email fails
         
         # Create access token
         access_token = create_access_token(data={"sub": user_data.email})

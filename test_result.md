@@ -194,11 +194,11 @@ metadata:
 
   - task: "Enhanced AI CV Builder - Template Selection"
     implemented: true
-    working: false
+    working: true
     url: "/partner/yottanet/builder"
     expected: "Should display 6 templates (Professional, Modern, Creative, Executive, ATS Classic, ATS Modern) with ability to select Modern template and continue to Personal tab"
     priority: "high"
-    stuck_count: 1
+    stuck_count: 0
     needs_retesting: false
     status_history:
       - working: false
@@ -210,6 +210,9 @@ metadata:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL REGRESSION: Template selection blocked by persistent paywall despite user having tier-2 access (confirmed via API). Backend authentication works (successful login logs) but frontend authentication persistence fails. Paywall modal 'Unlock AI Resume Builder' consistently appears even for authenticated tier-2 user. Template selection UI not accessible due to paywall overlay. REQUIRES IMMEDIATE FIX: Frontend authentication context/session management."
+      - working: true
+        agent: "testing"
+        comment: "✅ TEMPLATE SELECTION WORKING PERFECTLY: Authentication fix successful! CV Builder loads without paywall for tier-2 user. Template selection displays 16+ templates across multiple categories: General (Professional, Modern, Creative, Executive), ATS-Optimised (ATS Classic, ATS Modern), and Industry-Specific templates (ATS Tech/IT, ATS Finance/Banking, ATS Healthcare/Medical, ATS Engineering, ATS Sales/Marketing, ATS Education/Academic, ATS Legal/Law, ATS Hospitality/Tourism, ATS Retail/Customer Service, ATS Manufacturing/Operations). Template filtering by category working correctly. Template selection UI fully functional with proper styling and selection indicators."
 
   - task: "Enhanced AI CV Builder - User Authentication & Tier Access"
     implemented: true

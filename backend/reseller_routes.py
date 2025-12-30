@@ -57,6 +57,8 @@ async def get_current_reseller_admin(request: Request):
 async def register_reseller(data: ResellerCreate):
     """Register a new reseller account"""
     try:
+        logger.info(f"Registering new reseller: {data.company_name} ({data.subdomain})")
+        
         # Check if subdomain is taken
         existing = await db.resellers.find_one({"subdomain": data.subdomain})
         if existing:
@@ -89,7 +91,8 @@ async def register_reseller(data: ResellerCreate):
             "payment_history": []
         }
         
-        await db.users.insert_one(owner_user)
+        result = await db.users.insert_one(owner_user)
+        logger.info(f"Created user {data.owner_email} with id {user_id}, insert_id: {result.inserted_id}")
         
         # Create reseller with 7-day trial
         reseller_id = str(uuid.uuid4())

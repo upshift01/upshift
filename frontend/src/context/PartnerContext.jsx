@@ -125,6 +125,9 @@ export const usePartner = () => {
       logoUrl: null,
       contactEmail: null,
       contactPhone: null,
+      contactAddress: null,
+      contactWhatsapp: null,
+      socialMedia: {},
       resellerId: null,
       baseUrl: '',
       pricing: {}

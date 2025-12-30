@@ -278,7 +278,9 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
       if (response.ok) {
         const doc = await response.json();
         setFormData(doc.cv_data);
-        setSelectedTemplate(TEMPLATES.find(t => t.id === doc.template_id) || TEMPLATES[0]);
+        // Check both custom and built-in templates
+        const allTemplates = [...customTemplates, ...BUILTIN_TEMPLATES];
+        setSelectedTemplate(allTemplates.find(t => t.id === doc.template_id) || BUILTIN_TEMPLATES[0]);
         setEditingDocId(docId);
         setActiveTab('personal');
         toast({ title: 'Document Loaded', description: 'You can now edit your CV' });

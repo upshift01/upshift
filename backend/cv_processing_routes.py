@@ -403,13 +403,6 @@ async def enhance_cv_section(
 # Import the PDF service
 from cv_pdf_service import generate_cv_pdf, TEMPLATES
 
-# Auth dependency
-from auth import get_current_user, oauth2_scheme
-
-async def get_current_user_with_db(token: str = Depends(oauth2_scheme)):
-    """Get current user with database access"""
-    return await get_current_user(token, db)
-
 
 class CVGenerateRequest(BaseModel):
     template_id: str = "professional"

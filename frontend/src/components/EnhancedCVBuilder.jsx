@@ -287,6 +287,47 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
     }
   };
 
+  // Language handlers
+  const handleLanguageChange = (index, value) => {
+    const newLanguages = [...formData.languages];
+    newLanguages[index] = value;
+    setFormData({ ...formData, languages: newLanguages });
+  };
+
+  const addLanguage = () => {
+    setFormData({ ...formData, languages: [...formData.languages, ''] });
+  };
+
+  const removeLanguage = (index) => {
+    if (formData.languages.length > 1) {
+      setFormData({ ...formData, languages: formData.languages.filter((_, i) => i !== index) });
+    }
+  };
+
+  // Photo upload handler
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({ title: 'Invalid File', description: 'Please upload an image file', variant: 'destructive' });
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: 'File Too Large', description: 'Please upload an image under 5MB', variant: 'destructive' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, photo: file, photoPreview: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setFormData({ ...formData, photo: null, photoPreview: '' });
+  };
+
   // CV Upload handlers
   const handleDrag = (e) => {
     e.preventDefault();

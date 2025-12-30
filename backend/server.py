@@ -43,6 +43,7 @@ from email_service import email_service
 from linkedin_routes import router as linkedin_router, set_db as set_linkedin_db
 from customer_routes import router as customer_router, set_db as set_customer_db
 from content_routes import content_router, set_db as set_content_db
+from cv_template_routes import cv_template_router, set_db as set_cv_template_db
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()
@@ -67,6 +68,7 @@ set_ai_content_db(db)
 set_linkedin_db(db)
 set_customer_db(db)
 set_content_db(db)
+set_cv_template_db(db)
 
 # Create the main app without a prefix
 app = FastAPI(title="UpShift API", description="AI-Powered Resume and Cover Letter Platform")

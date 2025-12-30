@@ -464,6 +464,24 @@ async def generate_cv_pdf_endpoint(
             
             logger.info(f"CV saved to documents for user {current_user.id}: {doc_id}")
         
+        # Log activity
+        try:
+            from activity_service import get_activity_service
+            activity_service = get_activity_service(db)
+            await activity_service.log_activity(
+                user_id=current_user.id,
+                activity_type="cv_created" if request.save_to_documents else "cv_downloaded",
+                description=f"Generated CV using {request.template_id} template",
+                metadata={
+                    "template_id": request.template_id,
+                    "document_id": doc_id,
+                    "file_size": len(pdf_bytes)
+                },
+                reseller_id=current_user.reseller_id
+            )
+        except Exception as log_error:
+            logger.warning(f"Failed to log activity: {str(log_error)}")
+        
         # Return PDF as base64 for download
         import base64
         return {

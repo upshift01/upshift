@@ -21,6 +21,13 @@ class Language(BaseModel):
     language: str
     proficiency: str
 
+class Reference(BaseModel):
+    name: str
+    title: Optional[str] = ""
+    company: Optional[str] = ""
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+
 class ResumeCreate(BaseModel):
     fullName: str
     email: EmailStr
@@ -36,6 +43,7 @@ class ResumeCreate(BaseModel):
     education: List[Education]
     skills: List[str]
     languages: List[Language] = []
+    references: List[Reference] = []
 
 class Resume(ResumeCreate):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

@@ -601,6 +601,37 @@ class CVPDFGenerator:
                 for cert in certs:
                     story.append(Paragraph(f"• {cert}", self.styles['CVSkill']))
         
+        # References (if present)
+        references = cv_data.get('references', [])
+        if references:
+            # Filter to only include references with at least a name
+            valid_refs = [r for r in references if r.get('name')]
+            if valid_refs:
+                self._add_section_header(story, 'References')
+                for ref in valid_refs:
+                    ref_name = ref.get('name', '')
+                    ref_title = ref.get('title', '')
+                    ref_company = ref.get('company', '')
+                    ref_email = ref.get('email', '')
+                    ref_phone = ref.get('phone', '')
+                    
+                    # Build reference info
+                    ref_line = f"<b>{ref_name}</b>"
+                    if ref_title:
+                        ref_line += f", {ref_title}"
+                    if ref_company:
+                        ref_line += f" at {ref_company}"
+                    story.append(Paragraph(ref_line, self.styles['CVBody']))
+                    
+                    contact_parts = []
+                    if ref_email:
+                        contact_parts.append(f"Email: {ref_email}")
+                    if ref_phone:
+                        contact_parts.append(f"Phone: {ref_phone}")
+                    if contact_parts:
+                        story.append(Paragraph(" | ".join(contact_parts), self.styles['CVContact']))
+                    story.append(Spacer(1, 8))
+        
         # Build PDF
         doc.build(story)
         buffer.seek(0)

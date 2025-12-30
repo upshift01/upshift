@@ -901,50 +901,130 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
             <Card>
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Enter your contact details</CardDescription>
+                <CardDescription>Enter your contact details and upload your photo</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="fullName">Full Name *</Label>
-                    <Input
-                      id="fullName"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      placeholder="John Smith"
-                    />
+              <CardContent className="space-y-6">
+                {/* Photo Upload Section */}
+                <div className="flex items-start gap-6">
+                  <div className="flex-shrink-0">
+                    <Label className="block mb-2">Profile Photo</Label>
+                    <div className="relative">
+                      {formData.photoPreview ? (
+                        <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                          <img 
+                            src={formData.photoPreview} 
+                            alt="Profile preview" 
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                          <Upload className="h-8 w-8 text-gray-400 mb-1" />
+                          <span className="text-xs text-gray-500">Upload Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Max 5MB, JPG/PNG</p>
                   </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="john.smith@email.com"
-                    />
+                  
+                  <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="fullName">Full Name *</Label>
+                      <Input
+                        id="fullName"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        placeholder="John Smith"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="idNumber">ID / Passport Number</Label>
+                      <Input
+                        id="idNumber"
+                        name="idNumber"
+                        value={formData.idNumber}
+                        onChange={handleChange}
+                        placeholder="e.g., 8501015800089"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="john.smith@email.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+27 82 123 4567"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="address">Location</Label>
+                      <Input
+                        id="address"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        placeholder="Cape Town, South Africa"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="+27 82 123 4567"
-                    />
+                </div>
+
+                {/* Languages Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Languages</Label>
+                    <Button type="button" variant="ghost" size="sm" onClick={addLanguage}>
+                      <Plus className="h-4 w-4 mr-1" /> Add Language
+                    </Button>
                   </div>
-                  <div>
-                    <Label htmlFor="address">Location</Label>
-                    <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      placeholder="Cape Town, South Africa"
-                    />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {formData.languages.map((lang, index) => (
+                      <div key={index} className="flex items-center gap-1">
+                        <Input
+                          value={lang}
+                          onChange={(e) => handleLanguageChange(index, e.target.value)}
+                          placeholder="e.g., English (Fluent)"
+                          className="text-sm"
+                        />
+                        {formData.languages.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeLanguage(index)}
+                            className="px-2 text-red-500 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
 

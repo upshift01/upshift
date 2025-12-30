@@ -224,6 +224,19 @@ metadata:
         agent: "testing"
         comment: "✅ RESOLVED: User authentication and tier access working correctly. customer@yottanet.co.za / password123 has proper tier access to CV Builder. No paywall restrictions encountered. Session management working properly across page navigations. Authentication persistence resolved."
 
+  - task: "Enhanced AI CV Builder - CV Upload and Data Extraction"
+    implemented: true
+    working: true
+    url: "/partner/yottanet/builder"
+    expected: "Should allow uploading CV files (PDF, DOC, DOCX), extract data via AI, populate form fields, and show success notification"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: CV Upload and Data Extraction feature working excellently! Backend API endpoint /api/ai-content/extract-cv-data tested successfully with authentication. API correctly extracts structured data including: fullName, email, phone, address, professional summary, work experiences (with title, company, duration, description), education (degree, institution, year), and skills array. Frontend shows 'Import Existing CV' section with drag-drop zone and file input. Frontend validation accepts PDF/DOC/DOCX files (minor issue: rejects .txt files despite backend support). API response format matches frontend expectations with data.cv_data structure. Core functionality operational - file upload triggers AI extraction and returns properly formatted CV data for form population."
+
   - task: "Enhanced AI CV Builder - Personal Information & AI Summary"
     implemented: true
     working: "NA"

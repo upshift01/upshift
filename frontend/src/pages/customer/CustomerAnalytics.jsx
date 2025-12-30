@@ -1,5 +1,5 @@
 import React from 'react';
-import SharedAnalytics from '../components/SharedAnalytics';
+import SharedAnalytics from '../../components/SharedAnalytics';
 
 /**
  * Customer Analytics - Uses shared analytics component

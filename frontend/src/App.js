@@ -108,6 +108,7 @@ import CustomerBilling from "./pages/customer/CustomerBilling";
 import CustomerSettings from "./pages/customer/CustomerSettings";
 import JobTracker from "./pages/customer/JobTracker";
 import InterviewPrep from "./pages/customer/InterviewPrep";
+import HelpCenter from "./pages/HelpCenter";
 
 // Wrapper to conditionally show Navbar and Footer
 const AppContent = () => {
@@ -137,6 +138,8 @@ const AppContent = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/skills-generator" element={<SkillsGenerator />} />
+        <Route path="/help" element={<HelpCenter />} />
+        <Route path="/help-center" element={<HelpCenter />} />
         
         {/* Legal Pages */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

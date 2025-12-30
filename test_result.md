@@ -194,11 +194,11 @@ metadata:
 
   - task: "Enhanced AI CV Builder - Template Selection"
     implemented: true
-    working: true
+    working: false
     url: "/partner/yottanet/builder"
     expected: "Should display 6 templates (Professional, Modern, Creative, Executive, ATS Classic, ATS Modern) with ability to select Modern template and continue to Personal tab"
     priority: "high"
-    stuck_count: 0
+    stuck_count: 1
     needs_retesting: false
     status_history:
       - working: false
@@ -207,14 +207,17 @@ metadata:
       - working: true
         agent: "testing"
         comment: "✅ RESOLVED: CV Builder now fully accessible with customer@yottanet.co.za / password123. Template selection working perfectly with 16 templates available (exceeds expected 6). All template categories functional: General (Professional, Modern, Creative, Executive), ATS-Optimised (ATS Classic, ATS Modern), and Industry-Specific templates. No paywall blocking access. Template selection UI working correctly."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL REGRESSION: Template selection blocked by persistent paywall despite user having tier-2 access (confirmed via API). Backend authentication works (successful login logs) but frontend authentication persistence fails. Paywall modal 'Unlock AI Resume Builder' consistently appears even for authenticated tier-2 user. Template selection UI not accessible due to paywall overlay. REQUIRES IMMEDIATE FIX: Frontend authentication context/session management."
 
   - task: "Enhanced AI CV Builder - User Authentication & Tier Access"
     implemented: true
-    working: true
+    working: false
     url: "/partner/yottanet/login"
     expected: "User customer@yottanet.co.za / password123 should have tier-2 access to CV Builder without paywall restrictions"
     priority: "high"
-    stuck_count: 0
+    stuck_count: 2
     needs_retesting: false
     status_history:
       - working: false
@@ -223,6 +226,9 @@ metadata:
       - working: true
         agent: "testing"
         comment: "✅ RESOLVED: User authentication and tier access working correctly. customer@yottanet.co.za / password123 has proper tier access to CV Builder. No paywall restrictions encountered. Session management working properly across page navigations. Authentication persistence resolved."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL AUTHENTICATION FAILURE: User has confirmed tier-2 access (API response: active_tier: tier-2) but frontend authentication persistence completely broken. Backend login successful (logs show: User logged in: customer@yottanet.co.za) but frontend session management fails. Paywall consistently blocks CV Builder access despite valid tier-2 subscription. Session not persisting across page navigations. REQUIRES IMMEDIATE FIX: Frontend AuthContext/session management system."
 
   - task: "Enhanced AI CV Builder - CV Upload and Data Extraction"
     implemented: true

@@ -339,12 +339,25 @@ metadata:
         agent: "testing"
         comment: "✅ DOCUMENT SAVING WORKFLOW ACCESSIBLE: Authentication fix successful! CV Builder fully accessible for document creation and saving. PDF generation includes save_to_documents: true functionality. My Documents page accessible and shows existing CVs. Document saving workflow now functional with CV Builder access restored. Edit functionality available through CV Builder access."
 
+  - task: "Enhanced Resume Improver - Authentication & Access"
+    implemented: true
+    working: true
+    url: "/partner/yottanet/improve"
+    expected: "Should load Resume Improver without paywall for tier-2 user, showing upload interface and step-by-step improvement workflow"
+    priority: "high"
+    stuck_count: 0
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ RESUME IMPROVER AUTHENTICATION FIX SUCCESSFUL: EnhancedResumeImprover now properly waits for authentication loading state before showing paywall. User customer@yottanet.co.za / password123 successfully accesses Resume Improver without paywall restrictions. Upload interface visible with 'Upload Your CV' section, drag-and-drop functionality, and step-by-step workflow (upload, analysis, template, download). AI-Powered badge displayed correctly. Authentication loading state working properly."
+
 test_plan:
   current_focus:
-    - "Enhanced AI CV Builder - User Authentication & Tier Access"
     - "Enhanced AI CV Builder - Template Selection"
-  stuck_tasks:
     - "Enhanced AI CV Builder - User Authentication & Tier Access"
+    - "Enhanced Resume Improver - Authentication & Access"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 

@@ -1722,3 +1722,104 @@ async def auto_send_payment_reminders():
         
     except Exception as e:
         logger.error(f"[AUTO] Error sending payment reminders: {str(e)}")
+
+
+async def auto_suspend_expired_subscriptions():
+    """Automatically suspend accounts with expired subscriptions"""
+    try:
+        now = datetime.now(timezone.utc)
+        
+        # Find all active users with expired subscriptions
+        expired_users = await db.users.find({
+            "status": "active",
+            "active_tier": {"$ne": None},
+            "subscription_expires_at": {"$lt": now},
+            "role": "customer"  # Only suspend customer accounts, not admins
+        }).to_list(None)
+        
+        suspended_count = 0
+        email_sent_count = 0
+        
+        for user in expired_users:
+            try:
+                # Suspend the account
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {
+                        "$set": {
+                            "status": "suspended",
+                            "active_tier": None,
+                            "suspended_at": now,
+                            "suspension_reason": "subscription_expired"
+                        }
+                    }
+                )
+                suspended_count += 1
+                
+                # Send suspension notification email
+                if email_service.is_configured:
+                    try:
+                        # Get reseller subdomain for correct resubscribe link
+                        reseller_path = ""
+                        if user.get("reseller_id"):
+                            reseller = await db.resellers.find_one(
+                                {"id": user["reseller_id"]},
+                                {"_id": 0, "subdomain": 1}
+                            )
+                            if reseller and reseller.get("subdomain"):
+                                reseller_path = f"/partner/{reseller['subdomain']}"
+                        
+                        frontend_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:3000')).rstrip('/')
+                        pricing_link = f"{frontend_url}{reseller_path}/pricing"
+                        
+                        html_body = f'''
+                        <html>
+                        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <h1 style="color: #dc2626;">Subscription Expired</h1>
+                            </div>
+                            <p>Hi {user.get('full_name', 'there').split()[0]},</p>
+                            <p>Your subscription has expired and your account access has been temporarily suspended.</p>
+                            <p><strong>What this means:</strong></p>
+                            <ul>
+                                <li>You can still log in to view your account</li>
+                                <li>Premium features (CV Builder, AI tools, etc.) are now disabled</li>
+                                <li>Your saved documents remain safe</li>
+                            </ul>
+                            <p><strong>To reactivate your account:</strong></p>
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="{pricing_link}" style="background: linear-gradient(135deg, #1e40af, #7c3aed); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                    Resubscribe Now
+                                </a>
+                            </div>
+                            <p>If you have any questions, please don't hesitate to contact our support team.</p>
+                            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                            <p style="color: #888; font-size: 12px;">This email was sent by UpShift.</p>
+                        </body>
+                        </html>
+                        '''
+                        
+                        email_sent = await email_service.send_email(
+                            to_email=user["email"],
+                            subject="Your Subscription Has Expired - Action Required",
+                            html_body=html_body,
+                            text_body=f"Hi {user.get('full_name', 'there')}, your subscription has expired. Visit {pricing_link} to resubscribe.",
+                            raise_exceptions=False
+                        )
+                        
+                        if email_sent:
+                            email_sent_count += 1
+                            
+                    except Exception as email_error:
+                        logger.warning(f"Failed to send suspension email to {user['email']}: {email_error}")
+                
+                logger.info(f"[AUTO] Suspended account: {user['email']} (subscription expired)")
+                
+            except Exception as user_error:
+                logger.error(f"[AUTO] Failed to suspend user {user.get('email')}: {user_error}")
+        
+        if suspended_count > 0:
+            logger.info(f"[AUTO] Suspended {suspended_count} expired subscriptions, {email_sent_count} emails sent")
+        
+    except Exception as e:
+        logger.error(f"[AUTO] Error suspending expired subscriptions: {str(e)}")

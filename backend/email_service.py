@@ -1,4 +1,5 @@
 import smtplib
+import ssl
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -16,6 +17,7 @@ class EmailService:
         self.smtp_password = None
         self.from_email = None
         self.from_name = None
+        self.encryption = 'tls'  # tls, ssl, or none
         self.is_configured = False
     
     def configure(self, settings: Dict):
@@ -26,10 +28,11 @@ class EmailService:
         self.smtp_password = settings.get('smtp_password')
         self.from_email = settings.get('from_email', self.smtp_user)
         self.from_name = settings.get('from_name', 'UpShift')
+        self.encryption = settings.get('encryption', 'tls')  # tls, ssl, or none
         self.is_configured = bool(self.smtp_user and self.smtp_password)
         
         if self.is_configured:
-            logger.info(f"Email service configured with {self.smtp_host}:{self.smtp_port}")
+            logger.info(f"Email service configured with {self.smtp_host}:{self.smtp_port} (encryption: {self.encryption})")
         else:
             logger.warning("Email service not fully configured")
     

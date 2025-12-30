@@ -188,6 +188,7 @@ const PartnerFooter = () => {
 
   const menuLinks = [
     { name: 'Home', path: baseUrl },
+    { name: 'About', path: `${baseUrl}/about` },
     { name: 'AI Resume Builder', path: `${baseUrl}/builder` },
     { name: 'Improve Resume', path: `${baseUrl}/improve` },
     { name: 'Cover Letter', path: `${baseUrl}/cover-letter` },

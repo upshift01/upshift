@@ -196,6 +196,7 @@ const AppContent = () => {
           <Route path="domain-setup" element={<DomainSetup />} />
           <Route path="email-templates" element={<EmailTemplates />} />
           <Route path="calendar" element={<ResellerCalendar />} />
+          <Route path="cv-templates" element={<ResellerCVTemplates />} />
         </Route>
 
         {/* Partner/White-Label Routes (URL-based subdomain routing) */}

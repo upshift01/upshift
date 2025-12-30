@@ -211,6 +211,8 @@ async def register(user_data: UserRegister):
                 reseller_id=reseller_id,
                 active_tier=None,
                 tier_activation_date=None,
+                subscription_expires_at=None,
+                status="active",
                 created_at=new_user["created_at"]
             )
         }

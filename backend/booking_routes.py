@@ -135,12 +135,14 @@ async def create_booking(
     Create a new booking.
     - Elite users: booking is included (free)
     - Other users: requires payment (R699)
+    - Associates booking with user's reseller_id for reseller calendar visibility
     """
     from fastapi import Request
     try:
         # Try to get current user (optional - can book without login for addon)
         user = None
         user_tier = None
+        user_reseller_id = None
         
         try:
             from auth import oauth2_scheme, get_current_user
@@ -150,7 +152,9 @@ async def create_booking(
                     token = auth_header.split(" ")[1]
                     user = await get_current_user(token, db)
                     user_doc = await db.users.find_one({"id": user.id})
-                    user_tier = user_doc.get("active_tier") if user_doc else None
+                    if user_doc:
+                        user_tier = user_doc.get("active_tier")
+                        user_reseller_id = user_doc.get("reseller_id")
         except:
             pass
         
@@ -191,11 +195,22 @@ async def create_booking(
         payment_type = "included" if is_elite else "addon"
         is_paid = is_elite  # Elite users don't need to pay
         
+        # Get strategy call price from reseller settings or platform settings
+        booking_price = BOOKING_PRICE_CENTS
+        if user_reseller_id:
+            reseller = await db.resellers.find_one(
+                {"id": user_reseller_id}, 
+                {"_id": 0, "pricing": 1}
+            )
+            if reseller and reseller.get("pricing", {}).get("strategy_call_price"):
+                booking_price = int(reseller["pricing"]["strategy_call_price"] * 100)
+        
         booking_id = str(uuid.uuid4())
         
         new_booking = {
             "id": booking_id,
             "user_id": user.id if user else None,
+            "reseller_id": user_reseller_id,  # Link to reseller for calendar visibility
             "date": booking.date,
             "time": booking.time,
             "duration_minutes": 30,
@@ -207,14 +222,28 @@ async def create_booking(
             "status": BookingStatus.CONFIRMED if is_elite else BookingStatus.PENDING,
             "is_paid": is_paid,
             "payment_type": payment_type,
-            "amount_cents": 0 if is_elite else BOOKING_PRICE_CENTS,
+            "amount_cents": 0 if is_elite else booking_price,
             "created_at": datetime.now(timezone.utc),
             "meeting_link": None  # Will be added after confirmation
         }
         
         await db.bookings.insert_one(new_booking)
         
-        logger.info(f"Booking created: {booking_id} for {booking.date} {booking.time}")
+        # Log activity for reseller
+        if user_reseller_id:
+            await db.reseller_activity.insert_one({
+                "id": str(uuid.uuid4()),
+                "reseller_id": user_reseller_id,
+                "type": "booking",
+                "title": "New Strategy Call Booking",
+                "description": f"{booking.name} booked a strategy call for {booking.date} at {booking.time}",
+                "customer_name": booking.name,
+                "customer_email": booking.email,
+                "booking_id": booking_id,
+                "created_at": datetime.now(timezone.utc)
+            })
+        
+        logger.info(f"Booking created: {booking_id} for {booking.date} {booking.time} (reseller: {user_reseller_id or 'platform'})")
         
         return {
             "success": True,

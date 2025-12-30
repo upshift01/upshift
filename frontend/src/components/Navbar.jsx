@@ -15,7 +15,6 @@ const Navbar = () => {
     { name: 'Cover Letter', path: '/cover-letter' },
     { name: 'ATS Checker', path: '/ats-checker', isFree: true },
     { name: 'Skills Generator', path: '/skills-generator', isFree: true },
-    { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' }
   ];
 

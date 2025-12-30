@@ -1,5 +1,5 @@
 import React from 'react';
-import SharedBilling from '../components/SharedBilling';
+import SharedBilling from '../../components/SharedBilling';
 
 /**
  * Customer Billing - Uses shared billing component

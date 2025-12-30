@@ -331,25 +331,36 @@ CV Content:
         raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
 
 
+class EnhanceSectionRequest(BaseModel):
+    section: str
+    content: str
+    context: Optional[str] = None
+
 @cv_processing_router.post("/enhance-section")
-async def enhance_cv_section(section: str, content: str, context: Optional[str] = None):
+async def enhance_cv_section(
+    request: EnhanceSectionRequest,
+    current_user = Depends(get_current_user_with_db)
+):
     """
     Enhance a specific section of the CV with AI.
     Useful for improving individual fields.
     """
     try:
+        if not current_user.active_tier:
+            raise HTTPException(status_code=403, detail="Please purchase a plan to use AI features")
+        
         api_key = os.environ.get("EMERGENT_LLM_KEY")
         if not api_key:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
         prompts = {
-            "summary": f"Enhance this professional summary to be more compelling and impactful. Keep it 2-3 sentences. Context: {context or 'General professional'}. Current summary: {content}",
-            "experience": f"Enhance this job description with action verbs and quantifiable achievements. Make it ATS-friendly. Current: {content}",
-            "achievements": f"Improve these achievements with specific metrics and impact statements. Current: {content}",
-            "skills": f"Suggest additional relevant skills based on this list and industry context. Current skills: {content}. Industry: {context or 'General'}"
+            "summary": f"Enhance this professional summary to be more compelling and impactful. Keep it 2-3 sentences. Context: {request.context or 'General professional'}. Current summary: {request.content}",
+            "experience": f"Enhance this job description with action verbs and quantifiable achievements. Make it ATS-friendly. Current: {request.content}",
+            "achievements": f"Improve these achievements with specific metrics and impact statements. Current: {request.content}",
+            "skills": f"Suggest additional relevant skills based on this list and industry context. Current skills: {request.content}. Industry: {request.context or 'General'}"
         }
         
-        prompt = prompts.get(section, f"Enhance this CV content professionally: {content}")
+        prompt = prompts.get(request.section, f"Enhance this CV content professionally: {request.content}")
         
         chat = LlmChat(
             api_key=api_key,
@@ -359,12 +370,24 @@ async def enhance_cv_section(section: str, content: str, context: Optional[str] 
         
         response = await chat.send_message(UserMessage(text=prompt))
         
+        # Handle response - could be string or object with text attribute
+        if hasattr(response, 'text'):
+            enhanced_text = response.text.strip()
+        elif hasattr(response, 'content'):
+            enhanced_text = response.content.strip()
+        else:
+            enhanced_text = str(response).strip()
+        
+        logger.info(f"Section '{request.section}' enhanced for user {current_user.email}")
+        
         return {
             "success": True,
-            "original": content,
-            "enhanced": response.strip()
+            "original": request.content,
+            "enhanced": enhanced_text
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Section enhancement error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Enhancement failed: {str(e)}")

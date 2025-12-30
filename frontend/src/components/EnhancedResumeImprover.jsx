@@ -204,7 +204,8 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
           summary: data.enhanced_summary || extractedData.summary,
           experiences: data.enhanced_experiences || extractedData.experiences,
           education: extractedData.education,
-          skills: data.enhanced_skills || extractedData.skills
+          skills: data.enhanced_skills || extractedData.skills,
+          references: extractedData.references || []
         });
         setActiveStep('template');
         toast({ title: 'CV Enhanced!', description: 'Your CV has been improved by AI.' });

@@ -172,6 +172,176 @@ async def register_reseller(data: ResellerCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== Subscription Plans ====================
+
+@reseller_router.get("/subscription-plans", response_model=dict)
+async def get_subscription_plans():
+    """Get available white-label subscription plans (public endpoint for resellers)"""
+    try:
+        # Fetch platform pricing configuration
+        pricing_config = await db.platform_settings.find_one(
+            {"key": "platform_pricing"},
+            {"_id": 0}
+        )
+        
+        # Default plans if not configured
+        default_plans = {
+            "starter": {
+                "name": "Starter",
+                "price": 2499,
+                "active_users_limit": 50,
+                "custom_subdomain": True,
+                "custom_domain": False,
+                "api_access": False,
+                "priority_support": False,
+                "analytics": "basic",
+                "templates": "standard",
+                "enabled": True
+            },
+            "professional": {
+                "name": "Professional",
+                "price": 4999,
+                "active_users_limit": 200,
+                "custom_subdomain": True,
+                "custom_domain": True,
+                "api_access": True,
+                "priority_support": True,
+                "analytics": "advanced",
+                "templates": "premium",
+                "enabled": True
+            },
+            "enterprise": {
+                "name": "Enterprise",
+                "price": 0,
+                "active_users_limit": -1,
+                "custom_subdomain": True,
+                "custom_domain": True,
+                "api_access": True,
+                "priority_support": True,
+                "analytics": "enterprise",
+                "templates": "all",
+                "enabled": True,
+                "contact_sales": True
+            }
+        }
+        
+        if pricing_config and pricing_config.get("value", {}).get("whitelabel_plans"):
+            plans = pricing_config["value"]["whitelabel_plans"]
+        else:
+            plans = default_plans
+        
+        # Filter to only enabled plans
+        enabled_plans = {k: v for k, v in plans.items() if v.get("enabled", True)}
+        
+        return {
+            "success": True,
+            "plans": enabled_plans
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching subscription plans: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.get("/my-subscription", response_model=dict)
+async def get_my_subscription(context: dict = Depends(get_current_reseller_admin)):
+    """Get current reseller's subscription details"""
+    try:
+        reseller = context["reseller"]
+        
+        # Get the reseller's current plan
+        subscription = reseller.get("subscription", {})
+        current_plan = subscription.get("plan", "starter")
+        
+        # Fetch platform pricing to get plan details
+        pricing_config = await db.platform_settings.find_one(
+            {"key": "platform_pricing"},
+            {"_id": 0}
+        )
+        
+        plan_details = {}
+        if pricing_config and pricing_config.get("value", {}).get("whitelabel_plans"):
+            plans = pricing_config["value"]["whitelabel_plans"]
+            plan_details = plans.get(current_plan, {})
+        
+        return {
+            "success": True,
+            "subscription": {
+                "plan": current_plan,
+                "plan_name": plan_details.get("name", current_plan.title()),
+                "price": plan_details.get("price", 0),
+                "billing_cycle": subscription.get("billing_cycle", "monthly"),
+                "status": subscription.get("status", "active"),
+                "started_at": subscription.get("started_at"),
+                "next_billing_date": subscription.get("next_billing_date"),
+                "features": {
+                    "active_users_limit": plan_details.get("active_users_limit", 50),
+                    "custom_subdomain": plan_details.get("custom_subdomain", True),
+                    "custom_domain": plan_details.get("custom_domain", False),
+                    "api_access": plan_details.get("api_access", False),
+                    "priority_support": plan_details.get("priority_support", False),
+                    "analytics": plan_details.get("analytics", "basic"),
+                    "templates": plan_details.get("templates", "standard")
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching subscription: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/change-subscription", response_model=dict)
+async def change_subscription(
+    data: dict,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Request to change subscription plan"""
+    try:
+        reseller = context["reseller"]
+        new_plan = data.get("plan")
+        
+        if not new_plan:
+            raise HTTPException(status_code=400, detail="Plan is required")
+        
+        # Validate plan exists
+        pricing_config = await db.platform_settings.find_one(
+            {"key": "platform_pricing"},
+            {"_id": 0}
+        )
+        
+        valid_plans = ["starter", "professional", "enterprise", "custom"]
+        if pricing_config and pricing_config.get("value", {}).get("whitelabel_plans"):
+            valid_plans = list(pricing_config["value"]["whitelabel_plans"].keys())
+        
+        if new_plan not in valid_plans:
+            raise HTTPException(status_code=400, detail="Invalid plan selected")
+        
+        # Update reseller subscription
+        await db.resellers.update_one(
+            {"id": reseller["id"]},
+            {"$set": {
+                "subscription.plan": new_plan,
+                "subscription.changed_at": datetime.now(timezone.utc),
+                "subscription.status": "pending_change" if new_plan == "enterprise" else "active",
+                "updated_at": datetime.now(timezone.utc)
+            }}
+        )
+        
+        logger.info(f"Reseller {reseller['id']} requested plan change to {new_plan}")
+        
+        return {
+            "success": True,
+            "message": f"Subscription changed to {new_plan}" if new_plan != "enterprise" else "Enterprise plan request submitted. Our team will contact you shortly."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error changing subscription: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Reseller Profile ====================
 
 @reseller_router.get("/profile", response_model=dict)

@@ -1,0 +1,38 @@
+John Smith
+Email: john.smith@email.com
+Phone: +27 11 123 4567
+Address: 123 Main Street, Johannesburg, South Africa
+
+PROFESSIONAL SUMMARY
+Experienced Software Developer with 5+ years of experience in full-stack development, specializing in React, Node.js, and Python. Proven track record of delivering high-quality applications and leading development teams.
+
+WORK EXPERIENCE
+
+Senior Software Developer
+TechCorp Solutions | Jan 2022 - Present
+• Led development of customer portal using React and Node.js
+• Implemented CI/CD pipelines reducing deployment time by 50%
+• Mentored junior developers and conducted code reviews
+• Collaborated with product team to define technical requirements
+
+Software Developer
+Digital Innovations | Jun 2019 - Dec 2021
+• Developed web applications using Python Django and React
+• Integrated third-party APIs and payment gateways
+• Optimized database queries improving performance by 30%
+• Participated in agile development processes
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+University of the Witwatersrand | 2015 - 2018
+• Graduated Cum Laude
+• Relevant coursework: Data Structures, Algorithms, Software Engineering
+
+SKILLS
+• Programming Languages: JavaScript, Python, Java, C++
+• Frontend: React, Vue.js, HTML5, CSS3, TypeScript
+• Backend: Node.js, Django, Express.js, FastAPI
+• Databases: PostgreSQL, MongoDB, MySQL
+• Tools: Git, Docker, AWS, Jenkins
+• Soft Skills: Team Leadership, Problem Solving, Communication

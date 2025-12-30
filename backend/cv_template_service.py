@@ -609,5 +609,15 @@ def get_placeholder_documentation():
             "{{EDU_1_INSTITUTION}}": "Institution name for education 1",
             "{{EDU_1_YEAR}}": "Year/period for education 1",
             "note": "Replace 1 with 2 or 3 for additional education entries"
+        },
+        "references": {
+            "{{REFERENCES_SECTION}}": "Full formatted references section",
+            "{{REFERENCES}}": "Same as {{REFERENCES_SECTION}}",
+            "{{REF_1_NAME}}": "Full name of reference 1",
+            "{{REF_1_TITLE}}": "Job title of reference 1",
+            "{{REF_1_COMPANY}}": "Company/organisation of reference 1",
+            "{{REF_1_EMAIL}}": "Email address of reference 1",
+            "{{REF_1_PHONE}}": "Phone number of reference 1",
+            "note": "Replace 1 with 2 or 3 for additional references"
         }
     }

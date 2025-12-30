@@ -248,10 +248,16 @@ async def login(user_data: UserLogin):
         
         # Auto-check and suspend if subscription has expired
         if subscription_expires_at and user_status == "active":
+            # Handle different datetime formats
             if isinstance(subscription_expires_at, str):
                 subscription_expires_at = datetime.fromisoformat(subscription_expires_at.replace('Z', '+00:00'))
             
-            if subscription_expires_at < datetime.now(timezone.utc):
+            # Make timezone-aware if naive
+            if subscription_expires_at.tzinfo is None:
+                subscription_expires_at = subscription_expires_at.replace(tzinfo=timezone.utc)
+            
+            now = datetime.now(timezone.utc)
+            if subscription_expires_at < now:
                 # Subscription has expired - suspend the account
                 await db.users.update_one(
                     {"id": user["id"]},
@@ -259,7 +265,7 @@ async def login(user_data: UserLogin):
                         "$set": {
                             "status": "suspended",
                             "active_tier": None,
-                            "suspended_at": datetime.now(timezone.utc),
+                            "suspended_at": now,
                             "suspension_reason": "subscription_expired"
                         }
                     }

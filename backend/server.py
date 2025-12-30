@@ -776,13 +776,18 @@ async def verify_payment_status(
             }
         )
         
-        # Activate tier for user
+        # Calculate subscription expiry (30 days from now)
+        subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        
+        # Activate tier for user with subscription expiry
         await db.users.update_one(
             {"id": current_user.id},
             {
                 "$set": {
                     "active_tier": payment["tier_id"],
-                    "tier_activation_date": datetime.utcnow()
+                    "tier_activation_date": datetime.now(timezone.utc),
+                    "subscription_expires_at": subscription_expires_at,
+                    "status": "active"  # Reactivate if was suspended
                 },
                 "$push": {
                     "payment_history": payment["id"]
@@ -790,7 +795,7 @@ async def verify_payment_status(
             }
         )
         
-        logger.info(f"Tier {payment['tier_id']} activated for user {current_user.email}")
+        logger.info(f"Tier {payment['tier_id']} activated for user {current_user.email}, expires: {subscription_expires_at}")
         
         # Log activity for reseller if payment was through reseller
         if payment.get("reseller_id"):

@@ -186,17 +186,21 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
           summary: extractedData.summary,
           experiences: extractedData.experiences || [],
           education: extractedData.education || [],
-          skills: extractedData.skills || []
+          skills: extractedData.skills || [],
+          id_number: extractedData.id_number || extractedData.idNumber,
+          languages: extractedData.languages || []
         })
       });
 
       if (response.ok) {
         const data = await response.json();
         setEnhancedData({
-          full_name: extractedData.full_name,
+          full_name: extractedData.full_name || extractedData.fullName,
           email: extractedData.email,
           phone: extractedData.phone,
           address: extractedData.address,
+          id_number: extractedData.id_number || extractedData.idNumber,
+          languages: extractedData.languages || [],
           summary: data.enhanced_summary || extractedData.summary,
           experiences: data.enhanced_experiences || extractedData.experiences,
           education: extractedData.education,

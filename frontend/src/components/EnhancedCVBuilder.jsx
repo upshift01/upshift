@@ -149,7 +149,7 @@ const TEMPLATES = [
 const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1e40af', secondaryColor = '#7c3aed' }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated, token } = useAuth();
+  const { user, isAuthenticated, token, loading } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef(null);
   

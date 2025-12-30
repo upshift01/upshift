@@ -110,6 +110,7 @@ import JobTracker from "./pages/customer/JobTracker";
 import InterviewPrep from "./pages/customer/InterviewPrep";
 import CustomerStrategyCall from "./pages/customer/CustomerStrategyCall";
 import HelpCenter from "./pages/HelpCenter";
+import AccountSuspended from "./pages/AccountSuspended";
 
 // Wrapper to conditionally show Navbar and Footer
 const AppContent = () => {

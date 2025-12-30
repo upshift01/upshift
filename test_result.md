@@ -1392,3 +1392,29 @@ agent_communication:
 agent_communication:
   - agent: "main"
     message: "🔧 FIXED AI ENHANCEMENT ENDPOINTS - The enhance-section endpoint was expecting query parameters but frontend was sending JSON body. Fixed by: 1) Created EnhanceSectionRequest Pydantic model, 2) Added authentication, 3) Proper response handling. Need to test via frontend to confirm full flow works."
+
+## New CV Builder Fields Implementation
+Added the following new fields to the CV Builder and PDF generation:
+
+### Frontend Updates (EnhancedCVBuilder.jsx):
+- Profile Photo upload with preview and delete functionality
+- ID / Passport Number field
+- Languages section with add/remove functionality
+- Updated form data structure and PDF generation payload
+
+### Backend Updates (cv_pdf_service.py):
+- Complete rewrite with improved professional styling
+- Added photo support (base64 image in header)
+- Added ID number display
+- Added languages display
+- Improved spacing and line heights throughout
+- Better section headers with multiple styles
+- KeepTogether for job entries to prevent awkward page breaks
+- Two-column layout for many skills
+
+### AI Extraction Updated (ai_content_routes.py):
+- Updated CV extraction prompt to include id_number and languages fields
+
+agent_communication:
+  - agent: "main"
+    message: "🔧 IMPLEMENTED NEW CV FIELDS - Added Photo upload, ID/Passport Number, and Languages fields to CV Builder. Updated PDF generation with professional enterprise styling including proper spacing, better fonts, and photo support. Need to test complete flow."

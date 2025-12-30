@@ -181,8 +181,23 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
   const { toast } = useToast();
   const fileInputRef = useRef(null);
   
+  // Template state
+  const [customTemplates, setCustomTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [showCustomTemplates, setShowCustomTemplates] = useState(true);
+  
+  // Combine custom and built-in templates
+  const TEMPLATES = [
+    ...customTemplates.map(t => ({
+      ...t,
+      color: CATEGORY_COLORS[t.category] || '#1e40af',
+      is_custom: true
+    })),
+    ...BUILTIN_TEMPLATES
+  ];
+  
   // State
-  const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATES[0]);
+  const [selectedTemplate, setSelectedTemplate] = useState(BUILTIN_TEMPLATES[0]);
   const [activeTab, setActiveTab] = useState('template');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExtractingCV, setIsExtractingCV] = useState(false);

@@ -1507,8 +1507,15 @@ async def startup_event():
             replace_existing=True
         )
         
+        scheduler.add_job(
+            auto_suspend_expired_subscriptions,
+            CronTrigger(hour=0, minute=30),  # Run daily at 00:30 AM
+            id='daily_subscription_check',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        logger.info("Background scheduler started with invoice and reminder jobs")
+        logger.info("Background scheduler started with invoice, reminder, and subscription check jobs")
         
         logger.info("Database startup complete")
     except Exception as e:

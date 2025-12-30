@@ -1194,3 +1194,32 @@ agent_communication:
     message: "❌ AI FEATURES TESTING COMPLETE - CRITICAL ISSUES FOUND! Tested both AI features with tier-2 user (customer@yottanet.co.za) - login successful, no paywalls detected, proper access confirmed. ❌ IMPROVE CV: Frontend/backend file type mismatch - frontend accepts TXT files but backend only accepts PDF/DOCX (returns 400 'Only PDF and DOCX files are supported'). File upload works but analysis fails. ❌ COVER LETTER CREATOR: Frontend/backend field name mismatch - frontend sends {your_name, hiring_manager, your_experience} but backend expects {full_name, email, recipient_name}. Form fills correctly but API returns 422 'Field required'. Backend APIs work correctly when proper data sent (tested via curl). Both features need frontend fixes to match backend expectations."
   - agent: "testing"
     message: "✅ AI FEATURES RE-TESTING COMPLETE - BUG FIXES VERIFIED! Both AI features now working perfectly after main agent applied fixes. ✅ IMPROVE CV (Bug Fix 1): TXT file support now working correctly! Backend updated to accept TXT files (line 94: includes 'txt' in allowed extensions, lines 104-108 handle TXT decoding). Successfully tested with tier-2 user - TXT file upload works, AI analysis completes successfully showing Overall Score: 75%, ATS Compatibility: 80%, Impact Score: 70%, Clarity Score: 85%, detailed improvement suggestions with severity levels. Backend logs: POST /api/cv/analyze HTTP/1.1 200 OK. ✅ COVER LETTER CREATOR (Bug Fix 2): Field mapping now working correctly! Frontend updated to map field names properly (line 70: full_name: formData.your_name, line 73: recipient_name: formData.hiring_manager). Successfully tested - all 8 form fields fill correctly, cover letter generation successful with 1668 characters of professional content. Backend logs: POST /api/ai-content/generate-cover-letter HTTP/1.1 200 OK. Both AI features are now production-ready and fully functional!"
+## Current Test Focus - CV Uploader and Data Extraction
+Testing the Enhanced CV Builder's ability to upload a CV file and extract data to pre-populate the form.
+
+### Test Credentials
+- Email: customer@yottanet.co.za
+- Password: password123
+- User Type: Paid Tier 2 customer (has access to all AI features)
+
+### Test Tasks
+frontend:
+  - task: "CV Upload and Data Extraction"
+    url: "/partner/yottanet/builder"
+    implemented: true
+    working: "NEEDS_TESTING"
+    priority: "critical"
+    expected: |
+      1. Login with customer@yottanet.co.za / password123
+      2. Navigate to CV Builder at /partner/yottanet/builder
+      3. Find the Import CV section (should have drag-drop zone or file input)
+      4. Upload a test PDF or DOCX file
+      5. Verify form fields get populated with extracted data
+      6. Check for success toast notification
+    files:
+      - "/app/frontend/src/components/EnhancedCVBuilder.jsx"
+      - "/app/backend/ai_content_routes.py"
+
+agent_communication:
+  - agent: "main"
+    message: "🔄 TESTING CV UPLOAD FIX - A previous fix was applied to handle JSON key mismatch (data.cv_data vs data.data). Frontend now uses fallback: const cvData = data.cv_data || data.data. Backend returns 'data' key at line 776. Need to verify the complete upload flow works end-to-end."

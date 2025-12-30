@@ -94,6 +94,9 @@ export const PartnerProvider = ({ children, subdomain }) => {
     faviconUrl: getFullUrl(partner?.favicon_url),
     contactEmail: partner?.contact_email,
     contactPhone: partner?.contact_phone,
+    contactAddress: partner?.contact_address,
+    contactWhatsapp: partner?.contact_whatsapp,
+    socialMedia: partner?.social_media || {},
     resellerId: partner?.reseller_id,
     baseUrl: partner?.base_url || '',
     pricing: partner?.pricing || {}

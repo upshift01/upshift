@@ -4,7 +4,7 @@ import { Users, Search, Shield, Building2, UserCircle, Plus, MoreVertical, Edit2
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { useToast } from '../../components/ui/use-toast';
+import { useToast } from '../../hooks/use-toast';
 
 const AdminUsers = () => {
   const { token } = useAuth();

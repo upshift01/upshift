@@ -90,6 +90,28 @@ export const AuthProvider = ({ children }) => {
     return requiredTiers.includes(user.active_tier);
   };
 
+  // Check if user's account is suspended
+  const isSuspended = () => {
+    return user?.status === 'suspended';
+  };
+
+  // Check if subscription is expiring soon (within 7 days)
+  const isSubscriptionExpiringSoon = () => {
+    if (!user?.subscription_expires_at) return false;
+    const expiryDate = new Date(user.subscription_expires_at);
+    const now = new Date();
+    const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+    return daysUntilExpiry > 0 && daysUntilExpiry <= 7;
+  };
+
+  // Get days until subscription expires
+  const getDaysUntilExpiry = () => {
+    if (!user?.subscription_expires_at) return null;
+    const expiryDate = new Date(user.subscription_expires_at);
+    const now = new Date();
+    return Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+  };
+
   const value = {
     user,
     loading,
@@ -99,6 +121,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     getAuthHeader,
     hasTier,
+    isSuspended,
+    isSubscriptionExpiringSoon,
+    getDaysUntilExpiry,
     isAuthenticated: !!user
   };
 

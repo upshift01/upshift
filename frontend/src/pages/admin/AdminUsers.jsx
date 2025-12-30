@@ -14,6 +14,9 @@ const AdminUsers = () => {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState(null);
+  const [actionMenuUser, setActionMenuUser] = useState(null);
 
   useEffect(() => {
     fetchUsers();

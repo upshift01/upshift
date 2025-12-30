@@ -17,36 +17,40 @@ import {
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// CV Templates
-const TEMPLATES = [
+// Built-in CV Templates (used as fallback when no custom .docx templates are uploaded)
+const BUILTIN_TEMPLATES = [
   // General Templates
   {
     id: 'professional',
     name: 'Professional',
     description: 'Clean and traditional format, perfect for corporate roles',
     color: '#1e40af',
-    category: 'general'
+    category: 'general',
+    is_builtin: true
   },
   {
     id: 'modern',
     name: 'Modern',
     description: 'Contemporary design with accent colors',
     color: '#7c3aed',
-    category: 'general'
+    category: 'general',
+    is_builtin: true
   },
   {
     id: 'creative',
     name: 'Creative',
     description: 'Stand out with unique styling',
     color: '#059669',
-    category: 'general'
+    category: 'general',
+    is_builtin: true
   },
   {
     id: 'executive',
     name: 'Executive',
     description: 'Sophisticated for senior roles',
     color: '#991b1b',
-    category: 'general'
+    category: 'general',
+    is_builtin: true
   },
   // ATS Templates
   {
@@ -54,14 +58,16 @@ const TEMPLATES = [
     name: 'ATS Classic',
     description: 'Optimised to pass Applicant Tracking Systems',
     color: '#000000',
-    category: 'ats'
+    category: 'ats',
+    is_builtin: true
   },
   {
     id: 'ats-modern',
     name: 'ATS Modern',
     description: 'ATS-friendly with a modern touch',
     color: '#2563eb',
-    category: 'ats'
+    category: 'ats',
+    is_builtin: true
   },
   // Industry-specific ATS Templates
   {
@@ -70,7 +76,8 @@ const TEMPLATES = [
     description: 'Optimised for technology and software roles',
     color: '#0891b2',
     category: 'ats-industry',
-    industry: 'Technology'
+    industry: 'Technology',
+    is_builtin: true
   },
   {
     id: 'ats-finance',
@@ -78,7 +85,8 @@ const TEMPLATES = [
     description: 'Professional format for financial services',
     color: '#0f766e',
     category: 'ats-industry',
-    industry: 'Finance'
+    industry: 'Finance',
+    is_builtin: true
   },
   {
     id: 'ats-healthcare',
@@ -86,7 +94,8 @@ const TEMPLATES = [
     description: 'Clean format for healthcare professionals',
     color: '#dc2626',
     category: 'ats-industry',
-    industry: 'Healthcare'
+    industry: 'Healthcare',
+    is_builtin: true
   },
   {
     id: 'ats-engineering',
@@ -94,7 +103,8 @@ const TEMPLATES = [
     description: 'Structured format for engineering roles',
     color: '#ea580c',
     category: 'ats-industry',
-    industry: 'Engineering'
+    industry: 'Engineering',
+    is_builtin: true
   },
   {
     id: 'ats-sales',
@@ -102,7 +112,8 @@ const TEMPLATES = [
     description: 'Results-focused format for sales professionals',
     color: '#c026d3',
     category: 'ats-industry',
-    industry: 'Sales & Marketing'
+    industry: 'Sales & Marketing',
+    is_builtin: true
   },
   {
     id: 'ats-education',
@@ -110,7 +121,8 @@ const TEMPLATES = [
     description: 'Academic format for teaching and research',
     color: '#4f46e5',
     category: 'ats-industry',
-    industry: 'Education'
+    industry: 'Education',
+    is_builtin: true
   },
   {
     id: 'ats-legal',
@@ -118,7 +130,8 @@ const TEMPLATES = [
     description: 'Formal format for legal professionals',
     color: '#1e3a5f',
     category: 'ats-industry',
-    industry: 'Legal'
+    industry: 'Legal',
+    is_builtin: true
   },
   {
     id: 'ats-hospitality',
@@ -126,7 +139,8 @@ const TEMPLATES = [
     description: 'Friendly format for service industry roles',
     color: '#b45309',
     category: 'ats-industry',
-    industry: 'Hospitality'
+    industry: 'Hospitality',
+    is_builtin: true
   },
   {
     id: 'ats-retail',
@@ -134,7 +148,8 @@ const TEMPLATES = [
     description: 'Customer-focused format for retail roles',
     color: '#be185d',
     category: 'ats-industry',
-    industry: 'Retail'
+    industry: 'Retail',
+    is_builtin: true
   },
   {
     id: 'ats-manufacturing',
@@ -142,9 +157,22 @@ const TEMPLATES = [
     description: 'Practical format for production roles',
     color: '#4d7c0f',
     category: 'ats-industry',
-    industry: 'Manufacturing'
+    industry: 'Manufacturing',
+    is_builtin: true
   }
 ];
+
+// Category colors for custom templates
+const CATEGORY_COLORS = {
+  'professional': '#1e40af',
+  'creative': '#059669',
+  'ats-friendly': '#000000',
+  'academic': '#4f46e5',
+  'executive': '#991b1b',
+  'entry-level': '#7c3aed',
+  'industry-specific': '#0891b2',
+  'minimalist': '#64748b'
+};
 
 const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1e40af', secondaryColor = '#7c3aed' }) => {
   const navigate = useNavigate();

@@ -754,7 +754,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
               <>
                 <FileText className="h-10 w-10 text-gray-400 mx-auto mb-3" />
                 <p className="text-gray-700 font-medium mb-1">Drop your CV here or click to upload</p>
-                <p className="text-sm text-gray-500">Supports PDF and Word documents</p>
+                <p className="text-sm text-gray-500">Supports PDF, Word documents, and text files</p>
               </>
             )}
           </div>

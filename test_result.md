@@ -1,70 +1,56 @@
 # Test Results - UpShift Platform
 
-## Backend Tests
+## New Feature: 30-Day Subscription Expiry System
 
-### Help Center Feature (COMPLETED)
-- task: "PDF Manual Download"
+### Backend Implementation
+- task: "Subscription Expiry Field"
   implemented: true
   working: true
-  file: "backend/help_routes.py"
-  status: "✅ Working - GET /api/help/user-manual/pdf generates comprehensive PDF manual"
+  details: "Added subscription_expires_at field to UserInDB and UserResponse models"
 
-- task: "Help Content API"
+- task: "Auto-Suspension on Login"
+  implemented: true  
+  working: true
+  details: "Login checks subscription_expires_at and auto-suspends expired accounts"
+
+- task: "Subscription Expiry on Payment"
   implemented: true
   working: true
-  file: "backend/help_routes.py"
-  status: "✅ Working - GET /api/help/content returns structured guide data"
+  details: "Payment verification sets subscription_expires_at to 30 days from purchase"
 
-### Strategy Call Booking Feature (NEW)
-- task: "Customer Strategy Call Page"
+- task: "Scheduled Suspension Job"
   implemented: true
   working: true
-  file: "frontend/src/pages/customer/CustomerStrategyCall.jsx"
-  status: "✅ Page created with slot selection, booking form, and payment flow"
+  details: "auto_suspend_expired_subscriptions runs daily at 00:30 to suspend expired accounts"
 
-- task: "Booking with Reseller Association"
+### Frontend Implementation  
+- task: "SubscriptionBanner Component"
   implemented: true
   working: true
-  file: "backend/booking_routes.py"
-  status: "✅ Bookings now include reseller_id when customer has one"
+  details: "Shows warnings for expiring (≤7 days) and suspended accounts"
 
-- task: "Reseller Calendar Visibility"
+- task: "AuthContext Helpers"
   implemented: true
   working: true
-  file: "backend/reseller_routes.py"
-  status: "✅ GET /api/reseller/bookings returns customer bookings for that reseller"
+  details: "Added isSuspended(), isSubscriptionExpiringSoon(), getDaysUntilExpiry() functions"
 
-## Frontend Tests
-
-- task: "Customer Portal Strategy Call Sidebar"
+- task: "AccountSuspended Page"
   implemented: true
   working: true
-  file: "frontend/src/components/CustomerLayout.jsx"
-  status: "✅ Strategy Call menu item added with BOOK badge"
-
-- task: "Help Center Page"
-  implemented: true
-  working: true
-  file: "frontend/src/pages/HelpCenter.jsx"
-  status: "✅ Page loads with search, categories, and topic cards"
+  details: "Dedicated page at /account-suspended for suspended users"
 
 ## Test Credentials
-| User Type | Email | Password |
-|-----------|-------|----------|
-| Super Admin | admin@upshift.works | admin123 |
-| Main Customer | test@upshift.works | password123 |
-| Reseller Admin | owner@yottanet.com | password123 |
-| Reseller Customer | customer@yottanet.co.za | password123 |
+| User | Email | Password | Status |
+|------|-------|----------|--------|
+| Normal User | test@upshift.works | password123 | Active (30 days) |
+| Expiring User | expiring@test.com | password123 | Expiring in 3 days |
+| Suspended User | suspended@test.com | password123 | Suspended on login |
 
-## API Tests Verified with curl:
-1. POST /api/booking/create - Creates booking with reseller_id ✅
-2. GET /api/reseller/bookings - Returns bookings for reseller ✅
-3. GET /api/help/user-manual/pdf - Generates PDF ✅
-4. GET /api/help/content - Returns help content ✅
+## Visual Verification
+- ✅ Active user: No banner shown
+- ✅ Expiring user (≤7 days): Amber warning banner with days countdown
+- ✅ Suspended user: Red banner with "Account Suspended" message
 
 metadata:
-  last_updated: "2025-12-30T20:20:00Z"
-  features_tested:
-    - Help Center / User Manual
-    - Customer Strategy Call Booking
-    - Reseller Calendar Integration
+  feature: "30-day subscription expiry"
+  last_updated: "2025-12-30"

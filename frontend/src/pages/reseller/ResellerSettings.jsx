@@ -99,6 +99,11 @@ const ResellerSettings = () => {
   const [platformInvoices, setPlatformInvoices] = useState([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [payingInvoice, setPayingInvoice] = useState(null);
+  
+  // Subscription State
+  const [subscriptionPlans, setSubscriptionPlans] = useState({});
+  const [currentSubscription, setCurrentSubscription] = useState(null);
+  const [changingPlan, setChangingPlan] = useState(false);
 
   // LinkedIn Settings State
   const [linkedinSettings, setLinkedinSettings] = useState({
@@ -136,6 +141,7 @@ const ResellerSettings = () => {
     }
     if (activeTab === 'billing') {
       fetchPlatformInvoices();
+      fetchSubscriptionData();
     }
     if (activeTab === 'linkedin') {
       fetchLinkedinSettings();

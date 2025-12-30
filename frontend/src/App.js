@@ -132,6 +132,7 @@ const AppContent = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/account-suspended" element={<AccountSuspended />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/templates" element={<Templates />} />
         <Route path="/cover-letter-templates" element={<CoverLetterTemplates />} />

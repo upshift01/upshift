@@ -248,6 +248,37 @@ async def list_all_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@cv_template_router.get("/reseller/list")
+async def list_reseller_templates(
+    category: Optional[str] = None,
+    include_inactive: bool = True,
+    user = Depends(get_reseller_admin)
+):
+    """Get templates for the reseller's organization"""
+    try:
+        reseller_id = user.reseller_id
+        if not reseller_id:
+            raise HTTPException(status_code=400, detail="Reseller ID not found")
+        
+        query = {"reseller_id": reseller_id}
+        if category:
+            query["category"] = category
+        if not include_inactive:
+            query["is_active"] = True
+        
+        templates = await db.cv_templates.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+        
+        return {
+            "success": True,
+            "templates": templates,
+            "total": len(templates)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error listing reseller templates: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @cv_template_router.get("/{template_id}")
 async def get_template(
     template_id: str,

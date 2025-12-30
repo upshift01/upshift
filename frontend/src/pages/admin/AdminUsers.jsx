@@ -294,6 +294,33 @@ const AdminUsers = () => {
           token={token}
         />
       )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          onClose={() => setEditingUser(null)}
+          onSuccess={() => {
+            setEditingUser(null);
+            fetchUsers();
+            toast({ title: 'User Updated', description: 'User details have been updated' });
+          }}
+          token={token}
+        />
+      )}
+
+      {/* Reset Password Modal */}
+      {resetPasswordUser && (
+        <ResetPasswordModal
+          user={resetPasswordUser}
+          onClose={() => setResetPasswordUser(null)}
+          onSuccess={() => {
+            setResetPasswordUser(null);
+            toast({ title: 'Password Reset', description: 'User password has been reset' });
+          }}
+          token={token}
+        />
+      )}
     </div>
   );
 };

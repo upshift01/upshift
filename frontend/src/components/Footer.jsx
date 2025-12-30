@@ -20,6 +20,7 @@ const Footer = () => {
 
   const menuLinks = [
     { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
     { name: 'AI Resume Builder', path: '/builder' },
     { name: 'Improve Resume', path: '/improve' },
     { name: 'Cover Letter', path: '/cover-letter' },

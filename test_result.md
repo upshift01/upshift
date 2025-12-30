@@ -1238,3 +1238,27 @@ frontend:
 agent_communication:
   - agent: "main"
     message: "🔄 TESTING CV UPLOAD FIX - A previous fix was applied to handle JSON key mismatch (data.cv_data vs data.data). Frontend now uses fallback: const cvData = data.cv_data || data.data. Backend returns 'data' key at line 776. Need to verify the complete upload flow works end-to-end."
+
+## Backend API Testing Results
+### CV Upload & Extraction API
+- Endpoint: POST /api/ai-content/extract-cv-data
+- Status: ✅ WORKING
+- Notes: Successfully extracts CV data using GPT-4o
+
+### PDF Generation API  
+- Endpoint: POST /api/cv/generate-pdf
+- Status: ✅ WORKING
+- Notes: Generates PDF and saves to database with proper document structure
+
+### CV Documents List API
+- Endpoint: GET /api/cv/documents
+- Status: ✅ WORKING
+- Notes: Returns documents array with full cv_data
+
+## Frontend Fixes Applied
+1. Updated file validation in EnhancedCVBuilder.jsx to accept .txt files
+2. Updated UI text to include "text files" in supported formats
+
+agent_communication:
+  - agent: "main"
+    message: "✅ BACKEND VERIFIED - All CV Builder APIs working. Applied frontend fix for TXT file validation. Need complete end-to-end frontend test to verify: 1) CV upload populates form, 2) PDF generation works from UI, 3) Documents appear in My Documents. Using authenticated user flow."

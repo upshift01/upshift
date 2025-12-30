@@ -251,10 +251,10 @@ metadata:
 
   - task: "Enhanced AI CV Builder - Personal Information & AI Summary"
     implemented: true
-    working: false
+    working: true
     expected: "Should allow filling personal info form and test AI Professional Summary generation with 'AI Suggest' button, purple suggestion box, and 'Use This' functionality"
     priority: "high"
-    stuck_count: 1
+    stuck_count: 0
     needs_retesting: false
     status_history:
       - working: "NA"
@@ -263,6 +263,9 @@ metadata:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL AUTHENTICATION ISSUE: User has tier-2 access (confirmed via API: active_tier: tier-2) but frontend authentication persistence fails. Paywall consistently blocks CV Builder access despite successful backend login. Backend logs show successful logins but frontend session management is broken. Personal Information form fields not accessible due to paywall overlay. REQUIRES IMMEDIATE FIX: Frontend authentication context/session management."
+      - working: true
+        agent: "testing"
+        comment: "✅ PERSONAL INFORMATION TAB WORKING: Authentication fix successful! Personal Information tab fully accessible for tier-2 user. Form fields working correctly: Full Name, Email, Phone, Address all functional. AI Professional Summary section present with 'AI Suggest' button visible and functional. Professional Summary textarea accessible for manual input. Form validation and data entry working as expected. Tab navigation between Template and Personal tabs working correctly."
 
   - task: "Enhanced AI CV Builder - Experience & AI Enhancements"
     implemented: true

@@ -240,10 +240,37 @@ async def login(user_data: UserLogin):
                 detail="Incorrect email or password"
             )
         
+        # Check if account is suspended
+        user_status = user.get("status", "active")
+        subscription_expires_at = user.get("subscription_expires_at")
+        
+        # Auto-check and suspend if subscription has expired
+        if subscription_expires_at and user_status == "active":
+            if isinstance(subscription_expires_at, str):
+                subscription_expires_at = datetime.fromisoformat(subscription_expires_at.replace('Z', '+00:00'))
+            
+            if subscription_expires_at < datetime.now(timezone.utc):
+                # Subscription has expired - suspend the account
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {
+                        "$set": {
+                            "status": "suspended",
+                            "active_tier": None,
+                            "suspended_at": datetime.now(timezone.utc),
+                            "suspension_reason": "subscription_expired"
+                        }
+                    }
+                )
+                user_status = "suspended"
+                user["status"] = "suspended"
+                user["active_tier"] = None
+                logger.info(f"Account suspended due to expired subscription: {user_data.email}")
+        
         # Create access token
         access_token = create_access_token(data={"sub": user_data.email})
         
-        logger.info(f"User logged in: {user_data.email}")
+        logger.info(f"User logged in: {user_data.email} (status: {user_status})")
         
         return {
             "access_token": access_token,
@@ -257,6 +284,8 @@ async def login(user_data: UserLogin):
                 reseller_id=user.get("reseller_id"),
                 active_tier=user.get("active_tier"),
                 tier_activation_date=user.get("tier_activation_date"),
+                subscription_expires_at=user.get("subscription_expires_at"),
+                status=user_status,
                 created_at=user["created_at"]
             )
         }

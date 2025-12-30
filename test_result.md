@@ -254,51 +254,63 @@ metadata:
 
   - task: "Enhanced AI CV Builder - Experience & AI Enhancements"
     implemented: true
-    working: "NA"
+    working: false
     expected: "Should allow filling work experience and test AI Enhance for descriptions and AI Suggest for key achievements"
     priority: "high"
-    stuck_count: 0
-    needs_retesting: true
+    stuck_count: 1
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "TESTING BLOCKED: Cannot test Experience tab AI enhancements due to paywall blocking CV Builder access. Previous tests showed AI Professional Summary working but Skills AI blocked by paywall - similar issues may affect Experience AI features."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ACCESS ISSUE: Experience tab and AI enhancements cannot be tested due to persistent paywall blocking CV Builder access. User has confirmed tier-2 access but frontend authentication fails. Experience form fields not accessible behind paywall overlay. AI Enhancement features (AI Enhance for descriptions, AI Suggest for achievements) cannot be tested until authentication persistence is fixed."
 
   - task: "Enhanced AI CV Builder - Education & Skills"
     implemented: true
-    working: "NA"
+    working: false
     expected: "Should allow filling education info and adding skills with AI Skills suggestion functionality"
     priority: "high"
-    stuck_count: 0
-    needs_retesting: true
+    stuck_count: 1
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "TESTING BLOCKED: Cannot test Education and Skills tabs due to paywall blocking CV Builder access. Previous tests identified critical issue with Skills AI being blocked by paywall even for paid users - this needs to be resolved."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ACCESS ISSUE: Education and Skills tabs cannot be tested due to persistent paywall blocking CV Builder access. User has tier-2 access but frontend authentication persistence fails. Education form fields and Skills AI suggestion functionality not accessible behind paywall overlay. Cannot verify AI Skills generation feature until authentication issues are resolved."
 
   - task: "Enhanced AI CV Builder - PDF Generation & Download"
     implemented: true
-    working: "NA"
+    working: false
     expected: "Should generate PDF with 'AI Create & Download CV (PDF)' button and show success toast"
     priority: "high"
-    stuck_count: 0
-    needs_retesting: true
+    stuck_count: 1
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "TESTING BLOCKED: Cannot test PDF generation functionality due to paywall blocking CV Builder access. PDF generation is the core feature that needs comprehensive testing once access issues are resolved."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ACCESS ISSUE: PDF generation cannot be tested due to persistent paywall blocking CV Builder access. User has tier-2 access but frontend authentication fails. 'AI Create & Download CV (PDF)' button not accessible behind paywall overlay. Core PDF generation functionality cannot be verified until authentication persistence is fixed."
 
   - task: "Enhanced AI CV Builder - Document Saving & My Documents"
     implemented: true
-    working: "NA"
+    working: false
     expected: "Should save CV to My Documents with CV badge and allow editing via Edit button that loads CV builder with saved data"
     priority: "high"
-    stuck_count: 0
-    needs_retesting: true
+    stuck_count: 1
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "TESTING BLOCKED: Cannot test document saving and My Documents functionality due to paywall blocking CV Builder access. Document management is critical feature requiring full CV Builder access to test properly."
+      - working: false
+        agent: "testing"
+        comment: "❌ MIXED RESULTS: My Documents page accessible and shows existing CVs (4 total documents, 4 CVs/Resumes). However, cannot test new document creation/saving due to CV Builder paywall blocking access. Edit functionality cannot be tested as CV Builder access is blocked. Document listing works but core save/edit workflow is broken due to authentication issues."
 
 test_plan:
   current_focus:

@@ -244,6 +244,32 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
     }
   }, [location.search, token, loading]);
 
+  // Fetch custom .docx templates
+  useEffect(() => {
+    const fetchCustomTemplates = async () => {
+      if (!token) return;
+      
+      setTemplatesLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/api/cv-templates/list`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.templates && data.templates.length > 0) {
+            setCustomTemplates(data.templates);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching custom templates:', error);
+      } finally {
+        setTemplatesLoading(false);
+      }
+    };
+
+    fetchCustomTemplates();
+  }, [token]);
+
   const loadDocument = async (docId) => {
     try {
       const response = await fetch(`${API_URL}/api/cv/documents/${docId}`, {

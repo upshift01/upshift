@@ -691,7 +691,8 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
         summary: formData.summary,
         experiences: formData.experiences,
         education: formData.education,
-        skills: formData.skills.filter(Boolean)
+        skills: formData.skills.filter(Boolean),
+        references: formData.references.filter(ref => ref.name || ref.email || ref.phone)
       };
 
       let endpoint, method, requestBody;

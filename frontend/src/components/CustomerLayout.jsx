@@ -195,6 +195,9 @@ const CustomerLayout = ({ children }) => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
+        {/* Subscription Banner */}
+        <SubscriptionBanner />
+        
         {/* Mobile Header */}
         <header className="lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between">
           <button 

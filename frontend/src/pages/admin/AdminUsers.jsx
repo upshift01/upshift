@@ -41,6 +41,30 @@ const AdminUsers = () => {
     }
   };
 
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(`Are you sure you want to delete ${user.full_name || user.email}?`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/users/${user.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        toast({ title: 'User Deleted', description: 'User has been deleted successfully' });
+        fetchUsers();
+      } else {
+        const data = await response.json();
+        toast({ title: 'Error', description: data.detail || 'Failed to delete user', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete user', variant: 'destructive' });
+    }
+    setActionMenuUser(null);
+  };
+
   const filteredUsers = users.filter(u =>
     u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
     u.email?.toLowerCase().includes(search.toLowerCase())

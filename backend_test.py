@@ -3422,6 +3422,165 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_subscription_expiry_system(self):
+        """Test 30-Day Subscription Expiry System"""
+        print("\n⏰ Testing 30-Day Subscription Expiry System...")
+        
+        # Test credentials from review request
+        test_users = [
+            {
+                "name": "Active User",
+                "email": "test@upshift.works",
+                "password": "password123",
+                "expected_status": "active",
+                "expected_subscription": "future_date"
+            },
+            {
+                "name": "Expiring User", 
+                "email": "expiring@test.com",
+                "password": "password123",
+                "expected_status": "active",
+                "expected_subscription": "within_7_days"
+            },
+            {
+                "name": "Suspended User",
+                "email": "suspended@test.com", 
+                "password": "password123",
+                "expected_status": "suspended",
+                "expected_subscription": "expired"
+            }
+        ]
+        
+        for user_data in test_users:
+            print(f"\n🔹 Testing {user_data['name']}: {user_data['email']}")
+            
+            # Test Login
+            login_data = {
+                "email": user_data["email"],
+                "password": user_data["password"]
+            }
+            
+            response, error = self.make_request("POST", "/auth/login", data=login_data)
+            if error:
+                self.log_test(f"{user_data['name']} Login", False, error)
+                continue
+            
+            if not response.get("access_token"):
+                self.log_test(f"{user_data['name']} Login", False, "No access token returned")
+                continue
+            
+            user = response.get("user", {})
+            token = response["access_token"]
+            
+            # Validate user response structure
+            required_fields = ["id", "email", "status", "subscription_expires_at"]
+            missing_fields = [f for f in required_fields if f not in user]
+            if missing_fields:
+                self.log_test(f"{user_data['name']} Login Response", False, 
+                            f"Missing fields: {missing_fields}")
+                continue
+            
+            # Check status
+            actual_status = user.get("status")
+            expected_status = user_data["expected_status"]
+            
+            if actual_status != expected_status:
+                self.log_test(f"{user_data['name']} Status Check", False, 
+                            f"Expected status '{expected_status}', got '{actual_status}'")
+            else:
+                self.log_test(f"{user_data['name']} Status Check", True, 
+                            f"Status: {actual_status}")
+            
+            # Check subscription expiry
+            subscription_expires_at = user.get("subscription_expires_at")
+            
+            if user_data["expected_subscription"] == "future_date":
+                if not subscription_expires_at:
+                    self.log_test(f"{user_data['name']} Subscription Expiry", False, 
+                                "Expected future subscription date, got None")
+                else:
+                    from datetime import datetime, timezone
+                    try:
+                        if isinstance(subscription_expires_at, str):
+                            expiry_date = datetime.fromisoformat(subscription_expires_at.replace('Z', '+00:00'))
+                        else:
+                            expiry_date = subscription_expires_at
+                        
+                        if expiry_date.tzinfo is None:
+                            expiry_date = expiry_date.replace(tzinfo=timezone.utc)
+                        
+                        now = datetime.now(timezone.utc)
+                        if expiry_date > now:
+                            days_remaining = (expiry_date - now).days
+                            self.log_test(f"{user_data['name']} Subscription Expiry", True, 
+                                        f"Expires in {days_remaining} days")
+                        else:
+                            self.log_test(f"{user_data['name']} Subscription Expiry", False, 
+                                        "Subscription has already expired")
+                    except Exception as e:
+                        self.log_test(f"{user_data['name']} Subscription Expiry", False, 
+                                    f"Error parsing date: {str(e)}")
+            
+            elif user_data["expected_subscription"] == "within_7_days":
+                if not subscription_expires_at:
+                    self.log_test(f"{user_data['name']} Subscription Expiry", False, 
+                                "Expected expiring subscription date, got None")
+                else:
+                    from datetime import datetime, timezone, timedelta
+                    try:
+                        if isinstance(subscription_expires_at, str):
+                            expiry_date = datetime.fromisoformat(subscription_expires_at.replace('Z', '+00:00'))
+                        else:
+                            expiry_date = subscription_expires_at
+                        
+                        if expiry_date.tzinfo is None:
+                            expiry_date = expiry_date.replace(tzinfo=timezone.utc)
+                        
+                        now = datetime.now(timezone.utc)
+                        days_remaining = (expiry_date - now).days
+                        
+                        if 0 <= days_remaining <= 7:
+                            self.log_test(f"{user_data['name']} Subscription Expiry", True, 
+                                        f"Expires in {days_remaining} days (within 7 days)")
+                        else:
+                            self.log_test(f"{user_data['name']} Subscription Expiry", False, 
+                                        f"Expected expiry within 7 days, got {days_remaining} days")
+                    except Exception as e:
+                        self.log_test(f"{user_data['name']} Subscription Expiry", False, 
+                                    f"Error parsing date: {str(e)}")
+            
+            elif user_data["expected_subscription"] == "expired":
+                # For suspended users, active_tier should be null
+                active_tier = user.get("active_tier")
+                if active_tier is not None:
+                    self.log_test(f"{user_data['name']} Active Tier", False, 
+                                f"Expected null active_tier for suspended user, got '{active_tier}'")
+                else:
+                    self.log_test(f"{user_data['name']} Active Tier", True, 
+                                "Active tier is null (suspended)")
+            
+            # Test /api/auth/me endpoint
+            headers = {"Authorization": f"Bearer {token}"}
+            response, error = self.make_request("GET", "/auth/me", headers=headers)
+            
+            if error:
+                self.log_test(f"{user_data['name']} /auth/me", False, error)
+            else:
+                # Validate /auth/me response includes required fields
+                required_me_fields = ["id", "email", "status", "subscription_expires_at"]
+                missing_me_fields = [f for f in required_me_fields if f not in response]
+                
+                if missing_me_fields:
+                    self.log_test(f"{user_data['name']} /auth/me Response", False, 
+                                f"Missing fields: {missing_me_fields}")
+                else:
+                    me_status = response.get("status")
+                    me_subscription = response.get("subscription_expires_at")
+                    self.log_test(f"{user_data['name']} /auth/me", True, 
+                                f"Status: {me_status}, Subscription: {me_subscription is not None}")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Backend API Tests...")

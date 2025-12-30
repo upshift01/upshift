@@ -1731,7 +1731,7 @@ async def get_site_settings(admin: UserResponse = Depends(get_current_super_admi
             "contact": {
                 "email": "support@upshift.works",
                 "phone": "+27 (0) 11 234 5678",
-                "address": "123 Main Street, Sandton, Johannesburg, 2196, South Africa",
+                "address": "81 Botterklapper Street, The Willows, Pretoria",
                 "whatsapp": ""
             },
             "social_media": {

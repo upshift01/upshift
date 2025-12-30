@@ -104,7 +104,7 @@ async def get_whitelabel_config(request: Request, response: Response):
                 "favicon_url": None,
                 "contact_email": contact.get("email", "support@upshift.works"),
                 "contact_phone": contact.get("phone", "+27 (0) 11 234 5678"),
-                "contact_address": contact.get("address", "123 Main Street, Sandton, Johannesburg, 2196, South Africa"),
+                "contact_address": contact.get("address", "81 Botterklapper Street, The Willows, Pretoria"),
                 "contact_whatsapp": contact.get("whatsapp", ""),
                 "business_hours": business_hours,
                 "social_media": {
@@ -151,7 +151,7 @@ async def get_whitelabel_config(request: Request, response: Response):
                 "favicon_url": None,
                 "contact_email": "support@upshift.works",
                 "contact_phone": "+27 (0) 11 234 5678",
-                "contact_address": "123 Main Street, Sandton, Johannesburg, 2196, South Africa",
+                "contact_address": "81 Botterklapper Street, The Willows, Pretoria",
                 "terms_url": "/terms",
                 "privacy_url": "/privacy",
                 "pricing": {

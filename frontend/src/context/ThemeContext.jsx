@@ -19,10 +19,10 @@ export const ThemeProvider = ({ children }) => {
     secondaryColor: '#7c3aed',
     faviconUrl: null,
     contactEmail: 'support@upshift.works',
-    contactPhone: '+27 (0) 11 234 5678',
-    contactAddress: '123 Main Street, Sandton, Johannesburg, 2196, South Africa',
+    contactPhone: '+27 (0) 12 345 6789',
+    contactAddress: '81 Botterklapper Street, The Willows, Pretoria',
     contactWhatsapp: '',
-    businessHours: '',
+    businessHours: 'Mon-Fri: 8:00 AM - 5:00 PM',
     socialMedia: {
       facebook: '',
       twitter: '',

@@ -296,9 +296,9 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
   const handleCVUpload = async (file) => {
     if (!file) return;
     
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx)$/i)) {
-      toast({ title: 'Invalid File', description: 'Please upload a PDF or Word document', variant: 'destructive' });
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|txt)$/i)) {
+      toast({ title: 'Invalid File', description: 'Please upload a PDF, Word document, or text file', variant: 'destructive' });
       return;
     }
 

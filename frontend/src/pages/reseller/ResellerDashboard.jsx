@@ -164,14 +164,6 @@ const ResellerDashboard = () => {
           <h1 className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>Welcome back, {profile?.contact_name?.split(' ')[0] || 'Partner'}!</h1>
           <p className={textSecondary}>Here&apos;s what&apos;s happening with your business today</p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/reseller-dashboard/customers">
-            <Button style={{ backgroundColor: theme.primaryColor }} className="text-white">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Customer
-            </Button>
-          </Link>
-        </div>
       </div>
 
       {/* Status Banner */}

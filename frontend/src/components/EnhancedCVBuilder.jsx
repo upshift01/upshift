@@ -12,7 +12,7 @@ import { useToast } from '../hooks/use-toast';
 import { 
   Loader2, Download, Plus, Trash2, Upload, Sparkles, Wand2, 
   Check, X, FileText, Layout, CheckCircle, ChevronRight,
-  RefreshCw, Save, Eye
+  RefreshCw, Save, Eye, Users
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';

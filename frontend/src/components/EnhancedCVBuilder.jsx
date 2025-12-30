@@ -770,9 +770,21 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
 
   // Render template selection
   const renderTemplateSelection = () => {
-    const filteredTemplates = templateCategory === 'all' 
-      ? TEMPLATES 
-      : TEMPLATES.filter(t => t.category === templateCategory || (templateCategory === 'ats-all' && t.category.startsWith('ats')));
+    // Filter templates based on category
+    let filteredTemplates;
+    if (templateCategory === 'all') {
+      filteredTemplates = TEMPLATES;
+    } else if (templateCategory === 'custom') {
+      filteredTemplates = customTemplates.map(t => ({
+        ...t,
+        color: CATEGORY_COLORS[t.category] || '#1e40af',
+        is_custom: true
+      }));
+    } else if (templateCategory === 'ats-all') {
+      filteredTemplates = TEMPLATES.filter(t => t.category?.startsWith('ats'));
+    } else {
+      filteredTemplates = TEMPLATES.filter(t => t.category === templateCategory);
+    }
     
     return (
     <div className="space-y-6">
@@ -791,6 +803,18 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
         >
           All Templates
         </Button>
+        {customTemplates.length > 0 && (
+          <Button
+            variant={templateCategory === 'custom' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setTemplateCategory('custom')}
+            style={templateCategory === 'custom' ? { backgroundColor: primaryColor } : {}}
+            className="gap-1"
+          >
+            <FileText className="h-3 w-3" />
+            Custom ({customTemplates.length})
+          </Button>
+        )}
         <Button
           variant={templateCategory === 'general' ? 'default' : 'outline'}
           size="sm"
@@ -817,6 +841,15 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
         </Button>
       </div>
 
+      {/* Loading state */}
+      {templatesLoading && (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          <span className="ml-2 text-gray-500">Loading templates...</span>
+        </div>
+      )}
+
+      {/* Template Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredTemplates.map((template) => (
           <Card 
@@ -834,9 +867,17 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
           >
             <CardContent className="p-3">
               <div 
-                className="h-24 rounded-lg mb-2 flex items-center justify-center"
+                className="h-24 rounded-lg mb-2 flex items-center justify-center relative"
                 style={{ backgroundColor: `${template.color}15` }}
               >
+                {/* Custom template badge */}
+                {template.is_custom && (
+                  <div className="absolute top-1 right-1">
+                    <Badge className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 border-green-200">
+                      Custom
+                    </Badge>
+                  </div>
+                )}
                 <div 
                   className="w-12 h-16 rounded shadow-sm bg-white border-t-4"
                   style={{ borderColor: template.color }}
@@ -867,6 +908,15 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
           </Card>
         ))}
       </div>
+
+      {/* Empty state for custom templates */}
+      {templateCategory === 'custom' && customTemplates.length === 0 && !templatesLoading && (
+        <div className="text-center py-8">
+          <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500">No custom templates available yet.</p>
+          <p className="text-sm text-gray-400">Contact your administrator to upload custom templates.</p>
+        </div>
+      )}
 
       {/* CV Upload Section */}
       <Card className="mt-6">

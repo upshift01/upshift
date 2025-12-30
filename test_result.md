@@ -1333,3 +1333,17 @@ agent_communication:
 agent_communication:
   - agent: "main"
     message: "🔧 FIXED AUTH LOADING ISSUE - Both EnhancedCVBuilder and EnhancedResumeImprover now properly wait for authentication loading state to complete before showing paywall. This should resolve the persistent paywall issue for authenticated paid users. Need to re-test the complete flow."
+
+## AI Enhancement Fix Applied
+- Fixed: `/api/cv/enhance-section` endpoint now accepts JSON body instead of query parameters
+- Fixed: Added authentication requirement to enhance-section endpoint
+- Fixed: Added proper response handling for LLM output
+
+### Backend Endpoints Tested via curl:
+✅ POST /api/cv/enhance-section (experience) - Working
+✅ POST /api/cv/enhance-section (achievements) - Working  
+✅ POST /api/cv/ai-enhance-all - Working
+
+agent_communication:
+  - agent: "main"
+    message: "🔧 FIXED AI ENHANCEMENT ENDPOINTS - The enhance-section endpoint was expecting query parameters but frontend was sending JSON body. Fixed by: 1) Created EnhanceSectionRequest Pydantic model, 2) Added authentication, 3) Proper response handling. Need to test via frontend to confirm full flow works."

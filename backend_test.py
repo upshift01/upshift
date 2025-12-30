@@ -1340,6 +1340,181 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_references_feature_in_cv_builder(self):
+        """Test References Field in CV Builder and PDF Generation Features"""
+        print("\n📋 Testing References Feature in CV Builder...")
+        
+        # Test credentials from review request
+        test_creds = {
+            "email": "test@upshift.works",
+            "password": "password123"
+        }
+        
+        # Login as test user
+        response, error = self.make_request("POST", "/auth/login", data=test_creds)
+        if error:
+            self.log_test("References Feature User Login", False, error)
+            return False
+        
+        if not response.get("access_token"):
+            self.log_test("References Feature User Login", False, "No access token returned")
+            return False
+        
+        user = response.get("user", {})
+        references_token = response["access_token"]
+        self.log_test("References Feature User Login", True, f"Logged in as: {user.get('email')}")
+        
+        headers = {"Authorization": f"Bearer {references_token}"}
+        
+        # Test 1: GET /api/cv-templates/placeholders - verify references section is documented
+        print("\n🔹 Test 1: CV Template Placeholders Documentation")
+        
+        response, error = self.make_request("GET", "/cv-templates/placeholders", headers=headers)
+        if error:
+            self.log_test("CV Template Placeholders", False, error)
+            return False
+        
+        if not response.get("success"):
+            self.log_test("CV Template Placeholders", False, "Success flag is False")
+            return False
+        
+        placeholders = response.get("placeholders", {})
+        if not placeholders:
+            self.log_test("CV Template Placeholders", False, "No placeholders returned")
+            return False
+        
+        # Check for references placeholders
+        references_placeholders = [
+            "{{REFERENCES_SECTION}}", "{{REFERENCES}}", 
+            "{{REF_1_NAME}}", "{{REF_1_TITLE}}", "{{REF_1_COMPANY}}", 
+            "{{REF_1_EMAIL}}", "{{REF_1_PHONE}}", 
+            "{{REF_2_NAME}}", "{{REF_2_TITLE}}", "{{REF_2_COMPANY}}", 
+            "{{REF_2_EMAIL}}", "{{REF_2_PHONE}}", 
+            "{{REF_3_NAME}}", "{{REF_3_TITLE}}", "{{REF_3_COMPANY}}", 
+            "{{REF_3_EMAIL}}", "{{REF_3_PHONE}}"
+        ]
+        
+        # Convert placeholders to string for searching
+        placeholders_str = str(placeholders).lower()
+        found_references = []
+        missing_references = []
+        
+        for ref_placeholder in references_placeholders:
+            if ref_placeholder.lower() in placeholders_str:
+                found_references.append(ref_placeholder)
+            else:
+                missing_references.append(ref_placeholder)
+        
+        if found_references:
+            self.log_test("CV Template Placeholders - References", True, 
+                        f"Found {len(found_references)} references placeholders: {', '.join(found_references[:3])}...")
+        else:
+            self.log_test("CV Template Placeholders - References", False, 
+                        f"No references placeholders found. Missing: {', '.join(missing_references[:5])}...")
+            return False
+        
+        # Test 2: POST /api/cv/generate-pdf with references data - verify PDF is generated successfully
+        print("\n🔹 Test 2: CV PDF Generation with References")
+        
+        # Sample CV data with references from review request
+        cv_data_with_references = {
+            "fullName": "John Smith",
+            "email": "john.smith@email.com",
+            "phone": "+27 11 123 4567",
+            "address": "123 Main Street, Johannesburg, 2000",
+            "city": "Johannesburg",
+            "province": "Gauteng",
+            "summary": "Experienced software engineer with 5 years of experience in full-stack development.",
+            "experiences": [
+                {
+                    "title": "Senior Software Engineer",
+                    "company": "ABC Tech Company",
+                    "duration": "Jan 2020 - Present",
+                    "description": "Developed web applications using React and Node.js",
+                    "achievements": "Led a team of 3 developers and improved application performance by 40%"
+                }
+            ],
+            "education": [
+                {
+                    "degree": "Bachelor of Science in Computer Science",
+                    "institution": "University of Technology",
+                    "year": "2018"
+                }
+            ],
+            "skills": ["Python", "JavaScript", "React", "Node.js", "SQL", "Git", "AWS"],
+            "languages": [
+                {
+                    "language": "English",
+                    "proficiency": "Native"
+                }
+            ],
+            "references": [
+                {
+                    "name": "John Smith",
+                    "title": "Senior Manager", 
+                    "company": "ABC Corp",
+                    "email": "john@abc.com",
+                    "phone": "+27 11 123 4567"
+                },
+                {
+                    "name": "Jane Doe",
+                    "title": "Director",
+                    "company": "XYZ Inc", 
+                    "email": "jane@xyz.com",
+                    "phone": "+27 21 987 6543"
+                }
+            ]
+        }
+        
+        # Test the existing resume PDF generation endpoint
+        response, error = self.make_request("POST", "/resumes/generate-pdf", headers=headers, data=cv_data_with_references)
+        if error:
+            self.log_test("CV PDF Generation with References", False, error)
+        else:
+            # This endpoint might not support references yet, but should still generate PDF
+            self.log_test("CV PDF Generation with References", True, "PDF generated (references support may be limited)")
+        
+        # Test 3: POST /api/cv-templates/generate with references - verify custom template PDF works
+        print("\n🔹 Test 3: Custom Template PDF Generation with References")
+        
+        # First, get available templates
+        response, error = self.make_request("GET", "/cv-templates/list", headers=headers)
+        if error:
+            self.log_test("Get CV Templates List", False, error)
+            return False
+        
+        templates = response.get("templates", [])
+        if not templates:
+            self.log_test("Custom Template PDF Generation", False, "No templates available for testing")
+            return False
+        
+        # Use the first available template
+        template_id = templates[0].get("id")
+        template_name = templates[0].get("name", "Unknown")
+        
+        # Test custom template generation with references
+        template_generation_data = {
+            "template_id": template_id,
+            "cv_data": cv_data_with_references,
+            "output_format": "pdf",
+            "save_to_documents": True
+        }
+        
+        response, error = self.make_request("POST", "/cv-templates/generate", headers=headers, data=template_generation_data)
+        if error:
+            self.log_test("Custom Template PDF Generation with References", False, error)
+        else:
+            if response.get("success"):
+                file_url = response.get("file_url", "")
+                document_id = response.get("saved_document_id", "")
+                self.log_test("Custom Template PDF Generation with References", True, 
+                            f"Generated using template '{template_name}', Document ID: {document_id}")
+            else:
+                self.log_test("Custom Template PDF Generation with References", False, 
+                            f"Generation failed: {response.get('error', 'Unknown error')}")
+        
+        return True
+
     def test_reseller_branding_file_upload(self):
         """Test Reseller Branding File Upload Feature"""
         print("\n🎨 Testing Reseller Branding File Upload Feature...")

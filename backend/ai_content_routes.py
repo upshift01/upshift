@@ -709,6 +709,8 @@ Return ONLY a valid JSON object with the following structure (use null for missi
     "email": "string or null",
     "phone": "string or null",
     "address": "string or null",
+    "id_number": "string or null - ID number, passport number, or personal identification if present",
+    "languages": ["language1 (proficiency)", "language2 (proficiency)"] or null - extract any languages mentioned with proficiency level if available,
     "summary": "string or null - professional summary if present",
     "experiences": [
         {

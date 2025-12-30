@@ -184,8 +184,18 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
     skills: [''],
   });
 
-  // Check access
-  const hasAccess = isAuthenticated && user?.active_tier;
+  // Check access - wait for loading to complete
+  const hasAccess = !loading && isAuthenticated && user?.active_tier;
+  const isLoading = loading;
+
+  // Show loading state while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   // Load document if editing
   useEffect(() => {

@@ -43,7 +43,7 @@ const TEMPLATES = [
 
 const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor = '#1e40af', secondaryColor = '#7c3aed' }) => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, token } = useAuth();
+  const { user, isAuthenticated, token, loading } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef(null);
   
@@ -63,8 +63,18 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
   const [enhancedData, setEnhancedData] = useState(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   
-  // Check access
-  const hasAccess = isAuthenticated && user?.active_tier;
+  // Check access - wait for loading to complete
+  const hasAccess = !loading && isAuthenticated && user?.active_tier;
+  const isLoading = loading;
+  
+  // Show loading state while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   // Handlers
   const handleDrag = useCallback((e) => {

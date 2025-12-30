@@ -916,7 +916,7 @@ const ResellerSettings = () => {
                     ...siteSettings,
                     contact: { ...siteSettings.contact, address: e.target.value }
                   })}
-                  placeholder="123 Main Street, City, Country"
+                  placeholder="Street Address, City, Country"
                   rows={2}
                   className={darkMode ? 'bg-gray-700 border-gray-600' : ''}
                 />

@@ -693,7 +693,7 @@ const ResellerInvoices = () => {
                   <Input
                     value={newInvoice.customer_address}
                     onChange={(e) => setNewInvoice({...newInvoice, customer_address: e.target.value})}
-                    placeholder="123 Main Street, City"
+                    placeholder="Street Address, City, Country"
                   />
                 </div>
               </div>

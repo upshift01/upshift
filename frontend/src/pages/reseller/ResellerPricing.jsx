@@ -549,22 +549,23 @@ const ResellerPricing = () => {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label>Strategy Call Price (ZAR)</Label>
+                  <Label>Strategy Call Price (Rands)</Label>
                   <div className="relative mt-1">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">R</span>
                     <Input
                       type="number"
-                      step="0.01"
+                      step="1"
                       min="0"
-                      value={formatCents(strategyCallPricing.price)}
+                      placeholder="e.g. 699"
+                      value={formatPrice(strategyCallPricing.price)}
                       onChange={(e) => setStrategyCallPricing({ 
                         ...strategyCallPricing, 
-                        price: parseCents(e.target.value) 
+                        price: parsePrice(e.target.value) 
                       })}
                       className="pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Price for customers who book a strategy call</p>
+                  <p className="text-xs text-gray-500 mt-1">Enter price in Rands (e.g., 699 for R699.00)</p>
                 </div>
 
                 <div>

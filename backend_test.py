@@ -3588,6 +3588,192 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_reseller_pricing_functionality(self):
+        """Test Reseller Pricing page functionality as per review request"""
+        print("\n💰 Testing Reseller Pricing Functionality...")
+        
+        # First try to login with YottaNet reseller credentials from review request
+        print("\n🔹 Test 1: YottaNet Reseller Authentication")
+        
+        response, error = self.make_request(
+            "POST", "/auth/login",
+            data=YOTTANET_RESELLER_CREDS
+        )
+        
+        if error:
+            self.log_test("YottaNet Reseller Login", False, error)
+            # Fall back to existing reseller credentials
+            print("🔄 Falling back to existing reseller credentials...")
+            
+            if not self.reseller_admin_token:
+                self.log_test("Reseller Pricing Tests", False, "No reseller admin token available")
+                return False
+            
+            headers = {"Authorization": f"Bearer {self.reseller_admin_token}"}
+            self.log_test("Fallback to Existing Reseller", True, "Using john@acmecareers.com credentials")
+        else:
+            if not response.get("access_token"):
+                self.log_test("YottaNet Reseller Login", False, "No access token returned")
+                return False
+            
+            user = response.get("user", {})
+            if user.get("role") != "reseller_admin":
+                self.log_test("YottaNet Reseller Login", False, f"Expected role 'reseller_admin', got '{user.get('role')}'")
+                return False
+            
+            self.yottanet_reseller_token = response["access_token"]
+            headers = {"Authorization": f"Bearer {self.yottanet_reseller_token}"}
+            self.log_test("YottaNet Reseller Login", True, f"Role: {user.get('role')}, Email: {user.get('email')}")
+        
+        # Test 2: GET /api/reseller/profile - Backend API Verification
+        print("\n🔹 Test 2: GET /api/reseller/profile")
+        
+        response, error = self.make_request("GET", "/reseller/profile", headers=headers)
+        if error:
+            self.log_test("GET Reseller Profile", False, error)
+            return False
+        
+        # Validate response structure
+        required_fields = ["id", "company_name", "brand_name", "pricing", "stats"]
+        missing_fields = [f for f in required_fields if f not in response]
+        if missing_fields:
+            self.log_test("GET Reseller Profile - Structure", False, f"Missing fields: {missing_fields}")
+            return False
+        
+        # Check pricing structure
+        pricing = response.get("pricing", {})
+        required_pricing_fields = ["tier_1_price", "tier_2_price", "tier_3_price", "currency"]
+        missing_pricing_fields = [f for f in required_pricing_fields if f not in pricing]
+        if missing_pricing_fields:
+            self.log_test("GET Reseller Profile - Pricing Structure", False, f"Missing pricing fields: {missing_pricing_fields}")
+            return False
+        
+        # Verify prices are stored in cents
+        tier_1_price = pricing.get("tier_1_price", 0)
+        tier_2_price = pricing.get("tier_2_price", 0)
+        tier_3_price = pricing.get("tier_3_price", 0)
+        
+        # Prices should be in cents (e.g., 49900 for R499)
+        if tier_1_price < 10000 or tier_2_price < 10000 or tier_3_price < 10000:
+            self.log_test("Pricing Storage in Cents", False, 
+                        f"Prices appear to be in Rands, not cents: T1={tier_1_price}, T2={tier_2_price}, T3={tier_3_price}")
+        else:
+            self.log_test("Pricing Storage in Cents", True, 
+                        f"Prices stored in cents: T1={tier_1_price} (R{tier_1_price/100:.2f}), T2={tier_2_price} (R{tier_2_price/100:.2f}), T3={tier_3_price} (R{tier_3_price/100:.2f})")
+        
+        # Check strategy call pricing
+        strategy_call_pricing = response.get("strategy_call_pricing")
+        if strategy_call_pricing:
+            strategy_price = strategy_call_pricing.get("price", 0)
+            strategy_duration = strategy_call_pricing.get("duration_minutes", 0)
+            self.log_test("Strategy Call Pricing", True, 
+                        f"Strategy call: R{strategy_price/100:.2f} for {strategy_duration} minutes")
+        else:
+            self.log_test("Strategy Call Pricing", False, "Strategy call pricing not found in profile")
+        
+        self.log_test("GET Reseller Profile", True, f"Company: {response.get('company_name')}, Currency: {pricing.get('currency')}")
+        
+        # Test 3: PUT /api/reseller/pricing - Pricing Update Flow
+        print("\n🔹 Test 3: PUT /api/reseller/pricing")
+        
+        # Store original prices for restoration
+        original_pricing = {
+            "tier_1_price": tier_1_price,
+            "tier_2_price": tier_2_price,
+            "tier_3_price": tier_3_price,
+            "currency": pricing.get("currency", "ZAR")
+        }
+        
+        # Test updating Tier 1 price from 499 to 550 (in cents: 49900 to 55000)
+        updated_pricing = {
+            "tier_1_price": 55000,  # R550 in cents
+            "tier_2_price": tier_2_price,  # Keep existing
+            "tier_3_price": tier_3_price,  # Keep existing
+            "currency": "ZAR"
+        }
+        
+        response, error = self.make_request("PUT", "/reseller/pricing", headers=headers, data=updated_pricing)
+        if error:
+            self.log_test("PUT Reseller Pricing", False, error)
+            return False
+        
+        # Validate update response
+        if not response.get("success"):
+            self.log_test("PUT Reseller Pricing", False, "Success flag not returned")
+            return False
+        
+        self.log_test("PUT Reseller Pricing", True, f"Updated Tier 1 price to R{55000/100:.2f}")
+        
+        # Test 4: Verify the price update persisted
+        print("\n🔹 Test 4: Verify Price Update Persistence")
+        
+        response, error = self.make_request("GET", "/reseller/profile", headers=headers)
+        if error:
+            self.log_test("Verify Price Update", False, error)
+            return False
+        
+        updated_pricing_response = response.get("pricing", {})
+        updated_tier_1_price = updated_pricing_response.get("tier_1_price", 0)
+        
+        if updated_tier_1_price == 55000:
+            self.log_test("Verify Price Update", True, f"Price update persisted: Tier 1 = R{updated_tier_1_price/100:.2f}")
+        else:
+            self.log_test("Verify Price Update", False, 
+                        f"Price update did not persist: expected 55000, got {updated_tier_1_price}")
+        
+        # Test 5: Update Strategy Call Pricing
+        print("\n🔹 Test 5: Update Strategy Call Pricing")
+        
+        strategy_pricing_update = {
+            "tier_1_price": 55000,  # Keep the updated price
+            "tier_2_price": tier_2_price,
+            "tier_3_price": tier_3_price,
+            "currency": "ZAR",
+            "strategy_call_pricing": {
+                "price": 75000,  # R750 in cents
+                "duration_minutes": 30,
+                "enabled": True
+            }
+        }
+        
+        response, error = self.make_request("PUT", "/reseller/pricing", headers=headers, data=strategy_pricing_update)
+        if error:
+            self.log_test("Update Strategy Call Pricing", False, error)
+        else:
+            if response.get("success"):
+                self.log_test("Update Strategy Call Pricing", True, "Strategy call pricing updated to R750")
+            else:
+                self.log_test("Update Strategy Call Pricing", False, "Success flag not returned")
+        
+        # Test 6: Verify Strategy Call Pricing Update
+        print("\n🔹 Test 6: Verify Strategy Call Pricing Update")
+        
+        response, error = self.make_request("GET", "/reseller/profile", headers=headers)
+        if error:
+            self.log_test("Verify Strategy Call Update", False, error)
+        else:
+            strategy_call = response.get("strategy_call_pricing", {})
+            if strategy_call and strategy_call.get("price") == 75000:
+                self.log_test("Verify Strategy Call Update", True, 
+                            f"Strategy call pricing updated: R{strategy_call.get('price')/100:.2f}")
+            else:
+                self.log_test("Verify Strategy Call Update", False, 
+                            f"Strategy call pricing not updated correctly: {strategy_call}")
+        
+        # Test 7: Restore Original Pricing (Cleanup)
+        print("\n🔹 Test 7: Restore Original Pricing (Cleanup)")
+        
+        response, error = self.make_request("PUT", "/reseller/pricing", headers=headers, data=original_pricing)
+        if error:
+            self.log_test("Restore Original Pricing", False, error)
+        else:
+            if response.get("success"):
+                self.log_test("Restore Original Pricing", True, "Original pricing restored")
+            else:
+                self.log_test("Restore Original Pricing", False, "Failed to restore original pricing")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Backend API Tests...")

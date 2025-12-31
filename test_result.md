@@ -1,56 +1,81 @@
-# Test Results - UpShift Platform
+backend:
+  - task: "Reseller Profile API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial test setup - needs verification of GET /api/reseller/profile endpoint"
 
-## New Feature: 30-Day Subscription Expiry System
+  - task: "Reseller Pricing Update API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial test setup - needs verification of PUT /api/reseller/pricing endpoint"
 
-### Backend Implementation
-- task: "Subscription Expiry Field"
-  implemented: true
-  working: true
-  details: "Added subscription_expires_at field to UserInDB and UserResponse models"
+  - task: "Strategy Call Pricing API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial test setup - needs verification of strategy call pricing in reseller profile"
 
-- task: "Auto-Suspension on Login"
-  implemented: true  
-  working: true
-  details: "Login checks subscription_expires_at and auto-suspends expired accounts"
+  - task: "Pricing Storage in Cents"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/reseller_models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial test setup - needs verification that prices are stored in cents but displayed in Rands"
 
-- task: "Subscription Expiry on Payment"
-  implemented: true
-  working: true
-  details: "Payment verification sets subscription_expires_at to 30 days from purchase"
-
-- task: "Scheduled Suspension Job"
-  implemented: true
-  working: true
-  details: "auto_suspend_expired_subscriptions runs daily at 00:30 to suspend expired accounts"
-
-### Frontend Implementation  
-- task: "SubscriptionBanner Component"
-  implemented: true
-  working: true
-  details: "Shows warnings for expiring (≤7 days) and suspended accounts"
-
-- task: "AuthContext Helpers"
-  implemented: true
-  working: true
-  details: "Added isSuspended(), isSubscriptionExpiringSoon(), getDaysUntilExpiry() functions"
-
-- task: "AccountSuspended Page"
-  implemented: true
-  working: true
-  details: "Dedicated page at /account-suspended for suspended users"
-
-## Test Credentials
-| User | Email | Password | Status |
-|------|-------|----------|--------|
-| Normal User | test@upshift.works | password123 | Active (30 days) |
-| Expiring User | expiring@test.com | password123 | Expiring in 3 days |
-| Suspended User | suspended@test.com | password123 | Suspended on login |
-
-## Visual Verification
-- ✅ Active user: No banner shown
-- ✅ Expiring user (≤7 days): Amber warning banner with days countdown
-- ✅ Suspended user: Red banner with "Account Suspended" message
+frontend:
+  - task: "Pricing Display in Rands"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/reseller/PricingPage.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Frontend testing not performed - system limitation"
 
 metadata:
-  feature: "30-day subscription expiry"
-  last_updated: "2025-12-30"
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Reseller Profile API"
+    - "Reseller Pricing Update API"
+    - "Strategy Call Pricing API"
+    - "Pricing Storage in Cents"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "Starting reseller pricing functionality tests. Will test backend APIs for pricing display, update, and storage verification."

@@ -143,8 +143,18 @@ const ResellerPricing = () => {
     }
   };
 
-  const formatCents = (cents) => (cents / 100).toFixed(2);
-  const parseCents = (value) => Math.round(parseFloat(value || 0) * 100);
+  // Format price from cents to rands for display
+  const formatPrice = (cents) => {
+    if (cents === null || cents === undefined || isNaN(cents)) return '';
+    return (Number(cents) / 100).toFixed(2);
+  };
+  
+  // Parse rands input to cents for storage
+  const parsePrice = (value) => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return 0;
+    return Math.round(numValue * 100);
+  };
 
   const updateTier = (tierKey, field, value) => {
     setTierConfig(prev => ({

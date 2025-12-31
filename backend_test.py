@@ -34,6 +34,12 @@ RESELLER_ADMIN_CREDS = {
     "password": "acme123456"
 }
 
+# Reseller credentials from review request
+YOTTANET_RESELLER_CREDS = {
+    "email": "owner@yottanet.com",
+    "password": "password123"
+}
+
 # Test customer credentials for LinkedIn API testing
 TEST_CUSTOMER_CREDS = {
     "email": "test@example.com",

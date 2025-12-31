@@ -1129,7 +1129,8 @@ async def ats_resume_check(
             if auth_header.startswith("Bearer "):
                 token = auth_header.split(" ")[1]
                 from jose import jwt
-                payload = jwt.decode(token, os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production'), algorithms=["HS256"])
+                from auth import SECRET_KEY, ALGORITHM
+                payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
                 if payload:
                     email = payload.get("sub")
                     # Fetch the actual user ID from the database using email

@@ -623,7 +623,7 @@ const ResellerPricing = () => {
                     <p className="text-sm font-medium text-green-800">Strategy Call Summary</p>
                     <p className="text-sm text-green-700 mt-1">
                       {strategyCallPricing.enabled 
-                        ? `R${formatCents(strategyCallPricing.price)} per ${strategyCallPricing.duration_minutes}-minute session${strategyCallPricing.included_in_tier_3 ? ` (free for ${tierConfig.tier_3.name})` : ''}`
+                        ? `R${formatPrice(strategyCallPricing.price)} per ${strategyCallPricing.duration_minutes}-minute session${strategyCallPricing.included_in_tier_3 ? ` (free for ${tierConfig.tier_3.name})` : ''}`
                         : 'Strategy call bookings are currently disabled'
                       }
                     </p>

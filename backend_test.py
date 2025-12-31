@@ -3787,6 +3787,8 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         # Run all test suites
         test_suites = [
+            self.test_authentication,
+            self.test_reseller_pricing_functionality,  # Add the new reseller pricing test
             self.test_super_admin_apis,
             self.test_reseller_apis,
             self.test_white_label_config,
@@ -3807,7 +3809,8 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             self.test_subscription_expiry_system  # Add Subscription Expiry tests
         ]
         
-        for test_suite in test_suites:
+        # Skip authentication in the loop since we run it separately
+        for test_suite in test_suites[1:]:
             try:
                 test_suite()
             except Exception as e:

@@ -274,18 +274,20 @@ const ResellerPricing = () => {
                   />
                 </div>
                 <div>
-                  <Label>Price (ZAR)</Label>
+                  <Label>Price (Rands)</Label>
                   <div className="relative mt-1">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">R</span>
                     <Input
                       type="number"
-                      step="0.01"
+                      step="1"
                       min="0"
-                      value={formatCents(tierConfig.tier_1.price)}
-                      onChange={(e) => updateTier('tier_1', 'price', parseCents(e.target.value))}
+                      placeholder="e.g. 499"
+                      value={formatPrice(tierConfig.tier_1.price)}
+                      onChange={(e) => updateTier('tier_1', 'price', parsePrice(e.target.value))}
                       className="pl-8"
                     />
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Enter the price in Rands (e.g., 499 for R499.00)</p>
                 </div>
                 <div>
                   <Label className="flex items-center justify-between">

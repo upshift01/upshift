@@ -523,9 +523,9 @@ const ResellerPricing = () => {
               <div>
                 <p className="text-sm font-medium text-blue-800">Pricing Preview</p>
                 <p className="text-sm text-blue-700 mt-1">
-                  Your customers will see: <strong>{tierConfig.tier_1.name}</strong> at R{formatCents(tierConfig.tier_1.price)}, 
-                  <strong> {tierConfig.tier_2.name}</strong> at R{formatCents(tierConfig.tier_2.price)}, and 
-                  <strong> {tierConfig.tier_3.name}</strong> at R{formatCents(tierConfig.tier_3.price)}
+                  Your customers will see: <strong>{tierConfig.tier_1.name}</strong> at R{formatPrice(tierConfig.tier_1.price)}, 
+                  <strong> {tierConfig.tier_2.name}</strong> at R{formatPrice(tierConfig.tier_2.price)}, and 
+                  <strong> {tierConfig.tier_3.name}</strong> at R{formatPrice(tierConfig.tier_3.price)}
                 </p>
               </div>
             </div>

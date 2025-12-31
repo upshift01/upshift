@@ -1,51 +1,63 @@
 backend:
   - task: "Reseller Profile API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/reseller_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial test setup - needs verification of GET /api/reseller/profile endpoint"
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/reseller/profile working correctly. Returns pricing structure with tier prices in cents, strategy call pricing, and all required fields."
 
   - task: "Reseller Pricing Update API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/reseller_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial test setup - needs verification of PUT /api/reseller/pricing endpoint"
+      - working: true
+        agent: "testing"
+        comment: "✅ PUT /api/reseller/pricing working correctly. Successfully updated Tier 1 price from R499 to R550 and verified persistence."
 
   - task: "Strategy Call Pricing API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/reseller_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial test setup - needs verification of strategy call pricing in reseller profile"
+      - working: true
+        agent: "testing"
+        comment: "✅ Strategy call pricing working correctly. Successfully updated from default to R750 and verified persistence."
 
   - task: "Pricing Storage in Cents"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/reseller_models.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial test setup - needs verification that prices are stored in cents but displayed in Rands"
+      - working: true
+        agent: "testing"
+        comment: "✅ Pricing storage verified. Prices correctly stored in cents (e.g., 49900 for R499) and can be converted to Rands for display."
 
 frontend:
   - task: "Pricing Display in Rands"
@@ -79,3 +91,5 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "Starting reseller pricing functionality tests. Will test backend APIs for pricing display, update, and storage verification."
+  - agent: "testing"
+    message: "✅ All reseller pricing backend tests PASSED successfully. YottaNet reseller login working, pricing APIs functional, prices stored in cents correctly, strategy call pricing working. Backend ready for frontend integration."

@@ -304,6 +304,63 @@ async def login(user_data: UserLogin):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== Emergency Super Admin Reset ====================
+@api_router.post("/auth/emergency-admin-reset")
+async def emergency_admin_reset(data: dict):
+    """
+    Emergency endpoint to reset super admin password.
+    Requires a secret key for security.
+    """
+    try:
+        secret_key = data.get("secret_key")
+        new_password = data.get("new_password", "Admin@2025!")
+        
+        # Security check - must provide correct secret
+        if secret_key != "UPSHIFT-EMERGENCY-RESET-2025":
+            raise HTTPException(status_code=403, detail="Invalid secret key")
+        
+        # Find or create super admin
+        admin = await db.users.find_one({"email": "admin@upshift.works"})
+        
+        if admin:
+            # Update password
+            hashed = get_password_hash(new_password)
+            await db.users.update_one(
+                {"email": "admin@upshift.works"},
+                {
+                    "$set": {
+                        "hashed_password": hashed,
+                        "status": "active",
+                        "role": "super_admin"
+                    }
+                }
+            )
+            logger.info("Super admin password reset via emergency endpoint")
+            return {"success": True, "message": "Password reset successfully", "email": "admin@upshift.works"}
+        else:
+            # Create super admin
+            from uuid import uuid4
+            new_admin = {
+                "id": str(uuid4()),
+                "email": "admin@upshift.works",
+                "full_name": "Super Admin",
+                "hashed_password": get_password_hash(new_password),
+                "role": "super_admin",
+                "status": "active",
+                "is_active": True,
+                "created_at": datetime.now(timezone.utc)
+            }
+            await db.users.insert_one(new_admin)
+            logger.info("Super admin created via emergency endpoint")
+            return {"success": True, "message": "Super admin created", "email": "admin@upshift.works"}
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Emergency admin reset error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_current_user_info(current_user: UserResponse = Depends(get_current_user_dep)):
     """Get current user information"""

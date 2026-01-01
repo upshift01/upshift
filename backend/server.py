@@ -733,24 +733,50 @@ async def create_payment_checkout(
         else:
             cancel_url = f"{frontend_url}/payment/cancel"
         
-        # Get pricing from reseller or use defaults
+        # Get pricing from platform settings or reseller
+        # First, set defaults
         tiers = {
             "tier-1": {"name": "ATS Optimize", "price_cents": 89900},
             "tier-2": {"name": "Professional Package", "price_cents": 150000},
             "tier-3": {"name": "Executive Elite", "price_cents": 300000}
         }
         
-        # If user belongs to a reseller, use reseller's pricing
         if reseller_id:
+            # User belongs to a reseller - use reseller's pricing
             reseller = await db.resellers.find_one({"id": reseller_id}, {"_id": 0, "pricing": 1})
             if reseller and reseller.get("pricing"):
                 pricing = reseller["pricing"]
-                if pricing.get("tier1_price"):
-                    tiers["tier-1"]["price_cents"] = int(pricing["tier1_price"] * 100)
-                if pricing.get("tier2_price"):
-                    tiers["tier-2"]["price_cents"] = int(pricing["tier2_price"] * 100)
-                if pricing.get("tier3_price"):
-                    tiers["tier-3"]["price_cents"] = int(pricing["tier3_price"] * 100)
+                # Check for tier_1_price format (cents) or tier_config format
+                if pricing.get("tier_1_price"):
+                    tiers["tier-1"]["price_cents"] = int(pricing["tier_1_price"])
+                if pricing.get("tier_2_price"):
+                    tiers["tier-2"]["price_cents"] = int(pricing["tier_2_price"])
+                if pricing.get("tier_3_price"):
+                    tiers["tier-3"]["price_cents"] = int(pricing["tier_3_price"])
+                # Also check tier_config format
+                tier_config = pricing.get("tier_config", {})
+                if tier_config.get("tier_1", {}).get("price"):
+                    tiers["tier-1"]["price_cents"] = int(tier_config["tier_1"]["price"])
+                if tier_config.get("tier_2", {}).get("price"):
+                    tiers["tier-2"]["price_cents"] = int(tier_config["tier_2"]["price"])
+                if tier_config.get("tier_3", {}).get("price"):
+                    tiers["tier-3"]["price_cents"] = int(tier_config["tier_3"]["price"])
+        else:
+            # Main platform user - read from platform_settings
+            pricing_config = await db.platform_settings.find_one(
+                {"key": "platform_pricing"},
+                {"_id": 0}
+            )
+            if pricing_config and pricing_config.get("value"):
+                config = pricing_config["value"]
+                tier_pricing = config.get("default_tier_pricing", {})
+                # Prices in platform_settings are stored in Rands, convert to cents
+                if tier_pricing.get("tier_1_price"):
+                    tiers["tier-1"]["price_cents"] = int(tier_pricing["tier_1_price"] * 100)
+                if tier_pricing.get("tier_2_price"):
+                    tiers["tier-2"]["price_cents"] = int(tier_pricing["tier_2_price"] * 100)
+                if tier_pricing.get("tier_3_price"):
+                    tiers["tier-3"]["price_cents"] = int(tier_pricing["tier_3_price"] * 100)
         
         if tier_id not in tiers:
             raise HTTPException(status_code=400, detail="Invalid tier ID")

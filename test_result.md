@@ -105,3 +105,5 @@ agent_communication:
     message: "Starting reseller pricing functionality tests. Will test backend APIs for pricing display, update, and storage verification."
   - agent: "testing"
     message: "✅ All reseller pricing backend tests PASSED successfully. YottaNet reseller login working, pricing APIs functional, prices stored in cents correctly, strategy call pricing working. Backend ready for frontend integration."
+  - agent: "testing"
+    message: "🔍 TIER-3 PAYMENT FLOW INVESTIGATION COMPLETE: Comprehensive testing of tier-3 payment flow shows ALL SYSTEMS WORKING CORRECTLY. Tested with user test@upshift.works - checkout creation, payment record storage, verification endpoints, emergency activation, and tier access all functioning properly. The production bug where tier-3 payments succeed on Yoco but subscriptions aren't activated is NOT reproduced in current codebase. Recommendation: Check Yoco webhook configuration, reseller-specific Yoco credentials, or investigate specific production payment IDs using the diagnostic endpoint /api/admin/diagnose-payment."

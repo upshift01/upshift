@@ -47,15 +47,19 @@ async def get_current_super_admin(request: Request):
 @admin_router.get("/resellers", response_model=dict)
 async def list_resellers(
     status_filter: Optional[str] = None,
+    include_deleted: bool = False,
     skip: int = 0,
     limit: int = 50,
     admin: UserResponse = Depends(get_current_super_admin)
 ):
-    """List all resellers"""
+    """List all resellers (excludes deleted by default)"""
     try:
         query = {}
         if status_filter:
             query["status"] = status_filter
+        elif not include_deleted:
+            # By default, exclude deleted resellers
+            query["status"] = {"$ne": "deleted"}
         
         resellers = await db.resellers.find(
             query,

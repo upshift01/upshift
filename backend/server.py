@@ -415,6 +415,85 @@ async def emergency_activate_subscription(data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# ==================== Payment Debug/Diagnostic Endpoint ====================
+@api_router.post("/admin/diagnose-payment")
+async def diagnose_payment(data: dict):
+    """
+    Diagnostic endpoint to check payment status for troubleshooting.
+    Use this to investigate why a payment didn't activate.
+    """
+    try:
+        secret_key = data.get("secret_key")
+        user_email = data.get("email")
+        
+        # Security check
+        if secret_key != "UPSHIFT-EMERGENCY-RESET-2025":
+            raise HTTPException(status_code=403, detail="Invalid secret key")
+        
+        if not user_email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        
+        user_email = user_email.lower().strip()
+        
+        # Get user info
+        user = await db.users.find_one({"email": user_email}, {"_id": 0})
+        if not user:
+            return {"error": f"User not found: {user_email}"}
+        
+        # Get all payments for this user
+        payments = await db.payments.find(
+            {"user_email": user_email},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(20)
+        
+        # Get tier-3 specific payments
+        tier3_payments = [p for p in payments if p.get("tier_id") == "tier-3"]
+        
+        result = {
+            "user": {
+                "id": user.get("id"),
+                "email": user.get("email"),
+                "active_tier": user.get("active_tier"),
+                "tier_activation_date": str(user.get("tier_activation_date")) if user.get("tier_activation_date") else None,
+                "subscription_expires_at": str(user.get("subscription_expires_at")) if user.get("subscription_expires_at") else None,
+                "status": user.get("status"),
+                "reseller_id": user.get("reseller_id")
+            },
+            "total_payments": len(payments),
+            "tier3_payments": len(tier3_payments),
+            "recent_payments": [
+                {
+                    "id": p.get("id"),
+                    "tier_id": p.get("tier_id"),
+                    "status": p.get("status"),
+                    "amount_cents": p.get("amount_cents"),
+                    "yoco_checkout_id": p.get("yoco_checkout_id"),
+                    "created_at": str(p.get("created_at")) if p.get("created_at") else None,
+                    "verified_at": str(p.get("verified_at")) if p.get("verified_at") else None
+                }
+                for p in payments[:5]
+            ]
+        }
+        
+        # If there are tier-3 payments, check if any were successful but user doesn't have tier-3
+        if tier3_payments and user.get("active_tier") != "tier-3":
+            for p in tier3_payments:
+                if p.get("status") == "succeeded":
+                    result["issue_detected"] = f"Tier-3 payment {p.get('id')} succeeded but user doesn't have tier-3 active"
+                    result["suggested_fix"] = f"Call /api/auth/emergency-activate-subscription with email={user_email} and tier_id=tier-3"
+                    break
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Diagnose payment error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_current_user_info(current_user: UserResponse = Depends(get_current_user_dep)):
     """Get current user information"""

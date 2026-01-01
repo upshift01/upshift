@@ -361,6 +361,60 @@ async def emergency_admin_reset(data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== Emergency User Subscription Activation ====================
+@api_router.post("/auth/emergency-activate-subscription")
+async def emergency_activate_subscription(data: dict):
+    """
+    Emergency endpoint to manually activate a user's subscription.
+    Use this when payment was successful but subscription wasn't activated.
+    """
+    try:
+        secret_key = data.get("secret_key")
+        user_email = data.get("email")
+        tier_id = data.get("tier_id", "tier-2")
+        days = data.get("days", 30)
+        
+        # Security check
+        if secret_key != "UPSHIFT-EMERGENCY-RESET-2025":
+            raise HTTPException(status_code=403, detail="Invalid secret key")
+        
+        if not user_email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        
+        # Find user
+        user = await db.users.find_one({"email": user_email.lower().strip()})
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User not found: {user_email}")
+        
+        # Activate subscription
+        await db.users.update_one(
+            {"email": user_email.lower().strip()},
+            {
+                "$set": {
+                    "active_tier": tier_id,
+                    "tier_activation_date": datetime.now(timezone.utc),
+                    "subscription_expires_at": datetime.now(timezone.utc) + timedelta(days=days),
+                    "status": "active"
+                }
+            }
+        )
+        
+        logger.info(f"Emergency subscription activation: {user_email} -> {tier_id} for {days} days")
+        
+        return {
+            "success": True,
+            "message": f"Subscription activated for {user_email}",
+            "tier": tier_id,
+            "expires_in_days": days
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Emergency subscription activation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_current_user_info(current_user: UserResponse = Depends(get_current_user_dep)):
     """Get current user information"""

@@ -337,33 +337,110 @@ async def update_reseller(
 @admin_router.delete("/resellers/{reseller_id}", response_model=dict)
 async def delete_reseller(
     reseller_id: str,
+    hard_delete: bool = False,
     admin: UserResponse = Depends(get_current_super_admin)
 ):
-    """Delete a reseller (soft delete by setting status to 'deleted')"""
+    """
+    Delete a reseller.
+    - Soft delete (default): Sets status to 'deleted', preserves data for analytics
+    - Hard delete: Permanently removes reseller and associated data
+    """
     try:
         reseller = await db.resellers.find_one({"id": reseller_id})
         if not reseller:
             raise HTTPException(status_code=404, detail="Reseller not found")
         
-        await db.resellers.update_one(
-            {"id": reseller_id},
-            {
-                "$set": {
-                    "status": "deleted",
-                    "updated_at": datetime.now(timezone.utc)
+        company_name = reseller.get("company_name", "Unknown")
+        
+        if hard_delete:
+            # Hard delete - permanently remove all associated data
+            
+            # 1. Get all customers associated with this reseller
+            customer_ids = []
+            async for customer in db.users.find({"reseller_id": reseller_id}, {"id": 1}):
+                customer_ids.append(customer["id"])
+            
+            # 2. Delete customer payments (mark as deleted for analytics history)
+            deleted_payments = await db.payments.update_many(
+                {"reseller_id": reseller_id},
+                {
+                    "$set": {
+                        "status": "deleted",
+                        "deleted_at": datetime.now(timezone.utc),
+                        "deleted_reason": f"Reseller {company_name} deleted"
+                    }
+                }
+            )
+            
+            # 3. Delete customer bookings
+            deleted_bookings = await db.bookings.delete_many({"reseller_id": reseller_id})
+            
+            # 4. Delete reseller invoices
+            deleted_invoices = await db.reseller_invoices.delete_many({"reseller_id": reseller_id})
+            
+            # 5. Delete associated users (customers)
+            deleted_customers = await db.users.delete_many({"reseller_id": reseller_id})
+            
+            # 6. Delete owner user
+            await db.users.delete_one({"id": reseller["owner_user_id"]})
+            
+            # 7. Delete the reseller
+            await db.resellers.delete_one({"id": reseller_id})
+            
+            # 8. Delete activity logs for this reseller
+            await db.activity_logs.delete_many({"reseller_id": reseller_id})
+            
+            logger.info(f"Reseller HARD DELETED by admin {admin.email}: {reseller_id} ({company_name})")
+            logger.info(f"  - Deleted {deleted_customers.deleted_count} customers")
+            logger.info(f"  - Marked {deleted_payments.modified_count} payments as deleted")
+            logger.info(f"  - Deleted {deleted_invoices.deleted_count} invoices")
+            logger.info(f"  - Deleted {deleted_bookings.deleted_count} bookings")
+            
+            return {
+                "success": True,
+                "message": f"Reseller '{company_name}' permanently deleted",
+                "deleted": {
+                    "customers": deleted_customers.deleted_count,
+                    "payments_marked": deleted_payments.modified_count,
+                    "invoices": deleted_invoices.deleted_count,
+                    "bookings": deleted_bookings.deleted_count
                 }
             }
-        )
-        
-        # Deactivate owner user
-        await db.users.update_one(
-            {"id": reseller["owner_user_id"]},
-            {"$set": {"is_active": False}}
-        )
-        
-        logger.info(f"Reseller deleted by admin: {reseller_id}")
-        
-        return {"success": True, "message": "Reseller deleted successfully"}
+        else:
+            # Soft delete - mark as deleted but preserve data
+            await db.resellers.update_one(
+                {"id": reseller_id},
+                {
+                    "$set": {
+                        "status": "deleted",
+                        "deleted_at": datetime.now(timezone.utc),
+                        "deleted_by": admin.id,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                }
+            )
+            
+            # Deactivate owner user
+            await db.users.update_one(
+                {"id": reseller["owner_user_id"]},
+                {"$set": {"is_active": False, "status": "suspended"}}
+            )
+            
+            # Suspend all customers of this reseller
+            suspended_customers = await db.users.update_many(
+                {"reseller_id": reseller_id},
+                {"$set": {"status": "suspended"}}
+            )
+            
+            logger.info(f"Reseller SOFT DELETED by admin {admin.email}: {reseller_id} ({company_name})")
+            logger.info(f"  - Suspended {suspended_customers.modified_count} customers")
+            
+            return {
+                "success": True,
+                "message": f"Reseller '{company_name}' deleted (data preserved)",
+                "suspended_customers": suspended_customers.modified_count
+            }
+            
     except HTTPException:
         raise
     except Exception as e:

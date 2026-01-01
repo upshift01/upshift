@@ -37,6 +37,7 @@ const AdminResellers = () => {
   const [editingReseller, setEditingReseller] = useState(null);
   const [actionMenu, setActionMenu] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  const [deleteModal, setDeleteModal] = useState(null); // { reseller, hardDelete: false }
 
   useEffect(() => {
     fetchResellers();

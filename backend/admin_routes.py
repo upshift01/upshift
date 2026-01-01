@@ -381,8 +381,10 @@ async def delete_reseller(
             # 5. Delete associated users (customers)
             deleted_customers = await db.users.delete_many({"reseller_id": reseller_id})
             
-            # 6. Delete owner user
-            await db.users.delete_one({"id": reseller["owner_user_id"]})
+            # 6. Delete owner user (if exists)
+            owner_user_id = reseller.get("owner_user_id")
+            if owner_user_id:
+                await db.users.delete_one({"id": owner_user_id})
             
             # 7. Delete the reseller
             await db.resellers.delete_one({"id": reseller_id})
@@ -420,11 +422,13 @@ async def delete_reseller(
                 }
             )
             
-            # Deactivate owner user
-            await db.users.update_one(
-                {"id": reseller["owner_user_id"]},
-                {"$set": {"is_active": False, "status": "suspended"}}
-            )
+            # Deactivate owner user (if exists)
+            owner_user_id = reseller.get("owner_user_id")
+            if owner_user_id:
+                await db.users.update_one(
+                    {"id": owner_user_id},
+                    {"$set": {"is_active": False, "status": "suspended"}}
+                )
             
             # Suspend all customers of this reseller
             suspended_customers = await db.users.update_many(

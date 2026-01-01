@@ -49,7 +49,7 @@ const PricingPage = () => {
       }
     } catch (error) {
       console.error('Payment error:', error);
-      const errorMessage = response.data?.detail || error.message || 'Failed to initiate payment. Please try again.';
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to initiate payment. Please try again.';
       toast({
         title: 'Payment Error',
         description: errorMessage,

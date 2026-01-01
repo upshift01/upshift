@@ -51,6 +51,9 @@ class YocoService:
             frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
             
             async with httpx.AsyncClient() as client:
+                # Note: We need to append the checkout ID to the success URL
+                # But we don't have it yet. Yoco should append query params automatically.
+                # We'll create a placeholder and handle it in the frontend
                 payload = {
                     "amount": amount_cents,
                     "currency": "ZAR",

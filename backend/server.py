@@ -1324,7 +1324,7 @@ async def generate_resume_pdf(resume_data: ResumeCreate):
                 story.append(Paragraph(exp.duration, styles['Normal']))
                 story.append(Paragraph(exp.description, styles['Normal']))
                 if exp.achievements:
-                    story.append(Paragraph(f"<b>Key Achievements:</b>", styles['Normal']))
+                    story.append(Paragraph("<b>Key Achievements:</b>", styles['Normal']))
                     story.append(Paragraph(exp.achievements, styles['Normal']))
                 story.append(Spacer(1, 0.1*inch))
         

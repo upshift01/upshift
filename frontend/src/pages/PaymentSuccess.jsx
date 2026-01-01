@@ -22,14 +22,23 @@ const PaymentSuccess = () => {
     const checkoutId = searchParams.get('id');
     const bookingId = searchParams.get('booking');
     
+    // Also check localStorage for checkout ID (in case Yoco doesn't append it)
+    const storedCheckoutId = localStorage.getItem('pending_checkout_id');
+    
     if (bookingId) {
       // This is a booking payment confirmation
       setPaymentType('booking');
       confirmBookingPayment(bookingId);
-    } else if (checkoutId) {
+    } else if (checkoutId || storedCheckoutId) {
       // This is a subscription payment verification
+      // Use URL param first, fall back to localStorage
+      const idToVerify = checkoutId || storedCheckoutId;
       setPaymentType('subscription');
-      verifyPayment(checkoutId);
+      verifyPayment(idToVerify);
+      
+      // Clear stored checkout ID after use
+      localStorage.removeItem('pending_checkout_id');
+      localStorage.removeItem('pending_checkout_tier');
     } else {
       setError('No payment ID found');
       setIsVerifying(false);

@@ -904,6 +904,107 @@ async def create_payment_checkout(
         raise HTTPException(status_code=500, detail=f"Payment error: {str(e)}")
 
 
+@api_router.post("/payments/verify-by-payment-id/{payment_id}")
+async def verify_payment_by_payment_id(
+    payment_id: str,
+    current_user: UserResponse = Depends(get_current_user_dep)
+):
+    """
+    Verify payment using our internal payment_id.
+    This is used when Yoco redirects back to our success URL with ?payment_id=xxx
+    """
+    try:
+        # Find our payment record
+        payment = await db.payments.find_one({"id": payment_id})
+        if not payment:
+            logger.error(f"Payment not found: {payment_id}")
+            raise HTTPException(status_code=404, detail="Payment record not found")
+        
+        # Check if already processed
+        if payment.get("status") == "succeeded":
+            return {
+                "status": "success",
+                "message": "Payment already verified",
+                "tier_id": payment.get("tier_id"),
+                "tier_name": payment.get("tier_name")
+            }
+        
+        # Get the yoco_checkout_id from our record
+        yoco_checkout_id = payment.get("yoco_checkout_id")
+        if not yoco_checkout_id:
+            logger.error(f"No Yoco checkout ID for payment: {payment_id}")
+            raise HTTPException(status_code=400, detail="Payment record is incomplete")
+        
+        # Verify with Yoco
+        is_successful = await yoco_service.verify_payment(yoco_checkout_id)
+        
+        if not is_successful:
+            logger.warning(f"Yoco verification failed for payment: {payment_id}")
+            return {
+                "status": "failed",
+                "message": "Payment verification failed with Yoco"
+            }
+        
+        # Update payment status
+        await db.payments.update_one(
+            {"id": payment_id},
+            {
+                "$set": {
+                    "status": "succeeded",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Calculate subscription expiry (30 days from now)
+        subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        
+        # Activate tier for user
+        await db.users.update_one(
+            {"id": payment["user_id"]},
+            {
+                "$set": {
+                    "active_tier": payment["tier_id"],
+                    "tier_activation_date": datetime.now(timezone.utc),
+                    "subscription_expires_at": subscription_expires_at,
+                    "status": "active"
+                },
+                "$push": {
+                    "payment_history": payment_id
+                }
+            }
+        )
+        
+        logger.info(f"Payment verified via payment_id: {payment_id}, tier {payment['tier_id']} activated for user {payment['user_email']}")
+        
+        # Log activity for reseller
+        if payment.get("reseller_id"):
+            try:
+                from activity_service import log_activity
+                await log_activity(
+                    db=db,
+                    user_id=payment["user_id"],
+                    reseller_id=payment.get("reseller_id"),
+                    activity_type="subscription",
+                    description=f"Subscribed to {payment['tier_name']}"
+                )
+            except:
+                pass
+        
+        return {
+            "status": "success",
+            "message": "Payment verified successfully",
+            "tier_id": payment["tier_id"],
+            "tier_name": payment.get("tier_name")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying payment by payment_id: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/payments/verify/{checkout_id}")
 async def verify_payment_status(
     checkout_id: str,

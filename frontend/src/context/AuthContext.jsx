@@ -85,6 +85,25 @@ export const AuthProvider = ({ children }) => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
+  // Refresh user data from the server (e.g., after payment to get updated tier)
+  const refreshUser = async () => {
+    if (token) {
+      try {
+        const response = await axios.get(`${API_URL}/api/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setUser(response.data);
+        return response.data;
+      } catch (error) {
+        console.error('Error refreshing user:', error);
+        return null;
+      }
+    }
+    return null;
+  };
+
   const hasTier = (requiredTiers) => {
     if (!user || !user.active_tier) return false;
     return requiredTiers.includes(user.active_tier);

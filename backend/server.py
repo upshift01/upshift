@@ -783,6 +783,9 @@ async def create_payment_checkout(
         
         tier = tiers[tier_id]
         
+        # Log the price being charged for debugging
+        logger.info(f"Payment checkout: {tier_id} at {tier['price_cents']} cents (R{tier['price_cents']/100:.2f}) for user {current_user.email} (reseller: {reseller_id or 'platform'})")
+        
         # Create checkout with Yoco (using reseller's credentials if configured)
         checkout = await yoco.create_checkout(
             amount_cents=tier["price_cents"],

@@ -139,6 +139,33 @@ const AdminResellers = () => {
     setActionMenu(null);
   };
 
+  const handleDeleteReseller = async (hardDelete = false) => {
+    if (!deleteModal?.reseller) return;
+    
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/admin/resellers/${deleteModal.reseller.id}?hard_delete=${hardDelete}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Reseller deleted successfully');
+        setDeleteModal(null);
+        fetchResellers();
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Failed to delete reseller');
+      }
+    } catch (error) {
+      console.error('Error deleting reseller:', error);
+      alert('Error deleting reseller');
+    }
+  };
+
   const filteredResellers = resellers.filter(r =>
     r.company_name.toLowerCase().includes(filter.toLowerCase()) ||
     r.brand_name.toLowerCase().includes(filter.toLowerCase())

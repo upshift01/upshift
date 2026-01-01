@@ -77,6 +77,11 @@ const PaymentSuccess = () => {
       setVerificationResult(response.data);
       setIsVerifying(false);
       
+      // Refresh user data to get updated tier
+      if (response.data.status === 'success') {
+        await refreshUser();
+      }
+      
       // Clear localStorage just in case
       localStorage.removeItem('pending_checkout_id');
       localStorage.removeItem('pending_checkout_tier');

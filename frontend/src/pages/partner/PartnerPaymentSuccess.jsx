@@ -76,6 +76,11 @@ const PartnerPaymentSuccess = () => {
       setVerificationResult(response.data);
       setIsVerifying(false);
       
+      // Refresh user data to get updated tier
+      if (response.data.status === 'success') {
+        await refreshUser();
+      }
+      
       // Clear localStorage just in case
       localStorage.removeItem('pending_checkout_id');
       localStorage.removeItem('pending_checkout_tier');
@@ -95,6 +100,11 @@ const PartnerPaymentSuccess = () => {
       );
       setVerificationResult(response.data);
       setIsVerifying(false);
+      
+      // Refresh user data to get updated tier
+      if (response.data.status === 'success') {
+        await refreshUser();
+      }
     } catch (err) {
       console.error('Verification error:', err);
       setError(err.response?.data?.detail || 'Failed to verify payment');

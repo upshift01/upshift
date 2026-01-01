@@ -63,6 +63,8 @@ class YocoService:
                     "metadata": metadata
                 }
                 
+                logger.info(f"Yoco checkout payload - successUrl: {payload['successUrl']}")
+                
                 headers = {
                     "Authorization": f"Bearer {self.secret_key}",
                     "Content-Type": "application/json"

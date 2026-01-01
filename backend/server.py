@@ -840,6 +840,18 @@ async def create_payment_checkout(
         # Log the price being charged for debugging
         logger.info(f"Payment checkout: {tier_id} at {tier['price_cents']} cents (R{tier['price_cents']/100:.2f}) for user {current_user.email} (reseller: {reseller_id or 'platform'})")
         
+        # Create payment record FIRST so we have the payment_id for the success URL
+        payment_id = str(uuid.uuid4())
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+        
+        # Build success URL with our payment_id
+        if reseller_subdomain:
+            success_url_with_id = f"{frontend_url}/partner/{reseller_subdomain}/payment/success?payment_id={payment_id}"
+            cancel_url_final = f"{frontend_url}/partner/{reseller_subdomain}/payment/cancel"
+        else:
+            success_url_with_id = f"{frontend_url}/payment/success?payment_id={payment_id}"
+            cancel_url_final = f"{frontend_url}/payment/cancel"
+        
         # Create checkout with Yoco (using reseller's credentials if configured)
         checkout = await yoco.create_checkout(
             amount_cents=tier["price_cents"],
@@ -851,14 +863,14 @@ async def create_payment_checkout(
                 "tier_id": tier_id,
                 "tier_name": tier["name"],
                 "reseller_id": reseller_id or "platform",
-                "reseller_subdomain": reseller_subdomain or ""
+                "reseller_subdomain": reseller_subdomain or "",
+                "payment_id": payment_id
             },
-            success_url=success_url,
-            cancel_url=cancel_url
+            success_url=success_url_with_id,
+            cancel_url=cancel_url_final
         )
         
-        # Save pending payment to database
-        payment_id = str(uuid.uuid4())
+        # Save pending payment to database with yoco_checkout_id
         await db.payments.insert_one({
             "id": payment_id,
             "user_id": current_user.id,

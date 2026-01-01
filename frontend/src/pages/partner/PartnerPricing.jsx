@@ -96,8 +96,14 @@ const PartnerPricing = () => {
 
       // Handle both snake_case (from our backend) and camelCase (from Yoco directly)
       const redirectUrl = response.data.redirect_url || response.data.redirectUrl;
+      const checkoutId = response.data.checkout_id || response.data.checkoutId;
 
       if (redirectUrl) {
+        // Store checkout ID in localStorage for retrieval after Yoco redirect
+        if (checkoutId) {
+          localStorage.setItem('pending_checkout_id', checkoutId);
+          localStorage.setItem('pending_checkout_tier', tier.id);
+        }
         // Redirect to Yoco payment page
         window.location.href = redirectUrl;
       } else {

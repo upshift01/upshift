@@ -95,13 +95,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Reseller Profile API"
-    - "Reseller Pricing Update API"
-    - "Strategy Call Pricing API"
-    - "Pricing Storage in Cents"
+    - "Tier-3 Payment Flow Fix"
   stuck_tasks: []
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
 agent_communication:
   - agent: "testing"

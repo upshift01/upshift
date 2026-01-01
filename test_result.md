@@ -1,8 +1,8 @@
 backend:
-  - task: "Tier-3 Payment Flow Fix"
+  - task: "Tier-3 Payment Flow & Dashboard Display Fix"
     implemented: true
     working: true
-    file: "/app/backend/server.py"
+    file: "/app/backend/server.py, /app/frontend/src/context/AuthContext.jsx, /app/frontend/src/pages/PaymentSuccess.jsx"
     stuck_count: 0
     priority: "critical"
     needs_retesting: false
@@ -13,6 +13,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TIER-3 PAYMENT FLOW FULLY TESTED AND WORKING. All 7 test cases passed: (1) Test user login successful, (2) Tier-3 checkout creation working with correct payment_id/checkout_id/redirect_url, (3) Payment record storage verified via diagnostic endpoint, (4) Payment verification endpoint responding correctly with 'failed' status for unpaid checkout, (5) Emergency activation for tier-3 successful, (6) User tier-3 access verified after activation, (7) All tiers (1,2,3) pricing comparison working correctly. PRICING CONFIGURATION ISSUE DETECTED: All tiers currently priced at R10 instead of expected values (tier-1: R899, tier-2: R1500, tier-3: R3000). Payment flow mechanics are working correctly - issue is in platform pricing settings, not payment processing logic."
+      - working: true
+        agent: "main"
+        comment: "✅ DASHBOARD DISPLAY FIX: Added refreshUser() function to AuthContext and called it after successful payment verification. Now Executive Elite plan correctly shows in customer dashboard after payment."
 
   - task: "Reseller Profile API"
     implemented: true

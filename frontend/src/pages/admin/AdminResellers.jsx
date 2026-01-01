@@ -467,6 +467,18 @@ const AdminResellers = () => {
                           <CheckCircle className="h-4 w-4" /> Activate
                         </button>
                       )}
+                      
+                      {/* Delete Option - Always Available */}
+                      <div className="border-t my-1"></div>
+                      <button
+                        onClick={() => {
+                          setDeleteModal({ reseller, hardDelete: false });
+                          setActionMenu(null);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" /> Delete Reseller
+                      </button>
                     </>
                   );
                 })()}
@@ -475,6 +487,91 @@ const AdminResellers = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full">
+            <div className="p-6 border-b">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-red-100 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Delete Reseller</h2>
+                  <p className="text-gray-500">{deleteModal.reseller.company_name}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-gray-700">
+                Are you sure you want to delete <strong>{deleteModal.reseller.company_name}</strong>?
+              </p>
+              
+              <div className="space-y-3">
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    !deleteModal.hardDelete ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setDeleteModal({ ...deleteModal, hardDelete: false })}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full border-2 ${!deleteModal.hardDelete ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
+                      {!deleteModal.hardDelete && <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>}
+                    </div>
+                    <span className="font-medium">Soft Delete (Recommended)</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1 ml-6">
+                    Marks as deleted, suspends customers, but preserves data for analytics and records.
+                  </p>
+                </div>
+                
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    deleteModal.hardDelete ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setDeleteModal({ ...deleteModal, hardDelete: true })}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full border-2 ${deleteModal.hardDelete ? 'border-red-500 bg-red-500' : 'border-gray-300'}`}>
+                      {deleteModal.hardDelete && <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>}
+                    </div>
+                    <span className="font-medium text-red-600">Permanent Delete</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1 ml-6">
+                    Permanently removes reseller, all customers, and transaction data. This cannot be undone!
+                  </p>
+                </div>
+              </div>
+              
+              {deleteModal.hardDelete && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-sm text-red-700 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    <strong>Warning:</strong> This will permanently delete {deleteModal.reseller.stats?.total_customers || 0} customers and all associated data.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="p-6 border-t bg-gray-50 rounded-b-xl flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setDeleteModal(null)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => handleDeleteReseller(deleteModal.hardDelete)}
+                className={`flex-1 ${deleteModal.hardDelete ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-600 hover:bg-orange-700'}`}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {deleteModal.hardDelete ? 'Permanently Delete' : 'Delete Reseller'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reseller Detail Modal */}
       {selectedReseller && (

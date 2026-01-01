@@ -90,6 +90,18 @@ frontend:
         agent: "testing"
         comment: "Frontend testing not performed - system limitation"
 
+  - task: "Delete Reseller Feature"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/admin/AdminResellers.jsx, /app/backend/admin_routes.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BACKEND BUG FOUND: Delete Reseller feature has a KeyError bug in backend admin_routes.py line 385/425. The code tries to access reseller['owner_user_id'] but some resellers don't have this field, causing 500 error. Frontend UI components are correctly implemented: (1) ✅ 3-dot action menu with Delete Reseller option, (2) ✅ Delete confirmation modal with soft/hard delete options, (3) ✅ Warning message for permanent delete, (4) ✅ Cancel functionality, (5) ✅ Delete button in detail modal. However, actual deletion fails due to backend KeyError. Authentication session persistence issues also observed during testing. BACKEND FIX REQUIRED: Add null check for owner_user_id field before accessing it."
+
   - task: "Revenue Analytics Feature"
     implemented: true
     working: true

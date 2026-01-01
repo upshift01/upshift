@@ -16,7 +16,7 @@ import json
 import sys
 
 # Get backend URL from environment
-BACKEND_URL = "https://career-platform-21.preview.emergentagent.com/api"
+BACKEND_URL = "https://resume-boost-35.preview.emergentagent.com/api"
 
 # Reseller credentials from review request
 YOTTANET_RESELLER_CREDS = {

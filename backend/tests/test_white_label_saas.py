@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, Any, Tuple, Optional
 
 # Backend URL - using production endpoint
-BACKEND_URL = "https://career-platform-21.preview.emergentagent.com/api"
+BACKEND_URL = "https://resume-boost-35.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {

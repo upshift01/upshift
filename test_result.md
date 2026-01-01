@@ -1,4 +1,16 @@
 backend:
+  - task: "Tier-3 Payment Flow Fix"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced payment verification endpoint with better logging, reseller-specific Yoco credentials, and fallback user lookup by email. Added diagnostic endpoint /api/admin/diagnose-payment for troubleshooting."
+
   - task: "Reseller Profile API"
     implemented: true
     working: true

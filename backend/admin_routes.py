@@ -868,7 +868,7 @@ async def get_revenue_analytics(
         
         # Customer payment revenue by month
         customer_pipeline = [
-            {"$match": {"status": "completed", "created_at": {"$ne": None}}},
+            {"$match": {"status": "succeeded", "created_at": {"$ne": None}}},
             {
                 "$group": {
                     "_id": {
@@ -913,6 +913,233 @@ async def get_revenue_analytics(
         }
     except Exception as e:
         logger.error(f"Error getting revenue analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/analytics/sales", response_model=dict)
+async def get_sales_analytics(
+    months: int = 12,
+    source: str = "all",  # "all", "platform", "reseller"
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """
+    Get detailed sales analytics with product breakdown.
+    source: 'all' = all sales, 'platform' = direct platform sales (no reseller), 'reseller' = reseller customer sales
+    """
+    from datetime import datetime, timezone, timedelta
+    
+    try:
+        now = datetime.now(timezone.utc)
+        start_date = now - timedelta(days=months * 30)
+        
+        # Build match filter based on source
+        match_filter = {
+            "status": "succeeded",
+            "created_at": {"$gte": start_date}
+        }
+        
+        if source == "platform":
+            match_filter["$or"] = [{"reseller_id": None}, {"reseller_id": {"$exists": False}}]
+        elif source == "reseller":
+            match_filter["reseller_id"] = {"$ne": None, "$exists": True}
+        
+        # Get all succeeded payments
+        payments = await db.payments.find(match_filter, {"_id": 0}).sort("created_at", -1).to_list(1000)
+        
+        # Calculate totals
+        total_revenue = sum(p.get("amount_cents", 0) for p in payments)
+        total_transactions = len(payments)
+        
+        # Revenue by product type (tier)
+        product_breakdown = {}
+        tier_names = {
+            "tier-1": "ATS Optimise",
+            "tier-2": "Professional Package", 
+            "tier-3": "Executive Elite",
+            "strategy-call": "Strategy Call"
+        }
+        
+        for p in payments:
+            tier_id = p.get("tier_id", "unknown")
+            if tier_id not in product_breakdown:
+                product_breakdown[tier_id] = {
+                    "tier_id": tier_id,
+                    "name": tier_names.get(tier_id, tier_id),
+                    "revenue": 0,
+                    "count": 0
+                }
+            product_breakdown[tier_id]["revenue"] += p.get("amount_cents", 0)
+            product_breakdown[tier_id]["count"] += 1
+        
+        # Monthly breakdown
+        monthly_map = {}
+        for p in payments:
+            created = p.get("created_at")
+            if created:
+                if isinstance(created, str):
+                    created = datetime.fromisoformat(created.replace('Z', '+00:00'))
+                key = f"{created.year}-{str(created.month).zfill(2)}"
+                if key not in monthly_map:
+                    monthly_map[key] = {"month": key, "revenue": 0, "transactions": 0}
+                monthly_map[key]["revenue"] += p.get("amount_cents", 0)
+                monthly_map[key]["transactions"] += 1
+        
+        monthly_data = sorted(monthly_map.values(), key=lambda x: x["month"], reverse=True)
+        
+        # Calculate period comparison (this month vs last month)
+        this_month_key = f"{now.year}-{str(now.month).zfill(2)}"
+        last_month = now - timedelta(days=30)
+        last_month_key = f"{last_month.year}-{str(last_month.month).zfill(2)}"
+        
+        this_month_revenue = monthly_map.get(this_month_key, {}).get("revenue", 0)
+        last_month_revenue = monthly_map.get(last_month_key, {}).get("revenue", 0)
+        
+        growth_percent = 0
+        if last_month_revenue > 0:
+            growth_percent = ((this_month_revenue - last_month_revenue) / last_month_revenue) * 100
+        
+        return {
+            "source": source,
+            "period_months": months,
+            "total_revenue": total_revenue,
+            "total_transactions": total_transactions,
+            "this_month_revenue": this_month_revenue,
+            "last_month_revenue": last_month_revenue,
+            "growth_percent": round(growth_percent, 1),
+            "product_breakdown": list(product_breakdown.values()),
+            "monthly_data": monthly_data,
+            "currency": "ZAR"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting sales analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/analytics/transactions", response_model=dict)
+async def get_transaction_history(
+    page: int = 1,
+    limit: int = 20,
+    source: str = "all",  # "all", "platform", "reseller"
+    tier_id: str = None,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get transaction history with filtering"""
+    try:
+        # Build match filter
+        match_filter = {"status": "succeeded"}
+        
+        if source == "platform":
+            match_filter["$or"] = [{"reseller_id": None}, {"reseller_id": {"$exists": False}}]
+        elif source == "reseller":
+            match_filter["reseller_id"] = {"$ne": None, "$exists": True}
+        
+        if tier_id:
+            match_filter["tier_id"] = tier_id
+        
+        # Get total count
+        total_count = await db.payments.count_documents(match_filter)
+        
+        # Get paginated transactions
+        skip = (page - 1) * limit
+        transactions = await db.payments.find(
+            match_filter, 
+            {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        # Enrich with user info
+        enriched_transactions = []
+        for t in transactions:
+            user = await db.users.find_one(
+                {"id": t.get("user_id")}, 
+                {"_id": 0, "email": 1, "full_name": 1}
+            )
+            
+            reseller_name = None
+            if t.get("reseller_id"):
+                reseller = await db.resellers.find_one(
+                    {"id": t.get("reseller_id")},
+                    {"_id": 0, "company_name": 1}
+                )
+                reseller_name = reseller.get("company_name") if reseller else None
+            
+            enriched_transactions.append({
+                "id": t.get("id"),
+                "user_email": t.get("user_email") or (user.get("email") if user else "Unknown"),
+                "user_name": user.get("full_name") if user else "Unknown",
+                "tier_id": t.get("tier_id"),
+                "tier_name": t.get("tier_name"),
+                "amount_cents": t.get("amount_cents"),
+                "reseller_id": t.get("reseller_id"),
+                "reseller_name": reseller_name,
+                "source": "reseller" if t.get("reseller_id") else "platform",
+                "created_at": t.get("created_at").isoformat() if t.get("created_at") else None,
+                "verified_at": t.get("verified_at").isoformat() if t.get("verified_at") else None
+            })
+        
+        return {
+            "transactions": enriched_transactions,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting transaction history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.get("/analytics/strategy-calls", response_model=dict)
+async def get_strategy_call_analytics(
+    months: int = 12,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Get strategy call booking and revenue analytics"""
+    from datetime import datetime, timezone, timedelta
+    
+    try:
+        now = datetime.now(timezone.utc)
+        start_date = now - timedelta(days=months * 30)
+        
+        # Get all paid strategy call bookings
+        bookings = await db.bookings.find({
+            "booking_type": "strategy_call",
+            "payment_status": "paid",
+            "created_at": {"$gte": start_date}
+        }, {"_id": 0}).to_list(1000)
+        
+        total_bookings = len(bookings)
+        total_revenue = sum(b.get("amount_cents", 0) for b in bookings)
+        
+        # Group by month
+        monthly_map = {}
+        for b in bookings:
+            created = b.get("created_at")
+            if created:
+                if isinstance(created, str):
+                    created = datetime.fromisoformat(created.replace('Z', '+00:00'))
+                key = f"{created.year}-{str(created.month).zfill(2)}"
+                if key not in monthly_map:
+                    monthly_map[key] = {"month": key, "bookings": 0, "revenue": 0}
+                monthly_map[key]["bookings"] += 1
+                monthly_map[key]["revenue"] += b.get("amount_cents", 0)
+        
+        # Group by source (platform vs reseller)
+        platform_bookings = len([b for b in bookings if not b.get("reseller_id")])
+        reseller_bookings = len([b for b in bookings if b.get("reseller_id")])
+        
+        return {
+            "total_bookings": total_bookings,
+            "total_revenue": total_revenue,
+            "platform_bookings": platform_bookings,
+            "reseller_bookings": reseller_bookings,
+            "monthly_data": sorted(monthly_map.values(), key=lambda x: x["month"], reverse=True),
+            "currency": "ZAR"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting strategy call analytics: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

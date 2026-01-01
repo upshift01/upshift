@@ -102,6 +102,11 @@ const PaymentSuccess = () => {
 
       setVerificationResult(response.data);
       setIsVerifying(false);
+      
+      // Refresh user data to get updated tier
+      if (response.data.status === 'success') {
+        await refreshUser();
+      }
     } catch (err) {
       console.error('Verification error:', err);
       setError(err.response?.data?.detail || 'Failed to verify payment');

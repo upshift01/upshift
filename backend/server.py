@@ -913,15 +913,22 @@ async def verify_payment_by_payment_id(
     Verify payment using our internal payment_id.
     This is used when Yoco redirects back to our success URL with ?payment_id=xxx
     """
+    from yoco_service import get_yoco_service_for_reseller
+    
     try:
+        logger.info(f"Payment verification started for payment_id: {payment_id}")
+        
         # Find our payment record
         payment = await db.payments.find_one({"id": payment_id})
         if not payment:
             logger.error(f"Payment not found: {payment_id}")
             raise HTTPException(status_code=404, detail="Payment record not found")
         
+        logger.info(f"Payment record found: tier={payment.get('tier_id')}, user={payment.get('user_email')}, status={payment.get('status')}, reseller={payment.get('reseller_id')}")
+        
         # Check if already processed
         if payment.get("status") == "succeeded":
+            logger.info(f"Payment {payment_id} already succeeded, returning cached result")
             return {
                 "status": "success",
                 "message": "Payment already verified",
@@ -935,15 +942,23 @@ async def verify_payment_by_payment_id(
             logger.error(f"No Yoco checkout ID for payment: {payment_id}")
             raise HTTPException(status_code=400, detail="Payment record is incomplete")
         
-        # Verify with Yoco
-        is_successful = await yoco_service.verify_payment(yoco_checkout_id)
+        # Get Yoco service with reseller credentials if available (critical for proper verification)
+        reseller_id = payment.get("reseller_id")
+        yoco = await get_yoco_service_for_reseller(db, reseller_id if reseller_id != "platform" else None)
+        
+        logger.info(f"Verifying with Yoco checkout_id: {yoco_checkout_id} (reseller: {reseller_id})")
+        
+        # Verify with Yoco using the appropriate credentials
+        is_successful = await yoco.verify_payment(yoco_checkout_id)
         
         if not is_successful:
-            logger.warning(f"Yoco verification failed for payment: {payment_id}")
+            logger.warning(f"Yoco verification failed for payment: {payment_id}, checkout_id: {yoco_checkout_id}")
             return {
                 "status": "failed",
-                "message": "Payment verification failed with Yoco"
+                "message": "Payment verification failed with Yoco. The payment may still be processing - please wait a moment and try again."
             }
+        
+        logger.info(f"Yoco verification successful for payment: {payment_id}")
         
         # Update payment status
         await db.payments.update_one(
@@ -951,6 +966,7 @@ async def verify_payment_by_payment_id(
             {
                 "$set": {
                     "status": "succeeded",
+                    "verified_at": datetime.now(timezone.utc),
                     "updated_at": datetime.utcnow()
                 }
             }
@@ -960,7 +976,7 @@ async def verify_payment_by_payment_id(
         subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
         
         # Activate tier for user
-        await db.users.update_one(
+        user_update_result = await db.users.update_one(
             {"id": payment["user_id"]},
             {
                 "$set": {
@@ -974,6 +990,27 @@ async def verify_payment_by_payment_id(
                 }
             }
         )
+        
+        logger.info(f"User update result: matched={user_update_result.matched_count}, modified={user_update_result.modified_count}")
+        
+        if user_update_result.modified_count == 0:
+            # User might not exist with this ID - try updating by email as backup
+            logger.warning(f"User update by ID failed, trying by email: {payment['user_email']}")
+            user_update_result = await db.users.update_one(
+                {"email": payment["user_email"]},
+                {
+                    "$set": {
+                        "active_tier": payment["tier_id"],
+                        "tier_activation_date": datetime.now(timezone.utc),
+                        "subscription_expires_at": subscription_expires_at,
+                        "status": "active"
+                    },
+                    "$push": {
+                        "payment_history": payment_id
+                    }
+                }
+            )
+            logger.info(f"User update by email result: matched={user_update_result.matched_count}, modified={user_update_result.modified_count}")
         
         logger.info(f"Payment verified via payment_id: {payment_id}, tier {payment['tier_id']} activated for user {payment['user_email']}")
         

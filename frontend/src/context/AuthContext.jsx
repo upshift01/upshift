@@ -139,6 +139,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     getAuthHeader,
+    refreshUser,
     hasTier,
     isSuspended,
     isSubscriptionExpiringSoon,

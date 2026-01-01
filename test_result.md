@@ -110,10 +110,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Tier-3 Payment Flow Fix"
+    - "Revenue Analytics Feature"
   stuck_tasks: []
   test_all: false
-  test_priority: "critical_first"
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "testing"

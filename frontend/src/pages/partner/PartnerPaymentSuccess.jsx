@@ -22,16 +22,21 @@ const PartnerPaymentSuccess = () => {
 
   useEffect(() => {
     const checkoutId = searchParams.get('id');
+    const paymentId = searchParams.get('payment_id');
     const bookingId = searchParams.get('booking');
     
-    // Also check localStorage for checkout ID (in case Yoco doesn't append it)
+    // Also check localStorage as fallback
     const storedCheckoutId = localStorage.getItem('pending_checkout_id');
     
     if (bookingId) {
       setPaymentType('booking');
       confirmBookingPayment(bookingId);
+    } else if (paymentId) {
+      // NEW: Use our internal payment_id (most reliable)
+      setPaymentType('subscription');
+      verifyPaymentByPaymentId(paymentId);
     } else if (checkoutId || storedCheckoutId) {
-      // Use URL param first, fall back to localStorage
+      // Fallback: Use Yoco checkout ID
       const idToVerify = checkoutId || storedCheckoutId;
       setPaymentType('subscription');
       verifyPayment(idToVerify);
@@ -56,6 +61,27 @@ const PartnerPaymentSuccess = () => {
     } catch (err) {
       console.error('Booking confirmation error:', err);
       setError(err.response?.data?.detail || 'Failed to confirm booking payment');
+      setIsVerifying(false);
+    }
+  };
+
+  // NEW: Verify using our internal payment_id
+  const verifyPaymentByPaymentId = async (paymentId) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/payments/verify-by-payment-id/${paymentId}`,
+        {},
+        { headers: getAuthHeader() }
+      );
+      setVerificationResult(response.data);
+      setIsVerifying(false);
+      
+      // Clear localStorage just in case
+      localStorage.removeItem('pending_checkout_id');
+      localStorage.removeItem('pending_checkout_tier');
+    } catch (err) {
+      console.error('Payment verification error:', err);
+      setError(err.response?.data?.detail || 'Failed to verify payment');
       setIsVerifying(false);
     }
   };

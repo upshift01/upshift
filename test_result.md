@@ -122,8 +122,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Revenue Analytics Feature"
-  stuck_tasks: []
+    - "Delete Reseller Feature"
+  stuck_tasks:
+    - "Delete Reseller Feature"
   test_all: false
   test_priority: "high_first"
 

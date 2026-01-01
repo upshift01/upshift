@@ -11,7 +11,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { getAuthHeader } = useAuth();
+  const { getAuthHeader, refreshUser } = useAuth();
   const [isVerifying, setIsVerifying] = useState(true);
   const [verificationResult, setVerificationResult] = useState(null);
   const [bookingResult, setBookingResult] = useState(null);

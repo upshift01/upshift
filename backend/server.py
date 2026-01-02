@@ -1898,8 +1898,24 @@ async def startup_event():
             replace_existing=True
         )
         
+        # Add reseller trial expiry reminder job (runs daily at 8 AM)
+        scheduler.add_job(
+            auto_send_reseller_trial_reminders,
+            CronTrigger(hour=8, minute=0),
+            id='reseller_trial_reminders',
+            replace_existing=True
+        )
+        
+        # Add reseller trial suspension job (runs daily at 1 AM)
+        scheduler.add_job(
+            auto_suspend_expired_reseller_trials,
+            CronTrigger(hour=1, minute=0),
+            id='reseller_trial_suspension',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        logger.info("Background scheduler started with invoice, reminder, subscription check, and demo reset jobs")
+        logger.info("Background scheduler started with invoice, reminder, subscription check, demo reset, and reseller trial jobs")
         
         # Initialize demo reseller account on startup
         await initialize_demo_account_on_startup()

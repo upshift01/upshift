@@ -25,15 +25,18 @@ import {
   Lock,
   Clock,
   Award,
-  Loader2
+  Loader2,
+  Play
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
+import DemoCredentialsModal from '../components/DemoCredentialsModal';
 
 const WhiteLabelPage = () => {
   const [openFaq, setOpenFaq] = useState(null);
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const [formData, setFormData] = useState({
     company: '',
     name: '',

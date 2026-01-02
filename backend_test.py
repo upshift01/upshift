@@ -3774,6 +3774,142 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_cv_limits_feature(self):
+        """Test CV Limits Feature on White-Label Pricing Page"""
+        print("\n📊 Testing CV Limits Feature...")
+        
+        # Test 1: GET /api/white-label/plans (Backend API Test)
+        response, error = self.make_request("GET", "/white-label/plans")
+        if error:
+            self.log_test("White-Label Plans API", False, error)
+            return False
+        
+        # Validate response structure
+        required_fields = ["success", "plans", "currency"]
+        missing_fields = [f for f in required_fields if f not in response]
+        if missing_fields:
+            self.log_test("White-Label Plans API - Response Structure", False, f"Missing fields: {missing_fields}")
+            return False
+        
+        # Check success flag
+        if not response.get("success"):
+            self.log_test("White-Label Plans API - Success Flag", False, "Success flag is False")
+            return False
+        
+        # Check currency
+        if response.get("currency") != "ZAR":
+            self.log_test("White-Label Plans API - Currency", False, f"Expected currency 'ZAR', got '{response.get('currency')}'")
+            return False
+        
+        # Validate plans array
+        plans = response.get("plans", [])
+        if not isinstance(plans, list):
+            self.log_test("White-Label Plans API - Plans Array", False, "Plans should be an array")
+            return False
+        
+        if len(plans) != 3:
+            self.log_test("White-Label Plans API - Plans Count", False, f"Expected 3 plans, got {len(plans)}")
+            return False
+        
+        # Validate each plan has required fields including CV limits
+        plan_names = []
+        cv_limits_found = {}
+        
+        for i, plan in enumerate(plans):
+            plan_required_fields = ["key", "name", "price", "monthly_cv_limit", "cv_limit", "features"]
+            plan_missing_fields = [f for f in plan_required_fields if f not in plan]
+            
+            if plan_missing_fields:
+                self.log_test(f"Plan {i+1} Structure", False, f"Missing fields: {plan_missing_fields}")
+                return False
+            
+            plan_name = plan.get("name", "").lower()
+            plan_names.append(plan_name)
+            
+            # Store CV limits for validation
+            cv_limits_found[plan_name] = {
+                "monthly_cv_limit": plan.get("monthly_cv_limit"),
+                "cv_limit": plan.get("cv_limit", "")
+            }
+        
+        # Check that we have the expected plan names
+        expected_plans = ["starter", "professional", "enterprise"]
+        for expected_plan in expected_plans:
+            if not any(expected_plan in name for name in plan_names):
+                self.log_test("White-Label Plans API - Plan Names", False, f"Missing expected plan: {expected_plan}")
+                return False
+        
+        # Validate specific CV limits as per review request
+        validation_errors = []
+        
+        # Find Starter plan and validate CV limit
+        starter_plan = None
+        for plan in plans:
+            if "starter" in plan.get("name", "").lower():
+                starter_plan = plan
+                break
+        
+        if starter_plan:
+            if starter_plan.get("monthly_cv_limit") != 1000:
+                validation_errors.append(f"Starter plan monthly_cv_limit should be 1000, got {starter_plan.get('monthly_cv_limit')}")
+            if "1,000 cvs per month" not in starter_plan.get("cv_limit", "").lower():
+                validation_errors.append(f"Starter plan cv_limit should contain '1,000 CVs per month', got '{starter_plan.get('cv_limit')}'")
+        else:
+            validation_errors.append("Starter plan not found")
+        
+        # Find Professional plan and validate CV limit
+        professional_plan = None
+        for plan in plans:
+            if "professional" in plan.get("name", "").lower():
+                professional_plan = plan
+                break
+        
+        if professional_plan:
+            if professional_plan.get("monthly_cv_limit") != 3500:
+                validation_errors.append(f"Professional plan monthly_cv_limit should be 3500, got {professional_plan.get('monthly_cv_limit')}")
+            if "3,500 cvs per month" not in professional_plan.get("cv_limit", "").lower():
+                validation_errors.append(f"Professional plan cv_limit should contain '3,500 CVs per month', got '{professional_plan.get('cv_limit')}'")
+        else:
+            validation_errors.append("Professional plan not found")
+        
+        # Find Enterprise plan and validate CV limit
+        enterprise_plan = None
+        for plan in plans:
+            if "enterprise" in plan.get("name", "").lower():
+                enterprise_plan = plan
+                break
+        
+        if enterprise_plan:
+            if enterprise_plan.get("monthly_cv_limit") != -1:
+                validation_errors.append(f"Enterprise plan monthly_cv_limit should be -1 (unlimited), got {enterprise_plan.get('monthly_cv_limit')}")
+            if "unlimited cvs per month" not in enterprise_plan.get("cv_limit", "").lower():
+                validation_errors.append(f"Enterprise plan cv_limit should contain 'Unlimited CVs per month', got '{enterprise_plan.get('cv_limit')}'")
+        else:
+            validation_errors.append("Enterprise plan not found")
+        
+        # Check if CV limits are included in features array
+        for plan in plans:
+            features = plan.get("features", [])
+            if not isinstance(features, list):
+                validation_errors.append(f"{plan.get('name')} plan features should be an array")
+                continue
+            
+            cv_limit_text = plan.get("cv_limit", "")
+            cv_limit_in_features = any(cv_limit_text.lower() in str(feature).lower() for feature in features if feature)
+            
+            if not cv_limit_in_features:
+                validation_errors.append(f"{plan.get('name')} plan CV limit text not found in features array")
+        
+        if validation_errors:
+            self.log_test("White-Label Plans API - CV Limits Validation", False, "; ".join(validation_errors))
+            return False
+        
+        # All validations passed
+        self.log_test("White-Label Plans API", True, 
+                    f"✅ 3 plans returned with correct CV limits: Starter (1,000), Professional (3,500), Enterprise (Unlimited)")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Backend API Tests...")

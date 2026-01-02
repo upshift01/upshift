@@ -222,6 +222,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
     phone: '',
     address: '',
     idNumber: '',
+    linkedinUrl: '',
     languages: [''],
     photo: null,
     photoPreview: '',

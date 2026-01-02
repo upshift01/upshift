@@ -317,6 +317,8 @@ async def get_whitelabel_plans():
         # Starter Plan
         starter = plans.get("starter", default_plans["starter"])
         if starter.get("enabled", True):
+            starter_cv_limit = starter.get("monthly_cv_limit", 1000)
+            starter_cv_text = f"{starter_cv_limit:,} CVs per month" if starter_cv_limit > 0 else "Unlimited CVs per month"
             formatted_plans.append({
                 "key": "starter",
                 "name": starter.get("name", "Starter"),
@@ -325,8 +327,11 @@ async def get_whitelabel_plans():
                 "period": "/month",
                 "description": "Perfect for small agencies and coaches starting out",
                 "active_users_limit": starter.get("active_users_limit", 50),
+                "monthly_cv_limit": starter_cv_limit,
+                "cv_limit": starter_cv_text,
                 "features": [
                     f"Up to {starter.get('active_users_limit', 50)} active clients",
+                    starter_cv_text,
                     "White-label branding",
                     "Custom subdomain" if starter.get("custom_subdomain", True) else None,
                     "Email support",

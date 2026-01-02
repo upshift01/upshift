@@ -4116,6 +4116,121 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_reseller_subscription_flow(self):
+        """Test Reseller Trial Expiration and Subscription flow as per review request"""
+        print("\n💳 Testing Reseller Subscription Flow...")
+        
+        if not self.demo_reseller_token:
+            self.log_test("Reseller Subscription Flow Tests", False, "No demo reseller token available")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.demo_reseller_token}"}
+        
+        # Test 1: GET /api/reseller/subscription/plans
+        print("\n🔹 Test 1: Subscription Plans API")
+        response, error = self.make_request("GET", "/reseller/subscription/plans", headers=headers)
+        if error:
+            self.log_test("Subscription Plans API", False, error)
+        else:
+            # Validate response structure
+            if not response.get("success"):
+                self.log_test("Subscription Plans API", False, "Success flag not returned")
+                return False
+            
+            plans = response.get("plans", [])
+            if len(plans) != 3:
+                self.log_test("Subscription Plans API", False, f"Expected 3 plans, got {len(plans)}")
+                return False
+            
+            # Check for required plans: starter, professional, enterprise
+            plan_ids = [plan.get("id") for plan in plans]
+            expected_plans = ["starter", "professional", "enterprise"]
+            missing_plans = [p for p in expected_plans if p not in plan_ids]
+            
+            if missing_plans:
+                self.log_test("Subscription Plans API", False, f"Missing plans: {missing_plans}")
+                return False
+            
+            # Validate each plan has required fields
+            all_plans_valid = True
+            plan_details = []
+            
+            for plan in plans:
+                plan_id = plan.get("id")
+                name = plan.get("name")
+                price = plan.get("price")
+                price_display = plan.get("price_display")
+                monthly_cv_limit = plan.get("monthly_cv_limit")
+                features = plan.get("features", [])
+                
+                # Check required fields
+                if not all([plan_id, name, price is not None, price_display, monthly_cv_limit is not None, features]):
+                    self.log_test(f"Plan {plan_id} Validation", False, "Missing required fields")
+                    all_plans_valid = False
+                    continue
+                
+                # Validate specific plan details from review request
+                if plan_id == "starter":
+                    if price_display != "R2,499" or monthly_cv_limit != 1000:
+                        self.log_test(f"Starter Plan Details", False, f"Expected R2,499/1000 CVs, got {price_display}/{monthly_cv_limit} CVs")
+                        all_plans_valid = False
+                elif plan_id == "professional":
+                    if price_display != "R4,999" or monthly_cv_limit != 3500:
+                        self.log_test(f"Professional Plan Details", False, f"Expected R4,999/3500 CVs, got {price_display}/{monthly_cv_limit} CVs")
+                        all_plans_valid = False
+                elif plan_id == "enterprise":
+                    if price_display != "Custom" or monthly_cv_limit != -1:
+                        self.log_test(f"Enterprise Plan Details", False, f"Expected Custom/-1 CVs, got {price_display}/{monthly_cv_limit} CVs")
+                        all_plans_valid = False
+                
+                plan_details.append(f"{name} ({price_display}, {monthly_cv_limit if monthly_cv_limit != -1 else 'Unlimited'} CVs)")
+            
+            if all_plans_valid:
+                self.log_test("Subscription Plans API", True, f"3 plans returned: {', '.join(plan_details)}")
+            else:
+                return False
+        
+        # Test 2: GET /api/reseller/trial-status
+        print("\n🔹 Test 2: Trial Status API")
+        response, error = self.make_request("GET", "/reseller/trial-status", headers=headers)
+        if error:
+            self.log_test("Trial Status API", False, error)
+        else:
+            # Validate response structure
+            required_fields = ["is_trial", "days_remaining", "trial_expired"]
+            missing_fields = [f for f in required_fields if f not in response]
+            
+            if missing_fields:
+                self.log_test("Trial Status API", False, f"Missing required fields: {missing_fields}")
+                return False
+            
+            # Validate field types
+            is_trial = response.get("is_trial")
+            days_remaining = response.get("days_remaining")
+            trial_expired = response.get("trial_expired")
+            
+            if not isinstance(is_trial, bool):
+                self.log_test("Trial Status API", False, f"is_trial should be boolean, got {type(is_trial)}")
+                return False
+            
+            if not isinstance(days_remaining, int) or days_remaining < 0:
+                self.log_test("Trial Status API", False, f"days_remaining should be non-negative integer, got {days_remaining}")
+                return False
+            
+            if not isinstance(trial_expired, bool):
+                self.log_test("Trial Status API", False, f"trial_expired should be boolean, got {type(trial_expired)}")
+                return False
+            
+            # Additional optional fields validation
+            trial_status = response.get("trial_status", "unknown")
+            trial_start_date = response.get("trial_start_date")
+            trial_end_date = response.get("trial_end_date")
+            
+            self.log_test("Trial Status API", True, 
+                        f"Trial: {is_trial}, Days remaining: {days_remaining}, Expired: {trial_expired}, Status: {trial_status}")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Backend API Tests...")

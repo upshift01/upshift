@@ -158,6 +158,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "CV Limits Feature on White-Label Pricing Page and Reseller Dashboard"
     - "LinkedIn Tools Premium Tier Restriction and Import Feature"
     - "Delete Reseller Feature"
   stuck_tasks:
@@ -180,3 +181,5 @@ agent_communication:
     message: "❌ LINKEDIN PROFILE URL FIELD TESTING BLOCKED: Code review confirms the LinkedIn URL field is correctly implemented in EnhancedCVBuilder.jsx with proper label, placeholder, and positioning between Location and Languages. However, UI testing is blocked due to user authentication/tier access issues. The test user test@upshift.works doesn't exist or lacks proper tier access to CV Builder. Emergency activation endpoint requires secret key and user creation. Field implementation is verified as correct - testing blocked by access control issues."
   - agent: "testing"
     message: "🚨 CRITICAL SECURITY VULNERABILITY FOUND IN LINKEDIN TOOLS: Comprehensive testing reveals major access control failure. While premium user functionality works correctly (all 4 tabs, import feature functional, profile import successful), there is a CRITICAL SECURITY ISSUE: unauthenticated and non-premium users can access LinkedIn Tools page and use premium features without any restrictions. The PremiumGate component is not functioning properly, allowing unauthorized access to tier-2/tier-3 features. This is a HIGH PRIORITY SECURITY FIX required immediately to prevent unauthorized access to premium LinkedIn Tools functionality."
+  - agent: "testing"
+    message: "📊 CV LIMITS FEATURE TESTING COMPLETE: Comprehensive testing of CV limits feature shows MIXED RESULTS requiring attention. WHITE-LABEL PRICING PAGE: ✅ Pricing section working with 3 plans displayed correctly (Starter R2,999, Professional R4,999, Enterprise Custom), ✅ API endpoint functional, ❌ CRITICAL ISSUE: CV limits missing from all plans - backend API returns 'No CV limit specified' for all plans instead of expected limits (Starter: 1,000 CVs, Professional: 3,500 CVs, Enterprise: Unlimited CVs). RESELLER DASHBOARD: ✅ CV Usage card displaying correctly with usage stats (0 of 1,000 CVs), progress bar, plan name (Starter), and month (January 2026), ❌ Minor formatting issue with usage display spacing. BACKEND FIX REQUIRED: White-label plans API needs to include CV limit data in response to display limits on pricing page."

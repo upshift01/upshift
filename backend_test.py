@@ -199,6 +199,25 @@ class APITester:
         self.reseller_admin_token = response["access_token"]
         self.log_test("Reseller Admin Login", True, f"Role: {user.get('role')}, Email: {user.get('email')}")
         
+        # Test Demo Reseller Login (from review request)
+        response, error = self.make_request(
+            "POST", "/auth/login",
+            data=DEMO_RESELLER_CREDS
+        )
+        
+        if error:
+            self.log_test("Demo Reseller Login", False, error)
+        else:
+            if not response.get("access_token"):
+                self.log_test("Demo Reseller Login", False, "No access token returned")
+            else:
+                user = response.get("user", {})
+                if user.get("role") != "reseller_admin":
+                    self.log_test("Demo Reseller Login", False, f"Expected role 'reseller_admin', got '{user.get('role')}'")
+                else:
+                    self.demo_reseller_token = response["access_token"]
+                    self.log_test("Demo Reseller Login", True, f"Role: {user.get('role')}, Email: {user.get('email')}")
+        
         # Test Customer Login (for LinkedIn API tests)
         response, error = self.make_request(
             "POST", "/auth/login",

@@ -346,7 +346,6 @@ async def get_whitelabel_plans():
             pro_cv_limit = professional.get("monthly_cv_limit", 3500)
             pro_cv_text = f"{pro_cv_limit:,} CVs per month" if pro_cv_limit > 0 else "Unlimited CVs per month"
             pro_features = [
-                f"Up to {professional.get('active_users_limit', 200)} active clients",
                 pro_cv_text,
                 "Full white-label branding",
                 "Custom domain support" if professional.get("custom_domain", True) else "Custom subdomain",
@@ -365,7 +364,6 @@ async def get_whitelabel_plans():
                 "price_display": f"R{professional.get('price', 4999):,.0f}",
                 "period": "/month",
                 "description": "For growing businesses with higher volume needs",
-                "active_users_limit": professional.get("active_users_limit", 200),
                 "monthly_cv_limit": pro_cv_limit,
                 "cv_limit": pro_cv_text,
                 "features": [f for f in pro_features if f],

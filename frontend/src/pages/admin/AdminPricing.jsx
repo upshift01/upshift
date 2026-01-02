@@ -23,7 +23,7 @@ const AdminPricing = () => {
     starter: {
       name: 'Starter',
       price: 2499, // R2,499 (normal amount)
-      active_users_limit: 50,
+      monthly_cv_limit: 1000,
       custom_subdomain: true,
       custom_domain: false,
       api_access: false,
@@ -35,7 +35,7 @@ const AdminPricing = () => {
     professional: {
       name: 'Professional',
       price: 4999, // R4,999 (normal amount)
-      active_users_limit: 200,
+      monthly_cv_limit: 3500,
       custom_subdomain: true,
       custom_domain: true,
       api_access: true,
@@ -47,7 +47,7 @@ const AdminPricing = () => {
     custom: {
       name: 'Enterprise',
       price: 0, // Custom pricing
-      active_users_limit: -1, // Unlimited
+      monthly_cv_limit: -1, // Unlimited
       custom_subdomain: true,
       custom_domain: true,
       api_access: true,

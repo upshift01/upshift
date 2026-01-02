@@ -745,6 +745,22 @@ async def update_customer(
         if "email" in data and data["email"] != customer.get("email"):
             existing = await db.users.find_one({"email": data["email"]})
             if existing:
+                raise HTTPException(status_code=400, detail="Email already in use")
+            update_data["email"] = data["email"]
+        
+        # Update customer
+        if update_data:
+            await db.users.update_one(
+                {"id": customer_id},
+                {"$set": update_data}
+            )
+        
+        return {"success": True, "message": "Customer updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating customer: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==================== Reseller Subscription Management ====================

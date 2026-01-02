@@ -85,6 +85,7 @@ const ResellerLayout = () => {
   useEffect(() => {
     if (user && user.role === 'reseller_admin') {
       fetchNotifications();
+      fetchResellerSubdomain();
     }
     // Toggle dark mode class on body
     if (darkMode) {

@@ -379,6 +379,8 @@ async def get_whitelabel_plans():
         enterprise = plans.get("custom", default_plans["custom"])
         if enterprise.get("enabled", True):
             users_text = "Unlimited clients" if enterprise.get("active_users_limit", -1) == -1 else f"Up to {enterprise.get('active_users_limit')} clients"
+            enterprise_cv_limit = enterprise.get("monthly_cv_limit", -1)
+            enterprise_cv_text = "Unlimited CVs per month" if enterprise_cv_limit == -1 else f"{enterprise_cv_limit:,} CVs per month"
             formatted_plans.append({
                 "key": "enterprise",
                 "name": enterprise.get("name", "Enterprise"),
@@ -387,8 +389,11 @@ async def get_whitelabel_plans():
                 "period": "",
                 "description": "For large organizations with custom requirements",
                 "active_users_limit": enterprise.get("active_users_limit", -1),
+                "monthly_cv_limit": enterprise_cv_limit,
+                "cv_limit": enterprise_cv_text,
                 "features": [
                     users_text,
+                    enterprise_cv_text,
                     "Multiple brand instances",
                     "Dedicated account manager",
                     "Phone & video support",

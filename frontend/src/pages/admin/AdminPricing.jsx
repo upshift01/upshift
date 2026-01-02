@@ -224,15 +224,15 @@ const AdminPricing = () => {
                   </div>
                 </div>
                 <div>
-                  <Label>Active Users Limit</Label>
+                  <Label>Monthly CV Limit</Label>
                   <Input
                     type="number"
-                    min="1"
-                    value={whitelabelPlans.starter.active_users_limit}
-                    onChange={(e) => updatePlan('starter', 'active_users_limit', parseInt(e.target.value) || 1)}
+                    min="100"
+                    value={whitelabelPlans.starter.monthly_cv_limit}
+                    onChange={(e) => updatePlan('starter', 'monthly_cv_limit', parseInt(e.target.value) || 100)}
                     className="mt-1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Maximum number of active clients</p>
+                  <p className="text-xs text-gray-500 mt-1">Maximum CVs per month</p>
                 </div>
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between">

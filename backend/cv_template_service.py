@@ -396,6 +396,8 @@ class CVTemplateService:
         replacements["{{ADDRESS}}"] = cv_data.get("address", "")
         replacements["{{LOCATION}}"] = cv_data.get("address", "")
         replacements["{{ID_NUMBER}}"] = cv_data.get("id_number", "")
+        replacements["{{LINKEDIN_URL}}"] = cv_data.get("linkedin_url", "")
+        replacements["{{LINKEDIN}}"] = cv_data.get("linkedin_url", "")
         replacements["{{SUMMARY}}"] = cv_data.get("summary", "")
         replacements["{{PROFESSIONAL_SUMMARY}}"] = cv_data.get("summary", "")
         replacements["{{PROFILE}}"] = cv_data.get("summary", "")

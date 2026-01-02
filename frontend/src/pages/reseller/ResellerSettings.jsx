@@ -1204,9 +1204,9 @@ const ResellerSettings = () => {
                       <span className="font-medium capitalize">{currentSubscription.billing_cycle}</span>
                     </div>
                     <div className="flex justify-between py-2 border-b">
-                      <span className="text-gray-600">Active Users Limit</span>
+                      <span className="text-gray-600">Monthly CV Limit</span>
                       <span className="font-medium">
-                        {currentSubscription.features?.active_users_limit === -1 ? 'Unlimited' : currentSubscription.features?.active_users_limit}
+                        {currentSubscription.features?.monthly_cv_limit === -1 ? 'Unlimited' : `${currentSubscription.features?.monthly_cv_limit?.toLocaleString() || '1,000'} CVs`}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">

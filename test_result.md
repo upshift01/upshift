@@ -1,4 +1,16 @@
 backend:
+  - task: "TalentHub Demo Reseller Feature"
+    implemented: true
+    working: true
+    file: "/app/backend/whitelabel_routes.py, /app/backend/demo_reseller_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TALENTHUB DEMO RESELLER FEATURE FULLY TESTED AND WORKING. All 4 test components passed: (1) Demo Credentials API returns correct structure with success=true, demo object contains brand_name='TalentHub', login_url, email='demo@talenthub.upshift.works', password='demo123', description, and note fields, (2) Demo Login Test successful with correct credentials, user has role='reseller_admin' and reseller_id='demo-talenthub-reseller-001', (3) Demo Data Verification confirmed: correct reseller ID, 8 sample customers exist, customer payment history accessible, reseller stats show correct revenue and customer counts, (4) Demo Reset API working correctly with success=true, returns deleted counts, preserves demo data after reset (8 customers maintained). All endpoints functioning as per review request specifications."
+
   - task: "Tier-3 Payment Flow & Dashboard Display Fix"
     implemented: true
     working: true

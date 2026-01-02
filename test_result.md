@@ -146,12 +146,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "LinkedIn Profile URL Field in CV Builder"
+    - "LinkedIn Tools Premium Tier Restriction and Import Feature"
     - "Delete Reseller Feature"
   stuck_tasks:
     - "Delete Reseller Feature"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
 agent_communication:
   - agent: "testing"
@@ -166,3 +166,5 @@ agent_communication:
     message: "❌ CRITICAL DELETE RESELLER BUG FOUND: Comprehensive testing revealed that while the frontend Delete Reseller UI is correctly implemented (3-dot menu, delete confirmation modal, soft/hard delete options, warning messages, cancel functionality), there is a CRITICAL BACKEND BUG in admin_routes.py lines 385/425. The delete function fails with KeyError when accessing reseller['owner_user_id'] because some resellers don't have this field. API testing confirmed: (1) ✅ Super admin authentication working, (2) ✅ Resellers API returns 17 resellers, (3) ❌ DELETE API fails with 'owner_user_id' error. IMMEDIATE FIX REQUIRED: Add null check for owner_user_id field in delete_reseller function. Also observed authentication session persistence issues during browser testing."
   - agent: "testing"
     message: "❌ LINKEDIN PROFILE URL FIELD TESTING BLOCKED: Code review confirms the LinkedIn URL field is correctly implemented in EnhancedCVBuilder.jsx with proper label, placeholder, and positioning between Location and Languages. However, UI testing is blocked due to user authentication/tier access issues. The test user test@upshift.works doesn't exist or lacks proper tier access to CV Builder. Emergency activation endpoint requires secret key and user creation. Field implementation is verified as correct - testing blocked by access control issues."
+  - agent: "testing"
+    message: "🚨 CRITICAL SECURITY VULNERABILITY FOUND IN LINKEDIN TOOLS: Comprehensive testing reveals major access control failure. While premium user functionality works correctly (all 4 tabs, import feature functional, profile import successful), there is a CRITICAL SECURITY ISSUE: unauthenticated and non-premium users can access LinkedIn Tools page and use premium features without any restrictions. The PremiumGate component is not functioning properly, allowing unauthorized access to tier-2/tier-3 features. This is a HIGH PRIORITY SECURITY FIX required immediately to prevent unauthorized access to premium LinkedIn Tools functionality."

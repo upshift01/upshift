@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, Outlet, Navigate } from 'react-router-dom';
+import { Link, useLocation, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import {
@@ -32,12 +32,40 @@ const ResellerLayout = () => {
   const { user, logout, token } = useAuth();
   const { theme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [resellerSubdomain, setResellerSubdomain] = useState(null);
+
+  // Fetch reseller subdomain for logout redirect
+  const fetchResellerSubdomain = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setResellerSubdomain(data.subdomain);
+      }
+    } catch (error) {
+      console.error('Error fetching reseller subdomain:', error);
+    }
+  };
+
+  const handleLogout = () => {
+    const subdomain = resellerSubdomain;
+    logout();
+    // Redirect to partner site home page after logout to show branded site
+    if (subdomain) {
+      navigate(`/partner/${subdomain}`);
+    } else {
+      navigate('/');
+    }
+  };
 
   const fetchNotifications = async () => {
     try {

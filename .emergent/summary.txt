@@ -1,40 +1,37 @@
-<analysis>**original_problem_statement**: The user is building UpShift, an AI-driven, white-label SaaS resume and career services platform. The initial requests included implementing a  CV template system, adding a References section, enhancing the reseller portal, and creating a user manual.
+<analysis>**original_problem_statement**: The user is building UpShift, an AI-driven, white-label SaaS resume and career services platform.
 
-During this session, the user added several critical feature requests and bug reports:
-1.  **Add Strategy Call Booking**: Customers should be able to book and pay for strategy calls from their portal, with bookings appearing on the reseller's calendar.
-2.  **Implement 30-Day Subscription Expiry**: New customer accounts should be active for 30 days and then automatically suspended, requiring a new subscription.
-3.  **Fix Super Admin Login**: A recurring and critical issue where the super admin could not log in to the main admin portal after the application was published.
-4.  **Fix Reseller Pricing Display**: The reseller pricing page was confusingly displaying prices in cents instead of Rands.
-5.  **Fix Critical Payment Verification Failures**: Users were paying via Yoco, but their subscriptions were not being activated due to a No Payment ID found error on the redirect page.
-6.  **Fix Executive Elite Plan**: The highest-tier plan (Executive Elite) was not being activated after successful payment, while other tiers worked.
+During this session, the user's primary requests were to enhance the platform's commercial and feature offerings:
+1.  **Revenue Analytics**: Add a comprehensive revenue analytics dashboard for the super admin to track sales from both the main platform and resellers.
+2.  **Reseller Deletion**: Implement a feature to delete resellers, ensuring that their data is properly handled and excluded from active analytics.
+3.  **LinkedIn Profile in CVs**: Add a field for a user's LinkedIn profile URL in the CV builder and include it in the final generated PDF.
+4.  **LinkedIn Profile Scraping**: Create a premium feature (for Tier 2 & 3 customers) to scrape and import data from a public LinkedIn profile URL to assist in CV creation.
+5.  **Reseller CV Limits**: Implement and enforce monthly CV generation limits for the three white-label reseller plans (Starter: 1,000, Professional: 3,500, Enterprise: Unlimited).
 
 **User's preferred language**: English
 
 **what currently exists?**
-The platform is a full-stack React/FastAPI application. The agent has completed the User Manual/Help Center feature, added a customer-facing strategy call booking system, and implemented a robust 30-day subscription expiry and account suspension system.
-
-Crucially, the agent has resolved several critical bugs. The super admin login failure was traced to environment configuration differences between preview and production, and a secure emergency password reset endpoint was created to give the user control in their production environment. The Yoco payment verification flow was completely re-architected to be stateless and reliable, fixing a major bug that prevented subscription activation. The confusing reseller pricing UI was also clarified.
+The application is a full-stack React/FastAPI platform with a MongoDB database. The agent has successfully implemented several major features in this session. The super admin now has a detailed revenue analytics dashboard. A soft-delete mechanism for resellers is in place, which correctly updates analytics. The CV generation process has been enhanced to include a LinkedIn profile URL. A premium, tier-gated LinkedIn profile scraping tool has been developed and integrated. A system to track and enforce monthly CV limits for resellers has been built.
 
 **Last working item**:
--   **Last item agent was working**: Investigating why the Executive Elite (tier-3) plan fails to activate after a successful Yoco payment. Other tiers (ATS Optimise and Professional Package) work correctly. The agent confirmed the user who experienced this () is in the production database (which is separate from the preview environment) and was about to debug the payment verification logic specifically for a  case.
+-   **Last item agent was working**: Implementing and verifying the CV usage limits for white-label reseller plans. The agent built the backend logic for tracking and enforcement and updated the frontend to display this information. However, testing revealed a gap.
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: backend testing agent. The agent should create a backend test script to simulate the entire payment flow for a  purchase. This involves: 1. Logging in as a test user. 2. Calling  for . 3. Using the returned  to call . 4. Querying the database to confirm the user's  was correctly updated to tier-3.
+-   **Agent Testing Done**: Y (The testing agent found a bug)
+-   **Which testing method agent to use?**: backend testing agent. The agent must first fix the API endpoint. A  command or a python script should be used to test the  endpoint to confirm it returns the CV limit data. Afterward, the  tool should be used on the  page to verify the limits are displayed correctly in the UI.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Executive Elite (tier-3) plan does not activate after payment (P0)**
-    -   **Description**: While the ATS Optimise (tier-1) and Professional (tier-2) plans activate correctly after payment, the Executive Elite (tier-3) plan fails. The user pays, but their account is not upgraded.
-    -   **Attempted fixes**: None. Investigation has just begun.
+-   **Issue 1: White-Label pricing page does not display CV limits (P0)**
+    -   **Description**: The recently implemented monthly CV limits for reseller plans are not being displayed on the public-facing  pricing page. The testing agent discovered that the backend API endpoint () is not including the new CV limit data in its response.
+    -   **Attempted fixes**: The full feature was implemented, but this final integration point was missed.
     -   **Next debug checklist**:
-        1.  Review the  endpoint in .
-        2.  Check for any hardcoded logic or  conditions that might incorrectly handle .
-        3.  Examine the  and  pricing structures to ensure tier-3 prices are being read correctly.
-        4.  Trace the  function call within the verification endpoint to see if it's being skipped or failing for tier-3.
-    -   **Why fix this issue and what will be achieved with this?**: This is a critical revenue-impacting bug. Fixing it will ensure the highest-value plan is purchasable.
+        1.  Open .
+        2.  Locate the function handling the  route.
+        3.  Modify the function to read the CV limit values (, , etc.) from the  configuration in the database.
+        4.  Ensure these values are added to the JSON response sent to the frontend.
+    -   **Why fix this issue and what will be achieved with this?**: This is a critical fix to complete the CV limits feature. Without it, potential resellers are unaware of the service limits, which could lead to disputes and a poor user experience.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend.
+    -   **Should Test frontend/backend/both after fix?**: Both.
     -   **Blocked on other issue**: None.
 
 **In progress Task List**:
@@ -45,15 +42,14 @@ Crucially, the agent has resolved several critical bugs. The super admin login f
     -   **(P1) Odoo Integration**: Begin development on the planned Odoo integration.
 -   **Future Tasks**:
     -   **(P2) Refactor Remaining Partner Pages**: Continue refactoring duplicated pages like  and .
-    -   **(P3) Secure/Remove Emergency Endpoints**: The temporary  and  endpoints in  were created to resolve production issues. They should be removed or secured behind super-admin authentication to prevent misuse.
+    -   **(P3) Secure/Remove Emergency Endpoints**: The temporary endpoints in  (, , ) are a security risk and should be removed or secured behind super-admin authentication.
 
 **Completed work in this session**
--   **User Manual/Help Center (DONE)**: Implemented the frontend page, backend PDF generation endpoint (), and navigation links.
--   **Customer Strategy Call Booking (DONE)**: Added a Strategy Call page to the customer portal, allowing them to book calls. The backend () was updated to correctly associate bookings with the customer's reseller.
--   **30-Day Subscription Expiry System (DONE)**: Implemented a full lifecycle system with a  field, a daily scheduled job to suspend expired accounts, login checks, and a frontend banner () to warn users.
--   **Super Admin Login Failure (FIXED)**: Diagnosed that login failures after publishing were due to the production environment using a separate database and incorrect URL configurations. Corrected  files and created a secure, one-time-use endpoint () for the user to reset their password in production.
--   **Reseller Pricing Cents/Rands Issue (FIXED)**: Clarified the reseller pricing UI in  by adding currency prefixes and helpful placeholders to ensure users enter prices in Rands.
--   **Critical Yoco Payment Verification Failure (FIXED)**: Re-architected the payment flow. The system now creates an internal  before the Yoco redirect, includes it in the , and uses a new, robust endpoint () for verification, eliminating reliance on unstable .
+-   **Executive Elite (Tier-3) Dashboard Display Fix (DONE)**: Fixed a frontend bug where a user's active plan did not update on the dashboard after payment until they logged out and back in. This was resolved by adding a  function to  and calling it from .
+-   **Comprehensive Revenue Analytics (DONE)**: Implemented a new revenue analytics dashboard for super admins () with corresponding backend endpoints () in .
+-   **Reseller Soft-Delete Functionality (DONE)**: Implemented a non-destructive delete for resellers in  and added the corresponding UI controls in .
+-   **LinkedIn URL in CVs (DONE)**: Added a LinkedIn Profile URL field to the CV builder. This involved changes to , , and .
+-   **LinkedIn Profile Scraper (Premium Feature) (DONE)**: Created a new feature for Tier 2 & 3 users to import data from a LinkedIn URL. This included a new backend service (), a tier-gated API endpoint (), and a new Import tab in .
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Made with Emergent Badge Removal**
@@ -69,115 +65,93 @@ Crucially, the agent has resolved several critical bugs. The super admin login f
 
 
 **Key Technical Concepts**
--   **Stateless Payment Verification**: The Yoco payment flow was refactored to be stateless and reliable. It now generates an internal , passes it in the Yoco , and uses it for verification on return. This is a robust pattern that avoids relying on client-side state (like ) which can fail during cross-domain redirects.
--   **Scheduled Jobs (APScheduler)**: A daily background job was implemented in  to automatically check for and suspend expired user subscriptions, automating a key business rule.
--   **Environment-Specific Configuration Management**: Diagnosed and fixed critical production bugs caused by  files containing preview URLs. This reinforced the need to manage environment variables for different deployment stages (preview vs. production).
--   **Emergency Maintenance Endpoints**: Created secure, temporary API endpoints (, ) to allow the user to resolve critical production data issues (password lockouts, failed activations) without direct database access.
+-   **Feature Gating**: Implemented tier-based access control for the LinkedIn scraper feature on both backend (API check) and frontend (UI rendering).
+-   **Soft Deletes**: Used a non-destructive delete pattern ( flag) for resellers to preserve data for historical analytics while hiding them from active views.
+-   **State Management on Data Change**: Solved a UI bug by explicitly refreshing the user state in the  after a successful payment to ensure immediate UI updates.
+-   **Web Scraping**: Introduced  to create a basic web scraper for public LinkedIn profiles.
+-   **Usage Tracking & Limits**: Built a system to track resource consumption (CV creations) on a monthly basis for resellers and enforce limits.
 
 **key DB schema**
--   **users**: Modified to include  (e.g., active, suspended) and .
--   **payments**: This collection was leveraged to store payment intents before the user is sent to Yoco. It contains  (our internal UUID), , , ,  ('pending', 'completed'), and .
+-   **users**: Field  added.
+-   **payments**: Field  added.
+-   **resellers**: Field  added.
+-   **platform_settings**: The  object within this collection's document was updated to include CV limits.
+-   **cv_usage_logs**: New collection to log each CV creation event per reseller for monthly tracking. Schema: .
 
 **changes in tech stack**
--   None.
+-   Added  Python dependency for web scraping.
 
 **All files of reference**
 -   **Current Task Files**:
-    -    (Specifically the  endpoint)
-    -    (To check how admin pricing is configured)
+    -    (The  endpoint needs to be fixed).
+    -    (The UI that will display the limits once the API is fixed).
 -   **Recently Completed/Fixed Files**:
-    -    (New payment verification logic)
-    -    (New payment verification logic for partners)
-    -    (New UI for subscription status)
-    -    (New feature page)
-    -    (New feature backend)
+    -   
+    -   
+    -   
+    -   
+    -   
+    -   
 
 **Areas that need refactoring**:
--   The emergency endpoints (, ) in  should be removed or secured behind super-admin authentication now that the immediate crises are resolved. Leaving them exposed is a security risk.
+-   The temporary emergency endpoints in  should be secured behind super-admin authentication or removed.
+-   The frontend codebase has several React linting warnings (e.g., ) that should be addressed to improve code quality.
 
 **key api endpoints**
--   : **REFACTORED**. Now reads dynamic pricing from the database, creates a local payment record with a , and passes this  to Yoco in the .
--   : **NEW**. The new verification endpoint that receives the internal  from the success URL, looks up the payment details, and verifies the transaction with Yoco.
--   : **NEW (TEMPORARY)**. A secure endpoint to allow the user to reset the super admin password in production.
--   : **NEW (TEMPORARY)**. An endpoint to manually activate a user's subscription, used for recovering from the payment bug.
--   : **UPDATED**. Now checks if a user's  is suspended and denies login if so.
+-   : **NEW**. Gets detailed revenue analytics.
+-   : **UPDATED**. Performs a soft delete on a reseller.
+-   : **NEW**. Scrapes a public LinkedIn profile, gated for premium tiers.
+-   : **NEW**. Gets current monthly CV usage for a reseller.
+-   : **UPDATED**. Now checks for reseller CV limits before generation.
+-   : **NEEDS FIX**. Must be updated to return CV limit data.
 
 **Critical Info for New Agent**
--   **Production Database is Separate**: The most critical discovery is that the production environment () uses a completely separate database from this preview environment. Any data changes you make here (e.g., creating users, resetting passwords) **will not** transfer to production on publishing. Code changes will deploy, but database state is independent. This is why the user faced login issues and why you must provide solutions (like the emergency reset endpoint) that can be executed on the production application itself.
--   **Payment Flow is Now Robust**: The Yoco payment verification flow has been significantly hardened. It no longer relies on client-side storage. The flow is:  ->  record saved with  ->  sent in Yoco  -> user returns ->  uses  to validate.
--   Your immediate priority is to fix the Executive Elite (tier-3) payment activation bug.
+-   **Production Database is Separate**: This remains a critical point. Any data changes you make here (e.g., creating users) **will not** transfer to production on publishing. User-reported issues might only be reproducible on the live site, requiring diagnostic endpoints.
+-   **Reseller CV Limit Fix is the Top Priority**: Your first task is to fix the  API endpoint so the CV limits are displayed on the public pricing page. The feature is blocked and incomplete without this fix.
+-   **Password Hashing**: When manually creating test users, use the application's hashing function from  and store the result in the  field.
 
 **documents and test reports created in this job**
--    was updated several times for testing the Help Center, Strategy Call, and Subscription features.
+-    was updated for several features.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Super admin can't log in after publishing (3rd time).
-2.  **Agent**: Investigated, identified production URL mismatch, created emergency password reset endpoint.
-3.  **User**: Confirmed the emergency password reset endpoint solved the login issue.
-4.  **User**: Prices set to R10 on the master platform are showing as R1500 at Yoco checkout.
-5.  **Agent**: Fixed hardcoded prices in the payment creation endpoint to use dynamic prices from the database.
-6.  **User**: A test transaction for R10 was successful, but the redirect failed with No Payment ID found and the plan was not activated.
-7.  **Agent**: Re-architected the payment verification flow to use a server-generated  in the success URL instead of unreliable localStorage.
-8.  **User**: Still getting the Verification Failed error on the published site.
-9.  **Agent**: Provided an updated, more robust fix and an emergency endpoint to manually activate the user's plan.
-10. **User**: The Executive Elite plan is not activating after payment, while other tiers work. This is the current issue.
+1.  **User**: Add a delete option to the reseller page. Analytics must be updated when resellers are deleted.
+2.  **Agent**: Implemented and tested the reseller soft-delete feature.
+3.  **User**: Make sure the analytics uses the correct sales data including the correct pricing... not any hard coded figures.
+4.  **Agent**: Verified and confirmed that the analytics system correctly uses actual transaction amounts from the database.
+5.  **User**: We need to add a LinkedIn profile URL if available when new customers create a CV.
+6.  **Agent**: Implemented the LinkedIn URL field in the CV builder, templates, and PDF output.
+7.  **User**: We need to enhance the LinkedIn integration so that if a LinkedIn profile exist we can pull information from there... This must be implemented for main platform and reseller customers. (Clarified to be a scraper for premium tiers).
+8.  **Agent**: Implemented the LinkedIn profile scraper as a premium feature for Tier 2 and 3 users.
+9.  **User**: What about Tier 2 (Professional) Tier 2 should also have access to this feature.
+10. **Agent**: Verified and confirmed that Tier 2 users have access to the LinkedIn scraper.
+11. **User**: We need to add... limits to the three White-Label reseller options... and it also needs to be implemented as real limits per plan.
+12. **Agent**: Implemented the reseller CV limits feature, which is the current work item pending a final bug fix.
 
 **Project Health Check:**
--   **Broken**: The subscription activation for the Executive Elite (tier-3) plan is not working.
+-   **Broken**: The  pricing page does not display the new CV limits because the backing API is not providing the necessary data.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
 -   **OpenAI GPT-4o**: Uses Emergent LLM Key.
--   **Yoco (Payments)**: Requires User API Key. The integration logic was significantly refactored.
+-   **Yoco (Payments)**: Requires User API Key.
 -   **SMTP (Custom)**: Requires User SMTP credentials.
--   **ReportLab**: Python library for PDF generation.
--   **python-docx**: Python library for  manipulation.
--   **docx2pdf**: Python library for converting  to .
--   **LibreOffice**: System dependency for usage: docx2pdf [-h] [--keep-active] [--version] input [output]
-
-Example Usage:
-
-Convert single docx file in-place from myfile.docx to myfile.pdf:
-    docx2pdf myfile.docx
-
-Batch convert docx folder in-place. Output PDFs will go in the same folder:
-    docx2pdf myfolder/
-
-Convert single docx file with explicit output filepath:
-    docx2pdf input.docx output.docx
-
-Convert single docx file and output to a different explicit folder:
-    docx2pdf input.docx output_dir/
-
-Batch convert docx folder. Output PDFs will go to a different explicit folder:
-    docx2pdf input_dir/ output_dir/
-
-positional arguments:
-  input          input file or folder. batch converts entire folder or convert
-                 single file
-  output         output file or folder
-
-options:
-  -h, --help     show this help message and exit
-  --keep-active  prevent closing word after conversion
-  --version      display version and exit.
+-   **ReportLab, python-docx, docx2pdf, LibreOffice**: For CV document handling.
+-   **BeautifulSoup4**: **NEW**. For web scraping.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. Used for the Help Center, Strategy Call booking, and Subscription expiry features.
+-   **Testing agent used after significant changes**: YES. Used for Revenue Analytics, Reseller Delete, LinkedIn Scraper, and CV Limits features.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None. Testing was performed with  scripts and the testing agent.
+-   **Test files created**: None.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
 | User Type | Email | Password | Access |
 | :--- | :--- | :--- | :--- |
-| Super Admin |  |  (or latest from user) | Main platform admin |
-| Temp Super Admin| |  | Temporary admin for testing |
+| Super Admin |  |  | Main platform admin |
 | Reseller Admin |  |  | YottaNet reseller portal |
-| Reseller Customer (Paid) |  |  | YottaNet customer portal |
-| Main Site Customer |  |  | Main UpShift platform |
-| Expiring User |  |  | Subscription expires in < 7 days |
-| Suspended User |  |  | Subscription has expired |
+| Tier 1 Customer |  |  | For testing feature gates |
+| Tier 2 Customer |  |  | For testing feature gates |
+| Tier 3 Customer |  |  | For testing CV builder |
 
 **What agent forgot to execute**
--   The agent successfully addressed all user requests and high-priority bugs as they arose, even when it meant interrupting the planned workflow. No requested tasks were forgotten.</analysis>
+-   The agent did not include the new CV limit data in the response from the  API endpoint after implementing the CV limits feature. This was caught by the testing agent and is the primary pending task.</analysis>

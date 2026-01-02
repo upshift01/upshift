@@ -134,6 +134,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "LinkedIn Profile URL Field in CV Builder"
     - "Delete Reseller Feature"
   stuck_tasks:
     - "Delete Reseller Feature"

@@ -3928,6 +3928,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             self.test_super_admin_apis,
             self.test_reseller_apis,
             self.test_white_label_config,
+            self.test_cv_limits_feature,  # Add CV Limits Feature test
             self.test_unauthorized_access,
             self.test_email_and_scheduling_system,
             self.test_reseller_email_settings,

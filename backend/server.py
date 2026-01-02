@@ -2210,3 +2210,51 @@ async def auto_suspend_expired_subscriptions():
         
     except Exception as e:
         logger.error(f"[AUTO] Error suspending expired subscriptions: {str(e)}")
+
+
+async def auto_reset_demo_reseller():
+    """
+    Automatically reset the TalentHub demo reseller data at midnight SAST.
+    This removes user-added data while keeping the base demo configuration.
+    """
+    try:
+        from demo_reseller_service import create_demo_service
+        
+        logger.info("[AUTO] Starting nightly demo reseller reset (midnight SAST)")
+        
+        demo_service = create_demo_service(db)
+        result = await demo_service.reset_demo_data()
+        
+        if result.get("success"):
+            deleted = result.get("deleted", {})
+            logger.info(f"[AUTO] Demo reset complete - Removed: {deleted.get('users', 0)} users, "
+                       f"{deleted.get('payments', 0)} payments, {deleted.get('cvs', 0)} CVs")
+        else:
+            logger.error(f"[AUTO] Demo reset failed: {result.get('error')}")
+            
+    except Exception as e:
+        logger.error(f"[AUTO] Error resetting demo reseller: {str(e)}")
+
+
+async def initialize_demo_account_on_startup():
+    """Initialize the TalentHub demo account on server startup."""
+    try:
+        from demo_reseller_service import create_demo_service, DEMO_RESELLER_ID
+        
+        # Check if demo account exists
+        existing = await db.resellers.find_one({"id": DEMO_RESELLER_ID})
+        
+        if not existing:
+            logger.info("Initializing TalentHub demo account on startup...")
+            demo_service = create_demo_service(db)
+            result = await demo_service.initialize_demo_account()
+            
+            if result.get("success"):
+                logger.info("TalentHub demo account initialized successfully")
+            else:
+                logger.error(f"Failed to initialize demo account: {result.get('error')}")
+        else:
+            logger.info("TalentHub demo account already exists")
+            
+    except Exception as e:
+        logger.error(f"Error initializing demo account on startup: {str(e)}")

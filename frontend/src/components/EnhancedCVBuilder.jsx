@@ -895,11 +895,11 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
                 className="h-24 rounded-lg mb-2 flex items-center justify-center relative"
                 style={{ backgroundColor: `${template.color}15` }}
               >
-                {/* Custom template badge */}
+                {/* Preferred template badge */}
                 {template.is_custom && (
                   <div className="absolute top-1 right-1">
                     <Badge className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 border-green-200">
-                      Custom
+                      Preferred
                     </Badge>
                   </div>
                 )}

@@ -837,7 +837,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
             className="gap-1"
           >
             <FileText className="h-3 w-3" />
-            Custom ({customTemplates.length})
+            Preferred ({customTemplates.length})
           </Button>
         )}
         <Button

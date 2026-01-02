@@ -199,6 +199,8 @@ const AppContent = () => {
           <Route path="pricing" element={<ResellerPricing />} />
           <Route path="branding" element={<ResellerBranding />} />
           <Route path="settings" element={<ResellerSettings />} />
+          <Route path="subscription" element={<ResellerSubscription />} />
+          <Route path="subscription/success" element={<ResellerSubscription />} />
           <Route path="activity" element={<ActivityLog />} />
           <Route path="campaigns" element={<EmailCampaigns />} />
           <Route path="domain-setup" element={<DomainSetup />} />

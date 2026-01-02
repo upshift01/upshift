@@ -329,11 +329,15 @@ const WhiteLabelPage = () => {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </a>
-            <a href="#demo">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6">
-                See Live Demo
-              </Button>
-            </a>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6"
+              onClick={() => setShowDemoModal(true)}
+            >
+              <Play className="mr-2 h-5 w-5" />
+              See Live Demo
+            </Button>
           </div>
           
           <div className="flex flex-wrap items-center justify-center gap-8 text-blue-200">

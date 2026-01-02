@@ -265,6 +265,305 @@ const LinkedInTools = () => {
   );
 };
 
+
+// Import from LinkedIn URL Component
+const ImportFromLinkedIn = ({ getAuthHeader, toast, loading, setLoading, result, setResult }) => {
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [importedProfile, setImportedProfile] = useState(null);
+  const [generateContentLoading, setGenerateContentLoading] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState(null);
+
+  const handleImport = async () => {
+    if (!linkedinUrl.trim()) {
+      toast({
+        title: "URL Required",
+        description: "Please enter a LinkedIn profile URL",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    setImportedProfile(null);
+    setResult(null);
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/linkedin/import-from-url`,
+        { linkedin_url: linkedinUrl },
+        { headers: getAuthHeader() }
+      );
+
+      if (response.data.success) {
+        setImportedProfile(response.data.profile);
+        toast({
+          title: "Profile Imported",
+          description: "LinkedIn profile data has been imported successfully",
+        });
+      }
+    } catch (error) {
+      const errorDetail = error.response?.data?.detail;
+      toast({
+        title: "Import Failed",
+        description: typeof errorDetail === 'object' ? errorDetail.message : errorDetail || "Failed to import LinkedIn profile",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateContent = async () => {
+    if (!importedProfile) return;
+
+    setGenerateContentLoading(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/linkedin/generate-linkedin-content`,
+        {
+          full_name: importedProfile.full_name,
+          current_title: importedProfile.headline,
+          summary: importedProfile.summary,
+          experiences: importedProfile.experiences,
+          education: importedProfile.education,
+          skills: importedProfile.skills
+        },
+        { headers: getAuthHeader() }
+      );
+
+      if (response.data.success) {
+        setGeneratedContent(response.data.linkedin_content);
+        toast({
+          title: "Content Generated",
+          description: "LinkedIn-optimized content is ready to copy",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: error.response?.data?.detail || "Failed to generate content",
+        variant: "destructive"
+      });
+    } finally {
+      setGenerateContentLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied!",
+      description: `${label} copied to clipboard`,
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Import Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Import className="h-5 w-5 text-blue-600" />
+            Import from LinkedIn
+          </CardTitle>
+          <CardDescription>
+            Enter a public LinkedIn profile URL to import profile data. The profile must be publicly visible.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="https://linkedin.com/in/username"
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              className="flex-1"
+            />
+            <Button onClick={handleImport} disabled={loading}>
+              {loading ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...</>
+              ) : (
+                <><Import className="mr-2 h-4 w-4" /> Import</>
+              )}
+            </Button>
+          </div>
+          <p className="text-sm text-gray-500">
+            <AlertCircle className="inline h-4 w-4 mr-1" />
+            Only publicly visible information will be imported. Private profiles cannot be accessed.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Imported Profile Display */}
+      {importedProfile && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-700">
+              <CheckCircle className="h-5 w-5" />
+              Imported Profile Data
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">Full Name</label>
+                <p className="text-lg font-semibold">{importedProfile.full_name || 'Not found'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Headline</label>
+                <p>{importedProfile.headline || 'Not found'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Location</label>
+                <p>{importedProfile.location || 'Not found'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">LinkedIn URL</label>
+                <a href={importedProfile.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                  View Profile <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+
+            {importedProfile.summary && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Summary</label>
+                <p className="mt-1 text-gray-700">{importedProfile.summary}</p>
+              </div>
+            )}
+
+            {importedProfile.experiences?.length > 0 && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Experience ({importedProfile.experiences.length})</label>
+                <ul className="mt-2 space-y-2">
+                  {importedProfile.experiences.map((exp, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <Briefcase className="h-4 w-4 mt-1 text-gray-400" />
+                      <span>{exp.title} {exp.company && `at ${exp.company}`}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {importedProfile.education?.length > 0 && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Education ({importedProfile.education.length})</label>
+                <ul className="mt-2 space-y-2">
+                  {importedProfile.education.map((edu, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <GraduationCap className="h-4 w-4 mt-1 text-gray-400" />
+                      <span>{edu.institution} {edu.degree && `- ${edu.degree}`}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {importedProfile.skills?.length > 0 && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Skills ({importedProfile.skills.length})</label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {importedProfile.skills.map((skill, i) => (
+                    <Badge key={i} variant="secondary">{skill}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 border-t flex gap-3">
+              <Button onClick={handleGenerateContent} disabled={generateContentLoading}>
+                {generateContentLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Sparkles className="mr-2 h-4 w-4" /> Generate Optimized Content</>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Generated LinkedIn Content */}
+      {generatedContent && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-700">
+              <Sparkles className="h-5 w-5" />
+              LinkedIn-Optimized Content (Copy & Paste)
+            </CardTitle>
+            <CardDescription>
+              Copy this content to update your LinkedIn profile. Click on any section to copy.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Headline */}
+            <div className="bg-white rounded-lg p-4 border">
+              <div className="flex justify-between items-start mb-2">
+                <label className="text-sm font-bold text-gray-700">Recommended Headline</label>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => copyToClipboard(generatedContent.headline?.recommended, 'Headline')}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Copy
+                </Button>
+              </div>
+              <p className="text-lg">{generatedContent.headline?.recommended}</p>
+              <p className="text-xs text-gray-500 mt-2">{generatedContent.headline?.tip}</p>
+            </div>
+
+            {/* About Section */}
+            <div className="bg-white rounded-lg p-4 border">
+              <div className="flex justify-between items-start mb-2">
+                <label className="text-sm font-bold text-gray-700">About Section</label>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => copyToClipboard(generatedContent.about_section?.content, 'About section')}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Copy
+                </Button>
+              </div>
+              <p className="whitespace-pre-wrap">{generatedContent.about_section?.content}</p>
+              <p className="text-xs text-gray-500 mt-2">{generatedContent.about_section?.tip}</p>
+            </div>
+
+            {/* Keywords */}
+            {generatedContent.keywords_to_include?.length > 0 && (
+              <div className="bg-white rounded-lg p-4 border">
+                <label className="text-sm font-bold text-gray-700">Keywords to Include</label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {generatedContent.keywords_to_include.map((keyword, i) => (
+                    <Badge key={i} variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                      {keyword}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Profile Tips */}
+            {generatedContent.profile_tips?.length > 0 && (
+              <div className="bg-white rounded-lg p-4 border">
+                <label className="text-sm font-bold text-gray-700">Profile Optimization Tips</label>
+                <ul className="mt-2 space-y-2">
+                  {generatedContent.profile_tips.map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+
 // Convert LinkedIn to Resume Component
 const ConvertToResume = ({ getAuthHeader, toast, loading, setLoading, result, setResult }) => {
   const [formData, setFormData] = useState({

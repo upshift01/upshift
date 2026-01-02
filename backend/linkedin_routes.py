@@ -254,3 +254,137 @@ async def generate_linkedin_section(
     except Exception as e:
         logger.error(f"Error generating LinkedIn section: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Premium LinkedIn Tools (Tier 2 & 3 Only) ====================
+
+@router.post("/import-from-url")
+async def import_from_linkedin_url(
+    request: LinkedInUrlRequest,
+    current_user: dict = Depends(check_premium_tier)
+):
+    """
+    Import profile data from a public LinkedIn URL.
+    PREMIUM FEATURE: Requires Professional (tier-2) or Executive Elite (tier-3) plan.
+    """
+    try:
+        result = await linkedin_scraper_service.scrape_profile(request.linkedin_url)
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=400,
+                detail=result.get("error", "Failed to import LinkedIn profile")
+            )
+        
+        # Log the import for analytics
+        await db.activity_logs.insert_one({
+            "user_id": current_user.id,
+            "user_email": current_user.email,
+            "action": "linkedin_import",
+            "details": {
+                "source_url": result.get("source_url"),
+                "success": True
+            },
+            "reseller_id": getattr(current_user, "reseller_id", None)
+        })
+        
+        return {
+            "success": True,
+            "profile": result.get("profile"),
+            "source_url": result.get("source_url"),
+            "message": "Profile data imported successfully. Review and edit as needed."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error importing LinkedIn profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/generate-linkedin-content")
+async def generate_linkedin_content(
+    request: GenerateLinkedInContentRequest,
+    current_user: dict = Depends(check_premium_tier)
+):
+    """
+    Generate LinkedIn-optimized content from CV data that users can copy/paste to their LinkedIn profile.
+    PREMIUM FEATURE: Requires Professional (tier-2) or Executive Elite (tier-3) plan.
+    
+    Returns:
+    - Optimized headline options
+    - About section (formatted for LinkedIn)
+    - Experience descriptions (enhanced with keywords)
+    - Skills recommendations
+    - Profile optimization tips
+    """
+    try:
+        cv_data = request.dict()
+        
+        # Generate LinkedIn content using AI
+        result = await linkedin_ai_service.create_linkedin_profile({
+            "full_name": cv_data.get("full_name"),
+            "current_title": cv_data.get("current_title") or (cv_data.get("experiences", [{}])[0].get("title") if cv_data.get("experiences") else ""),
+            "target_role": cv_data.get("target_role"),
+            "industry": cv_data.get("industry", ""),
+            "years_experience": len(cv_data.get("experiences", [])) * 2,  # Estimate
+            "key_skills": cv_data.get("skills", []),
+            "achievements": cv_data.get("achievements", []),
+            "education": cv_data.get("education", []),
+            "work_history": cv_data.get("experiences", []),
+            "career_goals": ""
+        })
+        
+        # Format for easy copy/paste
+        formatted_content = {
+            "headline": {
+                "recommended": result.get("headline", ""),
+                "alternatives": result.get("headline_alternatives", []),
+                "tip": "Your headline appears in search results and under your name. Make it keyword-rich and compelling."
+            },
+            "about_section": {
+                "content": result.get("about_summary", ""),
+                "tip": "The About section is your chance to tell your story. Use first person and include a call to action."
+            },
+            "skills_to_add": result.get("skills_to_add", {}),
+            "profile_tips": result.get("profile_optimisation_tips", []),
+            "keywords_to_include": result.get("keywords_for_searchability", [])
+        }
+        
+        # Log the generation for analytics
+        await db.activity_logs.insert_one({
+            "user_id": current_user.id,
+            "user_email": current_user.email,
+            "action": "linkedin_content_generated",
+            "details": {
+                "full_name": cv_data.get("full_name"),
+                "success": True
+            },
+            "reseller_id": getattr(current_user, "reseller_id", None)
+        })
+        
+        return {
+            "success": True,
+            "linkedin_content": formatted_content,
+            "message": "LinkedIn content generated successfully. Copy and paste each section to your LinkedIn profile."
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating LinkedIn content: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/check-access")
+async def check_linkedin_access(current_user: dict = Depends(get_current_user_dep)):
+    """
+    Check if the current user has access to premium LinkedIn features.
+    """
+    has_access = current_user.active_tier in PREMIUM_TIERS or current_user.role in ["super_admin", "reseller_admin"]
+    
+    return {
+        "has_access": has_access,
+        "current_tier": current_user.active_tier,
+        "required_tiers": PREMIUM_TIERS,
+        "message": "You have access to LinkedIn tools" if has_access else "Upgrade to Professional or Executive Elite plan to access LinkedIn tools"
+    }
+

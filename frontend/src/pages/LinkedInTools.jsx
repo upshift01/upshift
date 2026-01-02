@@ -186,61 +186,80 @@ const LinkedInTools = () => {
         )}
 
         {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="convert" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Convert to Resume</span>
-              <span className="sm:hidden">Resume</span>
-            </TabsTrigger>
-            <TabsTrigger value="create" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Create Profile</span>
-              <span className="sm:hidden">Create</span>
-            </TabsTrigger>
-            <TabsTrigger value="enhance" className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">Enhance Profile</span>
-              <span className="sm:hidden">Enhance</span>
-            </TabsTrigger>
-          </TabsList>
+        <PremiumGate>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsTrigger value="import" className="flex items-center gap-2">
+                <Import className="h-4 w-4" />
+                <span className="hidden sm:inline">Import Profile</span>
+                <span className="sm:hidden">Import</span>
+              </TabsTrigger>
+              <TabsTrigger value="convert" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">To Resume</span>
+                <span className="sm:hidden">Resume</span>
+              </TabsTrigger>
+              <TabsTrigger value="create" className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Create Profile</span>
+                <span className="sm:hidden">Create</span>
+              </TabsTrigger>
+              <TabsTrigger value="enhance" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden sm:inline">Enhance</span>
+                <span className="sm:hidden">Enhance</span>
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Convert to Resume Tab */}
-          <TabsContent value="convert">
-            <ConvertToResume 
-              getAuthHeader={getAuthHeader} 
-              toast={toast}
-              loading={loading}
-              setLoading={setLoading}
-              result={result}
-              setResult={setResult}
-            />
-          </TabsContent>
+            {/* Import from LinkedIn URL Tab */}
+            <TabsContent value="import">
+              <ImportFromLinkedIn 
+                getAuthHeader={getAuthHeader} 
+                toast={toast}
+                loading={loading}
+                setLoading={setLoading}
+                result={result}
+                setResult={setResult}
+              />
+            </TabsContent>
 
-          {/* Create Profile Tab */}
-          <TabsContent value="create">
-            <CreateProfile 
-              getAuthHeader={getAuthHeader} 
-              toast={toast}
-              loading={loading}
-              setLoading={setLoading}
-              result={result}
-              setResult={setResult}
-            />
-          </TabsContent>
+            {/* Convert to Resume Tab */}
+            <TabsContent value="convert">
+              <ConvertToResume 
+                getAuthHeader={getAuthHeader} 
+                toast={toast}
+                loading={loading}
+                setLoading={setLoading}
+                result={result}
+                setResult={setResult}
+              />
+            </TabsContent>
 
-          {/* Enhance Profile Tab */}
-          <TabsContent value="enhance">
-            <EnhanceProfile 
-              getAuthHeader={getAuthHeader} 
-              toast={toast}
-              loading={loading}
-              setLoading={setLoading}
-              result={result}
-              setResult={setResult}
-            />
-          </TabsContent>
-        </Tabs>
+            {/* Create Profile Tab */}
+            <TabsContent value="create">
+              <CreateProfile 
+                getAuthHeader={getAuthHeader} 
+                toast={toast}
+                loading={loading}
+                setLoading={setLoading}
+                result={result}
+                setResult={setResult}
+              />
+            </TabsContent>
+
+            {/* Enhance Profile Tab */}
+            <TabsContent value="enhance">
+              <EnhanceProfile 
+                getAuthHeader={getAuthHeader} 
+                toast={toast}
+                loading={loading}
+                setLoading={setLoading}
+                result={result}
+                setResult={setResult}
+              />
+            </TabsContent>
+          </Tabs>
+        </PremiumGate>
       </div>
     </div>
   );

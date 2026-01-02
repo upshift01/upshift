@@ -298,6 +298,9 @@ const ResellerDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* CV Usage Card */}
+        <CVUsageCard className={cardBg} />
       </div>
 
       {/* Quick Actions */}

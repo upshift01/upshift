@@ -66,6 +66,7 @@ class InvoicePDFGenerator:
         # HEADER - Build left side content as separate paragraphs in rows
         left_content = []
         left_content.append([Paragraph(f'<b><font size="16">{company}</font></b>', styles['Normal'])])
+        left_content.append([Spacer(1, 4*mm)])  # Added spacer for more spacing
         left_content.append([Paragraph(f'<font size="9" color="gray">{contact.get("email", "")}</font>', styles['Normal'])])
         left_content.append([Paragraph(f'<font size="9" color="gray">{contact.get("phone", "")}</font>', styles['Normal'])])
         if seller_vat:

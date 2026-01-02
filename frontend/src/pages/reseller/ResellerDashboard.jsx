@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Progress } from '../../components/ui/progress';
+import { CVUsageBanner, CVUsageCard } from '../../components/CVUsageTracker';
 
 // Trial Banner Component
 const TrialBanner = ({ subscription, darkMode }) => {

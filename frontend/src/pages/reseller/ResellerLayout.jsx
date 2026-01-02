@@ -97,10 +97,27 @@ const ResellerLayout = () => {
     }
   };
 
+  const [trialStatus, setTrialStatus] = useState(null);
+  
+  const fetchTrialStatus = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reseller/trial-status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTrialStatus(data);
+      }
+    } catch (error) {
+      console.error('Error fetching trial status:', error);
+    }
+  };
+
   useEffect(() => {
     if (user && user.role === 'reseller_admin') {
       fetchNotifications();
       fetchResellerSubdomain();
+      fetchTrialStatus();
     }
     // Toggle dark mode class on body
     if (darkMode) {
@@ -113,6 +130,12 @@ const ResellerLayout = () => {
   // Check if user is reseller admin
   if (!user || user.role !== 'reseller_admin') {
     return <Navigate to="/login" replace />;
+  }
+
+  // Check if trial expired and not on subscription page - redirect to subscription
+  const isSubscriptionPage = location.pathname.includes('/subscription');
+  if (trialStatus?.trial_expired && !isSubscriptionPage) {
+    return <Navigate to="/reseller-dashboard/subscription" replace />;
   }
 
   const navItems = [

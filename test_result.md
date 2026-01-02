@@ -78,6 +78,18 @@ backend:
         comment: "✅ Pricing storage verified. Prices correctly stored in cents (e.g., 49900 for R499) and can be converted to Rands for display."
 
 frontend:
+  - task: "CV Limits Feature on White-Label Pricing Page and Reseller Dashboard"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/WhiteLabelPage.jsx, /app/frontend/src/components/CVUsageTracker.jsx, /app/frontend/src/pages/reseller/ResellerDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CV LIMITS FEATURE PARTIALLY WORKING: Comprehensive testing reveals mixed results. WHITE-LABEL PRICING PAGE: ✅ Pricing section displays correctly with 3 plans (Starter R2,999, Professional R4,999, Enterprise Custom), ✅ API endpoint /api/white-label/plans working and returns 3 plans, ❌ CV limits missing from all plans - API returns 'No CV limit specified' for all plans, ❌ Expected CV limits (Starter: 1,000 CVs, Professional: 3,500 CVs, Enterprise: Unlimited CVs) not displayed in features. RESELLER DASHBOARD CV USAGE: ✅ CV Usage card found and displaying correctly, ✅ Shows '0 of 1,000 CVs' format, ✅ Progress bar present, ✅ Plan name (Starter Plan) displayed, ✅ Month name (January 2026) shown, ❌ Usage format not in expected 'X / Y CVs' pattern (shows '0of 1,000 CVs' without proper spacing). CRITICAL ISSUE: Backend API for white-label plans missing CV limit data in response, causing CV limits to not display on pricing page."
+
   - task: "LinkedIn Profile URL Field in CV Builder"
     implemented: true
     working: false

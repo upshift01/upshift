@@ -4247,6 +4247,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             self.test_authentication,
             self.test_talenthub_demo_reseller,  # Add TalentHub Demo test
             self.test_reseller_pricing_functionality,  # Add the new reseller pricing test
+            self.test_reseller_subscription_flow,  # Add Reseller Subscription Flow test
             self.test_super_admin_apis,
             self.test_reseller_apis,
             self.test_white_label_config,

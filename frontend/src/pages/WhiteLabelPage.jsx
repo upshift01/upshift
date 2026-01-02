@@ -86,7 +86,6 @@ const WhiteLabelPage = () => {
       period: '/month',
       description: 'Perfect for small agencies and coaches starting out',
       features: [
-        'Up to 50 active clients',
         '1,000 CVs per month',
         'White-label branding',
         'Custom subdomain',
@@ -106,7 +105,6 @@ const WhiteLabelPage = () => {
       period: '/month',
       description: 'For growing businesses with higher volume needs',
       features: [
-        'Up to 200 active clients',
         '3,500 CVs per month',
         'Full white-label branding',
         'Custom domain support',
@@ -128,7 +126,6 @@ const WhiteLabelPage = () => {
       period: '',
       description: 'For large organisations with custom requirements',
       features: [
-        'Unlimited clients',
         'Unlimited CVs per month',
         'Multiple brand instances',
         'Dedicated account manager',

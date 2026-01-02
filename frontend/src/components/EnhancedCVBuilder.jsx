@@ -688,6 +688,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
         phone: formData.phone,
         address: formData.address,
         id_number: formData.idNumber,
+        linkedin_url: formData.linkedinUrl,
         languages: formData.languages.filter(Boolean),
         photo: formData.photoPreview || null,
         summary: formData.summary,

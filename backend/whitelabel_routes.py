@@ -639,3 +639,78 @@ async def list_active_partners():
     except Exception as e:
         logger.error(f"Error listing partners: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Demo Account Endpoints ====================
+
+@whitelabel_router.get("/demo/credentials", response_model=dict)
+async def get_demo_credentials():
+    """
+    Get the demo account login credentials for the white-label demo.
+    This is a public endpoint for the "See Live Demo" button.
+    """
+    try:
+        from demo_reseller_service import create_demo_service, DEMO_RESELLER_SUBDOMAIN, DEMO_OWNER_EMAIL, DEMO_OWNER_PASSWORD
+        
+        demo_service = create_demo_service(db)
+        
+        # Check if demo account exists
+        from demo_reseller_service import DEMO_RESELLER_ID
+        demo_reseller = await db.resellers.find_one({"id": DEMO_RESELLER_ID}, {"_id": 0})
+        
+        if not demo_reseller:
+            # Initialize demo account if it doesn't exist
+            await demo_service.initialize_demo_account()
+        
+        return {
+            "success": True,
+            "demo": {
+                "brand_name": "TalentHub",
+                "tagline": "Your Career, Elevated",
+                "login_url": f"/partner/{DEMO_RESELLER_SUBDOMAIN}/login",
+                "dashboard_url": f"/partner/{DEMO_RESELLER_SUBDOMAIN}",
+                "email": DEMO_OWNER_EMAIL,
+                "password": DEMO_OWNER_PASSWORD,
+                "description": "Experience the full white-label reseller dashboard with sample customers, transactions, and analytics.",
+                "note": "This demo resets daily at midnight (SAST). Any data you add will be cleared."
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting demo credentials: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@whitelabel_router.post("/demo/initialize", response_model=dict)
+async def initialize_demo_account():
+    """
+    Initialize or re-seed the demo account.
+    This can be called manually or during system startup.
+    """
+    try:
+        from demo_reseller_service import create_demo_service
+        
+        demo_service = create_demo_service(db)
+        result = await demo_service.initialize_demo_account()
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error initializing demo account: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@whitelabel_router.post("/demo/reset", response_model=dict)
+async def reset_demo_data():
+    """
+    Reset the demo account data (removes user-added data, keeps base config).
+    This is called by the nightly scheduled job.
+    """
+    try:
+        from demo_reseller_service import create_demo_service
+        
+        demo_service = create_demo_service(db)
+        result = await demo_service.reset_demo_data()
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error resetting demo data: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

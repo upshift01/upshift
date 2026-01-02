@@ -326,11 +326,9 @@ async def get_whitelabel_plans():
                 "price_display": f"R{starter.get('price', 2499):,.0f}",
                 "period": "/month",
                 "description": "Perfect for small agencies and coaches starting out",
-                "active_users_limit": starter.get("active_users_limit", 50),
                 "monthly_cv_limit": starter_cv_limit,
                 "cv_limit": starter_cv_text,
                 "features": [
-                    f"Up to {starter.get('active_users_limit', 50)} active clients",
                     starter_cv_text,
                     "White-label branding",
                     "Custom subdomain" if starter.get("custom_subdomain", True) else None,

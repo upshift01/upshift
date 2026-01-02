@@ -781,6 +781,12 @@ const WhiteLabelPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Demo Credentials Modal */}
+      <DemoCredentialsModal 
+        isOpen={showDemoModal} 
+        onClose={() => setShowDemoModal(false)} 
+      />
     </div>
   );
 };

@@ -39,7 +39,10 @@ const ResellerLayout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [resellerSubdomain, setResellerSubdomain] = useState(null);
+  const [resellerSubdomain, setResellerSubdomain] = useState(() => {
+    // Try to get from localStorage first for immediate availability
+    return localStorage.getItem('reseller_subdomain') || null;
+  });
 
   // Fetch reseller subdomain for logout redirect
   const fetchResellerSubdomain = async () => {
@@ -50,6 +53,10 @@ const ResellerLayout = () => {
       if (response.ok) {
         const data = await response.json();
         setResellerSubdomain(data.subdomain);
+        // Store in localStorage for immediate access on next login
+        if (data.subdomain) {
+          localStorage.setItem('reseller_subdomain', data.subdomain);
+        }
       }
     } catch (error) {
       console.error('Error fetching reseller subdomain:', error);
@@ -57,7 +64,9 @@ const ResellerLayout = () => {
   };
 
   const handleLogout = () => {
-    const subdomain = resellerSubdomain;
+    const subdomain = resellerSubdomain || localStorage.getItem('reseller_subdomain');
+    // Clear the stored subdomain
+    localStorage.removeItem('reseller_subdomain');
     logout();
     // Redirect to partner site home page after logout to show branded site
     if (subdomain) {

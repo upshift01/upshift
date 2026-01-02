@@ -40,6 +40,12 @@ YOTTANET_RESELLER_CREDS = {
     "password": "password123"
 }
 
+# Demo reseller credentials from review request
+DEMO_RESELLER_CREDS = {
+    "email": "demo@talenthub.upshift.works",
+    "password": "demo123"
+}
+
 # Test customer credentials for LinkedIn API testing
 TEST_CUSTOMER_CREDS = {
     "email": "test@example.com",

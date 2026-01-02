@@ -599,6 +599,8 @@ def get_placeholder_documentation():
             "{{ADDRESS}}": "Location/Address",
             "{{ID_NUMBER}}": "ID or Passport number",
             "{{LANGUAGES}}": "List of languages (comma-separated)",
+            "{{LINKEDIN_URL}}": "LinkedIn profile URL",
+            "{{LINKEDIN}}": "Same as {{LINKEDIN_URL}}",
             "{{PHOTO}}": "Profile photo placeholder"
         },
         "summary": {

@@ -84,12 +84,14 @@ const WhiteLabelPage = () => {
       description: 'Perfect for small agencies and coaches starting out',
       features: [
         'Up to 50 active clients',
+        '1,000 CVs per month',
         'White-label branding',
         'Custom subdomain',
         'Email support',
         'Basic analytics',
         'Standard templates'
       ],
+      cv_limit: '1,000 CVs/month',
       cta: 'Start Free Trial',
       popular: false
     },
@@ -102,6 +104,7 @@ const WhiteLabelPage = () => {
       description: 'For growing businesses with higher volume needs',
       features: [
         'Up to 200 active clients',
+        '3,500 CVs per month',
         'Full white-label branding',
         'Custom domain support',
         'Priority email & chat support',
@@ -110,6 +113,7 @@ const WhiteLabelPage = () => {
         'API access',
         'Custom email templates'
       ],
+      cv_limit: '3,500 CVs/month',
       cta: 'Start Free Trial',
       popular: true
     },
@@ -122,6 +126,7 @@ const WhiteLabelPage = () => {
       description: 'For large organisations with custom requirements',
       features: [
         'Unlimited clients',
+        'Unlimited CVs per month',
         'Multiple brand instances',
         'Dedicated account manager',
         'Phone & video support',
@@ -130,6 +135,7 @@ const WhiteLabelPage = () => {
         'On-boarding training',
         'Custom development'
       ],
+      cv_limit: 'Unlimited CVs',
       cta: 'Contact Sales',
       popular: false,
       contact_sales: true

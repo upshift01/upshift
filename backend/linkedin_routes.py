@@ -93,6 +93,23 @@ class GenerateSectionRequest(BaseModel):
     company: Optional[str] = None
     job_description: Optional[str] = None
 
+class LinkedInUrlRequest(BaseModel):
+    linkedin_url: str
+
+class GenerateLinkedInContentRequest(BaseModel):
+    """Request model for generating LinkedIn content from CV data"""
+    full_name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    current_title: Optional[str] = None
+    target_role: Optional[str] = None
+    summary: Optional[str] = None
+    experiences: Optional[List[Dict]] = []
+    education: Optional[List[Dict]] = []
+    skills: Optional[List[str]] = []
+    achievements: Optional[List[str]] = []
+    industry: Optional[str] = None
+
 # OAuth Routes
 @router.get("/oauth/status")
 async def get_oauth_status():

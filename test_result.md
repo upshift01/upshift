@@ -78,6 +78,18 @@ backend:
         comment: "✅ Pricing storage verified. Prices correctly stored in cents (e.g., 49900 for R499) and can be converted to Rands for display."
 
 frontend:
+  - task: "LinkedIn Profile URL Field in CV Builder"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/EnhancedCVBuilder.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ LINKEDIN PROFILE URL FIELD TESTING BLOCKED: Code review shows the LinkedIn URL field is correctly implemented in EnhancedCVBuilder.jsx (lines 1172-1181) with proper label 'LinkedIn Profile URL', placeholder 'https://linkedin.com/in/yourprofile', and field name 'linkedinUrl'. However, testing is blocked because: (1) Test user test@upshift.works doesn't exist or lacks tier access, (2) Emergency activation endpoint requires secret key and user creation, (3) Admin user cannot access CV Builder (shows 'purchase a plan' message), (4) Registration form fields not accessible during testing. FIELD IMPLEMENTATION VERIFIED: ✅ Field exists with correct name, type (url), placeholder, and label. ✅ Positioned between Location and Languages as requested. ✅ Accepts URL input and integrates with form data. TESTING BLOCKED: User access/authentication issues prevent UI verification."
+
   - task: "Pricing Display in Rands"
     implemented: true
     working: "NA"

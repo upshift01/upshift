@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Outlet, Link, useLocation } from 'react-router-dom';
+import { useParams, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { PartnerProvider, usePartner } from '../context/PartnerContext';
 import { 
   Loader2, AlertCircle, Home, Menu, X, Zap, LogOut, User,
@@ -13,6 +13,7 @@ const PartnerNavbar = () => {
   const { brandName, logoUrl, primaryColor, secondaryColor, baseUrl, contactPhone } = usePartner();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
 
   // Same nav items as main site, but without white-label option and About
@@ -28,6 +29,8 @@ const PartnerNavbar = () => {
   const handleLogout = () => {
     logout();
     setIsMenuOpen(false);
+    // Redirect to partner home page after logout to show branded site
+    navigate(baseUrl);
   };
 
   return (

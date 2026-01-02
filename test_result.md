@@ -89,6 +89,18 @@ backend:
         agent: "testing"
         comment: "✅ Pricing storage verified. Prices correctly stored in cents (e.g., 49900 for R499) and can be converted to Rands for display."
 
+  - task: "Reseller Trial Expiration and Subscription Flow"
+    implemented: true
+    working: true
+    file: "/app/backend/reseller_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ RESELLER SUBSCRIPTION FLOW FULLY TESTED AND WORKING. All 3 test components passed: (1) Demo Reseller Login successful with credentials demo@talenthub.upshift.works/demo123, user has role='reseller_admin', (2) Subscription Plans API (GET /api/reseller/subscription/plans) returns 3 plans correctly: Starter (R2,499, 1000 CVs/month), Professional (R4,999, 3500 CVs/month), Enterprise (Custom, Unlimited CVs), all plans include required fields (price, features, monthly_cv_limit), (3) Trial Status API (GET /api/reseller/trial-status) working correctly with required flags: is_trial (boolean), days_remaining (integer), trial_expired (boolean), plus additional fields like trial_status, trial_start_date, trial_end_date. All backend endpoints functioning as per review request specifications."
+
 frontend:
   - task: "CV Limits Feature on White-Label Pricing Page and Reseller Dashboard"
     implemented: true

@@ -246,7 +246,7 @@ const ResellerLayout = () => {
             </div>
           </div>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="flex items-center gap-2 text-white/70 hover:text-white w-full px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-sm"
           >
             <LogOut className="h-4 w-4" />

@@ -2763,3 +2763,54 @@ async def cancel_reseller_booking(
     except Exception as e:
         logger.error(f"Error cancelling reseller booking: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== CV Usage Limits ====================
+
+@reseller_router.get("/cv-usage", response_model=dict)
+async def get_cv_usage(request: Request = None):
+    """
+    Get current months CV usage and limits for the reseller.
+    """
+    try:
+        from reseller_cv_limit_service import create_cv_limit_service
+        
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        cv_limit_service = create_cv_limit_service(db)
+        usage = await cv_limit_service.get_usage_summary_for_dashboard(reseller["id"])
+        
+        return {
+            "success": True,
+            **usage
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting CV usage: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.get("/cv-usage/check", response_model=dict)
+async def check_cv_creation_allowed(request: Request = None):
+    """
+    Check if the reseller can create more CVs this month.
+    Call this before CV creation to enforce limits.
+    """
+    try:
+        from reseller_cv_limit_service import create_cv_limit_service
+        
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        cv_limit_service = create_cv_limit_service(db)
+        result = await cv_limit_service.check_can_create_cv(reseller["id"])
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking CV limit: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+

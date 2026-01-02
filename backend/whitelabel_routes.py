@@ -266,7 +266,6 @@ async def get_whitelabel_plans():
             "starter": {
                 "name": "Starter",
                 "price": 2499,
-                "active_users_limit": 50,
                 "monthly_cv_limit": 1000,
                 "custom_subdomain": True,
                 "custom_domain": False,
@@ -279,7 +278,6 @@ async def get_whitelabel_plans():
             "professional": {
                 "name": "Professional",
                 "price": 4999,
-                "active_users_limit": 200,
                 "monthly_cv_limit": 3500,
                 "custom_subdomain": True,
                 "custom_domain": True,
@@ -292,7 +290,6 @@ async def get_whitelabel_plans():
             "custom": {
                 "name": "Enterprise",
                 "price": 0,
-                "active_users_limit": -1,
                 "monthly_cv_limit": -1,
                 "custom_subdomain": True,
                 "custom_domain": True,

@@ -4091,6 +4091,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         # Run all test suites
         test_suites = [
             self.test_authentication,
+            self.test_talenthub_demo_reseller,  # Add TalentHub Demo test
             self.test_reseller_pricing_functionality,  # Add the new reseller pricing test
             self.test_super_admin_apis,
             self.test_reseller_apis,

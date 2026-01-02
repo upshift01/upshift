@@ -473,6 +473,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
             phone: cvData.phone || prev.phone,
             address: cvData.address || prev.address,
             idNumber: cvData.idNumber || cvData.id_number || prev.idNumber,
+            linkedinUrl: cvData.linkedinUrl || cvData.linkedin_url || cvData.linkedin || prev.linkedinUrl,
             languages: cvData.languages?.length > 0 ? cvData.languages : prev.languages,
             summary: cvData.summary || prev.summary,
             experiences: cvData.experiences?.length > 0 ? cvData.experiences : prev.experiences,

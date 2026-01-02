@@ -3910,6 +3910,173 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_talenthub_demo_reseller(self):
+        """Test TalentHub Demo Reseller feature as per review request"""
+        print("\n🎯 Testing TalentHub Demo Reseller Feature...")
+        
+        # Test 1: Demo Credentials API
+        print("\n🔹 Test 1: Demo Credentials API")
+        response, error = self.make_request("GET", "/white-label/demo/credentials")
+        if error:
+            self.log_test("Demo Credentials API", False, error)
+            return False
+        
+        # Validate response structure
+        required_fields = ["success", "demo"]
+        missing_fields = [f for f in required_fields if f not in response]
+        if missing_fields:
+            self.log_test("Demo Credentials API - Structure", False, f"Missing fields: {missing_fields}")
+            return False
+        
+        if not response.get("success"):
+            self.log_test("Demo Credentials API - Success", False, "Success flag is False")
+            return False
+        
+        demo_data = response.get("demo", {})
+        demo_required_fields = ["brand_name", "login_url", "email", "password", "description", "note"]
+        demo_missing_fields = [f for f in demo_required_fields if f not in demo_data]
+        if demo_missing_fields:
+            self.log_test("Demo Credentials API - Demo Object", False, f"Missing demo fields: {demo_missing_fields}")
+            return False
+        
+        # Verify specific values
+        expected_email = "demo@talenthub.upshift.works"
+        expected_password = "demo123"
+        expected_brand = "TalentHub"
+        
+        if demo_data.get("email") != expected_email:
+            self.log_test("Demo Credentials API - Email", False, f"Expected {expected_email}, got {demo_data.get('email')}")
+            return False
+        
+        if demo_data.get("password") != expected_password:
+            self.log_test("Demo Credentials API - Password", False, f"Expected {expected_password}, got {demo_data.get('password')}")
+            return False
+        
+        if demo_data.get("brand_name") != expected_brand:
+            self.log_test("Demo Credentials API - Brand", False, f"Expected {expected_brand}, got {demo_data.get('brand_name')}")
+            return False
+        
+        self.log_test("Demo Credentials API", True, f"Brand: {demo_data.get('brand_name')}, Email: {demo_data.get('email')}")
+        
+        # Test 2: Demo Login Test
+        print("\n🔹 Test 2: Demo Login Test")
+        demo_login_creds = {
+            "email": expected_email,
+            "password": expected_password
+        }
+        
+        response, error = self.make_request("POST", "/auth/login", data=demo_login_creds)
+        if error:
+            self.log_test("Demo Login", False, error)
+            return False
+        
+        if not response.get("access_token"):
+            self.log_test("Demo Login", False, "No access token returned")
+            return False
+        
+        user = response.get("user", {})
+        if user.get("role") != "reseller_admin":
+            self.log_test("Demo Login - Role", False, f"Expected role 'reseller_admin', got '{user.get('role')}'")
+            return False
+        
+        if not user.get("reseller_id"):
+            self.log_test("Demo Login - Reseller ID", False, "No reseller_id found in user data")
+            return False
+        
+        demo_token = response["access_token"]
+        demo_reseller_id = user.get("reseller_id")
+        
+        self.log_test("Demo Login", True, f"Role: {user.get('role')}, Reseller ID: {demo_reseller_id}")
+        
+        # Test 3: Demo Data Verification
+        print("\n🔹 Test 3: Demo Data Verification")
+        headers = {"Authorization": f"Bearer {demo_token}"}
+        
+        # 3a: Check demo reseller exists
+        expected_reseller_id = "demo-talenthub-reseller-001"
+        if demo_reseller_id != expected_reseller_id:
+            self.log_test("Demo Reseller ID", False, f"Expected {expected_reseller_id}, got {demo_reseller_id}")
+            return False
+        
+        self.log_test("Demo Reseller ID", True, f"Correct reseller ID: {demo_reseller_id}")
+        
+        # 3b: Verify sample customers exist (should be 8)
+        response, error = self.make_request("GET", "/reseller/customers", headers=headers)
+        if error:
+            self.log_test("Demo Customers Check", False, error)
+            return False
+        
+        customers = response.get("customers", [])
+        customer_count = len(customers)
+        
+        if customer_count != 8:
+            self.log_test("Demo Customers Count", False, f"Expected 8 customers, got {customer_count}")
+        else:
+            self.log_test("Demo Customers Count", True, f"Found {customer_count} sample customers")
+        
+        # 3c: Verify sample payments exist
+        response, error = self.make_request("GET", "/reseller/customer-payments", headers=headers)
+        if error:
+            self.log_test("Demo Payments Check", False, error)
+        else:
+            payments = response.get("payments", [])
+            payment_count = len(payments)
+            self.log_test("Demo Payments Check", True, f"Found {payment_count} sample payments")
+        
+        # 3d: Verify reseller stats show correct revenue
+        response, error = self.make_request("GET", "/reseller/stats", headers=headers)
+        if error:
+            self.log_test("Demo Stats Check", False, error)
+        else:
+            stats = response
+            total_revenue = stats.get("total_revenue", 0)
+            total_customers = stats.get("total_customers", 0)
+            active_customers = stats.get("active_customers", 0)
+            
+            # Verify stats make sense
+            if total_customers != customer_count:
+                self.log_test("Demo Stats - Customer Count", False, f"Stats show {total_customers} customers, but found {customer_count}")
+            else:
+                self.log_test("Demo Stats - Customer Count", True, f"Stats match: {total_customers} customers")
+            
+            if total_revenue > 0:
+                self.log_test("Demo Stats - Revenue", True, f"Total revenue: R{total_revenue/100:.2f}, Active customers: {active_customers}")
+            else:
+                self.log_test("Demo Stats - Revenue", False, "No revenue found in demo stats")
+        
+        # Test 4: Demo Reset API
+        print("\n🔹 Test 4: Demo Reset API")
+        response, error = self.make_request("POST", "/white-label/demo/reset")
+        if error:
+            self.log_test("Demo Reset API", False, error)
+            return False
+        
+        # Validate reset response
+        if not response.get("success"):
+            self.log_test("Demo Reset API - Success", False, "Success flag is False")
+            return False
+        
+        reset_message = response.get("message", "")
+        if "reset" not in reset_message.lower():
+            self.log_test("Demo Reset API - Message", False, f"Reset message unclear: {reset_message}")
+            return False
+        
+        deleted_info = response.get("deleted", {})
+        self.log_test("Demo Reset API", True, f"Reset successful. Deleted: {deleted_info}")
+        
+        # Verify demo data still exists after reset (should keep demo data, remove user-added data)
+        response, error = self.make_request("GET", "/reseller/customers", headers=headers)
+        if error:
+            self.log_test("Demo Data After Reset", False, error)
+        else:
+            customers_after_reset = response.get("customers", [])
+            if len(customers_after_reset) == 8:
+                self.log_test("Demo Data After Reset", True, f"Demo customers preserved: {len(customers_after_reset)}")
+            else:
+                self.log_test("Demo Data After Reset", False, f"Expected 8 demo customers after reset, got {len(customers_after_reset)}")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Backend API Tests...")

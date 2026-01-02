@@ -1890,8 +1890,19 @@ async def startup_event():
             replace_existing=True
         )
         
+        # Add demo reseller nightly reset job (midnight SAST = 22:00 UTC)
+        scheduler.add_job(
+            auto_reset_demo_reseller,
+            CronTrigger(hour=22, minute=0),  # Run at 22:00 UTC = 00:00 SAST
+            id='demo_reseller_nightly_reset',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        logger.info("Background scheduler started with invoice, reminder, and subscription check jobs")
+        logger.info("Background scheduler started with invoice, reminder, subscription check, and demo reset jobs")
+        
+        # Initialize demo reseller account on startup
+        await initialize_demo_account_on_startup()
         
         logger.info("Database startup complete")
     except Exception as e:

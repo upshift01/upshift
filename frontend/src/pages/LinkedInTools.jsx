@@ -24,23 +24,36 @@ import {
   Mail,
   MapPin,
   Award,
-  X
+  X,
+  Lock,
+  Import,
+  ExternalLink,
+  Crown
 } from 'lucide-react';
 import axios from 'axios';
 import { useToast } from '../hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const LinkedInTools = () => {
-  const { user, getAuthHeader } = useAuth();
+  const { user, getAuthHeader, hasTier } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('convert');
   const [loading, setLoading] = useState(false);
   const [oauthConfigured, setOauthConfigured] = useState(false);
   const [result, setResult] = useState(null);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+
+  // Check if user has premium tier access
+  const isPremiumUser = user?.active_tier === 'tier-2' || user?.active_tier === 'tier-3' || 
+                        user?.role === 'super_admin' || user?.role === 'reseller_admin';
 
   useEffect(() => {
     checkOAuthStatus();
+    checkLinkedInAccess();
   }, []);
 
   const checkOAuthStatus = async () => {
@@ -49,6 +62,21 @@ const LinkedInTools = () => {
       setOauthConfigured(response.data.configured);
     } catch (error) {
       console.error('Error checking OAuth status:', error);
+    }
+  };
+
+  const checkLinkedInAccess = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/linkedin/check-access`,
+        { headers: getAuthHeader() }
+      );
+      setHasAccess(response.data.has_access);
+    } catch (error) {
+      console.error('Error checking LinkedIn access:', error);
+      setHasAccess(false);
+    } finally {
+      setAccessChecked(true);
     }
   };
 
@@ -66,6 +94,50 @@ const LinkedInTools = () => {
         variant: "destructive"
       });
     }
+  };
+
+  // Premium feature gate component
+  const PremiumGate = ({ children }) => {
+    if (!accessChecked) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      );
+    }
+
+    if (!isPremiumUser) {
+      return (
+        <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
+              <Crown className="h-8 w-8 text-amber-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Premium Feature</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              LinkedIn import and optimization tools are available for <strong>Professional</strong> and <strong>Executive Elite</strong> plan subscribers.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                onClick={() => navigate('/pricing')}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+              >
+                <Crown className="mr-2 h-4 w-4" />
+                Upgrade Plan
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                Back to Dashboard
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500 mt-4">
+              Current plan: <Badge variant="secondary">{user?.active_tier || 'Free'}</Badge>
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return children;
   };
 
   return (

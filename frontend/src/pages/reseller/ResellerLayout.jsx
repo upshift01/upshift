@@ -67,13 +67,19 @@ const ResellerLayout = () => {
     const subdomain = resellerSubdomain || localStorage.getItem('reseller_subdomain');
     // Clear the stored subdomain
     localStorage.removeItem('reseller_subdomain');
-    logout();
-    // Redirect to partner site home page after logout to show branded site
+    
+    // IMPORTANT: Navigate FIRST, then logout
+    // This prevents the ResellerLayout's user check from redirecting to /login
     if (subdomain) {
-      navigate(`/partner/${subdomain}`);
+      navigate(`/partner/${subdomain}`, { replace: true });
     } else {
-      navigate('/');
+      navigate('/', { replace: true });
     }
+    
+    // Logout after navigation is triggered
+    setTimeout(() => {
+      logout();
+    }, 100);
   };
 
   const fetchNotifications = async () => {

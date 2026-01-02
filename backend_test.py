@@ -4014,14 +4014,27 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         else:
             self.log_test("Demo Customers Count", True, f"Found {customer_count} sample customers")
         
-        # 3c: Verify sample payments exist
-        response, error = self.make_request("GET", "/reseller/customer-payments", headers=headers)
+        # 3c: Verify sample payments exist by checking customer details
+        response, error = self.make_request("GET", "/reseller/customers", headers=headers)
         if error:
             self.log_test("Demo Payments Check", False, error)
         else:
-            payments = response.get("payments", [])
-            payment_count = len(payments)
-            self.log_test("Demo Payments Check", True, f"Found {payment_count} sample payments")
+            customers = response.get("customers", [])
+            if customers:
+                # Check first customer's details to see if payment history exists
+                first_customer_id = customers[0].get("id")
+                if first_customer_id:
+                    response, error = self.make_request("GET", f"/reseller/customers/{first_customer_id}", headers=headers)
+                    if error:
+                        self.log_test("Demo Payments Check", False, error)
+                    else:
+                        customer_data = response.get("customer", {})
+                        payment_history = customer_data.get("payment_history", [])
+                        self.log_test("Demo Payments Check", True, f"Customer payment history found: {len(payment_history)} payments")
+                else:
+                    self.log_test("Demo Payments Check", False, "No customer ID found")
+            else:
+                self.log_test("Demo Payments Check", False, "No customers found for payment verification")
         
         # 3d: Verify reseller stats show correct revenue
         response, error = self.make_request("GET", "/reseller/stats", headers=headers)

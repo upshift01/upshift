@@ -899,7 +899,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
                 {template.is_custom && (
                   <div className="absolute top-1 right-1">
                     <Badge className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 border-green-200">
-                      Preferred
+                      Preferred-ATS Friendly
                     </Badge>
                   </div>
                 )}

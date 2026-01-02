@@ -397,20 +397,20 @@ const AdminPricing = () => {
                   </div>
                 </div>
                 <div>
-                  <Label>Active Users Limit</Label>
+                  <Label>Monthly CV Limit</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <Input
                       type="number"
                       min="-1"
-                      value={whitelabelPlans.custom.active_users_limit}
-                      onChange={(e) => updatePlan('custom', 'active_users_limit', parseInt(e.target.value))}
-                      disabled={whitelabelPlans.custom.active_users_limit === -1}
+                      value={whitelabelPlans.custom.monthly_cv_limit}
+                      onChange={(e) => updatePlan('custom', 'monthly_cv_limit', parseInt(e.target.value))}
+                      disabled={whitelabelPlans.custom.monthly_cv_limit === -1}
                     />
                     <label className="flex items-center gap-2 text-sm whitespace-nowrap">
                       <input
                         type="checkbox"
-                        checked={whitelabelPlans.custom.active_users_limit === -1}
-                        onChange={(e) => updatePlan('custom', 'active_users_limit', e.target.checked ? -1 : 500)}
+                        checked={whitelabelPlans.custom.monthly_cv_limit === -1}
+                        onChange={(e) => updatePlan('custom', 'monthly_cv_limit', e.target.checked ? -1 : 10000)}
                         className="rounded"
                       />
                       Unlimited

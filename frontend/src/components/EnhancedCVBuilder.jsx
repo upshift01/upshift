@@ -1168,6 +1168,17 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
                         placeholder="Cape Town, South Africa"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedinUrl">LinkedIn Profile URL</Label>
+                      <Input
+                        id="linkedinUrl"
+                        name="linkedinUrl"
+                        type="url"
+                        value={formData.linkedinUrl}
+                        onChange={handleChange}
+                        placeholder="https://linkedin.com/in/yourprofile"
+                      />
+                    </div>
                   </div>
                 </div>
 

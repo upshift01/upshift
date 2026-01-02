@@ -416,6 +416,15 @@ class CVPDFGenerator:
             if cv_data.get('id_number'):
                 header_content.append(Paragraph(f"ID: {cv_data['id_number']}", self.styles['CVPersonalDetail']))
             
+            # LinkedIn URL if present
+            if cv_data.get('linkedin_url'):
+                linkedin_url = cv_data['linkedin_url']
+                # Make it clickable if it's a full URL
+                if linkedin_url.startswith('http'):
+                    header_content.append(Paragraph(f'<link href="{linkedin_url}">LinkedIn: {linkedin_url}</link>', self.styles['CVPersonalDetail']))
+                else:
+                    header_content.append(Paragraph(f"LinkedIn: {linkedin_url}", self.styles['CVPersonalDetail']))
+            
             # Languages in header if present
             languages = cv_data.get('languages', [])
             if languages:

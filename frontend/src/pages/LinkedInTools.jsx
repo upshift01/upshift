@@ -53,8 +53,10 @@ const LinkedInTools = () => {
 
   useEffect(() => {
     checkOAuthStatus();
-    checkLinkedInAccess();
-  }, []);
+    if (user) {
+      checkLinkedInAccess();
+    }
+  }, [user]);
 
   const checkOAuthStatus = async () => {
     try {
@@ -96,49 +98,55 @@ const LinkedInTools = () => {
     }
   };
 
-  // Premium feature gate component
-  const PremiumGate = ({ children }) => {
-    if (!accessChecked) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+  // Show loading state while checking access
+  if (!user || !accessChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-center py-20">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+            <p className="text-gray-500">Loading LinkedIn Tools...</p>
+          </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    if (!isPremiumUser) {
-      return (
-        <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
-              <Crown className="h-8 w-8 text-amber-600" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Premium Feature</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              LinkedIn import and optimization tools are available for <strong>Professional</strong> and <strong>Executive Elite</strong> plan subscribers.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={() => navigate('/pricing')}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-              >
-                <Crown className="mr-2 h-4 w-4" />
-                Upgrade Plan
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/dashboard')}>
-                Back to Dashboard
-              </Button>
-            </div>
-            <p className="text-sm text-gray-500 mt-4">
-              Current plan: <Badge variant="secondary">{user?.active_tier || 'Free'}</Badge>
-            </p>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return children;
-  };
+  // Show premium gate for non-premium users
+  if (!isPremiumUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
+                <Crown className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Premium Feature</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                LinkedIn import and optimization tools are available for <strong>Professional</strong> and <strong>Executive Elite</strong> plan subscribers.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={() => navigate('/pricing')}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                >
+                  <Crown className="mr-2 h-4 w-4" />
+                  Upgrade Plan
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                  Back to Dashboard
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500 mt-4">
+                Current plan: <Badge variant="secondary">{user?.active_tier || 'Free'}</Badge>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-4">

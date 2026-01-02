@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 from auth import get_current_user, oauth2_scheme
 from linkedin_service import linkedin_oauth_service
 from linkedin_ai_service import linkedin_ai_service
+from linkedin_scraper_service import linkedin_scraper_service
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,6 +14,9 @@ router = APIRouter(prefix="/api/linkedin", tags=["linkedin"])
 
 # Database will be set by the main server
 db = None
+
+# Premium tiers that have access to LinkedIn tools
+PREMIUM_TIERS = ["tier-2", "tier-3"]
 
 def set_db(database):
     """Set the database connection"""
@@ -23,6 +27,30 @@ def set_db(database):
 async def get_current_user_dep(token: str = Depends(oauth2_scheme)):
     """Dependency to get current user"""
     return await get_current_user(token, db)
+
+# Dependency to check premium tier access
+async def check_premium_tier(token: str = Depends(oauth2_scheme)):
+    """Check if user has premium tier (tier-2 or tier-3) for LinkedIn tools"""
+    user = await get_current_user(token, db)
+    
+    # Super admins and reseller admins always have access
+    if user.role in ["super_admin", "reseller_admin"]:
+        return user
+    
+    # Check tier
+    if user.active_tier not in PREMIUM_TIERS:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Premium feature",
+                "message": "LinkedIn tools are available for Professional and Executive Elite plans only.",
+                "required_tier": "tier-2 or tier-3",
+                "current_tier": user.active_tier,
+                "upgrade_message": "Please upgrade your plan to access LinkedIn import and optimization features."
+            }
+        )
+    
+    return user
 
 # Request Models
 class LinkedInProfileData(BaseModel):

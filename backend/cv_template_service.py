@@ -48,6 +48,8 @@ PLACEHOLDER_MAP = {
     "{{ID_NUMBER}}": "id_number",
     "{{PHOTO}}": "photo",
     "{{LANGUAGES}}": "languages",
+    "{{LINKEDIN_URL}}": "linkedin_url",
+    "{{LINKEDIN}}": "linkedin_url",
     
     # Professional Summary
     "{{SUMMARY}}": "summary",

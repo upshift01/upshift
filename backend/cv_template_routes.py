@@ -406,6 +406,24 @@ async def generate_cv(
         if output_format not in ["pdf", "docx"]:
             raise HTTPException(status_code=400, detail="output_format must be 'pdf' or 'docx'")
         
+        # Check CV limit for reseller customers
+        reseller_id = getattr(user, 'reseller_id', None)
+        if reseller_id:
+            from reseller_cv_limit_service import create_cv_limit_service
+            cv_limit_service = create_cv_limit_service(db)
+            limit_check = await cv_limit_service.check_can_create_cv(reseller_id)
+            
+            if not limit_check.get("allowed"):
+                raise HTTPException(
+                    status_code=403,
+                    detail={
+                        "error": "cv_limit_reached",
+                        "message": limit_check.get("message", "Monthly CV limit reached"),
+                        "upgrade_message": limit_check.get("upgrade_message"),
+                        "usage": limit_check.get("usage")
+                    }
+                )
+        
         service = CVTemplateService(db)
         result = await service.generate_cv_from_template(
             template_id=template_id,
@@ -422,7 +440,7 @@ async def generate_cv(
             document = {
                 "id": result.get("document_id", str(uuid4())),
                 "user_id": user.id,
-                "reseller_id": getattr(user, 'reseller_id', None),
+                "reseller_id": reseller_id,
                 "document_type": "cv",
                 "name": f"CV - {cv_data.get('full_name', 'Untitled')}",
                 "file_url": result.get("file_url"),
@@ -437,9 +455,17 @@ async def generate_cv(
             
             await db.documents.insert_one(document)
             result["saved_document_id"] = document["id"]
+            
+            # Record CV creation for limit tracking
+            if reseller_id:
+                from reseller_cv_limit_service import create_cv_limit_service
+                cv_limit_service = create_cv_limit_service(db)
+                await cv_limit_service.record_cv_creation(reseller_id, user.id, "cv_generated")
         
         return result
         
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

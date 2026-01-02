@@ -745,6 +745,296 @@ async def update_customer(
         if "email" in data and data["email"] != customer.get("email"):
             existing = await db.users.find_one({"email": data["email"]})
             if existing:
+
+
+# ==================== Reseller Subscription Management ====================
+
+@reseller_router.get("/subscription/plans", response_model=dict)
+async def get_subscription_plans():
+    """Get available subscription plans for resellers."""
+    try:
+        plans = [
+            {
+                "id": "starter",
+                "name": "Starter",
+                "price": 249900,  # R2,499 in cents
+                "price_display": "R2,499",
+                "period": "month",
+                "monthly_cv_limit": 1000,
+                "features": [
+                    "1,000 CVs per month",
+                    "White-label branding",
+                    "Custom subdomain",
+                    "Email support",
+                    "Basic analytics"
+                ],
+                "popular": False
+            },
+            {
+                "id": "professional",
+                "name": "Professional",
+                "price": 499900,  # R4,999 in cents
+                "price_display": "R4,999",
+                "period": "month",
+                "monthly_cv_limit": 3500,
+                "features": [
+                    "3,500 CVs per month",
+                    "Full white-label branding",
+                    "Custom domain support",
+                    "Priority support",
+                    "Advanced analytics",
+                    "API access"
+                ],
+                "popular": True
+            },
+            {
+                "id": "enterprise",
+                "name": "Enterprise",
+                "price": 0,
+                "price_display": "Custom",
+                "period": "month",
+                "monthly_cv_limit": -1,
+                "features": [
+                    "Unlimited CVs",
+                    "Multiple brand instances",
+                    "Dedicated account manager",
+                    "Custom integrations",
+                    "SLA guarantees"
+                ],
+                "popular": False,
+                "contact_sales": True
+            }
+        ]
+        
+        return {"success": True, "plans": plans}
+    except Exception as e:
+        logger.error(f"Error getting subscription plans: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/subscription/upgrade", response_model=dict)
+async def upgrade_subscription(
+    request: Request,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Initiate subscription upgrade for a reseller."""
+    try:
+        data = await request.json()
+        plan_id = data.get("plan_id")
+        
+        if not plan_id:
+            raise HTTPException(status_code=400, detail="Plan ID is required")
+        
+        reseller = context["reseller"]
+        user = context["user"]
+        
+        # Define plan prices (in cents)
+        plan_prices = {
+            "starter": 249900,
+            "professional": 499900
+        }
+        
+        if plan_id == "enterprise":
+            return {
+                "success": False,
+                "contact_sales": True,
+                "message": "Please contact our sales team for Enterprise pricing"
+            }
+        
+        if plan_id not in plan_prices:
+            raise HTTPException(status_code=400, detail="Invalid plan selected")
+        
+        amount = plan_prices[plan_id]
+        
+        # Get Yoco settings
+        yoco_settings = await db.platform_settings.find_one({"key": "yoco_settings"}, {"_id": 0})
+        
+        if not yoco_settings or not yoco_settings.get("value", {}).get("secret_key"):
+            raise HTTPException(
+                status_code=400, 
+                detail="Payment gateway not configured. Please contact support."
+            )
+        
+        secret_key = yoco_settings["value"]["secret_key"]
+        
+        # Create Yoco checkout
+        import httpx
+        
+        success_url = f"{os.environ.get('REACT_APP_BACKEND_URL', '')}/reseller-dashboard/subscription/success?plan={plan_id}"
+        cancel_url = f"{os.environ.get('REACT_APP_BACKEND_URL', '')}/reseller-dashboard/subscription"
+        
+        checkout_data = {
+            "amount": amount,
+            "currency": "ZAR",
+            "successUrl": success_url,
+            "cancelUrl": cancel_url,
+            "metadata": {
+                "reseller_id": reseller["id"],
+                "user_id": user["id"],
+                "plan_id": plan_id,
+                "type": "reseller_subscription"
+            }
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://payments.yoco.com/api/checkouts",
+                json=checkout_data,
+                headers={
+                    "Authorization": f"Bearer {secret_key}",
+                    "Content-Type": "application/json"
+                }
+            )
+            
+            if response.status_code == 200:
+                checkout = response.json()
+                
+                # Store pending payment
+                await db.pending_payments.insert_one({
+                    "id": checkout.get("id"),
+                    "reseller_id": reseller["id"],
+                    "user_id": user["id"],
+                    "plan_id": plan_id,
+                    "amount": amount,
+                    "status": "pending",
+                    "type": "reseller_subscription",
+                    "created_at": datetime.now(timezone.utc)
+                })
+                
+                return {
+                    "success": True,
+                    "checkout_url": checkout.get("redirectUrl"),
+                    "checkout_id": checkout.get("id")
+                }
+            else:
+                logger.error(f"Yoco checkout error: {response.text}")
+                raise HTTPException(status_code=400, detail="Failed to create checkout session")
+                
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error upgrading subscription: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/subscription/confirm", response_model=dict)
+async def confirm_subscription(
+    request: Request,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Confirm subscription after successful payment."""
+    try:
+        data = await request.json()
+        checkout_id = data.get("checkout_id")
+        plan_id = data.get("plan_id")
+        
+        if not checkout_id or not plan_id:
+            raise HTTPException(status_code=400, detail="Checkout ID and plan ID are required")
+        
+        reseller = context["reseller"]
+        now = datetime.now(timezone.utc)
+        
+        # Plan details
+        plan_details = {
+            "starter": {
+                "name": "Starter",
+                "price": 249900,
+                "monthly_cv_limit": 1000
+            },
+            "professional": {
+                "name": "Professional",
+                "price": 499900,
+                "monthly_cv_limit": 3500
+            }
+        }
+        
+        if plan_id not in plan_details:
+            raise HTTPException(status_code=400, detail="Invalid plan")
+        
+        plan = plan_details[plan_id]
+        next_billing = now + timedelta(days=30)
+        
+        # Update reseller subscription
+        await db.resellers.update_one(
+            {"id": reseller["id"]},
+            {
+                "$set": {
+                    "status": "active",
+                    "subscription.status": "active",
+                    "subscription.plan": plan_id,
+                    "subscription.plan_name": plan["name"],
+                    "subscription.monthly_fee": plan["price"],
+                    "subscription.monthly_cv_limit": plan["monthly_cv_limit"],
+                    "subscription.is_trial": False,
+                    "subscription.converted_from_trial": True,
+                    "subscription.converted_date": now.isoformat(),
+                    "subscription.next_billing_date": next_billing.isoformat(),
+                    "subscription.suspended_at": None,
+                    "subscription.suspension_reason": None,
+                    "updated_at": now
+                }
+            }
+        )
+        
+        # Update pending payment
+        await db.pending_payments.update_one(
+            {"id": checkout_id},
+            {"$set": {"status": "completed", "completed_at": now}}
+        )
+        
+        # Record payment
+        await db.reseller_payments.insert_one({
+            "id": str(uuid4()),
+            "reseller_id": reseller["id"],
+            "checkout_id": checkout_id,
+            "plan_id": plan_id,
+            "plan_name": plan["name"],
+            "amount": plan["price"],
+            "currency": "ZAR",
+            "status": "succeeded",
+            "type": "subscription",
+            "created_at": now
+        })
+        
+        logger.info(f"Reseller subscription activated: {reseller['id']} - {plan_id}")
+        
+        return {
+            "success": True,
+            "message": f"Successfully subscribed to {plan['name']} plan",
+            "plan": plan_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error confirming subscription: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/subscription/reactivate", response_model=dict)
+async def reactivate_subscription(
+    request: Request,
+    context: dict = Depends(get_current_reseller_admin)
+):
+    """Reactivate a suspended reseller account after payment."""
+    try:
+        reseller = context["reseller"]
+        
+        # Check if account is suspended
+        if reseller.get("status") != "suspended":
+            return {"success": True, "message": "Account is already active"}
+        
+        # For now, redirect to upgrade flow
+        return {
+            "success": False,
+            "requires_payment": True,
+            "message": "Please select a plan to reactivate your account"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error reactivating subscription: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
                 raise HTTPException(status_code=400, detail="Email already in use")
             update_data["email"] = data["email"]
         

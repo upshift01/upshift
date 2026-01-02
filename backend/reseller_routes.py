@@ -275,7 +275,7 @@ async def get_my_subscription(context: dict = Depends(get_current_reseller_admin
                 "started_at": subscription.get("started_at"),
                 "next_billing_date": subscription.get("next_billing_date"),
                 "features": {
-                    "active_users_limit": plan_details.get("active_users_limit", 50),
+                    "monthly_cv_limit": plan_details.get("monthly_cv_limit", 1000),
                     "custom_subdomain": plan_details.get("custom_subdomain", True),
                     "custom_domain": plan_details.get("custom_domain", False),
                     "api_access": plan_details.get("api_access", False),

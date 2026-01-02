@@ -2274,3 +2274,228 @@ async def initialize_demo_account_on_startup():
             
     except Exception as e:
         logger.error(f"Error initializing demo account on startup: {str(e)}")
+
+
+async def auto_send_reseller_trial_reminders():
+    """Send email reminders to resellers 3 days before trial expiry."""
+    try:
+        from email_service import send_email
+        
+        logger.info("[AUTO] Checking for reseller trial expiry reminders...")
+        now = datetime.now(timezone.utc)
+        
+        # Find resellers with trials expiring in 3 days
+        three_days_later = now + timedelta(days=3)
+        
+        # Get all resellers in trial status
+        trial_resellers = await db.resellers.find({
+            "status": "trial",
+            "is_demo_account": {"$ne": True}
+        }, {"_id": 0}).to_list(100)
+        
+        reminder_count = 0
+        
+        for reseller in trial_resellers:
+            try:
+                subscription = reseller.get("subscription", {})
+                trial_end = subscription.get("trial_end_date")
+                
+                if not trial_end:
+                    continue
+                
+                # Parse trial end date
+                if isinstance(trial_end, str):
+                    trial_end_dt = datetime.fromisoformat(trial_end.replace('Z', '+00:00'))
+                else:
+                    trial_end_dt = trial_end
+                
+                # Check if trial ends in approximately 3 days (between 2.5 and 3.5 days)
+                days_until_expiry = (trial_end_dt - now).total_seconds() / 86400
+                
+                if 2.5 <= days_until_expiry <= 3.5:
+                    # Check if we already sent this reminder
+                    reminder_key = f"trial_reminder_3day_{reseller['id']}"
+                    existing_reminder = await db.notifications.find_one({"key": reminder_key})
+                    
+                    if existing_reminder:
+                        continue
+                    
+                    # Get owner user
+                    owner = await db.users.find_one({"id": reseller.get("owner_user_id")}, {"_id": 0})
+                    if not owner:
+                        continue
+                    
+                    # Send reminder email
+                    upgrade_url = f"{os.environ.get('REACT_APP_BACKEND_URL', '')}/reseller-dashboard/subscription"
+                    
+                    email_html = f"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <div style="background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); padding: 30px; text-align: center;">
+                            <h1 style="color: white; margin: 0;">Trial Ending Soon</h1>
+                        </div>
+                        <div style="padding: 30px; background: #f9fafb;">
+                            <p>Hi {owner.get('full_name', 'there')},</p>
+                            
+                            <p>Your <strong>{reseller.get('brand_name', reseller.get('company_name'))}</strong> reseller trial ends in <strong>3 days</strong>.</p>
+                            
+                            <p>To continue using your white-label platform without interruption:</p>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="{upgrade_url}" style="background: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                    Upgrade Now
+                                </a>
+                            </div>
+                            
+                            <p>After your trial ends:</p>
+                            <ul>
+                                <li>Your partner portal will be temporarily disabled</li>
+                                <li>Your customers won't be able to access the platform</li>
+                                <li>All your data will be preserved</li>
+                            </ul>
+                            
+                            <p>Questions? Reply to this email or contact our support team.</p>
+                            
+                            <p>Best regards,<br>The UpShift Team</p>
+                        </div>
+                    </div>
+                    """
+                    
+                    await send_email(
+                        to_email=owner['email'],
+                        subject=f"Your {reseller.get('brand_name', 'reseller')} trial ends in 3 days",
+                        html_body=email_html,
+                        text_body=f"Hi {owner.get('full_name', 'there')}, your reseller trial ends in 3 days. Visit {upgrade_url} to upgrade and continue using your white-label platform."
+                    )
+                    
+                    # Record that we sent this reminder
+                    await db.notifications.insert_one({
+                        "key": reminder_key,
+                        "reseller_id": reseller['id'],
+                        "type": "trial_reminder",
+                        "sent_at": now,
+                        "days_before_expiry": 3
+                    })
+                    
+                    reminder_count += 1
+                    logger.info(f"[AUTO] Sent trial reminder to reseller: {reseller.get('company_name')}")
+                    
+            except Exception as e:
+                logger.error(f"[AUTO] Error processing reseller {reseller.get('id')}: {str(e)}")
+        
+        if reminder_count > 0:
+            logger.info(f"[AUTO] Sent {reminder_count} reseller trial reminders")
+            
+    except Exception as e:
+        logger.error(f"[AUTO] Error sending reseller trial reminders: {str(e)}")
+
+
+async def auto_suspend_expired_reseller_trials():
+    """Suspend reseller accounts with expired trials."""
+    try:
+        from email_service import send_email
+        
+        logger.info("[AUTO] Checking for expired reseller trials...")
+        now = datetime.now(timezone.utc)
+        
+        # Get all resellers in trial status
+        trial_resellers = await db.resellers.find({
+            "status": "trial",
+            "is_demo_account": {"$ne": True}
+        }, {"_id": 0}).to_list(100)
+        
+        suspended_count = 0
+        
+        for reseller in trial_resellers:
+            try:
+                subscription = reseller.get("subscription", {})
+                trial_end = subscription.get("trial_end_date")
+                
+                if not trial_end:
+                    continue
+                
+                # Parse trial end date
+                if isinstance(trial_end, str):
+                    trial_end_dt = datetime.fromisoformat(trial_end.replace('Z', '+00:00'))
+                else:
+                    trial_end_dt = trial_end
+                
+                # Check if trial has expired
+                if trial_end_dt < now:
+                    # Suspend the reseller
+                    await db.resellers.update_one(
+                        {"id": reseller['id']},
+                        {
+                            "$set": {
+                                "status": "suspended",
+                                "subscription.status": "trial_expired",
+                                "subscription.suspended_at": now.isoformat(),
+                                "subscription.suspension_reason": "trial_expired",
+                                "updated_at": now
+                            }
+                        }
+                    )
+                    
+                    # Get owner user
+                    owner = await db.users.find_one({"id": reseller.get("owner_user_id")}, {"_id": 0})
+                    
+                    if owner:
+                        # Send suspension notification email
+                        upgrade_url = f"{os.environ.get('REACT_APP_BACKEND_URL', '')}/reseller-dashboard/subscription"
+                        
+                        email_html = f"""
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                            <div style="background: #dc2626; padding: 30px; text-align: center;">
+                                <h1 style="color: white; margin: 0;">Trial Period Ended</h1>
+                            </div>
+                            <div style="padding: 30px; background: #f9fafb;">
+                                <p>Hi {owner.get('full_name', 'there')},</p>
+                                
+                                <p>Your free trial for <strong>{reseller.get('brand_name', reseller.get('company_name'))}</strong> has ended.</p>
+                                
+                                <p>Your reseller account has been temporarily suspended. This means:</p>
+                                <ul>
+                                    <li>Your partner portal is currently offline</li>
+                                    <li>Your customers cannot access the platform</li>
+                                    <li>All your data is safely preserved</li>
+                                </ul>
+                                
+                                <p>To reactivate your account immediately:</p>
+                                
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="{upgrade_url}" style="background: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                        Subscribe Now
+                                    </a>
+                                </div>
+                                
+                                <p>Choose from our plans:</p>
+                                <ul>
+                                    <li><strong>Starter</strong> - R2,499/month (1,000 CVs)</li>
+                                    <li><strong>Professional</strong> - R4,999/month (3,500 CVs)</li>
+                                    <li><strong>Enterprise</strong> - Custom pricing (Unlimited)</li>
+                                </ul>
+                                
+                                <p>Questions? Reply to this email or contact our support team.</p>
+                                
+                                <p>Best regards,<br>The UpShift Team</p>
+                            </div>
+                        </div>
+                        """
+                        
+                        await send_email(
+                            to_email=owner['email'],
+                            subject=f"Your {reseller.get('brand_name', 'reseller')} trial has ended - Account suspended",
+                            html_body=email_html,
+                            text_body=f"Hi {owner.get('full_name', 'there')}, your reseller trial has ended and your account has been suspended. Visit {upgrade_url} to subscribe and reactivate your platform."
+                        )
+                    
+                    suspended_count += 1
+                    logger.info(f"[AUTO] Suspended reseller due to expired trial: {reseller.get('company_name')}")
+                    
+            except Exception as e:
+                logger.error(f"[AUTO] Error suspending reseller {reseller.get('id')}: {str(e)}")
+        
+        if suspended_count > 0:
+            logger.info(f"[AUTO] Suspended {suspended_count} resellers with expired trials")
+            
+    except Exception as e:
+        logger.error(f"[AUTO] Error suspending expired reseller trials: {str(e)}")

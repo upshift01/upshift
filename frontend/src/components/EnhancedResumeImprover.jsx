@@ -188,6 +188,7 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
           education: extractedData.education || [],
           skills: extractedData.skills || [],
           id_number: extractedData.id_number || extractedData.idNumber,
+          linkedin_url: extractedData.linkedin_url || extractedData.linkedinUrl,
           languages: extractedData.languages || []
         })
       });
@@ -200,6 +201,7 @@ const EnhancedResumeImprover = ({ isPartner = false, baseUrl = '', primaryColor 
           phone: extractedData.phone,
           address: extractedData.address,
           id_number: extractedData.id_number || extractedData.idNumber,
+          linkedin_url: extractedData.linkedin_url || extractedData.linkedinUrl,
           languages: extractedData.languages || [],
           summary: data.enhanced_summary || extractedData.summary,
           experiences: data.enhanced_experiences || extractedData.experiences,

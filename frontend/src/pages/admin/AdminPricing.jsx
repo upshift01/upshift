@@ -462,7 +462,7 @@ const AdminPricing = () => {
                 <p className="text-sm font-medium text-blue-800">Plan Configuration</p>
                 <p className="text-sm text-blue-700 mt-1">
                   These plans are displayed on the White-Label page. Each plan's features determine what resellers get access to.
-                  Active Users Limit controls how many customers a reseller can have on their platform.
+                  Monthly CV Limit controls how many CVs a reseller can generate per month on their platform.
                 </p>
               </div>
             </div>

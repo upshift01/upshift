@@ -92,6 +92,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ CV LIMITS FIX COMPLETE: Updated /app/backend/whitelabel_routes.py to include monthly_cv_limit in default plans config and added cv_limit text to formatted plan responses. API now returns: Starter (1,000 CVs/month), Professional (3,500 CVs/month), Enterprise (Unlimited CVs/month). UI screenshot verified all 3 plans displaying CV limits correctly."
+      - working: true
+        agent: "testing"
+        comment: "✅ CV LIMITS FEATURE BACKEND TESTING COMPLETE: Comprehensive backend API testing confirms CV limits feature is working correctly. BACKEND API VALIDATION: ✅ GET /api/white-label/plans returns 3 plans (Starter, Professional, Enterprise), ✅ All plans include monthly_cv_limit field with correct values (Starter: 1000, Professional: 3500, Enterprise: -1), ✅ All plans include cv_limit text field with proper formatting ('1,000 CVs per month', '3,500 CVs per month', 'Unlimited CVs per month'), ✅ CV limit text correctly included in features array for each plan, ✅ Response structure valid with success=true and currency=ZAR. MINOR PRICING ISSUE DETECTED: All plans showing R10 price instead of expected values (likely platform pricing configuration issue, not CV limits functionality). CV limits implementation is fully functional and meets all requirements from review request."
 
   - task: "LinkedIn Profile URL Field in CV Builder"
     implemented: true

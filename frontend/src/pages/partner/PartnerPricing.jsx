@@ -74,7 +74,9 @@ const PartnerPricing = () => {
   ];
 
   const formatPrice = (price) => {
-    return `R${price.toLocaleString()}`;
+    // Prices from reseller are stored in cents, need to convert to Rands for display
+    const priceInRands = price > 10000 ? price / 100 : price; // If > 10000, assume cents
+    return `R${priceInRands.toLocaleString()}`;
   };
 
   const handleTierSelect = async (tier) => {

@@ -903,13 +903,13 @@ async def create_payment_checkout(
             if pricing_config and pricing_config.get("value"):
                 config = pricing_config["value"]
                 tier_pricing = config.get("default_tier_pricing", {})
-                # Prices in platform_settings are stored in Rands, convert to cents
+                # Prices in platform_settings are now stored in CENTS (standardized)
                 if tier_pricing.get("tier_1_price"):
-                    tiers["tier-1"]["price_cents"] = int(tier_pricing["tier_1_price"] * 100)
+                    tiers["tier-1"]["price_cents"] = int(tier_pricing["tier_1_price"])
                 if tier_pricing.get("tier_2_price"):
-                    tiers["tier-2"]["price_cents"] = int(tier_pricing["tier_2_price"] * 100)
+                    tiers["tier-2"]["price_cents"] = int(tier_pricing["tier_2_price"])
                 if tier_pricing.get("tier_3_price"):
-                    tiers["tier-3"]["price_cents"] = int(tier_pricing["tier_3_price"] * 100)
+                    tiers["tier-3"]["price_cents"] = int(tier_pricing["tier_3_price"])
         
         if tier_id not in tiers:
             raise HTTPException(status_code=400, detail="Invalid tier ID")

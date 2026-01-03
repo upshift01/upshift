@@ -699,7 +699,9 @@ async def verify_reset_token(token: str):
 
 @api_router.get("/pricing")
 async def get_public_pricing():
-    """Get public pricing for the website - no authentication required"""
+    """Get public pricing for the website - no authentication required
+    ALL PRICES ARE RETURNED IN CENTS (e.g., 89900 = R899)
+    """
     try:
         # Get pricing from platform settings
         pricing_config = await db.platform_settings.find_one(
@@ -707,12 +709,12 @@ async def get_public_pricing():
             {"_id": 0}
         )
         
-        # Default pricing (in normal ZAR amounts, not cents)
+        # Default pricing (ALL IN CENTS)
         default_pricing = {
             "tier_1": {
                 "id": "tier-1",
                 "name": "ATS Optimise",
-                "price": 899,
+                "price": 89900,  # R899 in cents
                 "description": "Perfect for job seekers who already have a CV",
                 "features": [
                     "ATS-optimised CV review",
@@ -729,7 +731,7 @@ async def get_public_pricing():
             "tier_2": {
                 "id": "tier-2",
                 "name": "Professional Package",
-                "price": 1500,
+                "price": 150000,  # R1500 in cents
                 "description": "Complete career toolkit for serious job seekers",
                 "features": [
                     "Everything in ATS Optimise",
@@ -749,7 +751,7 @@ async def get_public_pricing():
             "tier_3": {
                 "id": "tier-3",
                 "name": "Executive Elite",
-                "price": 3000,
+                "price": 300000,  # R3000 in cents
                 "description": "Premium service with personalised career strategy",
                 "features": [
                     "Everything in Professional Package",
@@ -767,18 +769,18 @@ async def get_public_pricing():
                 "badge": "Best Value"
             },
             "strategy_call": {
-                "price": 699,
+                "price": 69900,  # R699 in cents
                 "duration_minutes": 30
             }
         }
         
-        # If we have pricing config in the database, use it
+        # If we have pricing config in the database, use it (prices are in cents)
         if pricing_config and pricing_config.get("value"):
             config = pricing_config["value"]
             tier_pricing = config.get("default_tier_pricing", {})
             strategy_pricing = config.get("strategy_call_pricing", {})
             
-            # Update prices from database (prices are stored as normal amounts now)
+            # Update prices from database (all stored in cents)
             if tier_pricing.get("tier_1_price"):
                 default_pricing["tier_1"]["price"] = tier_pricing["tier_1_price"]
             if tier_pricing.get("tier_2_price"):
@@ -803,12 +805,12 @@ async def get_public_pricing():
         
     except Exception as e:
         logger.error(f"Error fetching public pricing: {str(e)}")
-        # Return defaults on error
+        # Return defaults on error (in cents)
         return {
             "tiers": [
-                {"id": "tier-1", "name": "ATS Optimise", "price": 899},
-                {"id": "tier-2", "name": "Professional Package", "price": 1500, "popular": True},
-                {"id": "tier-3", "name": "Executive Elite", "price": 3000}
+                {"id": "tier-1", "name": "ATS Optimise", "price": 89900},
+                {"id": "tier-2", "name": "Professional Package", "price": 150000, "popular": True},
+                {"id": "tier-3", "name": "Executive Elite", "price": 300000}
             ],
             "currency": "ZAR"
         }

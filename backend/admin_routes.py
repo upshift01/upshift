@@ -2519,13 +2519,13 @@ async def get_platform_pricing(admin: UserResponse = Depends(get_current_super_a
                 "minimum_commitment_months": 1
             },
             "default_tier_pricing": {
-                "tier_1_price": 899,
-                "tier_2_price": 1500,
-                "tier_3_price": 3000,
+                "tier_1_price": 89900,   # R899 in cents
+                "tier_2_price": 150000,  # R1500 in cents
+                "tier_3_price": 300000,  # R3000 in cents
                 "currency": "ZAR"
             },
             "strategy_call_pricing": {
-                "price": 699,
+                "price": 69900,  # R699 in cents
                 "duration_minutes": 30,
                 "included_in_tier_3": True,
                 "enabled": True

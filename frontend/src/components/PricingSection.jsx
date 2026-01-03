@@ -109,12 +109,13 @@ const PricingSection = ({ onTierSelect }) => {
         const data = await response.json();
         if (data.tiers && data.tiers.length > 0) {
           // Merge API pricing with default tier data (keeping features, descriptions, etc.)
+          // API returns prices in cents, we keep them in cents for storage
           const updatedTiers = defaultPricingTiers.map((defaultTier, index) => {
             const apiTier = data.tiers[index];
             if (apiTier) {
               return {
                 ...defaultTier,
-                price: apiTier.price || defaultTier.price,
+                price: apiTier.price || defaultTier.price, // Price in cents
                 name: apiTier.name || defaultTier.name,
                 // Use API features if provided, otherwise keep defaults
                 features: apiTier.features?.length > 0 ? apiTier.features : defaultTier.features,

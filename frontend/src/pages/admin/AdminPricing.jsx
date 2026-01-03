@@ -67,21 +67,26 @@ const AdminPricing = () => {
     minimum_commitment_months: 1
   });
 
-  // Default tier pricing (suggested prices for resellers)
+  // Default tier pricing (stored in CENTS - e.g., 89900 = R899)
   const [defaultTierPricing, setDefaultTierPricing] = useState({
-    tier_1_price: 899,
-    tier_2_price: 1500,
-    tier_3_price: 3000,
+    tier_1_price: 89900,   // R899
+    tier_2_price: 150000,  // R1500
+    tier_3_price: 300000,  // R3000
     currency: 'ZAR'
   });
 
-  // Strategy Call pricing
+  // Strategy Call pricing (stored in CENTS)
   const [strategyCallPricing, setStrategyCallPricing] = useState({
-    price: 699,
+    price: 69900,  // R699
     duration_minutes: 30,
     included_in_tier_3: true,
     enabled: true
   });
+
+  // Convert cents to Rands for display in input fields
+  const centsToRands = (cents) => Math.round(cents / 100);
+  // Convert Rands input to cents for storage
+  const randsToCents = (rands) => Math.round(rands * 100);
 
   useEffect(() => {
     fetchPricing();

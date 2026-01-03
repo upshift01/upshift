@@ -687,14 +687,15 @@ const AdminPricing = () => {
                     <Input
                       type="number"
                       min="0"
-                      value={strategyCallPricing.price}
+                      value={centsToRands(strategyCallPricing.price)}
                       onChange={(e) => setStrategyCallPricing({ 
                         ...strategyCallPricing, 
-                        price: parseInt(e.target.value) || 0 
+                        price: randsToCents(parseInt(e.target.value) || 0)
                       })}
                       className="pl-8"
                     />
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">Enter price in Rands</p>
                 </div>
 
                 <div>

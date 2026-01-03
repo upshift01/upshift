@@ -589,20 +589,21 @@ const AdminPricing = () => {
                       <p className="text-xs text-gray-500">Entry-level tier</p>
                     </div>
                   </div>
-                  <Label>Default Price (ZAR)</Label>
+                  <Label>Default Price (Rands)</Label>
                   <div className="relative mt-1">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
                       type="number"
                       min="0"
-                      value={defaultTierPricing.tier_1_price}
+                      value={centsToRands(defaultTierPricing.tier_1_price)}
                       onChange={(e) => setDefaultTierPricing({ 
                         ...defaultTierPricing, 
-                        tier_1_price: parseInt(e.target.value) || 0 
+                        tier_1_price: randsToCents(parseInt(e.target.value) || 0)
                       })}
                       className="pl-8"
                     />
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">Enter price in Rands (e.g., 899 for R899)</p>
                 </div>
 
                 <div className="border rounded-lg p-4 border-purple-200 bg-purple-50">
@@ -615,20 +616,21 @@ const AdminPricing = () => {
                       <p className="text-xs text-gray-500">Most popular</p>
                     </div>
                   </div>
-                  <Label>Default Price (ZAR)</Label>
+                  <Label>Default Price (Rands)</Label>
                   <div className="relative mt-1">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
                       type="number"
                       min="0"
-                      value={defaultTierPricing.tier_2_price}
+                      value={centsToRands(defaultTierPricing.tier_2_price)}
                       onChange={(e) => setDefaultTierPricing({ 
                         ...defaultTierPricing, 
-                        tier_2_price: parseInt(e.target.value) || 0 
+                        tier_2_price: randsToCents(parseInt(e.target.value) || 0)
                       })}
                       className="pl-8"
                     />
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">Enter price in Rands (e.g., 1500 for R1,500)</p>
                 </div>
 
                 <div className="border rounded-lg p-4 border-amber-200 bg-amber-50">
@@ -641,20 +643,21 @@ const AdminPricing = () => {
                       <p className="text-xs text-gray-500">Premium tier</p>
                     </div>
                   </div>
-                  <Label>Default Price (ZAR)</Label>
+                  <Label>Default Price (Rands)</Label>
                   <div className="relative mt-1">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R</span>
                     <Input
                       type="number"
                       min="0"
-                      value={defaultTierPricing.tier_3_price}
+                      value={centsToRands(defaultTierPricing.tier_3_price)}
                       onChange={(e) => setDefaultTierPricing({ 
                         ...defaultTierPricing, 
-                        tier_3_price: parseInt(e.target.value) || 0 
+                        tier_3_price: randsToCents(parseInt(e.target.value) || 0)
                       })}
                       className="pl-8"
                     />
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">Enter price in Rands (e.g., 3000 for R3,000)</p>
                 </div>
               </div>
             </CardContent>

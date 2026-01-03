@@ -29,7 +29,7 @@ const PartnerPricing = () => {
     {
       id: 'tier-1',
       name: 'ATS Optimise',
-      price: pricing?.tier_1_price || 899,
+      price: pricing?.tier_1_price || 89900,  // Default in cents (R899)
       description: 'Perfect for job seekers who want an ATS-friendly CV',
       features: [
         'Professional CV rewrite',
@@ -44,7 +44,7 @@ const PartnerPricing = () => {
     {
       id: 'tier-2',
       name: 'Professional Package',
-      price: pricing?.tier_2_price || 1500,
+      price: pricing?.tier_2_price || 150000,  // Default in cents (R1500)
       description: 'Complete career package for serious job seekers',
       features: [
         'Everything in ATS Optimise',
@@ -59,7 +59,7 @@ const PartnerPricing = () => {
     {
       id: 'tier-3',
       name: 'Executive Elite',
-      price: pricing?.tier_3_price || 3000,
+      price: pricing?.tier_3_price || 300000,  // Default in cents (R3000)
       description: 'Premium service for executives and senior professionals',
       features: [
         'Everything in Professional',
@@ -73,11 +73,9 @@ const PartnerPricing = () => {
     }
   ];
 
-  const formatPrice = (price) => {
-    // Prices from reseller are stored in cents, convert to Rands for display
-    // If price is less than 1000, assume it's already in Rands (default/fallback values)
-    // If price is 1000 or more, assume it's in cents and divide by 100
-    const priceInRands = price >= 1000 ? Math.round(price / 100) : price;
+  // Convert cents to Rands for display
+  const formatPrice = (priceInCents) => {
+    const priceInRands = Math.round(priceInCents / 100);
     return `R${priceInRands.toLocaleString()}`;
   };
 

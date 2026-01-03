@@ -3,7 +3,7 @@ import { Check, Zap, Crown, Star, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { pricingTiers as defaultPricingTiers } from '../pricingData';
+import { pricingTiers as defaultPricingTiers, formatPriceFromCents } from '../pricingData';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -42,7 +42,7 @@ const PricingCard = ({ tier, onSelect, isSelected }) => {
         </div>
         <CardTitle className="text-2xl mb-2">{tier.name}</CardTitle>
         <div className="mt-4">
-          <span className="text-4xl font-bold text-gray-900">R{tier.price.toLocaleString()}</span>
+          <span className="text-4xl font-bold text-gray-900">{formatPriceFromCents(tier.price)}</span>
           <span className="text-gray-600 text-sm ml-1">once-off</span>
         </div>
         <CardDescription className="mt-3 text-base">

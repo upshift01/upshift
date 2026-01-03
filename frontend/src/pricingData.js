@@ -1,11 +1,11 @@
 // Pricing tiers for UpShift services
+// ALL PRICES ARE STORED IN CENTS (e.g., 89900 = R899)
 
 export const pricingTiers = [
   {
     id: 'tier-1',
     name: 'ATS Optimise',
-    price: 899,
-    priceCents: 89900,
+    price: 89900,  // R899 in cents
     description: 'Perfect for job seekers who already have a CV',
     features: [
       'ATS-optimised CV review',
@@ -23,8 +23,7 @@ export const pricingTiers = [
   {
     id: 'tier-2',
     name: 'Professional Package',
-    price: 1500,
-    priceCents: 150000,
+    price: 150000,  // R1500 in cents
     description: 'Complete career toolkit for serious job seekers',
     features: [
       'Everything in ATS Optimise',
@@ -44,8 +43,7 @@ export const pricingTiers = [
   {
     id: 'tier-3',
     name: 'Executive Elite',
-    price: 3000,
-    priceCents: 300000,
+    price: 300000,  // R3000 in cents
     description: 'Premium service with personalised career strategy',
     features: [
       'Everything in Professional Package',
@@ -64,3 +62,9 @@ export const pricingTiers = [
     badge: 'Best Value'
   }
 ];
+
+// Helper function to convert cents to Rands for display
+export const formatPriceFromCents = (cents) => {
+  const rands = Math.round(cents / 100);
+  return `R${rands.toLocaleString()}`;
+};

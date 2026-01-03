@@ -74,8 +74,10 @@ const PartnerPricing = () => {
   ];
 
   const formatPrice = (price) => {
-    // Prices from reseller are stored in cents, need to convert to Rands for display
-    const priceInRands = price > 10000 ? price / 100 : price; // If > 10000, assume cents
+    // Prices from reseller are stored in cents, convert to Rands for display
+    // If price is less than 1000, assume it's already in Rands (default/fallback values)
+    // If price is 1000 or more, assume it's in cents and divide by 100
+    const priceInRands = price >= 1000 ? Math.round(price / 100) : price;
     return `R${priceInRands.toLocaleString()}`;
   };
 

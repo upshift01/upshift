@@ -21,7 +21,7 @@ import uuid
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://upshift-careers.preview.emergentagent.com/api"
+BACKEND_URL = "https://cv-platform-1.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {
@@ -1726,7 +1726,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
                                     print("\n🔹 Test 2: Verify Logo File Access")
                                     
                                     # Try to access the uploaded file
-                                    file_access_url = f"https://upshift-careers.preview.emergentagent.com{file_url}"
+                                    file_access_url = f"https://cv-platform-1.preview.emergentagent.com{file_url}"
                                     try:
                                         file_response = requests.get(file_access_url, timeout=10)
                                         if file_response.status_code == 200:

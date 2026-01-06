@@ -1,37 +1,42 @@
 <analysis>**original_problem_statement**: The user is building UpShift, an AI-driven, white-label SaaS resume and career services platform.
 
-During this session, the user's primary requests were to enhance the platform's commercial and feature offerings:
-1.  **Revenue Analytics**: Add a comprehensive revenue analytics dashboard for the super admin to track sales from both the main platform and resellers.
-2.  **Reseller Deletion**: Implement a feature to delete resellers, ensuring that their data is properly handled and excluded from active analytics.
-3.  **LinkedIn Profile in CVs**: Add a field for a user's LinkedIn profile URL in the CV builder and include it in the final generated PDF.
-4.  **LinkedIn Profile Scraping**: Create a premium feature (for Tier 2 & 3 customers) to scrape and import data from a public LinkedIn profile URL to assist in CV creation.
-5.  **Reseller CV Limits**: Implement and enforce monthly CV generation limits for the three white-label reseller plans (Starter: 1,000, Professional: 3,500, Enterprise: Unlimited).
+During this session, the user's primary requests were:
+1.  **Fix CV Limits Display**: Ensure the monthly CV limits for reseller plans are visible on the public-facing pricing page.
+2.  **Create Demo Reseller**: Implement a Live Demo feature with a dedicated reseller account (TalentHub) that has pre-seeded data and resets nightly.
+3.  **Fix Partner Logout**: Ensure logging out from a partner/reseller dashboard redirects the user back to that partner's branded site, not the main UpShift site.
+4.  **UI Text Changes**: Rename the Custom CV template category to Preferred-ATS Friendly and remove Active Users from all pricing cards.
+5.  **Implement Trial Expiration Flow**: Build a system to handle the 7-day reseller trial, including email reminders, account suspension on expiry, and a redirect to a new payment/subscription page.
+6.  **Data Cleanup**: Create a script to wipe all customer and reseller data, except for the super admin and the demo account, to prepare for a clean production state.
+7.  **Fix PDF Invoice Spacing**: Adjust the layout of PDF invoices to add more space between the company name and email address.
+8.  **Fix Critical Reseller Pricing Bug**: A recurring and critical issue where prices set by resellers were displayed incorrectly on their sites and sent the wrong amount to the Yoco payment gateway.
+9.  **Standardize Pricing to Cents**: As a permanent fix for the pricing bugs, refactor the entire application to store all monetary values in cents.
+10. **Fix Hardcoded Phone Number**: A recurring issue where the contact phone number is hardcoded instead of being pulled from the platform's settings.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack React/FastAPI platform with a MongoDB database. The agent has successfully implemented several major features in this session. The super admin now has a detailed revenue analytics dashboard. A soft-delete mechanism for resellers is in place, which correctly updates analytics. The CV generation process has been enhanced to include a LinkedIn profile URL. A premium, tier-gated LinkedIn profile scraping tool has been developed and integrated. A system to track and enforce monthly CV limits for resellers has been built.
+The application is a full-stack React/FastAPI platform with a MongoDB database. A significant number of features were completed and fixed in this session. The CV limits are now correctly displayed. A fully functional demo reseller account (TalentHub) with a nightly data reset mechanism is live. The partner logout redirect works as expected. A complete trial expiration flow for resellers, including email reminders and suspension, has been implemented. Critically, a major pricing bug was fixed, and the entire platform's data layer was refactored to use 'cents' for all monetary values, which is an industry-standard best practice. The agent was in the process of fixing a recurring issue with a hardcoded phone number.
 
 **Last working item**:
--   **Last item agent was working**: Implementing and verifying the CV usage limits for white-label reseller plans. The agent built the backend logic for tracking and enforcement and updated the frontend to display this information. However, testing revealed a gap.
+-   **Last item agent was working**: Fixing a recurring issue where the phone number was hardcoded on the main and reseller sites, instead of being dynamically pulled from the respective contact settings. The user has expressed significant frustration with this bug.
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: Y (The testing agent found a bug)
--   **Which testing method agent to use?**: backend testing agent. The agent must first fix the API endpoint. A  command or a python script should be used to test the  endpoint to confirm it returns the CV limit data. Afterward, the  tool should be used on the  page to verify the limits are displayed correctly in the UI.
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: screenshot tool. The agent should take screenshots of the main site footer and a reseller partner site footer (e.g., TalentHub) to verify the correct phone numbers from the settings are displayed.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: White-Label pricing page does not display CV limits (P0)**
-    -   **Description**: The recently implemented monthly CV limits for reseller plans are not being displayed on the public-facing  pricing page. The testing agent discovered that the backend API endpoint () is not including the new CV limit data in its response.
-    -   **Attempted fixes**: The full feature was implemented, but this final integration point was missed.
+-   **Issue 1: Phone number is hardcoded on main and reseller sites (P0)**
+    -   **Description**: The user reported that the phone number displayed on the site footer is incorrect and hardcoded, instead of being pulled from the contact information settings in the admin and reseller panels respectively.
+    -   **Attempted fixes**: The agent has started a  search to find all occurrences of hardcoded phone numbers. The last message shows the agent found several hardcoded instances.
     -   **Next debug checklist**:
-        1.  Open .
-        2.  Locate the function handling the  route.
-        3.  Modify the function to read the CV limit values (, , etc.) from the  configuration in the database.
-        4.  Ensure these values are added to the JSON response sent to the frontend.
-    -   **Why fix this issue and what will be achieved with this?**: This is a critical fix to complete the CV limits feature. Without it, potential resellers are unaware of the service limits, which could lead to disputes and a poor user experience.
+        1.  Examine the  results from .
+        2.  Identify all files where the phone number is hardcoded (e.g., , ).
+        3.  Modify these files to pull the phone number from the correct context ( from  for the main site, and  from  for reseller sites).
+        4.  Ensure the context providers (, ) are correctly fetching and supplying this data from the backend.
+    -   **Why fix this issue and what will be achieved with this?**: This ensures brand consistency and correct contact information for both the main platform and all white-label resellers. It's a critical usability and branding fix.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend.
     -   **Blocked on other issue**: None.
 
 **In progress Task List**:
@@ -45,11 +50,16 @@ The application is a full-stack React/FastAPI platform with a MongoDB database. 
     -   **(P3) Secure/Remove Emergency Endpoints**: The temporary endpoints in  (, , ) are a security risk and should be removed or secured behind super-admin authentication.
 
 **Completed work in this session**
--   **Executive Elite (Tier-3) Dashboard Display Fix (DONE)**: Fixed a frontend bug where a user's active plan did not update on the dashboard after payment until they logged out and back in. This was resolved by adding a  function to  and calling it from .
--   **Comprehensive Revenue Analytics (DONE)**: Implemented a new revenue analytics dashboard for super admins () with corresponding backend endpoints () in .
--   **Reseller Soft-Delete Functionality (DONE)**: Implemented a non-destructive delete for resellers in  and added the corresponding UI controls in .
--   **LinkedIn URL in CVs (DONE)**: Added a LinkedIn Profile URL field to the CV builder. This involved changes to , , and .
--   **LinkedIn Profile Scraper (Premium Feature) (DONE)**: Created a new feature for Tier 2 & 3 users to import data from a LinkedIn URL. This included a new backend service (), a tier-gated API endpoint (), and a new Import tab in .
+-   **White-Label CV Limits Display (DONE)**: Fixed the backend API and updated the frontend to correctly display CV generation limits on the  pricing page.
+-   **Demo Reseller Account (TalentHub) (DONE)**: Implemented a fully functional demo reseller account with pre-seeded data and a nightly cron job to reset it.
+-   **Partner Logout Redirect Fix (DONE)**: Corrected the logout flow for reseller admins and customers to redirect back to the partner-branded site.
+-   **UI Text Changes (DONE)**: Renamed the Custom CV template category to Preferred-ATS Friendly and removed all mentions of Active Users from pricing cards and admin panels, replacing them with Monthly CV Limit.
+-   **Reseller Trial Expiration Flow (DONE)**: Implemented an automated system that sends trial expiry reminders, suspends expired reseller accounts, and redirects them to a new subscription payment page.
+-   **Platform Data Reset (DONE)**: Created and executed a script to wipe all non-super-admin and non-demo data to prepare the platform for a clean state.
+-   **Invoice PDF Spacing Fix (DONE)**: Increased vertical spacing on generated PDF invoices for better readability.
+-   **Critical Reseller Pricing Bug Fix & Standardization (DONE)**:
+    -   Fixed a bug causing reseller prices to display incorrectly and fail during payment.
+    -   Architecturally refactored the entire application to store all pricing in **cents**, a crucial best practice that resolved the root cause of the bug.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Made with Emergent Badge Removal**
@@ -60,32 +70,34 @@ The application is a full-stack React/FastAPI platform with a MongoDB database. 
 
 **Known issue recurrence from previous fork**
 -   The Made with Emergent badge removal is a recurring platform issue.
+-   The hardcoded phone number is a recurring application-level issue that the agent is currently fixing.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Feature Gating**: Implemented tier-based access control for the LinkedIn scraper feature on both backend (API check) and frontend (UI rendering).
--   **Soft Deletes**: Used a non-destructive delete pattern ( flag) for resellers to preserve data for historical analytics while hiding them from active views.
--   **State Management on Data Change**: Solved a UI bug by explicitly refreshing the user state in the  after a successful payment to ensure immediate UI updates.
--   **Web Scraping**: Introduced  to create a basic web scraper for public LinkedIn profiles.
--   **Usage Tracking & Limits**: Built a system to track resource consumption (CV creations) on a monthly basis for resellers and enforce limits.
+-   **Scheduled Jobs (Cron)**: Used  in FastAPI to create nightly jobs for resetting demo data and managing reseller trial expirations (sending reminders, suspending accounts).
+-   **Pricing Standardization (Cents)**: A major architectural refactor to store all monetary values as integers representing cents. This is a crucial best practice for financial applications to avoid floating-point inaccuracies and simplify payment gateway integrations. All frontend components now convert cents to Rands for display.
+-   **Stateful Logout Redirect**: Fixed logout logic by ensuring the partner/reseller subdomain is retrieved *before* the  function is called, allowing for a correct redirect to the branded partner site.
+-   **Conditional Routing/Rendering for Suspended State**: Updated the  to check the user's subscription status (, ) and redirect to a dedicated subscription/payment page if access is restricted.
+-   **Database Seeding**: Implemented logic to seed a new demo reseller account with realistic sample data (customers, invoices, CVs) on application startup.
 
 **key DB schema**
--   **users**: Field  added.
--   **payments**: Field  added.
--   **resellers**: Field  added.
--   **platform_settings**: The  object within this collection's document was updated to include CV limits.
--   **cv_usage_logs**: New collection to log each CV creation event per reseller for monthly tracking. Schema: .
+-   **resellers**: Added , , . A field  was added for the demo system.
+-   **reseller_invoices**: New collection for monthly reseller subscription invoices.
+-   **platform_settings**: The  and  objects now store all prices in cents.
 
 **changes in tech stack**
--   Added  Python dependency for web scraping.
+-    was added to  for scheduled background jobs.
 
 **All files of reference**
 -   **Current Task Files**:
-    -    (The  endpoint needs to be fixed).
-    -    (The UI that will display the limits once the API is fixed).
+    -    (Likely contains hardcoded phone number).
+    -    (Contains placeholder text for phone number).
+    -    and  (To trace how contact info is managed and supplied).
 -   **Recently Completed/Fixed Files**:
+    -   
+    -   
     -   
     -   
     -   
@@ -98,60 +110,64 @@ The application is a full-stack React/FastAPI platform with a MongoDB database. 
 -   The frontend codebase has several React linting warnings (e.g., ) that should be addressed to improve code quality.
 
 **key api endpoints**
--   : **NEW**. Gets detailed revenue analytics.
--   : **UPDATED**. Performs a soft delete on a reseller.
--   : **NEW**. Scrapes a public LinkedIn profile, gated for premium tiers.
--   : **NEW**. Gets current monthly CV usage for a reseller.
--   : **UPDATED**. Now checks for reseller CV limits before generation.
--   : **NEEDS FIX**. Must be updated to return CV limit data.
+-   : **NEW**. Gets credentials for the demo reseller account.
+-   : **NEW**. Gets available subscription plans for resellers.
+-   : **NEW**. Handles a reseller upgrading their subscription plan.
+-   : **NEW**. Fetches a reseller's subdomain for correct logout redirection.
+-   : **UPDATED**. Now expects and saves all prices in cents.
+-   : **UPDATED**. Returns main platform prices in cents.
+-   : **UPDATED**. Correctly sends prices in cents to Yoco for both main and reseller platforms.
 
 **Critical Info for New Agent**
--   **Production Database is Separate**: This remains a critical point. Any data changes you make here (e.g., creating users) **will not** transfer to production on publishing. User-reported issues might only be reproducible on the live site, requiring diagnostic endpoints.
--   **Reseller CV Limit Fix is the Top Priority**: Your first task is to fix the  API endpoint so the CV limits are displayed on the public pricing page. The feature is blocked and incomplete without this fix.
--   **Password Hashing**: When manually creating test users, use the application's hashing function from  and store the result in the  field.
+-   **PRICING IS IN CENTS**: This is a critical architectural change. All pricing logic in the backend (database, APIs) and frontend is now standardized to use integers representing cents (e.g.,  for R899.00). Any new pricing feature must follow this standard. Frontend display components are responsible for converting cents to Rands ().
+-   **RECURRING ISSUES & USER FRUSTRATION**: The user is particularly sensitive to recurring issues like the hardcoded phone number and the previous pricing bugs. They have expressed frustration about wasted credits. Pay extra attention to fixing these thoroughly and verifying across all relevant platforms (main, reseller admin, partner sites).
+-   **Demo System**: A demo reseller (TalentHub) exists and is reset nightly via a scheduled job. This is the primary way to test reseller functionality without affecting real data.
+-   **Trial Expiration Logic**: A new, complete trial expiration system is in place. It automatically sends reminder emails, suspends accounts, and redirects to a payment page. This is a core part of the reseller business logic.
 
 **documents and test reports created in this job**
--    was updated for several features.
+-    was updated for the CV limits display fix.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Add a delete option to the reseller page. Analytics must be updated when resellers are deleted.
-2.  **Agent**: Implemented and tested the reseller soft-delete feature.
-3.  **User**: Make sure the analytics uses the correct sales data including the correct pricing... not any hard coded figures.
-4.  **Agent**: Verified and confirmed that the analytics system correctly uses actual transaction amounts from the database.
-5.  **User**: We need to add a LinkedIn profile URL if available when new customers create a CV.
-6.  **Agent**: Implemented the LinkedIn URL field in the CV builder, templates, and PDF output.
-7.  **User**: We need to enhance the LinkedIn integration so that if a LinkedIn profile exist we can pull information from there... This must be implemented for main platform and reseller customers. (Clarified to be a scraper for premium tiers).
-8.  **Agent**: Implemented the LinkedIn profile scraper as a premium feature for Tier 2 and 3 users.
-9.  **User**: What about Tier 2 (Professional) Tier 2 should also have access to this feature.
-10. **Agent**: Verified and confirmed that Tier 2 users have access to the LinkedIn scraper.
-11. **User**: We need to add... limits to the three White-Label reseller options... and it also needs to be implemented as real limits per plan.
-12. **Agent**: Implemented the reseller CV limits feature, which is the current work item pending a final bug fix.
+1.  **User**: I need a demo user for the reseller platform that resets daily.
+2.  **User**: When logging out of the demo portal, it should redirect to the demo site, not the main site.
+3.  **User**: Change the Custom template label to Preferred.
+4.  **User**: My mistake, change Preferred to Preferred-ATS Friendly.
+5.  **User**: Remove Active Users from the reseller pricing cards.
+6.  **User**: Asked clarifying questions about database segregation and building a similar agent.
+7.  **User**: **Critical Feedback**: Active Users is still showing on the live site after publishing. This is wasting my credits.
+8.  **User**: Asked what happens when a reseller's trial expires.
+9.  **User**: **Yes, please proceed** with implementing a full trial expiration flow.
+10. **User**: Delete all reseller and customer data except for the super admin, without affecting the demo system.
+11. **User**: Increase the spacing on the reseller PDF invoice.
+12. **User**: **Critical Feedback & Frustration**: The reseller pricing is still broken on the live site after the 4th attempt to fix it, wasting a lot of credits. Explained the bug in detail (prices in cents vs rands).
+13. **User**: Asked why prices are stored in cents.
+14. **User**: Agreed to **Option A**: standardize the entire platform to use cents.
+15. **User**: **Critical Feedback**: The phone number is incorrect again on both main and reseller sites. It must pull from settings.
 
 **Project Health Check:**
--   **Broken**: The  pricing page does not display the new CV limits because the backing API is not providing the necessary data.
+-   **Broken**: The phone number is hardcoded in some parts of the UI, overriding the values from the platform settings. This is a recurring issue.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
 -   **OpenAI GPT-4o**: Uses Emergent LLM Key.
--   **Yoco (Payments)**: Requires User API Key.
+-   **Yoco (Payments)**: Requires User API Key. Prices are now correctly sent in cents.
 -   **SMTP (Custom)**: Requires User SMTP credentials.
 -   **ReportLab, python-docx, docx2pdf, LibreOffice**: For CV document handling.
--   **BeautifulSoup4**: **NEW**. For web scraping.
+-   **BeautifulSoup4**: For web scraping.
+-   **apscheduler**: For internal scheduled jobs (demo reset, trial management).
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. Used for Revenue Analytics, Reseller Delete, LinkedIn Scraper, and CV Limits features.
+-   **Testing agent used after significant changes**: YES, for the initial CV limits fix.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: None.
+-   **Known regressions**: The hardcoded phone number is a regression that has appeared multiple times.
 
 **Credentials to test flow:**
 | User Type | Email | Password | Access |
 | :--- | :--- | :--- | :--- |
 | Super Admin |  |  | Main platform admin |
-| Reseller Admin |  |  | YottaNet reseller portal |
-| Tier 1 Customer |  |  | For testing feature gates |
-| Tier 2 Customer |  |  | For testing feature gates |
-| Tier 3 Customer |  |  | For testing CV builder |
+| Demo Reseller | |  | TalentHub demo portal |
+| Tier 3 Customer |  |  | Main platform customer |
 
 **What agent forgot to execute**
--   The agent did not include the new CV limit data in the response from the  API endpoint after implementing the CV limits feature. This was caught by the testing agent and is the primary pending task.</analysis>
+-   The agent has repeatedly failed to completely fix the hardcoded phone number issue. Each time, a fix was applied to one area, but other hardcoded instances were missed, leading to user frustration and wasted credits. A more thorough, system-wide search and replacement is needed.</analysis>

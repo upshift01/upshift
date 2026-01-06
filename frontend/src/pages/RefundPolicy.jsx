@@ -74,7 +74,7 @@ const RefundPolicy = () => {
             <p className="text-gray-600">
               For refund requests or questions, contact us at:<br /><br />
               <strong>Email:</strong> {theme.contactEmail || 'support@upshift.works'}<br />
-              <strong>Phone:</strong> {theme.contactPhone || '+27 87 233-8759'}<br />
+              <strong>Phone:</strong> {theme.contactPhone || '+27 (0) 87 233-8758'}<br />
               <strong>Hours:</strong> {theme.businessHours || 'Monday-Friday, 08:00-17:00 SAST'}
             </p>
           </CardContent>

@@ -19,7 +19,7 @@ export const ThemeProvider = ({ children }) => {
     secondaryColor: '#7c3aed',
     faviconUrl: null,
     contactEmail: 'support@upshift.works',
-    contactPhone: '+27 87 233-8759',
+    contactPhone: '+27 (0) 87 233-8758',
     contactAddress: '81 Botterklapper Street, The Willows, Pretoria',
     contactWhatsapp: '',
     businessHours: 'Mon-Fri: 8:00 AM - 5:00 PM',

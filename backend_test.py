@@ -1373,6 +1373,117 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_phone_number_display_fix(self):
+        """Test phone number display fix for the UpShift platform"""
+        print("\n📞 Testing Phone Number Display Fix...")
+        
+        # Test 1: Main Platform Config API
+        print("\n🔹 Test 1: Main Platform Config API")
+        response, error = self.make_request("GET", "/white-label/config")
+        if error:
+            self.log_test("Main Platform Config API", False, error)
+        else:
+            required_fields = ["contact_phone", "contact_email"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Main Platform Config API", False, f"Missing fields: {missing_fields}")
+            else:
+                contact_phone = response.get("contact_phone", "")
+                contact_email = response.get("contact_email", "")
+                
+                # Expected values for main platform
+                expected_phone = "+27 (0) 87 233-8758"
+                expected_email = "support@upshift.works"
+                
+                phone_correct = contact_phone == expected_phone
+                email_correct = contact_email == expected_email
+                
+                if phone_correct and email_correct:
+                    self.log_test("Main Platform Config API", True, 
+                                f"Phone: {contact_phone}, Email: {contact_email}")
+                else:
+                    issues = []
+                    if not phone_correct:
+                        issues.append(f"Phone mismatch - got '{contact_phone}', expected '{expected_phone}'")
+                    if not email_correct:
+                        issues.append(f"Email mismatch - got '{contact_email}', expected '{expected_email}'")
+                    self.log_test("Main Platform Config API", False, "; ".join(issues))
+        
+        # Test 2: Partner Platform Config API (TalentHub Demo)
+        print("\n🔹 Test 2: Partner Platform Config API (TalentHub Demo)")
+        response, error = self.make_request("GET", "/white-label/partner/talenthub-demo")
+        if error:
+            self.log_test("Partner Platform Config API", False, error)
+        else:
+            required_fields = ["contact_phone", "contact_email"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("Partner Platform Config API", False, f"Missing fields: {missing_fields}")
+            else:
+                contact_phone = response.get("contact_phone", "")
+                contact_email = response.get("contact_email", "")
+                
+                # Expected values for TalentHub partner
+                expected_phone = "+27 12 345 6789"
+                expected_email = "hello@talenthub.demo"
+                
+                phone_correct = contact_phone == expected_phone
+                email_correct = contact_email == expected_email
+                
+                if phone_correct and email_correct:
+                    self.log_test("Partner Platform Config API", True, 
+                                f"Phone: {contact_phone}, Email: {contact_email}")
+                else:
+                    issues = []
+                    if not phone_correct:
+                        issues.append(f"Phone mismatch - got '{contact_phone}', expected '{expected_phone}'")
+                    if not email_correct:
+                        issues.append(f"Email mismatch - got '{contact_email}', expected '{expected_email}'")
+                    self.log_test("Partner Platform Config API", False, "; ".join(issues))
+        
+        # Test 3: Admin Site Settings API (requires admin auth)
+        print("\n🔹 Test 3: Admin Site Settings API")
+        
+        # First, login as admin
+        admin_creds = {
+            "email": "admin@upshift.works",
+            "password": "Admin@2025!"
+        }
+        
+        response, error = self.make_request("POST", "/auth/login", data=admin_creds)
+        if error:
+            self.log_test("Admin Login for Site Settings", False, error)
+            return False
+        
+        if not response.get("access_token"):
+            self.log_test("Admin Login for Site Settings", False, "No access token returned")
+            return False
+        
+        admin_token = response["access_token"]
+        admin_headers = {"Authorization": f"Bearer {admin_token}"}
+        
+        # Test the admin site settings endpoint
+        response, error = self.make_request("GET", "/admin/site-settings", headers=admin_headers)
+        if error:
+            self.log_test("Admin Site Settings API", False, error)
+        else:
+            # Check if the response has the correct structure for contact settings
+            if "contact" in response:
+                contact = response["contact"]
+                if isinstance(contact, dict):
+                    phone = contact.get("phone", "")
+                    email = contact.get("email", "")
+                    self.log_test("Admin Site Settings API", True, 
+                                f"Contact settings structure correct - Phone: {phone}, Email: {email}")
+                else:
+                    self.log_test("Admin Site Settings API", False, 
+                                "Contact field is not a dictionary")
+            else:
+                self.log_test("Admin Site Settings API", False, 
+                            "Missing 'contact' field in response")
+        
+        return True
+
     def test_help_center_apis(self):
         """Test Help Center API endpoints"""
         print("\n📚 Testing Help Center APIs...")

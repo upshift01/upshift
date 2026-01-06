@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import {
@@ -17,6 +18,7 @@ import {
 const AccountSuspended = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
 
   // If user is not suspended, redirect to dashboard
   if (user && user.status !== 'suspended') {
@@ -157,8 +159,8 @@ const AccountSuspended = () => {
         {/* Footer Note */}
         <p className="text-center text-sm text-gray-500 mt-4">
           Questions about your account? Contact us at{' '}
-          <a href="mailto:support@upshift.works" className="text-blue-600 hover:underline">
-            support@upshift.works
+          <a href={`mailto:${theme.contactEmail || 'support@upshift.works'}`} className="text-blue-600 hover:underline">
+            {theme.contactEmail || 'support@upshift.works'}
           </a>
         </p>
       </div>

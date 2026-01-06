@@ -217,3 +217,16 @@ agent_communication:
     message: "📊 CV LIMITS FEATURE TESTING COMPLETE: Comprehensive testing of CV limits feature shows MIXED RESULTS requiring attention. WHITE-LABEL PRICING PAGE: ✅ Pricing section working with 3 plans displayed correctly (Starter R2,999, Professional R4,999, Enterprise Custom), ✅ API endpoint functional, ❌ CRITICAL ISSUE: CV limits missing from all plans - backend API returns 'No CV limit specified' for all plans instead of expected limits (Starter: 1,000 CVs, Professional: 3,500 CVs, Enterprise: Unlimited CVs). RESELLER DASHBOARD: ✅ CV Usage card displaying correctly with usage stats (0 of 1,000 CVs), progress bar, plan name (Starter), and month (January 2026), ❌ Minor formatting issue with usage display spacing. BACKEND FIX REQUIRED: White-label plans API needs to include CV limit data in response to display limits on pricing page."
   - agent: "testing"
     message: "✅ RESELLER SUBSCRIPTION FLOW TESTING COMPLETE: Comprehensive backend testing of Reseller Trial Expiration and Subscription flow shows ALL FUNCTIONALITY WORKING CORRECTLY as per review request. BACKEND API VALIDATION: ✅ Demo reseller login successful with credentials demo@talenthub.upshift.works/demo123, user authenticated as reseller_admin, ✅ Subscription Plans API (GET /api/reseller/subscription/plans) returns exactly 3 plans with correct details: Starter (R2,499, 1000 CVs/month), Professional (R4,999, 3500 CVs/month), Enterprise (Custom, Unlimited CVs), ✅ All plans include required fields (id, name, price, price_display, monthly_cv_limit, features), ✅ Trial Status API (GET /api/reseller/trial-status) working correctly with all required flags: is_trial (boolean), days_remaining (integer ≥0), trial_expired (boolean), plus additional metadata fields. Backend implementation fully functional and meets all requirements from review request. Frontend UI testing (subscription page navigation, pricing cards display, Select Plan buttons) not performed due to system limitations."
+
+  - task: "Hardcoded Phone Number Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/RefundPolicy.jsx, /app/frontend/src/pages/AccountSuspended.jsx, /app/backend/whitelabel_routes.py, /app/backend/admin_routes.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ PHONE NUMBER FIX COMPLETED. (1) Updated RefundPolicy.jsx to use useTheme() context for dynamic contact info, (2) Updated AccountSuspended.jsx to use useTheme() context for dynamic email, (3) Standardized backend fallback phone numbers in whitelabel_routes.py and admin_routes.py to '+27 (0) 12 345 6789' for consistency. Verified: Main site footer shows correct phone +27 (0) 87 233-8758, Partner site (TalentHub) shows correct phone +27 12 345 6789. Both sites now pull contact info from their respective settings."
+

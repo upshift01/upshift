@@ -1,8 +1,10 @@
 import React from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { RotateCcw, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const RefundPolicy = () => {
+  const { theme } = useTheme();
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">

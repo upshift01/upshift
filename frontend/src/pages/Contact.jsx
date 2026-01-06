@@ -81,7 +81,7 @@ const Contact = () => {
 
   const brandName = config?.brand_name || 'UpShift';
   const contactEmail = config?.contact_email || 'support@upshift.works';
-  const contactPhone = config?.contact_phone || '+27 (0) 12 345 6789';
+  const contactPhone = config?.contact_phone || '+27 87 233-8759';
   const contactAddress = config?.contact_address || '81 Botterklapper Street, The Willows, Pretoria';
   const primaryColor = config?.primary_color || '#1e40af';
 

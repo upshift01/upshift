@@ -2042,7 +2042,7 @@ async def get_site_settings(admin: UserResponse = Depends(get_current_super_admi
         return {
             "contact": {
                 "email": "support@upshift.works",
-                "phone": "+27 (0) 12 345 6789",
+                "phone": "+27 87 233-8759",
                 "address": "81 Botterklapper Street, The Willows, Pretoria",
                 "whatsapp": ""
             },

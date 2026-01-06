@@ -4371,6 +4371,7 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             self.test_yoco_payment_integration,
             self.test_ai_content_generation_apis,
             self.test_invoice_reminder_api,
+            self.test_phone_number_display_fix,  # Add Phone Number Display Fix test
             self.test_references_feature_in_cv_builder,  # Add References Feature testing
             self.test_reseller_branding_file_upload,  # Add Reseller Branding File Upload testing
             self.test_crm_lead_management_apis,  # Add CRM testing

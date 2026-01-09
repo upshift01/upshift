@@ -34,11 +34,17 @@ const PartnerLogin = () => {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
+      // Check if there's a post-auth redirect stored (from free tools)
+      const postAuthRedirect = sessionStorage.getItem('postAuthRedirect');
+      sessionStorage.removeItem('postAuthRedirect');
+      
       const userRole = result.user?.role;
       if (userRole === 'super_admin') {
         navigate('/super-admin', { replace: true });
       } else if (userRole === 'reseller_admin') {
         navigate('/reseller-dashboard', { replace: true });
+      } else if (postAuthRedirect) {
+        navigate(postAuthRedirect, { replace: true });
       } else {
         // Customer - redirect to partner dashboard
         navigate(`${baseUrl}/dashboard`, { replace: true });

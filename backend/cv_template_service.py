@@ -706,5 +706,16 @@ def get_placeholder_documentation():
             "{{REF_1_EMAIL}}": "Email address of reference 1",
             "{{REF_1_PHONE}}": "Phone number of reference 1",
             "note": "Replace 1 with 2 or 3 for additional references"
+        },
+        "certifications": {
+            "{{CERTIFICATIONS_SECTION}}": "Full formatted certifications section",
+            "{{CERTIFICATIONS}}": "Same as {{CERTIFICATIONS_SECTION}}",
+            "{{CERT_1_NAME}}": "Name of certification 1",
+            "{{CERT_1_ORGANIZATION}}": "Issuing organization for certification 1",
+            "{{CERT_1_ISSUE_DATE}}": "Issue date for certification 1",
+            "{{CERT_1_EXPIRY_DATE}}": "Expiry date for certification 1 (if applicable)",
+            "{{CERT_1_CREDENTIAL_ID}}": "Credential ID for certification 1",
+            "{{CERT_1_URL}}": "Verification URL for certification 1",
+            "note": "Replace 1 with 2 or 3 for additional certifications"
         }
     }

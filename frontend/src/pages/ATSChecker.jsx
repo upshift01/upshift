@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { 
@@ -8,7 +8,50 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { pricingTiers } from '../pricingData';
+import { pricingTiers as defaultPricingTiers } from '../pricingData';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
+const ATSChecker = () => {
+  const navigate = useNavigate();
+  const [file, setFile] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({});
+  const [pricingTiers, setPricingTiers] = useState(defaultPricingTiers);
+
+  // Fetch pricing from API
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/pricing`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.tiers && data.tiers.length > 0) {
+            // Merge API pricing with default tier data
+            const updatedTiers = defaultPricingTiers.map(defaultTier => {
+              const apiTier = data.tiers.find(t => t.id === defaultTier.id);
+              if (apiTier) {
+                return {
+                  ...defaultTier,
+                  price: apiTier.price,
+                  name: apiTier.name || defaultTier.name,
+                  description: apiTier.description || defaultTier.description
+                };
+              }
+              return defaultTier;
+            });
+            setPricingTiers(updatedTiers);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching pricing:', error);
+        // Keep default pricing on error
+      }
+    };
+    fetchPricing();
+  }, []);
 
 const ATSChecker = () => {
   const navigate = useNavigate();

@@ -9,17 +9,21 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { pricingTiers as defaultPricingTiers } from '../pricingData';
+import { useAuth } from '../context/AuthContext';
+import FreeAccountGate from '../components/FreeAccountGate';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const ATSChecker = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [file, setFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [expandedSections, setExpandedSections] = useState({});
   const [pricingTiers, setPricingTiers] = useState(defaultPricingTiers);
+  const [showAuthGate, setShowAuthGate] = useState(false);
 
   // Fetch pricing from API
   useEffect(() => {

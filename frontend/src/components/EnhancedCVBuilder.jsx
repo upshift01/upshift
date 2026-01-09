@@ -1739,7 +1739,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
                 </div>
 
                 <div className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setActiveTab('education')}>
+                  <Button variant="outline" onClick={() => setActiveTab('certifications')}>
                     Back
                   </Button>
                   <Button onClick={() => setActiveTab('references')} style={{ backgroundColor: primaryColor }}>

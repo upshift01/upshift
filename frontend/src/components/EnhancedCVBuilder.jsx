@@ -1041,7 +1041,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
 
         {/* Progress Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-flex">
             <TabsTrigger value="template" className="gap-2">
               <Layout className="h-4 w-4" />
               <span className="hidden sm:inline">Template</span>
@@ -1057,6 +1057,10 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
             <TabsTrigger value="education" className="gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Education</span>
+            </TabsTrigger>
+            <TabsTrigger value="certifications" className="gap-2">
+              <Award className="h-4 w-4" />
+              <span className="hidden sm:inline">Certifications</span>
             </TabsTrigger>
             <TabsTrigger value="skills" className="gap-2">
               <CheckCircle className="h-4 w-4" />

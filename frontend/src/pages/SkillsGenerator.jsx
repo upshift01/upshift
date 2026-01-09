@@ -13,14 +13,18 @@ import {
   ChevronUp, Copy, Check
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { useAuth } from '../context/AuthContext';
+import FreeAccountGate from '../components/FreeAccountGate';
 
 const SkillsGenerator = () => {
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [industries, setIndustries] = useState([]);
   const [generatedSkills, setGeneratedSkills] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [showAuthGate, setShowAuthGate] = useState(false);
   
   const [formData, setFormData] = useState({
     industry: '',

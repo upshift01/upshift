@@ -91,6 +91,12 @@ const ATSChecker = () => {
   const analyzeResume = async () => {
     if (!file) return;
     
+    // Check if user is authenticated - if not, show the gate
+    if (!isAuthenticated) {
+      setShowAuthGate(true);
+      return;
+    }
+    
     setIsAnalyzing(true);
     setError(null);
     setNotice(null);

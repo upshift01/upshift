@@ -114,6 +114,17 @@ const PartnerSkillsGenerator = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Free Account Gate Modal */}
+      <FreeAccountGate
+        isOpen={showAuthGate}
+        onClose={() => setShowAuthGate(false)}
+        toolName="the Skills Generator"
+        redirectPath={`${baseUrl}/skills-generator`}
+        isPartner={true}
+        baseUrl={baseUrl}
+        primaryColor={primaryColor}
+      />
+
       {/* Hero Section */}
       <section 
         className="py-12"

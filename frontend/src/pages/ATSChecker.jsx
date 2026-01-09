@@ -251,6 +251,15 @@ const ATSChecker = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Free Account Gate Modal */}
+      <FreeAccountGate
+        isOpen={showAuthGate}
+        onClose={() => setShowAuthGate(false)}
+        toolName="the ATS Checker"
+        redirectPath="/ats-checker"
+        primaryColor="#2563eb"
+      />
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600 text-white py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">

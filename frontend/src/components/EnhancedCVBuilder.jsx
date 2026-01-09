@@ -229,6 +229,7 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
     summary: '',
     experiences: [{ title: '', company: '', duration: '', description: '', achievements: '' }],
     education: [{ degree: '', institution: '', year: '' }],
+    certifications: [{ name: '', organization: '', issueDate: '', expiryDate: '', credentialId: '', url: '' }],
     skills: [''],
     references: [{ name: '', title: '', company: '', email: '', phone: '' }],
   });

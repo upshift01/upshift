@@ -102,6 +102,18 @@ backend:
         comment: "✅ RESELLER SUBSCRIPTION FLOW FULLY TESTED AND WORKING. All 3 test components passed: (1) Demo Reseller Login successful with credentials demo@talenthub.upshift.works/demo123, user has role='reseller_admin', (2) Subscription Plans API (GET /api/reseller/subscription/plans) returns 3 plans correctly: Starter (R2,499, 1000 CVs/month), Professional (R4,999, 3500 CVs/month), Enterprise (Custom, Unlimited CVs), all plans include required fields (price, features, monthly_cv_limit), (3) Trial Status API (GET /api/reseller/trial-status) working correctly with required flags: is_trial (boolean), days_remaining (integer), trial_expired (boolean), plus additional fields like trial_status, trial_start_date, trial_end_date. All backend endpoints functioning as per review request specifications."
 
 frontend:
+  - task: "Free Account Gate Feature"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ATSChecker.jsx, /app/frontend/src/pages/SkillsGenerator.jsx, /app/frontend/src/components/FreeAccountGate.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ FREE ACCOUNT GATE FEATURE FULLY TESTED AND WORKING. Comprehensive testing of both ATS Checker and Skills Generator shows complete functionality: ATS CHECKER TESTS: ✅ Guest user (not logged in) can access /ats-checker page, ✅ File upload functionality working (accepts PDF/DOC/TXT files), ✅ 'Check ATS Score' button triggers Free Account Gate modal correctly, ✅ Modal displays with correct title 'Create Your Free Account', ✅ Modal shows proper messaging about free account creation, ✅ 'Create Free Account' button (blue styling) present and functional, ✅ 'I Already Have an Account' button (outline styling) present, ✅ 'Maybe later' text link present at bottom, ✅ 'Create Free Account' button successfully redirects to /register page. SKILLS GENERATOR TESTS: ✅ Guest user can access /skills-generator page, ✅ Form fields working (Industry dropdown, Job Title input, Experience Level dropdown), ✅ 'Generate Skills' button triggers Free Account Gate modal correctly, ✅ Modal correctly mentions 'Skills Generator' tool in messaging, ✅ Same modal structure and buttons as ATS Checker, ✅ 'Maybe later' close functionality working - modal closes when clicked. All expected modal elements present and functional as per review request specifications."
+
   - task: "CV Limits Feature on White-Label Pricing Page and Reseller Dashboard"
     implemented: true
     working: true
@@ -118,7 +130,7 @@ frontend:
         comment: "✅ CV LIMITS FIX COMPLETE: Updated /app/backend/whitelabel_routes.py to include monthly_cv_limit in default plans config and added cv_limit text to formatted plan responses. API now returns: Starter (1,000 CVs/month), Professional (3,500 CVs/month), Enterprise (Unlimited CVs/month). UI screenshot verified all 3 plans displaying CV limits correctly."
       - working: true
         agent: "testing"
-        comment: "✅ CV LIMITS FEATURE BACKEND TESTING COMPLETE: Comprehensive backend API testing confirms CV limits feature is working correctly. BACKEND API VALIDATION: ✅ GET /api/white-label/plans returns 3 plans (Starter, Professional, Enterprise), ✅ All plans include monthly_cv_limit field with correct values (Starter: 1000, Professional: 3500, Enterprise: -1), ✅ All plans include cv_limit text field with proper formatting ('1,000 CVs per month', '3,500 CVs per month', 'Unlimited CVs per month'), ✅ CV limit text correctly included in features array for each plan, ✅ Response structure valid with success=true and currency=ZAR. MINOR PRICING ISSUE DETECTED: All plans showing R10 price instead of expected values (likely platform pricing configuration issue, not CV limits functionality). CV limits implementation is fully functional and meets all requirements from review request."
+        comment: "✅ CV LIMITS FEATURE BACKEND TESTING COMPLETE: Comprehensive backend API testing confirms CV limits feature is working correctly. BACKEND API VALIDATION: ✅ GET /api/white-label/plans returns 3 plans (Starter, Professional, Enterprise), ✅ All plans include monthly_cv_limit field with correct values (Starter: 1000, Professional: 3500, Enterprise: -1), ✅ All plans include cv_limit text field with proper formatting ('1,000 CVs per month', '3,500 CVs per month', 'Unlimited CVs per month'), ✅ CV limit text correctly included in features array for each plan, ✅ Response structure valid with success=true and currency=ZAR. MINOR PRICING ISSUE DETECTED: All plans showing R10 price instead of expected values (likely platform pricing configuration issue, not CV limits functionality). CV limits implementation is fully functional and meets all requirements from review request specifications."
 
   - task: "LinkedIn Profile URL Field in CV Builder"
     implemented: true

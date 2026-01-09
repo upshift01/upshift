@@ -64,6 +64,12 @@ const PartnerSkillsGenerator = () => {
   ];
 
   const handleGenerateSkills = async () => {
+    // Check if user is authenticated - if not, show the gate
+    if (!isAuthenticated) {
+      setShowAuthGate(true);
+      return;
+    }
+
     if (!formData.industry || !formData.job_title || !formData.experience_level) {
       toast({
         title: 'Missing Information',

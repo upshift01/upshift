@@ -246,7 +246,7 @@ const PartnerPaywall = ({
                       
                       <div className="text-center mb-3">
                         <span className="text-2xl font-bold" style={{ color: primaryColor }}>
-                          R{tier.price.toLocaleString()}
+                          R{(tier.price / 100).toLocaleString()}
                         </span>
                         <span className="text-xs text-gray-500 block">once-off</span>
                       </div>

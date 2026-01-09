@@ -90,6 +90,12 @@ const PartnerATSChecker = () => {
   const analyzeResume = async () => {
     if (!file) return;
 
+    // Check if user is authenticated - if not, show the gate
+    if (!isAuthenticated) {
+      setShowAuthGate(true);
+      return;
+    }
+
     setAnalyzing(true);
     setError('');
 

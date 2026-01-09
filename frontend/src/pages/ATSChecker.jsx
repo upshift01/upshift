@@ -657,7 +657,7 @@ const ATSChecker = () => {
                           <h4 className="font-semibold text-gray-900">{tier.name}</h4>
                         </div>
                         <p className="text-2xl font-bold text-gray-900 mb-1">
-                          R{tier.price.toLocaleString()} 
+                          R{(tier.price / 100).toLocaleString()} 
                           <span className="text-sm font-normal text-gray-500">/once-off</span>
                         </p>
                         <p className="text-xs text-gray-500 mb-3">{tier.description}</p>

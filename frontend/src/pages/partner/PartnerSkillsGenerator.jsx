@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePartner } from '../../context/PartnerContext';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -10,16 +11,19 @@ import { Checkbox } from '../../components/ui/checkbox';
 import { Badge } from '../../components/ui/badge';
 import { Sparkles, Loader2, Target, Copy, Check, Zap, Gift } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
+import FreeAccountGate from '../../components/FreeAccountGate';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PartnerSkillsGenerator = () => {
-  const { brandName, primaryColor, secondaryColor } = usePartner();
+  const { brandName, primaryColor, secondaryColor, baseUrl } = usePartner();
+  const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [industries, setIndustries] = useState([]);
   const [generatedSkills, setGeneratedSkills] = useState('');
+  const [showAuthGate, setShowAuthGate] = useState(false);
   
   const [formData, setFormData] = useState({
     industry: '',

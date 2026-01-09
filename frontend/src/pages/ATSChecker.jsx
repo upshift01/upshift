@@ -53,14 +53,6 @@ const ATSChecker = () => {
     fetchPricing();
   }, []);
 
-const ATSChecker = () => {
-  const navigate = useNavigate();
-  const [file, setFile] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [expandedSections, setExpandedSections] = useState({});
-
   const getTierIcon = (tierId) => {
     switch (tierId) {
       case 'tier-1': return Zap;

@@ -200,7 +200,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "CV Limits Feature on White-Label Pricing Page and Reseller Dashboard"
     - "LinkedIn Tools Premium Tier Restriction and Import Feature"
     - "Delete Reseller Feature"
   stuck_tasks:

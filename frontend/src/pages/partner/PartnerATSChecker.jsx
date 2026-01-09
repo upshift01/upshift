@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { usePartner } from '../../context/PartnerContext';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -17,6 +18,7 @@ import {
   RefreshCw,
   Info
 } from 'lucide-react';
+import FreeAccountGate from '../../components/FreeAccountGate';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -27,12 +29,14 @@ const PartnerATSChecker = () => {
     secondaryColor, 
     baseUrl
   } = usePartner();
+  const { isAuthenticated } = useAuth();
 
   const [file, setFile] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [showAuthGate, setShowAuthGate] = useState(false);
 
   const handleDrag = useCallback((e) => {
     e.preventDefault();

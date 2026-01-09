@@ -49,7 +49,7 @@ const FreeAccountGate = ({
               Create Your Free Account
             </h2>
             <p className="text-gray-600">
-              Sign up to use {toolName} - it's completely free!
+              Sign up to use {toolName} - it&apos;s completely free!
             </p>
           </div>
 

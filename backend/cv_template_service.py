@@ -555,6 +555,48 @@ class CVTemplateService:
         replacements["{{REFERENCES_SECTION}}"] = "\n\n".join(ref_section)
         replacements["{{REFERENCES}}"] = replacements["{{REFERENCES_SECTION}}"]
         
+        # Certifications entries
+        certifications = cv_data.get("certifications", [])
+        for i, cert in enumerate(certifications[:3]):  # Support up to 3 certifications
+            idx = i + 1
+            replacements[f"{{{{CERT_{idx}_NAME}}}}"] = cert.get("name", "")
+            replacements[f"{{{{CERT_{idx}_ORGANIZATION}}}}"] = cert.get("organization", "")
+            replacements[f"{{{{CERT_{idx}_ISSUE_DATE}}}}"] = cert.get("issueDate", "")
+            replacements[f"{{{{CERT_{idx}_EXPIRY_DATE}}}}"] = cert.get("expiryDate", "")
+            replacements[f"{{{{CERT_{idx}_CREDENTIAL_ID}}}}"] = cert.get("credentialId", "")
+            replacements[f"{{{{CERT_{idx}_URL}}}}"] = cert.get("url", "")
+        
+        # Fill remaining certification slots
+        for i in range(len(certifications) + 1, 4):
+            replacements[f"{{{{CERT_{i}_NAME}}}}"] = ""
+            replacements[f"{{{{CERT_{i}_ORGANIZATION}}}}"] = ""
+            replacements[f"{{{{CERT_{i}_ISSUE_DATE}}}}"] = ""
+            replacements[f"{{{{CERT_{i}_EXPIRY_DATE}}}}"] = ""
+            replacements[f"{{{{CERT_{i}_CREDENTIAL_ID}}}}"] = ""
+            replacements[f"{{{{CERT_{i}_URL}}}}"] = ""
+        
+        # Certifications section (formatted block)
+        cert_section = []
+        for cert in certifications:
+            if cert.get("name"):
+                cert_text = f"{cert.get('name', '')}"
+                if cert.get("organization"):
+                    cert_text += f" - {cert.get('organization', '')}"
+                date_parts = []
+                if cert.get("issueDate"):
+                    date_parts.append(f"Issued: {cert.get('issueDate', '')}")
+                if cert.get("expiryDate"):
+                    date_parts.append(f"Expires: {cert.get('expiryDate', '')}")
+                if date_parts:
+                    cert_text += f"\n{' | '.join(date_parts)}"
+                if cert.get("credentialId"):
+                    cert_text += f"\nCredential ID: {cert.get('credentialId', '')}"
+                if cert.get("url"):
+                    cert_text += f"\nVerify: {cert.get('url', '')}"
+                cert_section.append(cert_text)
+        replacements["{{CERTIFICATIONS_SECTION}}"] = "\n\n".join(cert_section)
+        replacements["{{CERTIFICATIONS}}"] = replacements["{{CERTIFICATIONS_SECTION}}"]
+        
         return replacements
     
     def _replace_in_paragraph(self, paragraph, replacements: Dict[str, str]):

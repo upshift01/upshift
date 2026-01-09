@@ -118,6 +118,32 @@ PLACEHOLDER_MAP = {
     "{{REF_3_COMPANY}}": "references[2].company",
     "{{REF_3_EMAIL}}": "references[2].email",
     "{{REF_3_PHONE}}": "references[2].phone",
+    
+    # Certifications section marker
+    "{{CERTIFICATIONS_SECTION}}": "certifications",
+    "{{CERTIFICATIONS}}": "certifications",
+    
+    # Individual certification placeholders
+    "{{CERT_1_NAME}}": "certifications[0].name",
+    "{{CERT_1_ORGANIZATION}}": "certifications[0].organization",
+    "{{CERT_1_ISSUE_DATE}}": "certifications[0].issueDate",
+    "{{CERT_1_EXPIRY_DATE}}": "certifications[0].expiryDate",
+    "{{CERT_1_CREDENTIAL_ID}}": "certifications[0].credentialId",
+    "{{CERT_1_URL}}": "certifications[0].url",
+    
+    "{{CERT_2_NAME}}": "certifications[1].name",
+    "{{CERT_2_ORGANIZATION}}": "certifications[1].organization",
+    "{{CERT_2_ISSUE_DATE}}": "certifications[1].issueDate",
+    "{{CERT_2_EXPIRY_DATE}}": "certifications[1].expiryDate",
+    "{{CERT_2_CREDENTIAL_ID}}": "certifications[1].credentialId",
+    "{{CERT_2_URL}}": "certifications[1].url",
+    
+    "{{CERT_3_NAME}}": "certifications[2].name",
+    "{{CERT_3_ORGANIZATION}}": "certifications[2].organization",
+    "{{CERT_3_ISSUE_DATE}}": "certifications[2].issueDate",
+    "{{CERT_3_EXPIRY_DATE}}": "certifications[2].expiryDate",
+    "{{CERT_3_CREDENTIAL_ID}}": "certifications[2].credentialId",
+    "{{CERT_3_URL}}": "certifications[2].url",
 }
 
 

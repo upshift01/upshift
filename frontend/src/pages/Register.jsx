@@ -49,7 +49,15 @@ const Register = () => {
     );
 
     if (result.success) {
-      navigate('/pricing');
+      // Check if there's a post-auth redirect stored (from free tools)
+      const postAuthRedirect = sessionStorage.getItem('postAuthRedirect');
+      sessionStorage.removeItem('postAuthRedirect');
+      
+      if (postAuthRedirect) {
+        navigate(postAuthRedirect, { replace: true });
+      } else {
+        navigate('/pricing');
+      }
     } else {
       setError(result.error);
     }

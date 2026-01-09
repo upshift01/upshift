@@ -1478,6 +1478,135 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
                   <Button variant="outline" onClick={() => setActiveTab('experience')}>
                     Back
                   </Button>
+                  <Button onClick={() => setActiveTab('certifications')} style={{ backgroundColor: primaryColor }}>
+                    Continue <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Certifications Tab */}
+          <TabsContent value="certifications" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Certifications & Licenses</CardTitle>
+                <CardDescription>Add your professional certifications, licenses, and credentials</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {formData.certifications.map((cert, index) => (
+                  <div key={index} className="p-4 border rounded-lg space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium">Certification {index + 1}</h4>
+                      {formData.certifications.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newCerts = formData.certifications.filter((_, i) => i !== index);
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Certification Name *</Label>
+                        <Input
+                          value={cert.name}
+                          onChange={(e) => {
+                            const newCerts = [...formData.certifications];
+                            newCerts[index].name = e.target.value;
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                          placeholder="e.g., AWS Solutions Architect"
+                        />
+                      </div>
+                      <div>
+                        <Label>Issuing Organization *</Label>
+                        <Input
+                          value={cert.organization}
+                          onChange={(e) => {
+                            const newCerts = [...formData.certifications];
+                            newCerts[index].organization = e.target.value;
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                          placeholder="e.g., Amazon Web Services"
+                        />
+                      </div>
+                      <div>
+                        <Label>Issue Date</Label>
+                        <Input
+                          type="month"
+                          value={cert.issueDate}
+                          onChange={(e) => {
+                            const newCerts = [...formData.certifications];
+                            newCerts[index].issueDate = e.target.value;
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label>Expiry Date (if applicable)</Label>
+                        <Input
+                          type="month"
+                          value={cert.expiryDate}
+                          onChange={(e) => {
+                            const newCerts = [...formData.certifications];
+                            newCerts[index].expiryDate = e.target.value;
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label>Credential ID</Label>
+                        <Input
+                          value={cert.credentialId}
+                          onChange={(e) => {
+                            const newCerts = [...formData.certifications];
+                            newCerts[index].credentialId = e.target.value;
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                          placeholder="e.g., ABC123XYZ"
+                        />
+                      </div>
+                      <div>
+                        <Label>Credential URL</Label>
+                        <Input
+                          value={cert.url}
+                          onChange={(e) => {
+                            const newCerts = [...formData.certifications];
+                            newCerts[index].url = e.target.value;
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFormData({
+                      ...formData,
+                      certifications: [...formData.certifications, { name: '', organization: '', issueDate: '', expiryDate: '', credentialId: '', url: '' }]
+                    });
+                  }}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Another Certification
+                </Button>
+
+                <div className="flex justify-between pt-4">
+                  <Button variant="outline" onClick={() => setActiveTab('education')}>
+                    Back
+                  </Button>
                   <Button onClick={() => setActiveTab('skills')} style={{ backgroundColor: primaryColor }}>
                     Continue <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>

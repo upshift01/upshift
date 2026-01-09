@@ -177,6 +177,15 @@ const SkillsGenerator = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* Free Account Gate Modal */}
+      <FreeAccountGate
+        isOpen={showAuthGate}
+        onClose={() => setShowAuthGate(false)}
+        toolName="the Skills Generator"
+        redirectPath="/skills-generator"
+        primaryColor="#2563eb"
+      />
+
       {/* Hero Section */}
       <section className="py-12 sm:py-16 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-6xl mx-auto text-center">

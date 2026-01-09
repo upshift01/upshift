@@ -280,7 +280,12 @@ const EnhancedCVBuilder = ({ isPartner = false, baseUrl = '', primaryColor = '#1
       });
       if (response.ok) {
         const doc = await response.json();
-        setFormData(doc.cv_data);
+        // Ensure certifications array exists for older documents
+        const cvData = {
+          ...doc.cv_data,
+          certifications: doc.cv_data.certifications || [{ name: '', organization: '', issueDate: '', expiryDate: '', credentialId: '', url: '' }]
+        };
+        setFormData(cvData);
         // Check both custom and built-in templates
         const allTemplates = [...customTemplates, ...BUILTIN_TEMPLATES];
         setSelectedTemplate(allTemplates.find(t => t.id === doc.template_id) || BUILTIN_TEMPLATES[0]);

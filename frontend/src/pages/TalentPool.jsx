@@ -30,6 +30,8 @@ const TalentPool = () => {
   const [plans, setPlans] = useState([]);
   const [industries, setIndustries] = useState([]);
   const [experienceLevels, setExperienceLevels] = useState([]);
+  const [verificationFailed, setVerificationFailed] = useState(false);
+  const [pendingSubId, setPendingSubId] = useState(null);
   
   // Filters
   const [filters, setFilters] = useState({

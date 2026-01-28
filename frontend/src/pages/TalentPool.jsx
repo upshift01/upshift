@@ -160,6 +160,7 @@ const TalentPool = () => {
     
     if (payment === 'success' && subscriptionId && token) {
       setVerifyingPayment(true);
+      setPendingSubId(subscriptionId);
       try {
         const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
           method: 'POST',
@@ -172,6 +173,8 @@ const TalentPool = () => {
             setPaymentSuccess(true);
             setHasAccess(true);
             setSubscription(data.subscription);
+            setVerificationFailed(false);
+            setPendingSubId(null);
             // Clear any pending subscription ID
             sessionStorage.removeItem('pendingSubscriptionId');
             toast({
@@ -181,9 +184,10 @@ const TalentPool = () => {
             // Fetch initial data now that we have access
             fetchInitialData();
           } else {
+            setVerificationFailed(true);
             toast({
               title: 'Verification Pending',
-              description: 'Your payment is being processed. Please refresh in a moment.',
+              description: 'Your payment is being processed. Click "Retry" or refresh the page.',
               variant: 'default'
             });
             // Keep subscription ID for retry
@@ -191,6 +195,7 @@ const TalentPool = () => {
           }
         } else if (response.status === 401) {
           // Session expired - store for retry after re-login
+          setVerificationFailed(true);
           toast({
             title: 'Session Expired',
             description: 'Please log in again to complete your subscription activation.',
@@ -201,17 +206,19 @@ const TalentPool = () => {
           navigate('/login');
           return;
         } else {
+          setVerificationFailed(true);
           toast({
             title: 'Verification Issue',
-            description: 'Please contact support if your payment was completed.',
+            description: 'Click "Retry" to try again, or contact support if the issue persists.',
             variant: 'destructive'
           });
         }
       } catch (error) {
         console.error('Error verifying payment:', error);
+        setVerificationFailed(true);
         toast({
-          title: 'Error',
-          description: 'Failed to verify payment. Please contact support.',
+          title: 'Connection Error',
+          description: 'Click "Retry" to try again.',
           variant: 'destructive'
         });
       } finally {

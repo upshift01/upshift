@@ -563,12 +563,12 @@ def get_talent_pool_routes(db, get_current_user):
     async def admin_get_all_candidates(current_user = Depends(get_current_user)):
         """Admin: Get all talent pool candidates (including hidden and pending)"""
         try:
-            if current_user.role not in ["super_admin", "admin", "reseller"]:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
                 raise HTTPException(status_code=403, detail="Admin access required")
             
             query = {}
             # Resellers can only see their own candidates
-            if current_user.role == "reseller":
+            if current_user.role == "reseller_admin":
                 query["reseller_id"] = current_user.id
             
             candidates = await db.talent_pool_profiles.find(
@@ -588,7 +588,7 @@ def get_talent_pool_routes(db, get_current_user):
     async def admin_add_candidate(data: dict, current_user = Depends(get_current_user)):
         """Admin: Manually add a candidate to the talent pool"""
         try:
-            if current_user.role not in ["super_admin", "admin", "reseller"]:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
                 raise HTTPException(status_code=403, detail="Admin access required")
             
             # Create the profile
@@ -607,7 +607,7 @@ def get_talent_pool_routes(db, get_current_user):
                 "status": data.get("status", "approved"),
                 "contact_email": data.get("email", ""),
                 "contact_phone": data.get("phone", ""),
-                "reseller_id": current_user.id if current_user.role == "reseller" else data.get("reseller_id"),
+                "reseller_id": current_user.id if current_user.role == "reseller_admin" else data.get("reseller_id"),
                 "added_by_admin": True,
                 "added_by_user_id": current_user.id,
                 "created_at": datetime.now(timezone.utc).isoformat(),
@@ -632,11 +632,11 @@ def get_talent_pool_routes(db, get_current_user):
     ):
         """Admin: Approve or reject a candidate"""
         try:
-            if current_user.role not in ["super_admin", "admin", "reseller"]:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
                 raise HTTPException(status_code=403, detail="Admin access required")
             
             query = {"id": candidate_id}
-            if current_user.role == "reseller":
+            if current_user.role == "reseller_admin":
                 query["reseller_id"] = current_user.id
             
             candidate = await db.talent_pool_profiles.find_one(query)
@@ -670,11 +670,11 @@ def get_talent_pool_routes(db, get_current_user):
     async def admin_delete_candidate(candidate_id: str, current_user = Depends(get_current_user)):
         """Admin: Remove a candidate from the talent pool"""
         try:
-            if current_user.role not in ["super_admin", "admin", "reseller"]:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
                 raise HTTPException(status_code=403, detail="Admin access required")
             
             query = {"id": candidate_id}
-            if current_user.role == "reseller":
+            if current_user.role == "reseller_admin":
                 query["reseller_id"] = current_user.id
             
             result = await db.talent_pool_profiles.delete_one(query)
@@ -697,11 +697,11 @@ def get_talent_pool_routes(db, get_current_user):
     async def admin_get_subscriptions(current_user = Depends(get_current_user)):
         """Admin: Get all recruiter subscriptions"""
         try:
-            if current_user.role not in ["super_admin", "admin", "reseller"]:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
                 raise HTTPException(status_code=403, detail="Admin access required")
             
             query = {}
-            if current_user.role == "reseller":
+            if current_user.role == "reseller_admin":
                 query["reseller_id"] = current_user.id
             
             subscriptions = await db.recruiter_subscriptions.find(
@@ -721,11 +721,11 @@ def get_talent_pool_routes(db, get_current_user):
     async def admin_get_pricing(current_user = Depends(get_current_user)):
         """Admin: Get talent pool subscription pricing"""
         try:
-            if current_user.role not in ["super_admin", "admin", "reseller"]:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
                 raise HTTPException(status_code=403, detail="Admin access required")
             
             key = "talent_pool_pricing"
-            if current_user.role == "reseller":
+            if current_user.role == "reseller_admin":
                 key = f"talent_pool_pricing_{current_user.id}"
             
             settings = await db.platform_settings.find_one({"key": key}, {"_id": 0})
@@ -753,7 +753,7 @@ def get_talent_pool_routes(db, get_current_user):
     async def admin_update_pricing(data: dict, current_user = Depends(get_current_user)):
         """Admin: Update talent pool subscription pricing"""
         try:
-            if current_user.role not in ["super_admin", "admin", "reseller"]:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
                 raise HTTPException(status_code=403, detail="Admin access required")
             
             pricing = data.get("pricing", {})
@@ -761,7 +761,7 @@ def get_talent_pool_routes(db, get_current_user):
                 raise HTTPException(status_code=400, detail="Pricing data required")
             
             key = "talent_pool_pricing"
-            if current_user.role == "reseller":
+            if current_user.role == "reseller_admin":
                 key = f"talent_pool_pricing_{current_user.id}"
             
             await db.platform_settings.update_one(

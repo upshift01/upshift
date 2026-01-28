@@ -258,14 +258,20 @@ const TalentPool = () => {
 
       // Check subscription if authenticated
       if (isAuthenticated && token) {
+        console.log('Checking subscription for authenticated user...');
         const subRes = await fetch(`${API_URL}/api/talent-pool/recruiter/subscription`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log('Subscription response status:', subRes.status);
         if (subRes.ok) {
           const data = await subRes.json();
+          console.log('Subscription data:', data);
+          console.log('has_subscription:', data.has_subscription);
           setHasAccess(data.has_subscription);
           setSubscription(data.subscription);
         }
+      } else {
+        console.log('Not authenticated, skipping subscription check. isAuthenticated:', isAuthenticated, 'token:', !!token);
       }
     } catch (error) {
       console.error('Error fetching initial data:', error);

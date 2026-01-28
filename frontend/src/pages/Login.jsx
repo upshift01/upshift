@@ -44,6 +44,13 @@ const Login = () => {
         navigate('/super-admin', { replace: true });
       } else if (userRole === 'reseller_admin') {
         navigate('/reseller-dashboard', { replace: true });
+      } else if (userRole === 'recruiter') {
+        // Recruiters go to their dashboard or talent pool
+        if (postAuthRedirect) {
+          navigate(postAuthRedirect, { replace: true });
+        } else {
+          navigate('/recruiter', { replace: true });
+        }
       } else if (postAuthRedirect) {
         navigate(postAuthRedirect, { replace: true });
       } else {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import {
   Users, Eye, EyeOff, Loader2, Check, X, Save, Trash2,
   Mail, Clock, CheckCircle, XCircle, MessageSquare, Briefcase,
-  Plus, AlertCircle
+  Plus, AlertCircle, Camera, Upload, User
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -21,15 +21,18 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 const MyTalentPoolProfile = () => {
   const { token, user } = useAuth();
   const { toast } = useToast();
+  const fileInputRef = useRef(null);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPicture, setUploadingPicture] = useState(false);
   const [optedIn, setOptedIn] = useState(false);
   const [profile, setProfile] = useState(null);
   const [contactRequests, setContactRequests] = useState([]);
   const [industries, setIndustries] = useState([]);
   const [experienceLevels, setExperienceLevels] = useState([]);
   const [userCVs, setUserCVs] = useState([]);
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -40,6 +43,7 @@ const MyTalentPoolProfile = () => {
     skills: [],
     summary: '',
     cv_document_id: '',
+    profile_picture_url: '',
     is_visible: true
   });
   

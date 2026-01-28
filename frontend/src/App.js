@@ -179,6 +179,7 @@ const AppContent = () => {
         <Route path="/dashboard/interview-prep" element={<PrivateRoute><CustomerLayout><InterviewPrep /></CustomerLayout></PrivateRoute>} />
         <Route path="/dashboard/strategy-call" element={<PrivateRoute><CustomerLayout><CustomerStrategyCall /></CustomerLayout></PrivateRoute>} />
         <Route path="/dashboard/settings" element={<PrivateRoute><CustomerLayout><CustomerSettings /></CustomerLayout></PrivateRoute>} />
+        <Route path="/dashboard/talent-pool" element={<PrivateRoute><CustomerLayout><MyTalentPoolProfile /></CustomerLayout></PrivateRoute>} />
 
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<AdminLayout />}>

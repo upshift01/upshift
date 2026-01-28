@@ -161,6 +161,7 @@ def get_talent_pool_routes(db, get_current_user):
                 "summary": data.summary,
                 "cv_document_id": data.cv_document_id,
                 "cv_url": cv_url,
+                "profile_picture_url": data.profile_picture,  # Can be set during opt-in or via upload
                 "is_visible": True,
                 "contact_email": current_user.email,
                 "contact_phone": current_user.phone or "",

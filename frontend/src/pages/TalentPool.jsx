@@ -112,11 +112,11 @@ const TalentPool = () => {
   };
 
   useEffect(() => {
-    // Only fetch initial data if not verifying payment
-    if (!verifyingPayment) {
+    // Only fetch initial data if not verifying payment and auth is loaded
+    if (!verifyingPayment && !authLoading) {
       fetchInitialData();
     }
-  }, [verifyingPayment]);
+  }, [verifyingPayment, authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (hasAccess) {

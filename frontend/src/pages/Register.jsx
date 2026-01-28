@@ -47,7 +47,9 @@ const Register = () => {
       formData.password,
       formData.fullName,
       formData.phone,
-      theme.resellerId || null
+      theme.resellerId || null,
+      formData.accountType,
+      formData.companyName
     );
 
     if (result.success) {
@@ -57,6 +59,9 @@ const Register = () => {
       
       if (postAuthRedirect) {
         navigate(postAuthRedirect, { replace: true });
+      } else if (formData.accountType === 'recruiter') {
+        // Recruiters go to talent pool to subscribe
+        navigate('/talent-pool');
       } else {
         navigate('/pricing');
       }

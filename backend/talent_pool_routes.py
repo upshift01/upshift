@@ -487,6 +487,9 @@ def get_talent_pool_routes(db, get_current_user):
     ):
         """Candidate approves or rejects contact request"""
         try:
+            from email_service import email_service
+            import os
+            
             user_id = current_user.id
             
             request = await db.contact_requests.find_one({
@@ -511,7 +514,134 @@ def get_talent_pool_routes(db, get_current_user):
                 }}
             )
             
-            # TODO: Send notification email to recruiter
+            # Send notification email to recruiter
+            if email_service.is_configured and request.get("recruiter_email"):
+                try:
+                    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+                    recruiter_name = request.get("recruiter_name", "Recruiter")
+                    candidate_name = request.get("candidate_name", "Candidate")
+                    
+                    if status == "approved":
+                        # Get candidate's contact details
+                        profile = await db.talent_pool_profiles.find_one(
+                            {"id": request["profile_id"]},
+                            {"_id": 0, "contact_email": 1, "contact_phone": 1}
+                        )
+                        
+                        contact_email = profile.get("contact_email", "Not provided") if profile else "Not provided"
+                        contact_phone = profile.get("contact_phone", "Not provided") if profile else "Not provided"
+                        
+                        html_body = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                .header {{ background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                                .content {{ background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }}
+                                .contact-box {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #059669; }}
+                                .contact-item {{ padding: 10px 0; border-bottom: 1px solid #e5e7eb; }}
+                                .contact-item:last-child {{ border-bottom: none; }}
+                                .label {{ color: #6b7280; font-size: 14px; }}
+                                .value {{ font-size: 18px; font-weight: bold; color: #1f2937; }}
+                                .message-box {{ background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #059669; }}
+                                .btn {{ display: inline-block; background: #059669; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="header">
+                                    <h1>Contact Request Approved!</h1>
+                                </div>
+                                <div class="content">
+                                    <p>Hi {recruiter_name},</p>
+                                    
+                                    <p>Great news! <strong>{candidate_name}</strong> has approved your contact request.</p>
+                                    
+                                    <h3>Candidate Contact Details</h3>
+                                    <div class="contact-box">
+                                        <div class="contact-item">
+                                            <div class="label">Email</div>
+                                            <div class="value"><a href="mailto:{contact_email}">{contact_email}</a></div>
+                                        </div>
+                                        <div class="contact-item">
+                                            <div class="label">Phone</div>
+                                            <div class="value">{contact_phone}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    {f'<h3>Message from {candidate_name}</h3><div class="message-box"><p>{data.message}</p></div>' if data.message else ''}
+                                    
+                                    <p>You can now reach out directly to discuss opportunities. Good luck!</p>
+                                    
+                                    <p style="text-align: center;">
+                                        <a href="{frontend_url}/talent-pool" class="btn">Browse More Candidates</a>
+                                    </p>
+                                </div>
+                                <div class="footer">
+                                    <p>&copy; {datetime.now().year} UpShift. All rights reserved.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                        
+                        subject = f"Contact Approved: {candidate_name} - UpShift Talent Pool"
+                    else:
+                        # Rejected
+                        html_body = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                .header {{ background: linear-gradient(135deg, #6b7280, #9ca3af); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                                .content {{ background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }}
+                                .message-box {{ background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6b7280; }}
+                                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="header">
+                                    <h1>Contact Request Update</h1>
+                                </div>
+                                <div class="content">
+                                    <p>Hi {recruiter_name},</p>
+                                    
+                                    <p>Unfortunately, <strong>{candidate_name}</strong> has declined your contact request at this time.</p>
+                                    
+                                    {f'<h3>Their Response</h3><div class="message-box"><p>{data.message}</p></div>' if data.message else ''}
+                                    
+                                    <p>Don't be discouraged! There are many other talented candidates in the pool. Keep exploring to find the perfect match for your opportunity.</p>
+                                    
+                                    <p style="text-align: center;">
+                                        <a href="{frontend_url}/talent-pool" class="btn">Browse More Candidates</a>
+                                    </p>
+                                </div>
+                                <div class="footer">
+                                    <p>&copy; {datetime.now().year} UpShift. All rights reserved.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                        
+                        subject = f"Contact Request Update: {candidate_name} - UpShift Talent Pool"
+                    
+                    await email_service.send_email(
+                        to_email=request["recruiter_email"],
+                        subject=subject,
+                        html_body=html_body,
+                        raise_exceptions=False
+                    )
+                    logger.info(f"Contact response notification sent to {request['recruiter_email']}")
+                except Exception as email_error:
+                    logger.error(f"Failed to send contact response email: {email_error}")
             
             return {"success": True, "message": f"Contact request {status}"}
             

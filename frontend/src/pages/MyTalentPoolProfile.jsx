@@ -294,6 +294,88 @@ const MyTalentPoolProfile = () => {
     }));
   };
 
+  const handleProfilePictureChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid File Type',
+        description: 'Please upload a JPEG, PNG, WebP, or GIF image.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File Too Large',
+        description: 'Please upload an image smaller than 5MB.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfilePicturePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload the file
+    setUploadingPicture(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const response = await fetch(`${API_URL}/api/talent-pool/upload-profile-picture`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formDataUpload
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          profile_picture_url: data.profile_picture_url
+        }));
+        toast({
+          title: 'Profile Picture Uploaded',
+          description: 'Your profile picture has been updated successfully.'
+        });
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Upload Failed',
+          description: error.detail || 'Failed to upload profile picture.',
+          variant: 'destructive'
+        });
+        setProfilePicturePreview(null);
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      toast({
+        title: 'Upload Error',
+        description: 'Failed to upload profile picture. Please try again.',
+        variant: 'destructive'
+      });
+      setProfilePicturePreview(null);
+    } finally {
+      setUploadingPicture(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

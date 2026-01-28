@@ -393,10 +393,10 @@ def get_talent_pool_routes(db, get_current_user):
             raise HTTPException(status_code=500, detail=str(e))
     
     @talent_pool_router.get("/contact-requests")
-    async def get_contact_requests(current_user: dict = Depends(get_current_user)):
+    async def get_contact_requests(current_user = Depends(get_current_user)):
         """Get contact requests for current user (as candidate)"""
         try:
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             requests = await db.contact_requests.find(
                 {"candidate_user_id": user_id},

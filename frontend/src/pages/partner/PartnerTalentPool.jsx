@@ -9,7 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import {
   Search, Users, Briefcase, MapPin, Award, Filter, ChevronRight,
-  Loader2, Lock, Crown, FileText, Star, CheckCircle, Eye
+  Loader2, Lock, Crown, FileText, Star, CheckCircle, Eye, UserPlus
 } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 

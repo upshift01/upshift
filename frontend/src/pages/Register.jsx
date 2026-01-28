@@ -63,7 +63,8 @@ const Register = () => {
         // Recruiters go to talent pool to subscribe
         navigate('/talent-pool');
       } else {
-        navigate('/pricing');
+        // Job seekers go to their dashboard
+        navigate('/dashboard');
       }
     } else {
       setError(result.error);

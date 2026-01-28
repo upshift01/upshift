@@ -91,6 +91,7 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 3. **ATS Checker Pricing** - Fixed to fetch from database dynamically
 4. **Free Tools User Gate** - Requires login for ATS Checker/Skills Generator
 5. **Admin Login** - Fixed password field inconsistency
+6. **Talent Pool Pricing Bug** - Fixed the `/api/talent-pool/recruiter/plans` endpoint to fetch dynamic pricing from database instead of returning hardcoded values. Admin pricing updates now reflect on public page and Yoco checkouts.
 
 ## Upcoming Tasks (P1)
 - [ ] Odoo Integration

@@ -88,6 +88,7 @@ const MyTalentPoolProfile = () => {
             experience_level: data.profile.experience_level || '',
             location: data.profile.location || '',
             skills: data.profile.skills || [],
+            bio: data.profile.bio || '',
             summary: data.profile.summary || '',
             cv_document_id: data.profile.cv_document_id || '',
             profile_picture_url: data.profile.profile_picture_url || '',

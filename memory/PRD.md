@@ -94,6 +94,10 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 1. **Candidate Profile Picture Upload** - Added ability for candidates to upload profile pictures (stored locally at `/app/public/uploads/profile_pictures`)
 2. **Enhanced Candidate Cards** - Recruiter browse view now displays profile pictures with gradient avatar fallback
 3. **CV Download Button** - CV download button only shows when candidate has attached a CV
+4. **Job Seeker Registration Redirect** - Fixed to redirect to dashboard instead of pricing page
+5. **CV Selection Fix** - Fixed talent pool CV attachment to use correct `user_documents` collection
+6. **AI Improve Skills** - Added AI-powered skill generation button in Talent Pool profile form
+7. **Bio Field with AI** - Added new Bio text area with AI generate/improve functionality
 
 ## Recent Fixes (Dec 2025)
 1. **Hardcoded Phone Number** - Fixed to use dynamic settings

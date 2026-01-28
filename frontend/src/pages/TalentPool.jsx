@@ -86,14 +86,18 @@ const TalentPool = () => {
   }, [isAuthenticated, token, authLoading, verifyingPayment]);
 
   const verifyPendingSubscription = async (subscriptionId) => {
+    console.log('Starting verification for subscription:', subscriptionId);
     try {
       const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Verification response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Verification result:', data);
         if (data.success) {
           setPaymentSuccess(true);
           setHasAccess(true);
@@ -103,14 +107,34 @@ const TalentPool = () => {
             title: 'Subscription Activated!',
             description: 'You now have access to the talent pool.'
           });
+          // Clear URL params and fetch data
+          navigate('/talent-pool', { replace: true });
           fetchInitialData();
+        } else {
+          toast({
+            title: 'Verification Pending',
+            description: 'Payment is being processed. Please refresh.',
+            variant: 'default'
+          });
         }
+      } else {
+        console.error('Verification failed with status:', response.status);
+        toast({
+          title: 'Verification Issue',
+          description: 'Please contact support.',
+          variant: 'destructive'
+        });
+        sessionStorage.removeItem('pendingSubscriptionId');
       }
     } catch (error) {
       console.error('Error verifying pending subscription:', error);
+      toast({
+        title: 'Connection Error',
+        description: 'Please refresh the page.',
+        variant: 'destructive'
+      });
     } finally {
       setVerifyingPayment(false);
-      sessionStorage.removeItem('pendingSubscriptionId');
     }
   };
 

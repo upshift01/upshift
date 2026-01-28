@@ -49,6 +49,7 @@ import AdminContent from "./pages/admin/AdminContent";
 import AdminCRM from "./pages/admin/AdminCRM";
 import AdminCalendar from "./pages/admin/AdminCalendar";
 import AdminCVTemplates from "./pages/admin/AdminCVTemplates";
+import AdminTalentPool from "./pages/admin/AdminTalentPool";
 
 // Reseller Pages
 import ResellerLayout from "./pages/reseller/ResellerLayout";
@@ -195,6 +196,7 @@ const AppContent = () => {
           <Route path="content" element={<AdminContent />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="talent-pool" element={<AdminTalentPool />} />
         </Route>
 
         {/* Reseller Dashboard Routes */}

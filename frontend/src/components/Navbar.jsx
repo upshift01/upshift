@@ -57,6 +57,55 @@ const Navbar = () => {
               </Link>
             ))}
             
+            {/* Talent Pool Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setTalentDropdownOpen(true)}
+              onMouseLeave={() => setTalentDropdownOpen(false)}
+            >
+              <button
+                className={`text-sm font-medium transition-colors hover:text-blue-600 whitespace-nowrap flex items-center gap-1 ${
+                  location.pathname.includes('talent-pool')
+                    ? 'text-blue-600'
+                    : 'text-gray-700'
+                }`}
+              >
+                Talent Pool
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              
+              {talentDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <Link
+                    to="/talent-pool"
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                    onClick={() => setTalentDropdownOpen(false)}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Users className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">For Recruiters</div>
+                      <div className="text-xs text-gray-500">Browse & hire talent</div>
+                    </div>
+                  </Link>
+                  <Link
+                    to={isAuthenticated ? "/dashboard/talent-pool" : "/register?redirect=/dashboard/talent-pool"}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                    onClick={() => setTalentDropdownOpen(false)}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <UserPlus className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">For Job Seekers</div>
+                      <div className="text-xs text-gray-500">Get discovered by recruiters</div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+            
             {isAuthenticated ? (
               <>
                 <Link to="/dashboard">

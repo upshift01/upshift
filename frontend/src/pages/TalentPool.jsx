@@ -47,51 +47,34 @@ const TalentPool = () => {
     totalPages: 0
   });
 
-  // Check for payment callback on mount
-  useEffect(() => {
-    const payment = searchParams.get('payment');
-    const subscriptionId = searchParams.get('subscription_id');
-    
-    if (payment === 'success' && subscriptionId) {
-      // Verify payment immediately - no auth needed
-      setVerifyingPayment(true);
-      verifyPaymentDirect(subscriptionId);
-    } else if (payment === 'cancelled' || payment === 'failed') {
-      toast({
-        title: payment === 'cancelled' ? 'Payment Cancelled' : 'Payment Failed',
-        description: 'Your subscription was not activated.',
-        variant: 'destructive'
-      });
-      navigate('/talent-pool', { replace: true });
-    }
-  }, [searchParams]);
-
   // Verify payment directly without requiring auth
   const verifyPaymentDirect = async (subscriptionId) => {
+    console.log('verifyPaymentDirect called with:', subscriptionId);
     try {
       const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
         method: 'POST'
       });
       
+      console.log('Verify response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Verify response data:', data);
         if (data.success) {
           setPaymentSuccess(true);
+          setHasAccess(true);
           toast({
             title: 'Subscription Activated!',
             description: 'You now have access to the talent pool.'
           });
-          // Clear URL and reload data
-          navigate('/talent-pool', { replace: true });
-          // Refresh to get updated subscription status
-          window.location.reload();
+          // Reload the page to show talent pool
+          window.location.href = '/talent-pool';
         } else {
           toast({
             title: 'Verification Pending',
             description: 'Please refresh the page in a moment.',
             variant: 'default'
           });
-          navigate('/talent-pool', { replace: true });
         }
       } else {
         toast({
@@ -99,7 +82,6 @@ const TalentPool = () => {
           description: 'Please contact support.',
           variant: 'destructive'
         });
-        navigate('/talent-pool', { replace: true });
       }
     } catch (error) {
       console.error('Error verifying payment:', error);
@@ -108,11 +90,32 @@ const TalentPool = () => {
         description: 'Please refresh the page.',
         variant: 'destructive'
       });
-      navigate('/talent-pool', { replace: true });
     } finally {
       setVerifyingPayment(false);
     }
   };
+
+  // Check for payment callback on mount
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const subscriptionId = searchParams.get('subscription_id');
+    
+    console.log('Payment callback check - payment:', payment, 'subscriptionId:', subscriptionId);
+    
+    if (payment === 'success' && subscriptionId) {
+      // Verify payment immediately - no auth needed
+      console.log('Starting payment verification...');
+      setVerifyingPayment(true);
+      verifyPaymentDirect(subscriptionId);
+    } else if (payment === 'cancelled' || payment === 'failed') {
+      toast({
+        title: payment === 'cancelled' ? 'Payment Cancelled' : 'Payment Failed',
+        description: 'Your subscription was not activated.',
+        variant: 'destructive'
+      });
+      window.location.href = '/talent-pool';
+    }
+  }, []);
 
   useEffect(() => {
     // Only fetch initial data if not verifying payment and auth is loaded

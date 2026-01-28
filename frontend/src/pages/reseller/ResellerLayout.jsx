@@ -24,7 +24,8 @@ import {
   Zap,
   Calendar,
   Upload,
-  CreditCard
+  CreditCard,
+  UserSearch
 } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
@@ -142,6 +143,7 @@ const ResellerLayout = () => {
   const navItems = [
     { path: '/reseller-dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/reseller-dashboard/customers', icon: Users, label: 'Customers' },
+    { path: '/reseller-dashboard/talent-pool', icon: UserSearch, label: 'Talent Pool', badge: 'New' },
     { path: '/reseller-dashboard/calendar', icon: Calendar, label: 'Bookings' },
     { path: '/reseller-dashboard/revenue', icon: BarChart3, label: 'Analytics' },
     { path: '/reseller-dashboard/invoices', icon: Receipt, label: 'Invoices' },

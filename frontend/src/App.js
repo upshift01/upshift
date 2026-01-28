@@ -31,6 +31,9 @@ import RefundPolicy from "./pages/RefundPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import POPIACompliance from "./pages/POPIACompliance";
 import WhiteLabelPage from "./pages/WhiteLabelPage";
+import TalentPool from "./pages/TalentPool";
+import TalentPoolProfile from "./pages/TalentPoolProfile";
+import MyTalentPoolProfile from "./pages/MyTalentPoolProfile";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages

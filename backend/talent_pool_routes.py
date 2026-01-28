@@ -658,22 +658,32 @@ def get_talent_pool_routes(db, get_current_user):
         try:
             user_id = current_user.id
             
+            # First, check for an active subscription
             subscription = await db.recruiter_subscriptions.find_one(
-                {"user_id": user_id},
-                {"_id": 0}
+                {"user_id": user_id, "status": "active"},
+                {"_id": 0},
+                sort=[("created_at", -1)]  # Most recent first
             )
             
-            if not subscription:
-                return {"has_subscription": False, "subscription": None}
+            if subscription:
+                # Check if expired
+                is_active = subscription.get("expires_at", "") > datetime.now(timezone.utc).isoformat()
+                
+                if is_active:
+                    return {
+                        "has_subscription": True,
+                        "subscription": subscription
+                    }
             
-            # Check if expired
-            is_active = (
-                subscription.get("status") == "active" and
-                subscription.get("expires_at", "") > datetime.now(timezone.utc).isoformat()
+            # If no active subscription, get the most recent one (could be pending)
+            subscription = await db.recruiter_subscriptions.find_one(
+                {"user_id": user_id},
+                {"_id": 0},
+                sort=[("created_at", -1)]
             )
             
             return {
-                "has_subscription": is_active,
+                "has_subscription": False,
                 "subscription": subscription
             }
             

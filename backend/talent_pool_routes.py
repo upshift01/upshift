@@ -413,11 +413,11 @@ def get_talent_pool_routes(db, get_current_user):
     async def respond_to_contact_request(
         request_id: str, 
         data: ContactRequestResponse, 
-        current_user: dict = Depends(get_current_user)
+        current_user = Depends(get_current_user)
     ):
         """Candidate approves or rejects contact request"""
         try:
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             request = await db.contact_requests.find_one({
                 "id": request_id,

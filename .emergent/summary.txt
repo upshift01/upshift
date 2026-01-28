@@ -1,159 +1,149 @@
 <analysis>**original_problem_statement**: The user is building UpShift, an AI-driven, white-label SaaS resume and career services platform.
 
-During this session, the user's primary goal was to build out a complete Talent Pool feature, which evolved with several new requirements and bug fixes:
-1.  **Build Talent Pool Phase 2**: Implement admin/reseller management, and integrate Yoco payments for recruiter subscriptions.
-2.  **Add Email Notifications**: Send emails when recruiters contact candidates and when candidates respond.
-3.  **Clarify User Roles**: Address user confusion by creating a clear distinction between Job Seekers (customers) and Recruiters (companies looking to hire).
-4.  **Implement Recruiter Onboarding**: Create a separate registration flow and a dedicated dashboard for the new Recruiter user type.
-5.  **Add Recruiter Management**: Build pages in the admin and reseller portals to manage recruiter accounts (CRUD, activation, password resets).
-6.  **Fix Yoco Payment Redirect**: A recurring bug where users (especially recruiters) were redirected to the login page after a successful payment instead of back to the app with an active session.
-7.  **Fix Pricing Update Bug**: A new, critical bug where subscription price changes made in the admin panel were not reflected on the public-facing site or in Yoco payment sessions.
+The primary goal for this session was to fix a series of critical, cascading bugs in the Talent Pool feature's payment and subscription activation flow for Recruiter users. A secondary goal, introduced at the end, is to add new features to the candidate profile.
+
+Key issues addressed:
+1.  **Pricing Bug**: Prices updated in the admin panel were not reflected on the public site.
+2.  **Payment Redirect Bug**: A reseller-specific payment flow was redirecting to the wrong URL.
+3.  **Subscription Activation Failure (CORE ISSUE)**: A persistent and recurring bug where recruiters would successfully pay via Yoco but their subscription would remain pending, blocking them from accessing the talent pool. This was due to a complex combination of auth-state race conditions, incorrect environment variable settings, and bugs in the database query logic.
+
+After the payment flow was finally fixed, the user requested two new features:
+1.  Allow candidates to upload a profile picture.
+2.  Clarify and implement how recruiters access candidate CVs.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The platform is a full-stack React/FastAPI application with a MongoDB database. The Talent Pool feature is now substantially complete. It includes public-facing pages for recruiters to subscribe (via Yoco), separate dashboards for customers (job seekers) to opt-in and for recruiters to manage their activity, and comprehensive management panels for admins and resellers. A distinct Recruiter user role has been created with its own registration flow. Email notifications for contact requests are also implemented. Several critical bugs related to the Yoco payment callback and user session handling were fixed.
+The application is a full-stack React/FastAPI/MongoDB app. The Talent Pool feature for recruiters is now functionally complete, including a Yoco payment flow that correctly activates subscriptions. The session was almost entirely dedicated to debugging this flow. The final, working solution involves:
+1.  A public (non-authenticated) backend endpoint to verify payments, relying on the unguessable subscription UUID for security.
+2.  A simplified frontend that calls this verification endpoint immediately upon returning from Yoco.
+3.  A fix in the frontend to wait for the authentication context to be fully loaded before checking a user's subscription status, resolving a critical race condition.
+4.  A fix in the backend to query for the latest *active* subscription, not just the first one found.
 
 **Last working item**:
--   **Last item agent was working**: Investigating and fixing a critical bug where updating the Talent Pool subscription pricing in the super admin portal did not update the price on the public-facing page or in the Yoco payment checkout. The agent had just begun debugging by examining the frontend component () and the relevant backend routes.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both. This fix requires end-to-end validation: confirming the price is saved correctly in the database via the admin panel, fetched correctly by the backend API, and then displayed correctly on the frontend and used to initialize the Yoco payment session.
--   **User Testing Done**: N (User reported the issue)
+-   **Last item agent was working**: The user has just confirmed the recruiter payment and subscription flow is finally working. They immediately requested two new features: adding a profile picture for candidates and providing a way for recruiters to access candidate CVs. The agent had just begun planning by viewing the relevant files ( and ).
+-   **Status**: NOT STARTED
+-   **Agent Testing Done**: N/A
+-   **Which testing method agent to use?**: both. The new features require frontend UI changes, backend API/database modifications, and file upload handling. A full end-to-end test will be necessary.
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Talent Pool Admin Pricing Update Not Working (P0)**
-    -   **Description**: Changes to subscription prices made in  are not being saved or displayed correctly. The price on the public  page remains unchanged, and Yoco checkouts are initiated with the old price.
-    -   **Attempted fixes**: The agent started to trace the data flow from the frontend save function.
-    -   **Next debug checklist**:
-        1.  Verify the  function in  sends prices to the backend as integers in **cents**.
-        2.  Inspect the  endpoint in  to ensure it correctly updates the  document in the  collection.
-        3.  Check that the  endpoint reads the latest prices from the database.
-        4.  Confirm the  endpoint uses this live database price to create the Yoco checkout, not a cached or hardcoded value.
-    -   **Why fix this issue and what will be achieved with this?**: This is a critical business function. The administrator must be able to control pricing dynamically.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on other issue**: None.
+-   **Issue 1: Yoco Payment Flow Fragility (P0)**
+    -   **Description**: The recruiter subscription activation flow was the subject of a lengthy and frustrating debugging session. It involved multiple failed attempts and fixes. While the current implementation is confirmed to be working by the user, this area of the code () is extremely fragile and susceptible to regressions, particularly around auth state and redirects.
+    -   **Attempted fixes**: Numerous fixes were applied, including correcting environment variables, fixing database queries, resolving frontend race conditions, and ultimately making the verification endpoint public to simplify the post-redirect flow. A user-facing Retry Verification screen was added and then quickly removed due to strong negative feedback.
+    -   **Next debug checklist**: If the issue recurs, check the entire flow: Yoco redirect URL parameters -> backend  logs -> database subscription  -> frontend  state.
+    -   **Why fix this issue and what will be achieved with this?**: This is the primary monetization feature for the Talent Pool. Its stability is critical for the business.
+    -   **Status**: USER VERIFICATION PENDING (Considered fixed, but requires careful monitoring).
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on other issue**: None
 
 -   **Issue 2: Admin Login Fragility (P1)**
-    -   **Description**: A recurring issue from a previous session where admin login was unstable due to inconsistent password fields ( vs. ) in the database. A fix was applied, but it requires user verification and further cleanup.
-    -   **Next debug checklist**:
-        1.  Confirm with the user that admin login has remained stable.
-        2.  Scan the  collection for duplicate admin accounts and consolidate them.
-        3.  Refactor the user model and authentication logic to exclusively use the  field.
+    -   **Description**: A recurring issue from a previous session where admin login was unstable due to inconsistent password fields ( vs. ) in the database. This was not addressed during this session.
+    -   **Next debug checklist**: Confirm with the user that admin login is stable, scan for and merge duplicate admin accounts, and refactor the user model and auth logic to exclusively use .
     -   **Why fix this issue and what will be achieved with this?**: Ensures stable, secure access to the platform's core management functions.
     -   **Status**: USER VERIFICATION PENDING
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on other issue**: None.
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   None. The current focus is on resolving the pricing bug.
+-   None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
+    -   **(P0) Add Profile Picture to Candidate Profile**: Implement a file upload field on the candidate's Opt-in to Talent Pool page (). This involves frontend UI for upload/preview and backend logic in  to handle the file and save its URL.
+    -   **(P1) Implement Recruiter Access to Candidate CVs**: Add a Download CV button to the candidate cards displayed to subscribed recruiters in . This button should be visible only to recruiters with an active subscription and should link to the candidate's .
     -   **(P1) Odoo Integration**: Begin development on the planned Odoo integration.
-    -   **(P2) Customer CV/Vacancy Upload to Talent Pool**: Implement the feature for customers to upload documents to their talent pool profile.
 -   **Future Tasks**:
     -   **(P3) Refactor Partner Pages**: Continue refactoring duplicated reseller-facing pages.
     -   **(P4) Secure Emergency Endpoints**: Remove or secure the temporary admin password reset endpoints in .
 
 **Completed work in this session**
--   **Full Talent Pool Feature (DONE)**:
-    -   Built Admin/Reseller management UIs (, ) and corresponding backend endpoints.
-    -   Integrated Yoco for recruiter subscriptions and fixed a critical post-payment redirect bug.
--   **Recruiter User Role & Onboarding (DONE)**:
-    -   Created a distinct Recruiter user role with a separate registration flow (role selection on signup) and a dedicated dashboard ().
-    -   Implemented role-based redirects on login.
--   **Recruiter Account Management (DONE)**:
-    -   Added pages and APIs for Admins () and Resellers () to manage recruiter accounts.
--   **Talent Pool UX Enhancements (DONE)**:
-    -   Added email notifications for contact requests between recruiters and candidates.
-    -   Redesigned the public Talent Pool page and site navigation to clearly distinguish between the Job Seeker and Recruiter user journeys.
+-   **Recruiter Subscription Activation Flow (FIXED)**: Resolved a critical end-to-end bug preventing recruiter subscriptions from being activated after a successful Yoco payment.
+-   **Talent Pool Admin Pricing Bug (FIXED)**: Corrected an issue where prices set in the admin panel were not being displayed on the public page.
+-   **Reseller Payment Redirect Bug (FIXED)**: Fixed an incorrect redirect URL in the reseller Yoco payment flow.
 
 **Earlier issues found/mentioned but not fixed**
--   None.
+-   None from this session.
 
 **Known issue recurrence from previous fork**
--   **Admin Login Failure**: This was a known fragile area, and while a fix was implemented, its stability is pending user confirmation.
+-   **Admin Login Failure**: Mentioned in the initial handoff. It was not addressed in this session. Status remains USER VERIFICATION PENDING.
 
 **Code Architecture**
-account_type
+
 
 **Key Technical Concepts**
--   **Role-Based Access Control (RBAC)**: A new  role was introduced, with distinct logic in the backend (registration), frontend (signup form), , and routing (, ) to create separate user experiences.
--   **Payment Gateway Callback Handling**: Refactored the Yoco payment callback to be more robust. The final solution stores a  in  to survive a redirect to the login page, ensuring the payment can be verified post-authentication.
--   **State Management for Complex UI**: Managed multiple loading, error, and success states in  to handle the asynchronous nature of authentication, data fetching, and payment verification, preventing UI glitches.
+-   **Payment Gateway Race Conditions**: The main bug was a complex race condition in React between the AuthContext loading its state asynchronously and the  component trying to verify a payment. The fix involved adding  to the dependency array of a critical  hook.
+-   **Stateless Verification Endpoint**: To increase reliability, the  endpoint was made public (no auth required). It relies on the unguessable subscription UUID passed in the URL for security, decoupling verification from the user's session state.
+-   **Environment-Specific Configuration**: A key part of the debugging involved correcting the  environment variable during preview testing to ensure Yoco redirected back to the correct preview URL, not the production site.
 
 **key DB schema**
--   **users**: Now contains an  field (customer, recruiter, etc.) and a  field for recruiters.
--   **platform_settings**: Contains the  document, which is the single source of truth for subscription prices.
--   **talent_pool_subscriptions**: Links a  to a subscription  and payment .
+-   **talent_pool_subscriptions**: The query to fetch the active subscription was fixed to correctly sort by creation date and filter for .
+-   **talent_pool_profiles**: Will require a new field, such as , to be added for the upcoming feature.
 
 **changes in tech stack**
 -   None.
 
 **All files of reference**
--   **/app/frontend/src/pages/admin/AdminTalentPool.jsx**: Frontend where pricing is set (part of the bug).
--   **/app/backend/talent_pool_routes.py**: Backend logic for getting/setting pricing and creating Yoco checkouts (part of the bug).
--   **/app/frontend/src/pages/TalentPool.jsx**: Public page where pricing is displayed (part of the bug).
--   **/app/frontend/src/pages/Register.jsx**: Contains the new role selection UI.
--   **/app/frontend/src/pages/RecruiterDashboard.jsx**: The dashboard for the new recruiter user type.
+-   : The component containing the fragile payment and subscription logic.
+-   : The backend API handling all Talent Pool logic.
+-   : Contains the core authentication state logic.
+-   : Where the new candidate profile picture feature will be implemented.
 
 **Areas that need refactoring**:
--   **User Authentication**: The  collection still needs to be cleaned up (e.g., duplicate admin accounts), and the data model should be standardized to use only .
+-   ****: This component is overly complex and brittle after numerous patches to fix the payment flow. It should be refactored to use custom hooks (e.g., , ) to separate concerns and improve readability and stability.
+-   **Public Verification Endpoint**: The decision to make the verification endpoint public was a pragmatic fix. A more secure, long-term solution could involve a single-use token to avoid leaving the endpoint entirely open, while still solving the post-redirect authentication problem.
 
 **key api endpoints**
--   : Endpoint for saving Talent Pool pricing. **(CURRENTLY UNDER DEBUGGING)**.
--   : Serves dynamic subscription plan details to the frontend.
--   : Updated to accept  and .
--   , : New endpoints for managing recruiter accounts.
+-   : Creates a subscription and a Yoco checkout session.
+-   : **MODIFIED**. Now public (no auth). Activates a subscription.
+-   : **MODIFIED**. Now correctly returns the latest *active* subscription for the current user.
 
 **Critical Info for New Agent**
--   **PRICING BUG IS TOP PRIORITY**: The user's last request was to fix the bug where admin price changes don't take effect. This is a critical business-logic failure.
--   **PRICING IS IN CENTS**: All backend logic and database storage for prices use integers representing cents. The frontend is responsible for converting to/from Rands for display and user input. This is a very likely source for the pricing bug.
--   **RECRUITER VS. CUSTOMER ROLES**: The platform now has two distinct user journeys. Customers are job seekers using CV tools. Recruiters are companies paying to hire from the talent pool. Their dashboards, permissions, and registration flows are different.
--   **YOCO PAYMENT FLOW**: The payment redirect flow is complex. It was fixed to handle cases where a user is logged out during the redirect from Yoco. It uses  to preserve the pending payment verification across a login. Be cautious when editing , , or .
+-   **PRIORITY**: The user's new feature requests (candidate profile picture, CV access) are the next tasks.
+-   **FRAGILE CODE**: The Yoco payment flow in  and  is working but has proven to be extremely brittle. Be very cautious when making changes in or around this logic. The key bug was a race condition in the frontend auth state.
+-   **PUBLIC VERIFICATION**: The payment verification endpoint () is intentionally public. Do not re-introduce authentication without a robust plan to handle the post-redirect session loss issue that plagued this session.
+-   **ENVIRONMENT URLs**: When testing payment flows, ensure the  environment variable in  points to the correct environment (preview URL for preview testing, production URL for production).
 
 **documents and test reports created in this job**
--   
--    (updated multiple times)
+-    (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: After I deployed I tried to change the recruiter Monthly Pricing in the super admin portal to 9.99 and it did not update the pricing! Please also make sure when the pricing is updated that the Yoco payment function works with the updated prices. **(Status: IN PROGRESS)**
-2.  **User**: When the subscription payment has been processed for the recruiter it should take him back to the recruiter portal where he must then be bale to browse the talent pool. At the moment it takes him back to the login screen. **(Status: COMPLETED)**
-3.  **User**: add a section to the main admin portal and the reseller portal where new recruiter accounts can be managed... **(Status: COMPLETED)**
-4.  **User**: [I choose] Option B. **(Status: COMPLETED)**
-5.  **User**: The recruiters can be companies / private companies looking for employees... when they register... they are registered as a full customer with all the functionality. **(Status: COMPLETED)**
-6.  **User**: I deployed and it is still saying Login To SubScribe what is going on here? Look at the screen shot I just uploaded. **(Status: RESOLVED - User was not logged in)**
-7.  **User**: Lest publish. **(Status: COMPLETED)**
-8.  **User**: It is still saying Login to Subscribe! **(Status: RESOLVED - Misunderstanding)**
-9.  **User**: I just did a subscription payment and after the successful payment popup shows I click continue and it just shows the footer of the website! This is not fixed! **(Status: COMPLETED)**
-10. **User**: Yes for options 1 to 3 [to clarify recruiter vs job seeker flow]. **(Status: COMPLETED)**
+1.  **User**: I cleared my browser and in the preview it still goes to the subscription option page! (Status: Resolved)
+2.  **User**: This happens when I create a new recruiter in the preview. (Status: Resolved)
+3.  **User**: I created a new recruiter (Dave Swagg) in the preview and I get this error again!! (Status: Resolved, was a mix of caching and env issues)
+4.  **User**: I am testing this in the preview and I am still getting the same error! (Status: Resolved)
+5.  **User**: Expressed extreme frustration with a broken UI (Almost There screen) that the agent introduced and then reverted. (Status: Resolved)
+6.  **User**: Reported that after a successful payment, the app returns to the Find Your Next Great Hire page instead of granting access. (Status: Resolved)
+7.  **User**: Reported that after deploying, a payment was successful but the subscription was not registered and the UI did not update. (Status: Resolved)
+8.  **User**: Asked agent to verify all Yoco payment redirects are correct. (Status: Completed)
+9.  **User**: Initially reported the pricing bug after deployment. (Status: Resolved)
+10. **User**: Confirmed the payment flow is working and requested new features: candidate profile picture and CV access for recruiters. (Status: **New Task - In Progress**)
 
 **Project Health Check:**
--   **Broken**: The functionality to update Talent Pool pricing from the admin panel is currently broken.
+-   **Broken**: None.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
 -   **Yoco (Payments)**: Integrated for Talent Pool subscriptions. Requires User API Key.
 -   **OpenAI GPT-4o**: Uses Emergent LLM Key.
 -   **SMTP (Custom)**: Used for sending email notifications. Requires User SMTP credentials.
--   **ReportLab, python-docx, etc.**: For CV document handling.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES, for the initial Talent Pool feature. The subsequent fixes and features were tested manually with  and screenshots.
+-   **Testing agent used after significant changes**: NO. The agent relied on extensive manual testing (, screenshots with console logs) and user feedback to debug the complex payment flow.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: The Yoco payment redirect was a recurring issue that was fixed. The current pricing issue is a new bug, not a regression.
+-   **Known regressions**: The primary bug (subscription activation failure) was a recurring regression throughout the session until the final set of fixes was applied.
 
 **Credentials to test flow:**
-| User Type | Email | Password | Notes |
-| :--- | :--- | :--- | :--- |
-| Super Admin |  |  | Main platform admin |
-| Test Recruiter|  |  | New role created this session |
-| Test Customer |  |  | Standard customer account |
+| User Type | Email | Password |
+| :--- | :--- | :--- |
+| Super Admin |  |  |
+| Test Recruiter 1|  |  |
+| Test Recruiter 2|  |  |
+| Test Recruiter 3|  |  |
+| Test Customer |  |  |
 
 **What agent forgot to execute**
--   The agent successfully addressed all user requests from this session. The only outstanding item is the pricing bug that was reported at the very end and is the current highest-priority task.</analysis>
+-   The agent did not address the pre-existing Admin Login Fragility issue mentioned in the initial handoff summary, as the entire session was consumed by fixing the critical payment bug.</analysis>

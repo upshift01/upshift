@@ -682,13 +682,37 @@ def get_talent_pool_routes(db, get_current_user):
             raise HTTPException(status_code=500, detail=str(e))
     
     @talent_pool_router.get("/recruiter/plans")
-    async def get_recruiter_plans():
-        """Get available recruiter subscription plans"""
+    async def get_recruiter_plans(reseller_id: Optional[str] = Query(None)):
+        """Get available recruiter subscription plans with dynamic pricing"""
+        # Default prices (in cents)
+        default_pricing = {
+            "monthly": 99900,
+            "quarterly": 249900,
+            "annual": 799900
+        }
+        
+        # Fetch custom pricing from database
+        pricing_key = "talent_pool_pricing"
+        if reseller_id:
+            pricing_key = f"talent_pool_pricing_{reseller_id}"
+        
+        custom_pricing = await db.platform_settings.find_one({"key": pricing_key}, {"_id": 0})
+        
+        # Use custom pricing if available, otherwise defaults
+        pricing = default_pricing.copy()
+        if custom_pricing and custom_pricing.get("value"):
+            if custom_pricing["value"].get("monthly"):
+                pricing["monthly"] = custom_pricing["value"]["monthly"]
+            if custom_pricing["value"].get("quarterly"):
+                pricing["quarterly"] = custom_pricing["value"]["quarterly"]
+            if custom_pricing["value"].get("annual"):
+                pricing["annual"] = custom_pricing["value"]["annual"]
+        
         plans = [
             {
                 "id": "recruiter-monthly",
                 "name": "Monthly Access",
-                "price": 99900,  # R999 in cents
+                "price": pricing["monthly"],
                 "duration_days": 30,
                 "description": "Full access to talent pool for 30 days",
                 "features": [
@@ -701,7 +725,7 @@ def get_talent_pool_routes(db, get_current_user):
             {
                 "id": "recruiter-quarterly",
                 "name": "Quarterly Access",
-                "price": 249900,  # R2499 in cents
+                "price": pricing["quarterly"],
                 "duration_days": 90,
                 "description": "Full access to talent pool for 90 days",
                 "features": [
@@ -716,7 +740,7 @@ def get_talent_pool_routes(db, get_current_user):
             {
                 "id": "recruiter-annual",
                 "name": "Annual Access",
-                "price": 799900,  # R7999 in cents
+                "price": pricing["annual"],
                 "duration_days": 365,
                 "description": "Full access to talent pool for 12 months",
                 "features": [

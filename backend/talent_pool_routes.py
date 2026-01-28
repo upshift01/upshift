@@ -555,4 +555,385 @@ def get_talent_pool_routes(db, get_current_user):
         ]
         return {"success": True, "levels": levels}
     
+    # ==============================================
+    # ADMIN ENDPOINTS
+    # ==============================================
+    
+    @talent_pool_router.get("/admin/candidates")
+    async def admin_get_all_candidates(current_user = Depends(get_current_user)):
+        """Admin: Get all talent pool candidates (including hidden and pending)"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            query = {}
+            # Resellers can only see their own candidates
+            if current_user.role == "reseller":
+                query["reseller_id"] = current_user.id
+            
+            candidates = await db.talent_pool_profiles.find(
+                query,
+                {"_id": 0}
+            ).sort("created_at", -1).to_list(500)
+            
+            return {"success": True, "candidates": candidates}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting admin candidates: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.post("/admin/candidates")
+    async def admin_add_candidate(data: dict, current_user = Depends(get_current_user)):
+        """Admin: Manually add a candidate to the talent pool"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            # Create the profile
+            profile = {
+                "id": str(uuid.uuid4()),
+                "user_id": None,  # Manual addition, no associated user
+                "full_name": data.get("full_name"),
+                "job_title": data.get("job_title"),
+                "industry": data.get("industry", ""),
+                "experience_level": data.get("experience_level", ""),
+                "location": data.get("location", ""),
+                "skills": data.get("skills", []),
+                "summary": data.get("summary", ""),
+                "cv_url": data.get("cv_url"),
+                "is_visible": data.get("is_visible", True),
+                "status": data.get("status", "approved"),
+                "contact_email": data.get("email", ""),
+                "contact_phone": data.get("phone", ""),
+                "reseller_id": current_user.id if current_user.role == "reseller" else data.get("reseller_id"),
+                "added_by_admin": True,
+                "added_by_user_id": current_user.id,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.talent_pool_profiles.insert_one(profile)
+            
+            return {"success": True, "profile": {k: v for k, v in profile.items() if k != "_id"}}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error adding admin candidate: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.put("/admin/candidates/{candidate_id}/status")
+    async def admin_update_candidate_status(
+        candidate_id: str, 
+        data: dict, 
+        current_user = Depends(get_current_user)
+    ):
+        """Admin: Approve or reject a candidate"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            query = {"id": candidate_id}
+            if current_user.role == "reseller":
+                query["reseller_id"] = current_user.id
+            
+            candidate = await db.talent_pool_profiles.find_one(query)
+            if not candidate:
+                raise HTTPException(status_code=404, detail="Candidate not found")
+            
+            status = data.get("status", "pending")
+            if status not in ["pending", "approved", "rejected"]:
+                raise HTTPException(status_code=400, detail="Invalid status")
+            
+            update_data = {
+                "status": status,
+                "is_visible": status == "approved",  # Only approved profiles are visible
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.talent_pool_profiles.update_one(
+                {"id": candidate_id},
+                {"$set": update_data}
+            )
+            
+            return {"success": True, "message": f"Candidate {status}"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error updating candidate status: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.delete("/admin/candidates/{candidate_id}")
+    async def admin_delete_candidate(candidate_id: str, current_user = Depends(get_current_user)):
+        """Admin: Remove a candidate from the talent pool"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            query = {"id": candidate_id}
+            if current_user.role == "reseller":
+                query["reseller_id"] = current_user.id
+            
+            result = await db.talent_pool_profiles.delete_one(query)
+            
+            if result.deleted_count == 0:
+                raise HTTPException(status_code=404, detail="Candidate not found")
+            
+            # Also delete any related contact requests
+            await db.contact_requests.delete_many({"profile_id": candidate_id})
+            
+            return {"success": True, "message": "Candidate removed"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error deleting candidate: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.get("/admin/subscriptions")
+    async def admin_get_subscriptions(current_user = Depends(get_current_user)):
+        """Admin: Get all recruiter subscriptions"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            query = {}
+            if current_user.role == "reseller":
+                query["reseller_id"] = current_user.id
+            
+            subscriptions = await db.recruiter_subscriptions.find(
+                query,
+                {"_id": 0}
+            ).sort("created_at", -1).to_list(500)
+            
+            return {"success": True, "subscriptions": subscriptions}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting subscriptions: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.get("/admin/pricing")
+    async def admin_get_pricing(current_user = Depends(get_current_user)):
+        """Admin: Get talent pool subscription pricing"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            key = "talent_pool_pricing"
+            if current_user.role == "reseller":
+                key = f"talent_pool_pricing_{current_user.id}"
+            
+            settings = await db.platform_settings.find_one({"key": key}, {"_id": 0})
+            
+            if settings and settings.get("value"):
+                return {"success": True, "pricing": settings["value"]}
+            
+            # Return default pricing
+            return {
+                "success": True,
+                "pricing": {
+                    "monthly": 99900,
+                    "quarterly": 249900,
+                    "annual": 799900
+                }
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting pricing: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.put("/admin/pricing")
+    async def admin_update_pricing(data: dict, current_user = Depends(get_current_user)):
+        """Admin: Update talent pool subscription pricing"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            pricing = data.get("pricing", {})
+            if not pricing:
+                raise HTTPException(status_code=400, detail="Pricing data required")
+            
+            key = "talent_pool_pricing"
+            if current_user.role == "reseller":
+                key = f"talent_pool_pricing_{current_user.id}"
+            
+            await db.platform_settings.update_one(
+                {"key": key},
+                {"$set": {
+                    "key": key,
+                    "value": pricing,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }},
+                upsert=True
+            )
+            
+            return {"success": True, "message": "Pricing updated"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error updating pricing: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # ==============================================
+    # YOCO PAYMENT ENDPOINTS FOR RECRUITER SUBSCRIPTIONS
+    # ==============================================
+    
+    @talent_pool_router.post("/subscribe/{plan_id}")
+    async def subscribe_to_recruiter_plan(plan_id: str, current_user = Depends(get_current_user)):
+        """Create a Yoco checkout for recruiter subscription"""
+        try:
+            from yoco_service import get_yoco_service_for_reseller
+            import os
+            
+            # Get plan details
+            plans = {
+                "recruiter-monthly": {"name": "Monthly Access", "price": 99900, "days": 30},
+                "recruiter-quarterly": {"name": "Quarterly Access", "price": 249900, "days": 90},
+                "recruiter-annual": {"name": "Annual Access", "price": 799900, "days": 365}
+            }
+            
+            # Check for custom pricing
+            pricing_key = "talent_pool_pricing"
+            if current_user.reseller_id:
+                pricing_key = f"talent_pool_pricing_{current_user.reseller_id}"
+            
+            custom_pricing = await db.platform_settings.find_one({"key": pricing_key}, {"_id": 0})
+            if custom_pricing and custom_pricing.get("value"):
+                if plan_id == "recruiter-monthly" and custom_pricing["value"].get("monthly"):
+                    plans["recruiter-monthly"]["price"] = custom_pricing["value"]["monthly"]
+                if plan_id == "recruiter-quarterly" and custom_pricing["value"].get("quarterly"):
+                    plans["recruiter-quarterly"]["price"] = custom_pricing["value"]["quarterly"]
+                if plan_id == "recruiter-annual" and custom_pricing["value"].get("annual"):
+                    plans["recruiter-annual"]["price"] = custom_pricing["value"]["annual"]
+            
+            if plan_id not in plans:
+                raise HTTPException(status_code=400, detail="Invalid plan ID")
+            
+            plan = plans[plan_id]
+            
+            # Get Yoco service (with reseller-specific keys if applicable)
+            yoco = await get_yoco_service_for_reseller(db, current_user.reseller_id)
+            
+            if not yoco.is_configured():
+                raise HTTPException(status_code=503, detail="Payment service not configured")
+            
+            frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+            
+            # Create subscription record (pending)
+            subscription_id = str(uuid.uuid4())
+            
+            # Create checkout
+            checkout = await yoco.create_checkout(
+                amount_cents=plan["price"],
+                email=current_user.email,
+                metadata={
+                    "type": "talent_pool_subscription",
+                    "plan_id": plan_id,
+                    "plan_name": plan["name"],
+                    "subscription_id": subscription_id,
+                    "user_id": current_user.id,
+                    "user_email": current_user.email,
+                    "reseller_id": current_user.reseller_id
+                },
+                success_url=f"{frontend_url}/talent-pool?payment=success&subscription_id={subscription_id}",
+                cancel_url=f"{frontend_url}/talent-pool?payment=cancelled",
+                failure_url=f"{frontend_url}/talent-pool?payment=failed"
+            )
+            
+            # Store pending subscription
+            await db.recruiter_subscriptions.insert_one({
+                "id": subscription_id,
+                "user_id": current_user.id,
+                "user_email": current_user.email,
+                "user_name": current_user.full_name,
+                "plan_id": plan_id,
+                "plan_name": plan["name"],
+                "amount_cents": plan["price"],
+                "duration_days": plan["days"],
+                "status": "pending",
+                "checkout_id": checkout.get("id"),
+                "reseller_id": current_user.reseller_id,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            
+            return {
+                "success": True,
+                "checkout_url": checkout.get("redirectUrl"),
+                "checkout_id": checkout.get("id"),
+                "subscription_id": subscription_id
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error creating subscription checkout: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.post("/verify-payment/{subscription_id}")
+    async def verify_subscription_payment(subscription_id: str, current_user = Depends(get_current_user)):
+        """Verify payment and activate subscription"""
+        try:
+            from yoco_service import get_yoco_service_for_reseller
+            from datetime import timedelta
+            
+            # Get pending subscription
+            subscription = await db.recruiter_subscriptions.find_one({
+                "id": subscription_id,
+                "user_id": current_user.id
+            })
+            
+            if not subscription:
+                raise HTTPException(status_code=404, detail="Subscription not found")
+            
+            if subscription.get("status") == "active":
+                return {"success": True, "message": "Subscription already active", "subscription": subscription}
+            
+            # Verify payment with Yoco
+            yoco = await get_yoco_service_for_reseller(db, current_user.reseller_id)
+            checkout_id = subscription.get("checkout_id")
+            
+            if checkout_id:
+                is_paid = await yoco.verify_payment(checkout_id)
+                
+                if is_paid:
+                    # Calculate expiry
+                    duration_days = subscription.get("duration_days", 30)
+                    expires_at = datetime.now(timezone.utc) + timedelta(days=duration_days)
+                    
+                    # Activate subscription
+                    await db.recruiter_subscriptions.update_one(
+                        {"id": subscription_id},
+                        {"$set": {
+                            "status": "active",
+                            "activated_at": datetime.now(timezone.utc).isoformat(),
+                            "expires_at": expires_at.isoformat()
+                        }}
+                    )
+                    
+                    # Get updated subscription
+                    updated = await db.recruiter_subscriptions.find_one(
+                        {"id": subscription_id},
+                        {"_id": 0}
+                    )
+                    
+                    return {"success": True, "message": "Subscription activated", "subscription": updated}
+                else:
+                    return {"success": False, "message": "Payment not verified"}
+            
+            return {"success": False, "message": "No checkout found"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error verifying payment: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return talent_pool_router

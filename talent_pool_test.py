@@ -147,12 +147,12 @@ def test_talent_pool_authenticated_endpoints():
                         else:
                             print(f"❌ Talent Pool Opt-in: Success flag false")
                             results.append(("POST Talent Pool Opt-in", False, "Success flag false"))
-                    elif response.status_code == 400:
-                        # Already opted in
+                    elif response.status_code == 400 and "Already opted" in response.text:
+                        # Already opted in - this is expected behavior
                         print(f"✅ Talent Pool Opt-in: Already opted in (expected)")
                         results.append(("POST Talent Pool Opt-in", True, "Already opted in"))
                     else:
-                        print(f"❌ Talent Pool Opt-in: Status {response.status_code}")
+                        print(f"❌ Talent Pool Opt-in: Status {response.status_code} - {response.text}")
                         results.append(("POST Talent Pool Opt-in", False, f"Status {response.status_code}"))
                 except Exception as e:
                     print(f"❌ Talent Pool Opt-in: {str(e)}")

@@ -51,6 +51,7 @@ import AdminCRM from "./pages/admin/AdminCRM";
 import AdminCalendar from "./pages/admin/AdminCalendar";
 import AdminCVTemplates from "./pages/admin/AdminCVTemplates";
 import AdminTalentPool from "./pages/admin/AdminTalentPool";
+import AdminRecruiters from "./pages/admin/AdminRecruiters";
 
 // Reseller Pages
 import ResellerLayout from "./pages/reseller/ResellerLayout";

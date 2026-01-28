@@ -887,7 +887,24 @@ const MyTalentPoolProfile = () => {
                   </div>
 
                   <div>
-                    <Label>Skills</Label>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label>Skills</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAIImproveSkills}
+                        disabled={improvingSkills}
+                        className="gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                      >
+                        {improvingSkills ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-3 w-3" />
+                        )}
+                        AI Improve
+                      </Button>
+                    </div>
                     <div className="flex gap-2 mb-2">
                       <Input
                         value={newSkill}
@@ -910,6 +927,33 @@ const MyTalentPoolProfile = () => {
                         </Badge>
                       ))}
                     </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label>Bio</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAIImproveBio}
+                        disabled={improvingBio}
+                        className="gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                      >
+                        {improvingBio ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-3 w-3" />
+                        )}
+                        {formData.bio ? 'AI Improve' : 'AI Generate'}
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={formData.bio}
+                      onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                      placeholder="A short bio about yourself..."
+                      rows={3}
+                    />
                   </div>
 
                   <div>

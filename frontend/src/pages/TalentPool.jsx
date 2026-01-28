@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -16,11 +16,13 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const TalentPool = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isAuthenticated, token } = useAuth();
   const { toast } = useToast();
   
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscribing, setSubscribing] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [plans, setPlans] = useState([]);
@@ -45,6 +47,8 @@ const TalentPool = () => {
 
   useEffect(() => {
     fetchInitialData();
+    // Handle payment callback
+    handlePaymentCallback();
   }, []);
 
   useEffect(() => {
@@ -52,6 +56,92 @@ const TalentPool = () => {
       fetchCandidates();
     }
   }, [filters, pagination.page, hasAccess]);
+
+  const handlePaymentCallback = async () => {
+    const payment = searchParams.get('payment');
+    const subscriptionId = searchParams.get('subscription_id');
+    
+    if (payment === 'success' && subscriptionId && token) {
+      try {
+        const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            toast({
+              title: 'Subscription Activated!',
+              description: 'You now have access to the talent pool.'
+            });
+            setHasAccess(true);
+            setSubscription(data.subscription);
+          }
+        }
+      } catch (error) {
+        console.error('Error verifying payment:', error);
+      }
+      // Clear URL params
+      navigate('/talent-pool', { replace: true });
+    } else if (payment === 'cancelled') {
+      toast({
+        title: 'Payment Cancelled',
+        description: 'Your subscription was not activated.',
+        variant: 'destructive'
+      });
+      navigate('/talent-pool', { replace: true });
+    } else if (payment === 'failed') {
+      toast({
+        title: 'Payment Failed',
+        description: 'There was an issue processing your payment.',
+        variant: 'destructive'
+      });
+      navigate('/talent-pool', { replace: true });
+    }
+  };
+
+  const handleSubscribe = async (planId) => {
+    if (!isAuthenticated) {
+      sessionStorage.setItem('postAuthRedirect', '/talent-pool');
+      navigate('/login');
+      return;
+    }
+    
+    setSubscribing(true);
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/subscribe/${planId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.checkout_url) {
+          // Redirect to Yoco payment page
+          window.location.href = data.checkout_url;
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.detail || 'Failed to start subscription',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to connect to payment service',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   const fetchInitialData = async () => {
     try {

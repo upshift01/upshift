@@ -101,13 +101,41 @@ const TalentPool = () => {
             description: 'You now have access to the talent pool.'
           });
           fetchInitialData();
+        } else {
+          // Payment not yet confirmed by Yoco, keep the pending ID for retry
+          toast({
+            title: 'Verification Pending',
+            description: 'Your payment is being processed. Please refresh the page in a moment.',
+            variant: 'default'
+          });
         }
+      } else if (response.status === 401) {
+        // Session expired - keep the subscription ID and redirect to re-login
+        toast({
+          title: 'Session Expired',
+          description: 'Please log in again to complete your subscription activation.',
+          variant: 'destructive'
+        });
+        sessionStorage.setItem('postAuthRedirect', `/talent-pool?payment=success&subscription_id=${subscriptionId}`);
+        navigate('/login');
+        return; // Don't clear pendingSubscriptionId
+      } else {
+        toast({
+          title: 'Verification Issue',
+          description: 'There was an issue activating your subscription. Please contact support.',
+          variant: 'destructive'
+        });
+        sessionStorage.removeItem('pendingSubscriptionId');
       }
     } catch (error) {
       console.error('Error verifying pending subscription:', error);
+      toast({
+        title: 'Connection Error',
+        description: 'Failed to verify payment. Please refresh and try again.',
+        variant: 'destructive'
+      });
     } finally {
       setVerifyingPayment(false);
-      sessionStorage.removeItem('pendingSubscriptionId');
     }
   };
 

@@ -36,6 +36,7 @@ class TalentPoolOptIn(BaseModel):
     skills: List[str]
     summary: str
     cv_document_id: Optional[str] = None  # Reference to user's CV document
+    profile_picture: Optional[str] = None  # Base64 or URL of profile picture
 
 class TalentPoolUpdate(BaseModel):
     full_name: Optional[str] = None

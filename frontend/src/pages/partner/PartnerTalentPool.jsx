@@ -559,9 +559,21 @@ const PartnerTalentPool = () => {
     return renderPaymentVerification();
   }
 
-  // Show success screen briefly after payment
-  if (paymentSuccess && !hasAccess) {
+  // Show success screen after payment verification
+  if (paymentSuccess) {
     return renderPaymentSuccess();
+  }
+
+  // Show loading state while auth is loading or data is loading initially
+  if (authLoading || (loading && plans.length === 0)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" style={{ color: primaryColor }} />
+          <p className="text-gray-600">Loading Talent Pool...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

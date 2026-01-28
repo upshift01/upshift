@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import {
   Users, Eye, EyeOff, Loader2, Check, X, Save, Trash2,
   Mail, Clock, CheckCircle, XCircle, MessageSquare, Briefcase,
-  Plus, AlertCircle, Camera, Upload, User
+  Plus, AlertCircle, Camera, Upload, User, Sparkles
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

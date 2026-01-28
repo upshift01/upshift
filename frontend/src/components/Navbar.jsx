@@ -108,7 +108,7 @@ const Navbar = () => {
             
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard">
+                <Link to={user?.role === 'recruiter' ? '/recruiter' : '/dashboard'}>
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-2" />
                     Dashboard

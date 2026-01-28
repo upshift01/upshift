@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Zap, LogOut, User } from 'lucide-react';
+import { Menu, X, Zap, LogOut, User, ChevronDown, Users, UserPlus } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [talentDropdownOpen, setTalentDropdownOpen] = useState(false);
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
 
@@ -15,7 +16,6 @@ const Navbar = () => {
     { name: 'Cover Letter', path: '/cover-letter' },
     { name: 'ATS Checker', path: '/ats-checker', isFree: true },
     { name: 'Skills Generator', path: '/skills-generator', isFree: true },
-    { name: 'Talent Pool', path: '/talent-pool' },
     { name: 'Contact', path: '/contact' }
   ];
 

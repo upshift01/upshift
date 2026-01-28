@@ -241,6 +241,7 @@ const AppContent = () => {
           <Route path="improve" element={<PartnerResumeImprover />} />
           <Route path="cover-letter" element={<PartnerCoverLetterCreator />} />
           <Route path="skills-generator" element={<PartnerSkillsGenerator />} />
+          <Route path="talent-pool" element={<PartnerTalentPool />} />
           <Route path="templates" element={<PartnerCVTemplates />} />
           <Route path="cover-letter-templates" element={<PartnerCoverLetterTemplates />} />
           {/* Additional Tools */}

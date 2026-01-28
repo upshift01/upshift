@@ -60,10 +60,10 @@ def get_talent_pool_routes(db, get_current_user):
     """Factory function to create talent pool routes with database dependency"""
     
     @talent_pool_router.post("/opt-in")
-    async def opt_in_talent_pool(data: TalentPoolOptIn, current_user: dict = Depends(get_current_user)):
+    async def opt_in_talent_pool(data: TalentPoolOptIn, current_user = Depends(get_current_user)):
         """Customer opts into the talent pool"""
         try:
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             # Check if already opted in
             existing = await db.talent_pool_profiles.find_one({"user_id": user_id})
@@ -90,9 +90,9 @@ def get_talent_pool_routes(db, get_current_user):
                 "cv_document_id": data.cv_document_id,
                 "cv_url": cv_url,
                 "is_visible": True,
-                "contact_email": current_user.get("email"),
-                "contact_phone": current_user.get("phone", ""),
-                "reseller_id": current_user.get("reseller_id"),
+                "contact_email": current_user.email,
+                "contact_phone": current_user.phone or "",
+                "reseller_id": current_user.reseller_id,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }

@@ -13,7 +13,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-talent_pool_router = APIRouter(prefix="/talent-pool", tags=["Talent Pool"])
+talent_pool_router = APIRouter(prefix="/api/talent-pool", tags=["Talent Pool"])
 
 # Pydantic Models
 class TalentPoolProfile(BaseModel):

@@ -184,7 +184,20 @@ const TalentPool = () => {
               description: 'Your payment is being processed. Please refresh in a moment.',
               variant: 'default'
             });
+            // Keep subscription ID for retry
+            sessionStorage.setItem('pendingSubscriptionId', subscriptionId);
           }
+        } else if (response.status === 401) {
+          // Session expired - store for retry after re-login
+          toast({
+            title: 'Session Expired',
+            description: 'Please log in again to complete your subscription activation.',
+            variant: 'destructive'
+          });
+          sessionStorage.setItem('pendingSubscriptionId', subscriptionId);
+          sessionStorage.setItem('postAuthRedirect', `/talent-pool?payment=success&subscription_id=${subscriptionId}`);
+          navigate('/login');
+          return;
         } else {
           toast({
             title: 'Verification Issue',

@@ -84,6 +84,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db = None) -> UserResponse:
     """Get the current authenticated user from JWT token."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -93,16 +96,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db = None) -> Us
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
+            logger.error(f"JWT token missing 'sub' claim")
             raise credentials_exception
         token_data = TokenData(email=email)
-    except JWTError:
+    except JWTError as e:
+        logger.error(f"JWT decode error: {str(e)}, token prefix: {token[:20] if token else 'None'}...")
         raise credentials_exception
     
     if db is None:
+        logger.error("Database not available in get_current_user")
         raise credentials_exception
     
     user = await db.users.find_one({"email": token_data.email})
     if user is None:
+        logger.error(f"User not found for email: {token_data.email}")
         raise credentials_exception
     
     return UserResponse(

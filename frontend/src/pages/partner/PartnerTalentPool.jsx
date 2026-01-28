@@ -516,6 +516,54 @@ const PartnerTalentPool = () => {
     </div>
   );
 
+  // Render payment verification screen
+  const renderPaymentVerification = () => (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+      <Card className="max-w-md mx-4">
+        <CardContent className="pt-8 pb-8 text-center">
+          <Loader2 className="h-16 w-16 animate-spin mx-auto mb-6" style={{ color: primaryColor }} />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Verifying Payment</h2>
+          <p className="text-gray-600">Please wait while we confirm your subscription...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Render payment success screen
+  const renderPaymentSuccess = () => (
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
+      <Card className="max-w-md mx-4">
+        <CardContent className="pt-8 pb-8 text-center">
+          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+            <PartyPopper className="h-10 w-10 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Subscription Activated!</h2>
+          <p className="text-gray-600 mb-6">Welcome to the Talent Pool. You now have full access to browse and contact candidates.</p>
+          <Button 
+            onClick={() => {
+              setPaymentSuccess(false);
+              navigate(`${baseUrl}/talent-pool`, { replace: true });
+            }}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Start Browsing Talent
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Show verification screen while verifying
+  if (verifyingPayment) {
+    return renderPaymentVerification();
+  }
+
+  // Show success screen briefly after payment
+  if (paymentSuccess && !hasAccess) {
+    return renderPaymentSuccess();
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <section className="py-16 px-4 text-white" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>

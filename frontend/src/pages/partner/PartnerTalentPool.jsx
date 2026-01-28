@@ -320,11 +320,13 @@ const PartnerTalentPool = () => {
                 className="w-full"
                 style={plan.popular ? { backgroundColor: primaryColor } : {}}
                 variant={plan.popular ? 'default' : 'outline'}
-                disabled={subscribing}
+                disabled={subscribing || authLoading}
                 onClick={() => handleSubscribe(plan.id)}
               >
                 {subscribing ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>
+                ) : authLoading ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Loading...</>
                 ) : isAuthenticated ? (
                   'Subscribe Now'
                 ) : (

@@ -473,6 +473,54 @@ const MyTalentPoolProfile = () => {
     }
   };
 
+  const handleAIImproveSummary = async () => {
+    setImprovingSummary(true);
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/ai/improve-summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          current_summary: formData.summary,
+          job_title: formData.job_title,
+          industry: formData.industry,
+          experience_level: formData.experience_level,
+          skills: formData.skills,
+          bio: formData.bio
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.summary) {
+          setFormData(prev => ({ ...prev, summary: data.summary }));
+          toast({
+            title: 'Summary Improved',
+            description: 'Your professional summary has been enhanced with AI.'
+          });
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.detail || 'Failed to improve summary',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error improving summary:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to connect to AI service',
+        variant: 'destructive'
+      });
+    } finally {
+      setImprovingSummary(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

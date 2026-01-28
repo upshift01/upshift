@@ -47,11 +47,34 @@ const TalentPool = () => {
     totalPages: 0
   });
 
+  // Check for payment callback on mount and when auth is ready
   useEffect(() => {
-    fetchInitialData();
-    // Handle payment callback
-    handlePaymentCallback();
-  }, []);
+    const payment = searchParams.get('payment');
+    const subscriptionId = searchParams.get('subscription_id');
+    
+    // If we have payment params, wait for auth to be ready
+    if (payment === 'success' && subscriptionId) {
+      setVerifyingPayment(true);
+      
+      // Wait for auth to be ready before verifying
+      if (!authLoading && isAuthenticated && token) {
+        handlePaymentCallback();
+      } else if (!authLoading && !isAuthenticated) {
+        // User not logged in - redirect to login with return URL
+        sessionStorage.setItem('postAuthRedirect', `/talent-pool?payment=success&subscription_id=${subscriptionId}`);
+        navigate('/login');
+      }
+    } else if (payment === 'cancelled' || payment === 'failed') {
+      handlePaymentCallback();
+    }
+  }, [authLoading, isAuthenticated, token, searchParams]);
+
+  useEffect(() => {
+    // Only fetch initial data if not verifying payment
+    if (!verifyingPayment) {
+      fetchInitialData();
+    }
+  }, [verifyingPayment]);
 
   useEffect(() => {
     if (hasAccess) {
@@ -64,6 +87,7 @@ const TalentPool = () => {
     const subscriptionId = searchParams.get('subscription_id');
     
     if (payment === 'success' && subscriptionId && token) {
+      setVerifyingPayment(true);
       try {
         const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
           method: 'POST',
@@ -73,32 +97,58 @@ const TalentPool = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
+            setPaymentSuccess(true);
+            setHasAccess(true);
+            setSubscription(data.subscription);
             toast({
               title: 'Subscription Activated!',
               description: 'You now have access to the talent pool.'
             });
-            setHasAccess(true);
-            setSubscription(data.subscription);
+            // Fetch initial data now that we have access
+            fetchInitialData();
+          } else {
+            toast({
+              title: 'Verification Pending',
+              description: 'Your payment is being processed. Please refresh in a moment.',
+              variant: 'default'
+            });
           }
+        } else {
+          toast({
+            title: 'Verification Issue',
+            description: 'Please contact support if your payment was completed.',
+            variant: 'destructive'
+          });
         }
       } catch (error) {
         console.error('Error verifying payment:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to verify payment. Please contact support.',
+          variant: 'destructive'
+        });
+      } finally {
+        setVerifyingPayment(false);
+        // Clear URL params after a delay so user sees the success state
+        setTimeout(() => {
+          navigate('/talent-pool', { replace: true });
+        }, 2000);
       }
-      // Clear URL params
-      navigate('/talent-pool', { replace: true });
     } else if (payment === 'cancelled') {
       toast({
         title: 'Payment Cancelled',
         description: 'Your subscription was not activated.',
         variant: 'destructive'
       });
+      setVerifyingPayment(false);
       navigate('/talent-pool', { replace: true });
     } else if (payment === 'failed') {
       toast({
         title: 'Payment Failed',
-        description: 'There was an issue processing your payment.',
+        description: 'There was an issue processing your payment. Please try again.',
         variant: 'destructive'
       });
+      setVerifyingPayment(false);
       navigate('/talent-pool', { replace: true });
     }
   };

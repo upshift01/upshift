@@ -23,6 +23,7 @@ const PartnerTalentPool = () => {
   
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscribing, setSubscribing] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [plans, setPlans] = useState([]);

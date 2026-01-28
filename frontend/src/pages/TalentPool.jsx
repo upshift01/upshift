@@ -287,20 +287,16 @@ const TalentPool = () => {
               <Button 
                 className="w-full"
                 variant={plan.popular ? 'default' : 'outline'}
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    sessionStorage.setItem('postAuthRedirect', '/talent-pool');
-                    navigate('/login');
-                  } else {
-                    // TODO: Implement payment flow
-                    toast({
-                      title: 'Coming Soon',
-                      description: 'Recruiter subscriptions will be available soon!'
-                    });
-                  }
-                }}
+                disabled={subscribing}
+                onClick={() => handleSubscribe(plan.id)}
               >
-                {isAuthenticated ? 'Subscribe Now' : 'Login to Subscribe'}
+                {subscribing ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>
+                ) : isAuthenticated ? (
+                  'Subscribe Now'
+                ) : (
+                  'Login to Subscribe'
+                )}
               </Button>
             </CardContent>
           </Card>

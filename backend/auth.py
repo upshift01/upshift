@@ -40,8 +40,9 @@ class UserInDB(BaseModel):
     full_name: str
     phone: Optional[str] = None
     hashed_password: str
-    role: str = "customer"  # customer, reseller_admin, super_admin
+    role: str = "customer"  # customer, recruiter, reseller_admin, super_admin
     reseller_id: Optional[str] = None  # For customers belonging to a reseller
+    company_name: Optional[str] = None  # For recruiters
     active_tier: Optional[str] = None
     tier_activation_date: Optional[datetime] = None
     subscription_expires_at: Optional[datetime] = None  # 30 days from purchase

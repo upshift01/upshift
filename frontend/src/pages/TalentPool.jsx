@@ -455,16 +455,35 @@ const TalentPool = () => {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {candidates.map((candidate) => (
-            <Card key={candidate.id} className="hover:shadow-lg transition-shadow">
+            <Card key={candidate.id} className="hover:shadow-lg transition-shadow" data-testid={`candidate-card-${candidate.id}`}>
               <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{candidate.full_name}</h3>
-                    <p className="text-sm text-gray-600">{candidate.job_title}</p>
+                <div className="flex gap-3 mb-3">
+                  {/* Profile Picture */}
+                  <div className="flex-shrink-0">
+                    {candidate.profile_picture_url ? (
+                      <img 
+                        src={`${API_URL}${candidate.profile_picture_url}`}
+                        alt={candidate.full_name}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-gray-100"
+                        data-testid="candidate-profile-picture"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
+                        {candidate.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                    )}
                   </div>
-                  <Badge className={getExperienceBadgeColor(candidate.experience_level)}>
-                    {formatExperienceLevel(candidate.experience_level).split(' ')[0]}
-                  </Badge>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-gray-900 truncate">{candidate.full_name}</h3>
+                        <p className="text-sm text-gray-600 truncate">{candidate.job_title}</p>
+                      </div>
+                      <Badge className={`ml-2 flex-shrink-0 ${getExperienceBadgeColor(candidate.experience_level)}`}>
+                        {formatExperienceLevel(candidate.experience_level).split(' ')[0]}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2 mb-4">
@@ -501,17 +520,21 @@ const TalentPool = () => {
                     size="sm"
                     className="flex-1"
                     onClick={() => navigate(`/talent-pool/${candidate.id}`)}
+                    data-testid="view-profile-btn"
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     View Profile
                   </Button>
                   {candidate.cv_url && (
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => window.open(candidate.cv_url, '_blank')}
+                      title="Download CV"
+                      data-testid="download-cv-btn"
                     >
-                      <FileText className="h-4 w-4" />
+                      <FileText className="h-4 w-4 mr-1" />
+                      CV
                     </Button>
                   )}
                 </div>

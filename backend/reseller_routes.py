@@ -3103,3 +3103,219 @@ async def check_cv_creation_allowed(request: Request = None):
         logger.error(f"Error checking CV limit: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+# ==================== Reseller Recruiter Management ====================
+
+class RecruiterCreate(BaseModel):
+    full_name: str
+    email: str
+    company_name: str
+    phone: Optional[str] = None
+    password: str
+
+class RecruiterUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    company_name: Optional[str] = None
+    phone: Optional[str] = None
+
+class RecruiterPasswordReset(BaseModel):
+    password: str
+
+class RecruiterStatusUpdate(BaseModel):
+    status: str
+
+
+@reseller_router.get("/recruiters", response_model=dict)
+async def list_reseller_recruiters(request: Request = None):
+    """List all recruiters for this reseller"""
+    try:
+        from auth import get_password_hash
+        
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        recruiters = await db.users.find(
+            {"role": "recruiter", "reseller_id": reseller["id"]},
+            {"_id": 0, "hashed_password": 0}
+        ).sort("created_at", -1).to_list(500)
+        
+        # Check subscription status
+        for recruiter in recruiters:
+            subscription = await db.recruiter_subscriptions.find_one({
+                "user_id": recruiter.get("id"),
+                "status": "active",
+                "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
+            })
+            recruiter["has_subscription"] = subscription is not None
+        
+        return {"success": True, "recruiters": recruiters}
+    except Exception as e:
+        logger.error(f"Error listing recruiters: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.post("/recruiters", response_model=dict)
+async def create_reseller_recruiter(data: RecruiterCreate, request: Request = None):
+    """Create a new recruiter for this reseller"""
+    try:
+        from auth import get_password_hash
+        
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        existing = await db.users.find_one({"email": data.email.lower()})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        user_id = str(uuid.uuid4())
+        hashed_password = get_password_hash(data.password)
+        
+        new_user = {
+            "id": user_id,
+            "email": data.email.lower(),
+            "full_name": data.full_name,
+            "phone": data.phone,
+            "company_name": data.company_name,
+            "hashed_password": hashed_password,
+            "role": "recruiter",
+            "reseller_id": reseller["id"],
+            "status": "active",
+            "created_at": datetime.now(timezone.utc),
+            "is_active": True
+        }
+        
+        await db.users.insert_one(new_user)
+        logger.info(f"Recruiter created by reseller {reseller['id']}: {data.email}")
+        
+        return {"success": True, "message": "Recruiter created"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating recruiter: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.put("/recruiters/{recruiter_id}", response_model=dict)
+async def update_reseller_recruiter(recruiter_id: str, data: RecruiterUpdate, request: Request = None):
+    """Update recruiter details"""
+    try:
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        recruiter = await db.users.find_one({
+            "id": recruiter_id, 
+            "role": "recruiter",
+            "reseller_id": reseller["id"]
+        })
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        update_data = {k: v for k, v in data.dict().items() if v is not None}
+        if "email" in update_data:
+            update_data["email"] = update_data["email"].lower()
+        
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        await db.users.update_one({"id": recruiter_id}, {"$set": update_data})
+        
+        return {"success": True, "message": "Recruiter updated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating recruiter: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.put("/recruiters/{recruiter_id}/password", response_model=dict)
+async def reset_reseller_recruiter_password(recruiter_id: str, data: RecruiterPasswordReset, request: Request = None):
+    """Reset recruiter password"""
+    try:
+        from auth import get_password_hash
+        
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        recruiter = await db.users.find_one({
+            "id": recruiter_id,
+            "role": "recruiter",
+            "reseller_id": reseller["id"]
+        })
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        if len(data.password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        hashed_password = get_password_hash(data.password)
+        
+        await db.users.update_one(
+            {"id": recruiter_id},
+            {"$set": {"hashed_password": hashed_password, "password_updated_at": datetime.now(timezone.utc)}}
+        )
+        
+        return {"success": True, "message": "Password reset"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error resetting password: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.put("/recruiters/{recruiter_id}/status", response_model=dict)
+async def update_reseller_recruiter_status(recruiter_id: str, data: RecruiterStatusUpdate, request: Request = None):
+    """Activate or deactivate recruiter"""
+    try:
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        recruiter = await db.users.find_one({
+            "id": recruiter_id,
+            "role": "recruiter",
+            "reseller_id": reseller["id"]
+        })
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        if data.status not in ["active", "suspended"]:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        
+        await db.users.update_one(
+            {"id": recruiter_id},
+            {"$set": {"status": data.status, "is_active": data.status == "active"}}
+        )
+        
+        return {"success": True, "message": f"Recruiter {data.status}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@reseller_router.delete("/recruiters/{recruiter_id}", response_model=dict)
+async def delete_reseller_recruiter(recruiter_id: str, request: Request = None):
+    """Delete a recruiter"""
+    try:
+        context = await get_current_reseller_admin(request)
+        reseller = context["reseller"]
+        
+        recruiter = await db.users.find_one({
+            "id": recruiter_id,
+            "role": "recruiter",
+            "reseller_id": reseller["id"]
+        })
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        await db.users.delete_one({"id": recruiter_id})
+        await db.recruiter_subscriptions.delete_many({"user_id": recruiter_id})
+        await db.contact_requests.delete_many({"recruiter_user_id": recruiter_id})
+        
+        return {"success": True, "message": "Recruiter deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting recruiter: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

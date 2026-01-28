@@ -185,6 +185,10 @@ const AppContent = () => {
         <Route path="/dashboard/settings" element={<PrivateRoute><CustomerLayout><CustomerSettings /></CustomerLayout></PrivateRoute>} />
         <Route path="/dashboard/talent-pool" element={<PrivateRoute><CustomerLayout><MyTalentPoolProfile /></CustomerLayout></PrivateRoute>} />
 
+        {/* Recruiter Dashboard */}
+        <Route path="/recruiter" element={<PrivateRoute><RecruiterDashboard /></PrivateRoute>} />
+        <Route path="/recruiter/dashboard" element={<PrivateRoute><RecruiterDashboard /></PrivateRoute>} />
+
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />

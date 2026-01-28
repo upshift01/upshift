@@ -103,6 +103,8 @@ const TalentPool = () => {
             setPaymentSuccess(true);
             setHasAccess(true);
             setSubscription(data.subscription);
+            // Clear any pending subscription ID
+            sessionStorage.removeItem('pendingSubscriptionId');
             toast({
               title: 'Subscription Activated!',
               description: 'You now have access to the talent pool.'
@@ -132,10 +134,6 @@ const TalentPool = () => {
         });
       } finally {
         setVerifyingPayment(false);
-        // Clear URL params after a delay so user sees the success state
-        setTimeout(() => {
-          navigate('/talent-pool', { replace: true });
-        }, 2000);
       }
     } else if (payment === 'cancelled') {
       toast({

@@ -216,7 +216,8 @@ def get_talent_pool_routes(db, get_current_user):
             
             # Update CV URL if document ID changed
             if data.cv_document_id:
-                cv_doc = await db.user_cvs.find_one({"id": data.cv_document_id, "user_id": user_id})
+                # Check user_documents collection (CV Builder documents)
+                cv_doc = await db.user_documents.find_one({"id": data.cv_document_id, "user_id": user_id})
                 if cv_doc and cv_doc.get("pdf_url"):
                     update_data["cv_url"] = cv_doc["pdf_url"]
             

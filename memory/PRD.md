@@ -45,6 +45,7 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - [x] Customer opt-in to talent pool
 - [x] Yoco payment for recruiter subscriptions
 - [x] Contact request system
+- [x] Email notifications for contact requests (to candidate when recruiter requests, to recruiter when candidate responds)
 
 ## Technical Stack
 - **Frontend**: React 18, Tailwind CSS, Shadcn/UI

@@ -237,21 +237,18 @@ const PartnerTalentPool = () => {
               </ul>
               <Button 
                 className="w-full"
-                variant={plan.popular ? 'default' : 'outline'}
                 style={plan.popular ? { backgroundColor: primaryColor } : {}}
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    sessionStorage.setItem('postAuthRedirect', `${baseUrl}/talent-pool`);
-                    navigate(`${baseUrl}/login`);
-                  } else {
-                    toast({
-                      title: 'Coming Soon',
-                      description: 'Recruiter subscriptions will be available soon!'
-                    });
-                  }
-                }}
+                variant={plan.popular ? 'default' : 'outline'}
+                disabled={subscribing}
+                onClick={() => handleSubscribe(plan.id)}
               >
-                {isAuthenticated ? 'Subscribe Now' : 'Login to Subscribe'}
+                {subscribing ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>
+                ) : isAuthenticated ? (
+                  'Subscribe Now'
+                ) : (
+                  'Login to Subscribe'
+                )}
               </Button>
             </CardContent>
           </Card>

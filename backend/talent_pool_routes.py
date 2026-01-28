@@ -68,6 +68,69 @@ class ContactRequestResponse(BaseModel):
 def get_talent_pool_routes(db, get_current_user):
     """Factory function to create talent pool routes with database dependency"""
     
+    @talent_pool_router.post("/upload-profile-picture")
+    async def upload_profile_picture(
+        file: UploadFile = File(...),
+        current_user = Depends(get_current_user)
+    ):
+        """Upload a profile picture for talent pool profile"""
+        try:
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+            if file.content_type not in allowed_types:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Invalid file type. Please upload a JPEG, PNG, WebP, or GIF image."
+                )
+            
+            # Validate file size (max 5MB)
+            contents = await file.read()
+            if len(contents) > 5 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB.")
+            
+            # Generate unique filename
+            file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+            unique_filename = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{file_extension}"
+            file_path = os.path.join(PROFILE_PICTURE_PATH, unique_filename)
+            
+            # Save file
+            with open(file_path, "wb") as buffer:
+                buffer.write(contents)
+            
+            # Generate URL (relative path that will be served)
+            profile_picture_url = f"/api/talent-pool/profile-picture/{unique_filename}"
+            
+            # Update user's talent pool profile if they have one
+            result = await db.talent_pool_profiles.update_one(
+                {"user_id": current_user.id},
+                {"$set": {
+                    "profile_picture_url": profile_picture_url,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            logger.info(f"Profile picture uploaded for user {current_user.id}: {unique_filename}")
+            
+            return {
+                "success": True,
+                "profile_picture_url": profile_picture_url,
+                "message": "Profile picture uploaded successfully"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error uploading profile picture: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.get("/profile-picture/{filename}")
+    async def get_profile_picture(filename: str):
+        """Serve a profile picture file"""
+        file_path = os.path.join(PROFILE_PICTURE_PATH, filename)
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Profile picture not found")
+        return FileResponse(file_path)
+    
     @talent_pool_router.post("/opt-in")
     async def opt_in_talent_pool(data: TalentPoolOptIn, current_user = Depends(get_current_user)):
         """Customer opts into the talent pool"""

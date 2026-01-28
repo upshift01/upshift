@@ -35,6 +35,7 @@ const MyTalentPoolProfile = () => {
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [improvingSkills, setImprovingSkills] = useState(false);
   const [improvingBio, setImprovingBio] = useState(false);
+  const [improvingSummary, setImprovingSummary] = useState(false);
   
   const [formData, setFormData] = useState({
     full_name: '',

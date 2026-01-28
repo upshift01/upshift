@@ -139,14 +139,18 @@ async def register(user_data: UserRegister):
         user_id = str(uuid.uuid4())
         hashed_password = get_password_hash(user_data.password)
         
+        # Determine role based on account_type
+        user_role = "recruiter" if user_data.account_type == "recruiter" else "customer"
+        
         new_user = {
             "id": user_id,
             "email": user_data.email,
             "full_name": user_data.full_name,
             "phone": user_data.phone,
             "hashed_password": hashed_password,
-            "role": "customer",
+            "role": user_role,
             "reseller_id": reseller_id,
+            "company_name": user_data.company_name if user_data.account_type == "recruiter" else None,
             "active_tier": None,
             "tier_activation_date": None,
             "created_at": datetime.utcnow(),

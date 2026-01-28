@@ -1027,10 +1027,28 @@ const MyTalentPoolProfile = () => {
                   </div>
 
                   <div>
-                    <Label>Professional Summary</Label>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label>Professional Summary</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAIImproveSummary}
+                        disabled={improvingSummary}
+                        className="gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                      >
+                        {improvingSummary ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-3 w-3" />
+                        )}
+                        {formData.summary ? 'AI Improve' : 'AI Generate'}
+                      </Button>
+                    </div>
                     <Textarea
                       value={formData.summary}
                       onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
+                      placeholder="Tell recruiters about your experience, achievements, and what you're looking for..."
                       rows={5}
                     />
                   </div>

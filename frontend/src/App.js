@@ -70,6 +70,7 @@ import EmailTemplates from "./pages/reseller/EmailTemplates";
 import ResellerCalendar from "./pages/reseller/ResellerCalendar";
 import ResellerCVTemplates from "./pages/reseller/ResellerCVTemplates";
 import ResellerTalentPool from "./pages/reseller/ResellerTalentPool";
+import ResellerRecruiters from "./pages/reseller/ResellerRecruiters";
 
 // Partner Pages (White-Label URL-based routing)
 import PartnerLayout from "./components/PartnerLayout";

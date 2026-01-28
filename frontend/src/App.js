@@ -145,6 +145,8 @@ const AppContent = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/skills-generator" element={<SkillsGenerator />} />
+        <Route path="/talent-pool" element={<TalentPool />} />
+        <Route path="/talent-pool/:profileId" element={<TalentPoolProfile />} />
         <Route path="/help" element={<HelpCenter />} />
         <Route path="/help-center" element={<HelpCenter />} />
         

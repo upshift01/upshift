@@ -596,6 +596,7 @@ const TalentPool = () => {
           <Button 
             onClick={() => {
               setPaymentSuccess(false);
+              // Clear URL params and stay on talent pool to browse
               navigate('/talent-pool', { replace: true });
             }}
             className="bg-green-600 hover:bg-green-700"

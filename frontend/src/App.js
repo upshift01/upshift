@@ -204,6 +204,7 @@ const AppContent = () => {
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="talent-pool" element={<AdminTalentPool />} />
+          <Route path="recruiters" element={<AdminRecruiters />} />
         </Route>
 
         {/* Reseller Dashboard Routes */}

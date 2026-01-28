@@ -100,7 +100,7 @@ class TestAdminEndpoints:
             pytest.skip(f"Super admin login failed: {response.text}")
         
         data = response.json()
-        self.token = data.get("token")
+        self.token = data.get("access_token") or data.get("token")
         self.headers = {"Authorization": f"Bearer {self.token}"}
         print(f"✅ Super admin logged in successfully")
     
@@ -348,7 +348,7 @@ class TestResellerEndpoints:
             pytest.skip(f"Demo reseller login failed: {response.text}")
         
         data = response.json()
-        self.token = data.get("token")
+        self.token = data.get("access_token") or data.get("token")
         self.headers = {"Authorization": f"Bearer {self.token}"}
         print(f"✅ Demo reseller logged in successfully")
     
@@ -412,7 +412,8 @@ class TestSubscriptionFlow:
         if login_response.status_code != 200:
             pytest.skip(f"Test customer login failed: {login_response.text}")
         
-        token = login_response.json().get("token")
+        data = login_response.json()
+        token = data.get("access_token") or data.get("token")
         headers = {"Authorization": f"Bearer {token}"}
         
         response = requests.post(

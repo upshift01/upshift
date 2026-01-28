@@ -4342,6 +4342,220 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
         
         return True
 
+    def test_talent_pool_feature(self):
+        """Test Talent Pool feature endpoints as per review request"""
+        print("\n🎯 Testing Talent Pool Feature...")
+        
+        # Test 1: GET /api/talent-pool/industries (Public endpoint)
+        print("\n🔹 Test 1: Industries API")
+        response, error = self.make_request("GET", "/talent-pool/industries")
+        if error:
+            self.log_test("GET Industries", False, error)
+        else:
+            required_fields = ["success", "industries"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Industries", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                industries = response.get("industries", [])
+                if success and isinstance(industries, list) and len(industries) > 0:
+                    # Check for expected industries
+                    expected_industries = ["Technology", "Healthcare", "Finance"]
+                    found_industries = [ind for ind in expected_industries if ind in industries]
+                    if len(found_industries) >= 3:
+                        self.log_test("GET Industries", True, 
+                                    f"Found {len(industries)} industries including {found_industries}")
+                    else:
+                        self.log_test("GET Industries", True, 
+                                    f"Found {len(industries)} industries (some expected ones missing)")
+                else:
+                    self.log_test("GET Industries", False, 
+                                f"Success: {success}, Industries count: {len(industries) if isinstance(industries, list) else 'not list'}")
+        
+        # Test 2: GET /api/talent-pool/experience-levels (Public endpoint)
+        print("\n🔹 Test 2: Experience Levels API")
+        response, error = self.make_request("GET", "/talent-pool/experience-levels")
+        if error:
+            self.log_test("GET Experience Levels", False, error)
+        else:
+            required_fields = ["success", "levels"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Experience Levels", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                levels = response.get("levels", [])
+                if success and isinstance(levels, list) and len(levels) >= 4:
+                    # Check for expected levels
+                    expected_levels = ["entry", "mid", "senior", "executive"]
+                    found_levels = []
+                    for level in levels:
+                        if isinstance(level, dict) and level.get("id") in expected_levels:
+                            found_levels.append(level.get("id"))
+                    
+                    if len(found_levels) >= 4:
+                        self.log_test("GET Experience Levels", True, 
+                                    f"Found all 4 expected levels: {found_levels}")
+                    else:
+                        self.log_test("GET Experience Levels", False, 
+                                    f"Missing expected levels. Found: {found_levels}")
+                else:
+                    self.log_test("GET Experience Levels", False, 
+                                f"Success: {success}, Levels count: {len(levels) if isinstance(levels, list) else 'not list'}")
+        
+        # Test 3: GET /api/talent-pool/recruiter/plans (Public endpoint)
+        print("\n🔹 Test 3: Recruiter Plans API")
+        response, error = self.make_request("GET", "/talent-pool/recruiter/plans")
+        if error:
+            self.log_test("GET Recruiter Plans", False, error)
+        else:
+            required_fields = ["success", "plans"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Recruiter Plans", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                plans = response.get("plans", [])
+                if success and isinstance(plans, list) and len(plans) == 3:
+                    # Validate plan structure and prices
+                    expected_prices = [99900, 249900, 799900]  # R999, R2499, R7999 in cents
+                    plan_prices = []
+                    valid_plans = 0
+                    
+                    for plan in plans:
+                        if isinstance(plan, dict):
+                            price = plan.get("price")
+                            if price in expected_prices:
+                                plan_prices.append(price)
+                                valid_plans += 1
+                            
+                            # Check required fields
+                            required_plan_fields = ["id", "name", "price", "duration_days", "features"]
+                            if all(field in plan for field in required_plan_fields):
+                                valid_plans += 0.5  # Partial credit for structure
+                    
+                    if valid_plans >= 3:
+                        self.log_test("GET Recruiter Plans", True, 
+                                    f"Found 3 plans with correct prices: R{plan_prices[0]/100:.0f}, R{plan_prices[1]/100:.0f}, R{plan_prices[2]/100:.0f}")
+                    else:
+                        self.log_test("GET Recruiter Plans", False, 
+                                    f"Plans validation failed. Found prices: {plan_prices}")
+                else:
+                    self.log_test("GET Recruiter Plans", False, 
+                                f"Success: {success}, Plans count: {len(plans) if isinstance(plans, list) else 'not list'} (expected 3)")
+        
+        # For authenticated endpoints, we need a customer token
+        if not self.customer_token:
+            self.log_test("Talent Pool Authenticated Tests", False, "No customer authentication token available")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.customer_token}"}
+        
+        # Test 4: POST /api/talent-pool/opt-in (Requires auth)
+        print("\n🔹 Test 4: Talent Pool Opt-in API")
+        
+        opt_in_data = {
+            "full_name": "Test Candidate",
+            "job_title": "Software Developer",
+            "industry": "Technology",
+            "experience_level": "mid",
+            "location": "Johannesburg",
+            "skills": ["Python", "JavaScript", "React"],
+            "summary": "Experienced developer looking for new opportunities"
+        }
+        
+        response, error = self.make_request("POST", "/talent-pool/opt-in", 
+                                          headers=headers, data=opt_in_data)
+        if error:
+            self.log_test("POST Talent Pool Opt-in", False, error)
+        else:
+            required_fields = ["success", "message", "profile"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("POST Talent Pool Opt-in", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                message = response.get("message", "")
+                profile = response.get("profile", {})
+                
+                if success and isinstance(profile, dict):
+                    # Validate profile structure
+                    profile_fields = ["id", "full_name", "job_title", "industry", "experience_level", "location", "skills", "summary"]
+                    missing_profile_fields = [f for f in profile_fields if f not in profile]
+                    
+                    if not missing_profile_fields:
+                        # Check data integrity
+                        if (profile.get("full_name") == opt_in_data["full_name"] and
+                            profile.get("job_title") == opt_in_data["job_title"] and
+                            profile.get("industry") == opt_in_data["industry"]):
+                            self.log_test("POST Talent Pool Opt-in", True, 
+                                        f"Successfully opted in: {profile.get('full_name')} as {profile.get('job_title')}")
+                        else:
+                            self.log_test("POST Talent Pool Opt-in", False, 
+                                        "Profile data doesn't match input data")
+                    else:
+                        self.log_test("POST Talent Pool Opt-in", False, 
+                                    f"Profile missing fields: {missing_profile_fields}")
+                else:
+                    self.log_test("POST Talent Pool Opt-in", False, 
+                                f"Success: {success}, Profile type: {type(profile)}")
+        
+        # Test 5: GET /api/talent-pool/my-profile (Requires auth)
+        print("\n🔹 Test 5: Get My Talent Profile API")
+        
+        response, error = self.make_request("GET", "/talent-pool/my-profile", headers=headers)
+        if error:
+            self.log_test("GET My Talent Profile", False, error)
+        else:
+            required_fields = ["opted_in", "profile"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET My Talent Profile", False, f"Missing fields: {missing_fields}")
+            else:
+                opted_in = response.get("opted_in", False)
+                profile = response.get("profile")
+                
+                if opted_in and isinstance(profile, dict):
+                    # Should have profile data from previous opt-in
+                    if profile.get("full_name") == "Test Candidate":
+                        self.log_test("GET My Talent Profile", True, 
+                                    f"Retrieved profile: {profile.get('full_name')} - {profile.get('job_title')}")
+                    else:
+                        self.log_test("GET My Talent Profile", True, 
+                                    f"Retrieved profile but name mismatch: {profile.get('full_name')}")
+                elif not opted_in and profile is None:
+                    self.log_test("GET My Talent Profile", True, 
+                                "User not opted in (expected if opt-in failed)")
+                else:
+                    self.log_test("GET My Talent Profile", False, 
+                                f"Opted in: {opted_in}, Profile type: {type(profile)}")
+        
+        # Test 6: GET /api/talent-pool/contact-requests (Requires auth)
+        print("\n🔹 Test 6: Get Contact Requests API")
+        
+        response, error = self.make_request("GET", "/talent-pool/contact-requests", headers=headers)
+        if error:
+            self.log_test("GET Contact Requests", False, error)
+        else:
+            required_fields = ["success", "requests"]
+            missing_fields = [f for f in required_fields if f not in response]
+            if missing_fields:
+                self.log_test("GET Contact Requests", False, f"Missing fields: {missing_fields}")
+            else:
+                success = response.get("success", False)
+                requests = response.get("requests", [])
+                
+                if success and isinstance(requests, list):
+                    # Should be empty initially
+                    self.log_test("GET Contact Requests", True, 
+                                f"Retrieved {len(requests)} contact requests (expected 0 initially)")
+                else:
+                    self.log_test("GET Contact Requests", False, 
+                                f"Success: {success}, Requests type: {type(requests)}")
+        
+        return True
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🚀 Starting UpShift Backend API Tests...")

@@ -3,15 +3,22 @@ Talent Pool Routes - API endpoints for the Talent Pool / CV Directory feature
 Allows customers to opt-in to be visible to recruiters, and recruiters to browse and request contact
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime, timezone
 from bson import ObjectId
 import uuid
 import logging
+import os
+import shutil
 
 logger = logging.getLogger(__name__)
+
+# Profile picture storage path
+PROFILE_PICTURE_PATH = "/app/public/uploads/profile_pictures"
+os.makedirs(PROFILE_PICTURE_PATH, exist_ok=True)
 
 talent_pool_router = APIRouter(prefix="/api/talent-pool", tags=["Talent Pool"])
 

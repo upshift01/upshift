@@ -23,6 +23,7 @@ const PartnerNavbar = () => {
     { name: 'Cover Letter', path: `${baseUrl}/cover-letter` },
     { name: 'ATS Checker', path: `${baseUrl}/ats-checker`, isFree: true },
     { name: 'Skills Generator', path: `${baseUrl}/skills-generator`, isFree: true },
+    { name: 'Talent Pool', path: `${baseUrl}/talent-pool` },
     { name: 'Contact', path: `${baseUrl}/contact` }
   ];
 

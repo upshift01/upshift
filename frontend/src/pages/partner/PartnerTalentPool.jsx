@@ -73,13 +73,69 @@ const PartnerTalentPool = () => {
       fetchInitialData();
     }
   }, [verifyingPayment]);
-  }, []);
 
   useEffect(() => {
     if (hasAccess) {
       fetchCandidates();
     }
   }, [filters, pagination.page, hasAccess]);
+
+  const handlePaymentCallback = async () => {
+    const payment = searchParams.get('payment');
+    const subscriptionId = searchParams.get('subscription_id');
+    
+    if (payment === 'success' && subscriptionId && token) {
+      setVerifyingPayment(true);
+      try {
+        const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setPaymentSuccess(true);
+            setHasAccess(true);
+            setSubscription(data.subscription);
+            toast({
+              title: 'Subscription Activated!',
+              description: 'You now have access to the talent pool.'
+            });
+            fetchInitialData();
+          }
+        }
+      } catch (error) {
+        console.error('Error verifying payment:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to verify payment. Please contact support.',
+          variant: 'destructive'
+        });
+      } finally {
+        setVerifyingPayment(false);
+        setTimeout(() => {
+          navigate(`${baseUrl}/talent-pool`, { replace: true });
+        }, 2000);
+      }
+    } else if (payment === 'cancelled') {
+      toast({
+        title: 'Payment Cancelled',
+        description: 'Your subscription was not activated.',
+        variant: 'destructive'
+      });
+      setVerifyingPayment(false);
+      navigate(`${baseUrl}/talent-pool`, { replace: true });
+    } else if (payment === 'failed') {
+      toast({
+        title: 'Payment Failed',
+        description: 'There was an issue processing your payment.',
+        variant: 'destructive'
+      });
+      setVerifyingPayment(false);
+      navigate(`${baseUrl}/talent-pool`, { replace: true });
+    }
+  };
 
   const fetchInitialData = async () => {
     try {

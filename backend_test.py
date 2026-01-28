@@ -4593,7 +4593,8 @@ Python, JavaScript, React, Node.js, SQL, Git, AWS"""
             self.test_trial_system,  # Add the new trial system tests
             self.test_help_center_apis,  # Add Help Center tests
             self.test_subscription_expiry_system,  # Add Subscription Expiry tests
-            self.test_tier3_payment_flow  # Add Tier-3 Payment Flow test
+            self.test_tier3_payment_flow,  # Add Tier-3 Payment Flow test
+            self.test_talent_pool_feature  # Add Talent Pool Feature test
         ]
         
         # Skip authentication in the loop since we run it separately

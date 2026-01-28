@@ -164,8 +164,7 @@ Generate skills now:"""
     ):
         """AI-powered bio generation/improvement for talent pool profile"""
         try:
-            from emergentintegrations.llm.chat import LlmChat
-            from emergentintegrations.llm.models import UserMessage
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
             
             EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
             if not EMERGENT_LLM_KEY:

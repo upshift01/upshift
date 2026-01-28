@@ -170,6 +170,27 @@ const Navbar = () => {
               </Link>
             ))}
             
+            {/* Mobile Talent Pool Links */}
+            <div className="px-4 py-2 border-t border-gray-100 mt-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Talent Pool</p>
+              <Link
+                to="/talent-pool"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 py-2 text-sm text-gray-700 hover:text-blue-600"
+              >
+                <Users className="h-4 w-4" />
+                For Recruiters - Browse Talent
+              </Link>
+              <Link
+                to={isAuthenticated ? "/dashboard/talent-pool" : "/register?redirect=/dashboard/talent-pool"}
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 py-2 text-sm text-gray-700 hover:text-green-600"
+              >
+                <UserPlus className="h-4 w-4" />
+                For Job Seekers - Get Discovered
+              </Link>
+            </div>
+            
             {isAuthenticated ? (
               <>
                 <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>

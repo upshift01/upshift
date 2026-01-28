@@ -453,10 +453,10 @@ def get_talent_pool_routes(db, get_current_user):
     
     # Recruiter subscription endpoints
     @talent_pool_router.get("/recruiter/subscription")
-    async def get_recruiter_subscription(current_user: dict = Depends(get_current_user)):
+    async def get_recruiter_subscription(current_user = Depends(get_current_user)):
         """Get current user's recruiter subscription status"""
         try:
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             subscription = await db.recruiter_subscriptions.find_one(
                 {"user_id": user_id},

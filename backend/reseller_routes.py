@@ -876,8 +876,9 @@ async def upgrade_subscription(
         # Create Yoco checkout
         import httpx
         
-        success_url = f"{os.environ.get('REACT_APP_BACKEND_URL', '')}/reseller-dashboard/subscription/success?plan={plan_id}"
-        cancel_url = f"{os.environ.get('REACT_APP_BACKEND_URL', '')}/reseller-dashboard/subscription"
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+        success_url = f"{frontend_url}/reseller-dashboard/subscription/success?plan={plan_id}"
+        cancel_url = f"{frontend_url}/reseller-dashboard/subscription"
         
         checkout_data = {
             "amount": amount,

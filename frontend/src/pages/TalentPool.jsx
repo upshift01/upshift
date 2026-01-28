@@ -52,19 +52,21 @@ const TalentPool = () => {
     const payment = searchParams.get('payment');
     const subscriptionId = searchParams.get('subscription_id');
     
-    // If we have payment params, wait for auth to be ready
+    // If we have payment success params
     if (payment === 'success' && subscriptionId) {
-      setVerifyingPayment(true);
+      // Store the subscription ID immediately in case we need to redirect
+      sessionStorage.setItem('pendingSubscriptionId', subscriptionId);
       
-      // Wait for auth to be ready before verifying
-      if (!authLoading && isAuthenticated && token) {
-        handlePaymentCallback();
-      } else if (!authLoading && !isAuthenticated) {
-        // User not logged in - store the subscription ID and redirect to login
-        // The subscription ID is saved so we can verify after login
-        sessionStorage.setItem('pendingSubscriptionId', subscriptionId);
-        sessionStorage.setItem('postAuthRedirect', '/talent-pool?payment=success&subscription_id=' + subscriptionId);
-        navigate('/login');
+      if (!authLoading) {
+        if (isAuthenticated && token) {
+          // User is authenticated, verify the payment
+          setVerifyingPayment(true);
+          handlePaymentCallback();
+        } else {
+          // User not logged in - redirect to login
+          sessionStorage.setItem('postAuthRedirect', `/talent-pool?payment=success&subscription_id=${subscriptionId}`);
+          navigate('/login');
+        }
       }
       // If authLoading is true, wait for it to finish (the effect will re-run)
     } else if (payment === 'cancelled' || payment === 'failed') {
@@ -75,12 +77,13 @@ const TalentPool = () => {
   // Check for pending subscription verification after login redirect
   useEffect(() => {
     const pendingSubscriptionId = sessionStorage.getItem('pendingSubscriptionId');
-    if (pendingSubscriptionId && isAuthenticated && token && !verifyingPayment) {
+    if (pendingSubscriptionId && isAuthenticated && token && !authLoading && !verifyingPayment) {
       // We have a pending subscription to verify after login
+      console.log('Verifying pending subscription:', pendingSubscriptionId);
       setVerifyingPayment(true);
       verifyPendingSubscription(pendingSubscriptionId);
     }
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, authLoading, verifyingPayment]);
 
   const verifyPendingSubscription = async (subscriptionId) => {
     try {

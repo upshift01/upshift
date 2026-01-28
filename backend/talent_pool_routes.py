@@ -164,10 +164,10 @@ def get_talent_pool_routes(db, get_current_user):
             raise HTTPException(status_code=500, detail=str(e))
     
     @talent_pool_router.delete("/opt-out")
-    async def opt_out_talent_pool(current_user: dict = Depends(get_current_user)):
+    async def opt_out_talent_pool(current_user = Depends(get_current_user)):
         """Remove from talent pool"""
         try:
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             result = await db.talent_pool_profiles.delete_one({"user_id": user_id})
             

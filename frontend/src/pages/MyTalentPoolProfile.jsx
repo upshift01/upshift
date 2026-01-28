@@ -638,7 +638,25 @@ const MyTalentPoolProfile = () => {
               </div>
 
               <div>
-                <Label>Skills *</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Skills *</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAIImproveSkills}
+                    disabled={improvingSkills}
+                    className="gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                    data-testid="ai-improve-skills-btn"
+                  >
+                    {improvingSkills ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3" />
+                    )}
+                    AI Improve
+                  </Button>
+                </div>
                 <div className="flex gap-2 mb-2">
                   <Input
                     value={newSkill}
@@ -661,6 +679,43 @@ const MyTalentPoolProfile = () => {
                     </Badge>
                   ))}
                 </div>
+                {formData.skills.length === 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Tip: Fill in your job title and industry first, then click "AI Improve" to generate relevant skills
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Bio (Optional)</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAIImproveBio}
+                    disabled={improvingBio}
+                    className="gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                    data-testid="ai-improve-bio-btn"
+                  >
+                    {improvingBio ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3" />
+                    )}
+                    {formData.bio ? 'AI Improve' : 'AI Generate'}
+                  </Button>
+                </div>
+                <Textarea
+                  value={formData.bio}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  placeholder="A short bio about yourself that recruiters will see first..."
+                  rows={3}
+                  data-testid="bio-textarea"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  A compelling bio helps you stand out. Use AI to generate or improve it.
+                </p>
               </div>
 
               <div>

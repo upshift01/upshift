@@ -87,8 +87,13 @@ const MyTalentPoolProfile = () => {
             skills: data.profile.skills || [],
             summary: data.profile.summary || '',
             cv_document_id: data.profile.cv_document_id || '',
+            profile_picture_url: data.profile.profile_picture_url || '',
             is_visible: data.profile.is_visible ?? true
           });
+          // Set profile picture preview if exists
+          if (data.profile.profile_picture_url) {
+            setProfilePicturePreview(`${API_URL}${data.profile.profile_picture_url}`);
+          }
         } else {
           // Pre-fill with user data
           setFormData(prev => ({

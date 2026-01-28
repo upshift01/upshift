@@ -8,7 +8,7 @@ import json
 import sys
 
 # Get backend URL from environment
-BACKEND_URL = "https://cv-platform-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://upshift-cv.preview.emergentagent.com/api"
 
 # Demo reseller credentials from review request
 DEMO_RESELLER_CREDS = {

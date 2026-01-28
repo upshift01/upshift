@@ -67,6 +67,7 @@ import DomainSetup from "./pages/reseller/DomainSetup";
 import EmailTemplates from "./pages/reseller/EmailTemplates";
 import ResellerCalendar from "./pages/reseller/ResellerCalendar";
 import ResellerCVTemplates from "./pages/reseller/ResellerCVTemplates";
+import ResellerTalentPool from "./pages/reseller/ResellerTalentPool";
 
 // Partner Pages (White-Label URL-based routing)
 import PartnerLayout from "./components/PartnerLayout";
@@ -216,6 +217,7 @@ const AppContent = () => {
           <Route path="email-templates" element={<EmailTemplates />} />
           <Route path="calendar" element={<ResellerCalendar />} />
           <Route path="cv-templates" element={<ResellerCVTemplates />} />
+          <Route path="talent-pool" element={<ResellerTalentPool />} />
         </Route>
 
         {/* Partner/White-Label Routes (URL-based subdomain routing) */}

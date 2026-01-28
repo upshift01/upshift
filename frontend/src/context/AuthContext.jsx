@@ -34,20 +34,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, fullName, phone, resellerId = null) => {
+  const register = async (email, password, fullName, phone, resellerId = null, accountType = 'customer', companyName = null) => {
     try {
       const response = await axios.post(`${API_URL}/api/auth/register`, {
         email,
         password,
         full_name: fullName,
         phone,
-        reseller_id: resellerId
+        reseller_id: resellerId,
+        account_type: accountType,
+        company_name: companyName
       });
       const { access_token, user: userData } = response.data;
       localStorage.setItem('token', access_token);
       setToken(access_token);
       setUser(userData);
-      return { success: true };
+      return { success: true, user: userData };
     } catch (error) {
       return {
         success: false,

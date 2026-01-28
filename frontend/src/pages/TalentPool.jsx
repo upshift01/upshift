@@ -72,6 +72,45 @@ const TalentPool = () => {
     }
   }, [authLoading, isAuthenticated, token, searchParams]);
 
+  // Check for pending subscription verification after login redirect
+  useEffect(() => {
+    const pendingSubscriptionId = sessionStorage.getItem('pendingSubscriptionId');
+    if (pendingSubscriptionId && isAuthenticated && token && !verifyingPayment) {
+      // We have a pending subscription to verify after login
+      setVerifyingPayment(true);
+      verifyPendingSubscription(pendingSubscriptionId);
+    }
+  }, [isAuthenticated, token]);
+
+  const verifyPendingSubscription = async (subscriptionId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setPaymentSuccess(true);
+          setHasAccess(true);
+          setSubscription(data.subscription);
+          sessionStorage.removeItem('pendingSubscriptionId');
+          toast({
+            title: 'Subscription Activated!',
+            description: 'You now have access to the talent pool.'
+          });
+          fetchInitialData();
+        }
+      }
+    } catch (error) {
+      console.error('Error verifying pending subscription:', error);
+    } finally {
+      setVerifyingPayment(false);
+      sessionStorage.removeItem('pendingSubscriptionId');
+    }
+  };
+
   useEffect(() => {
     // Only fetch initial data if not verifying payment
     if (!verifyingPayment) {

@@ -33,6 +33,8 @@ const MyTalentPoolProfile = () => {
   const [experienceLevels, setExperienceLevels] = useState([]);
   const [userCVs, setUserCVs] = useState([]);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+  const [improvingSkills, setImprovingSkills] = useState(false);
+  const [improvingBio, setImprovingBio] = useState(false);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -41,6 +43,7 @@ const MyTalentPoolProfile = () => {
     experience_level: '',
     location: '',
     skills: [],
+    bio: '',
     summary: '',
     cv_document_id: '',
     profile_picture_url: '',

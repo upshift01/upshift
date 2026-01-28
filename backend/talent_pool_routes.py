@@ -249,6 +249,95 @@ Write ONLY the bio text, no explanations or quotes."""
             logger.error(f"Error generating AI bio: {e}")
             raise HTTPException(status_code=500, detail="Failed to generate bio. Please try again.")
     
+    @talent_pool_router.post("/ai/improve-summary")
+    async def ai_improve_summary(
+        data: ImproveSummaryRequest,
+        current_user = Depends(get_current_user)
+    ):
+        """AI-powered professional summary generation/improvement for talent pool profile"""
+        try:
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            
+            EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
+            if not EMERGENT_LLM_KEY:
+                raise HTTPException(status_code=500, detail="AI service not configured")
+            
+            skills_str = ", ".join(data.skills) if data.skills else "Not specified"
+            
+            if data.current_summary:
+                prompt = f"""You are an expert career advisor helping candidates optimize their professional summary for talent pool profiles.
+
+Improve and enhance this existing professional summary:
+
+Current Summary: {data.current_summary}
+
+Profile Context:
+- Job Title: {data.job_title or 'Not specified'}
+- Industry: {data.industry or 'Not specified'}
+- Experience Level: {data.experience_level or 'Not specified'}
+- Skills: {skills_str}
+- Bio: {data.bio or 'Not provided'}
+
+Instructions:
+- Enhance the summary while preserving the candidate's unique experiences and achievements
+- Make it compelling, detailed, and recruiter-friendly
+- Include 4-6 sentences (150-250 words)
+- Highlight career achievements, expertise, and what they bring to potential employers
+- Use professional language with industry-specific keywords
+- Mention specific accomplishments or impact where possible
+- Include what they're looking for in their next role
+- Write in first person, using "I" naturally but not excessively
+
+Write ONLY the improved summary text, no explanations or quotes."""
+            else:
+                prompt = f"""You are an expert career advisor helping candidates create compelling professional summaries for talent pool profiles.
+
+Create a professional summary based on:
+
+Job Title: {data.job_title or 'Not specified'}
+Industry: {data.industry or 'Not specified'}
+Experience Level: {data.experience_level or 'Not specified'}
+Skills: {skills_str}
+Bio: {data.bio or 'Not provided'}
+
+Instructions:
+- Create a compelling, detailed professional summary
+- Include 4-6 sentences (150-250 words)
+- Highlight potential expertise, skills, and value proposition
+- Use professional language with industry-specific keywords
+- Mention the type of impact they can make
+- Include what they might be looking for in their next opportunity
+- Write in first person, using "I" naturally but not excessively
+- Make it feel authentic and personalized, not generic
+
+Write ONLY the summary text, no explanations or quotes."""
+
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"talent-summary-{current_user.id}",
+                system_message="You are an expert career advisor specializing in professional branding and talent profiles."
+            ).with_model("openai", "gpt-4o")
+            
+            response = await chat.send_message(UserMessage(text=prompt))
+            
+            if hasattr(response, 'text'):
+                summary_text = response.text.strip()
+            else:
+                summary_text = str(response).strip()
+            
+            # Clean up response
+            summary_text = summary_text.strip('"\'')
+            
+            logger.info(f"AI summary generated for user {current_user.email}")
+            
+            return {"success": True, "summary": summary_text}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error generating AI summary: {e}")
+            raise HTTPException(status_code=500, detail="Failed to generate summary. Please try again.")
+    
     @talent_pool_router.post("/upload-profile-picture")
     async def upload_profile_picture(
         file: UploadFile = File(...),

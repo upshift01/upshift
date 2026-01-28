@@ -10,7 +10,7 @@ from reseller_models import (
     Reseller, ResellerResponse, PlatformAnalytics,
     ResellerInvoice, InvoiceItem
 )
-from auth import UserResponse
+from auth import UserResponse, get_password_hash
 from invoice_pdf_service import invoice_pdf_generator
 
 logger = logging.getLogger(__name__)

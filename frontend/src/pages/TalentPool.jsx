@@ -610,8 +610,8 @@ const TalentPool = () => {
     return renderPaymentVerification();
   }
 
-  // Show success screen briefly after payment
-  if (paymentSuccess && !hasAccess) {
+  // Show success screen after payment verification
+  if (paymentSuccess) {
     return renderPaymentSuccess();
   }
 

@@ -34,27 +34,25 @@ const Login = () => {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      // Check if there's a post-auth redirect stored
+      // Check if there's a post-auth redirect stored (e.g., from payment callback)
       const postAuthRedirect = sessionStorage.getItem('postAuthRedirect');
       sessionStorage.removeItem('postAuthRedirect');
       
-      // Redirect based on user role, or to stored redirect
-      const userRole = result.user?.role;
-      if (userRole === 'super_admin') {
-        navigate('/super-admin', { replace: true });
-      } else if (userRole === 'reseller_admin') {
-        navigate('/reseller-dashboard', { replace: true });
-      } else if (userRole === 'recruiter') {
-        // Recruiters go to their dashboard or talent pool
-        if (postAuthRedirect) {
-          navigate(postAuthRedirect, { replace: true });
-        } else {
-          navigate('/recruiter', { replace: true });
-        }
-      } else if (postAuthRedirect) {
+      // If there's a redirect stored, always use it (payment flow takes priority)
+      if (postAuthRedirect) {
         navigate(postAuthRedirect, { replace: true });
       } else {
-        navigate(from, { replace: true });
+        // Otherwise redirect based on user role
+        const userRole = result.user?.role;
+        if (userRole === 'super_admin') {
+          navigate('/super-admin', { replace: true });
+        } else if (userRole === 'reseller_admin') {
+          navigate('/reseller-dashboard', { replace: true });
+        } else if (userRole === 'recruiter') {
+          navigate('/recruiter', { replace: true });
+        } else {
+          navigate(from, { replace: true });
+        }
       }
     } else {
       setError(result.error);

@@ -20,7 +20,9 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     fullName: '',
-    phone: ''
+    phone: '',
+    accountType: 'customer', // 'customer' or 'recruiter'
+    companyName: ''
   });
 
   const handleChange = (e) => {

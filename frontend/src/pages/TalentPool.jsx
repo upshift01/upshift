@@ -60,10 +60,13 @@ const TalentPool = () => {
       if (!authLoading && isAuthenticated && token) {
         handlePaymentCallback();
       } else if (!authLoading && !isAuthenticated) {
-        // User not logged in - redirect to login with return URL
-        sessionStorage.setItem('postAuthRedirect', `/talent-pool?payment=success&subscription_id=${subscriptionId}`);
+        // User not logged in - store the subscription ID and redirect to login
+        // The subscription ID is saved so we can verify after login
+        sessionStorage.setItem('pendingSubscriptionId', subscriptionId);
+        sessionStorage.setItem('postAuthRedirect', '/talent-pool?payment=success&subscription_id=' + subscriptionId);
         navigate('/login');
       }
+      // If authLoading is true, wait for it to finish (the effect will re-run)
     } else if (payment === 'cancelled' || payment === 'failed') {
       handlePaymentCallback();
     }

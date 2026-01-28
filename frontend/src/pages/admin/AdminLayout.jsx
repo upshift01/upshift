@@ -37,6 +37,7 @@ const AdminLayout = () => {
     { path: '/super-admin/crm', icon: UserPlus, label: 'CRM / Leads' },
     { path: '/super-admin/calendar', icon: Calendar, label: 'Bookings' },
     { path: '/super-admin/users', icon: Users, label: 'Users' },
+    { path: '/super-admin/recruiters', icon: UserSearch, label: 'Recruiters' },
     { path: '/super-admin/talent-pool', icon: UserSearch, label: 'Talent Pool' },
     { path: '/super-admin/invoices', icon: Receipt, label: 'Invoices' },
     { path: '/super-admin/pricing', icon: DollarSign, label: 'Pricing' },

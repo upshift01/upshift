@@ -98,6 +98,7 @@ import PartnerBilling from "./pages/partner/PartnerBilling";
 import PartnerSettings from "./pages/partner/PartnerSettings";
 import PartnerJobTracker from "./pages/partner/PartnerJobTracker";
 import PartnerInterviewPrep from "./pages/partner/PartnerInterviewPrep";
+import PartnerTalentPool from "./pages/partner/PartnerTalentPool";
 
 // Main Site Password Reset
 import ForgotPassword from "./pages/ForgotPassword";

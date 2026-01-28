@@ -137,6 +137,7 @@ const PartnerTalentPool = () => {
             setPaymentSuccess(true);
             setHasAccess(true);
             setSubscription(data.subscription);
+            sessionStorage.removeItem('pendingSubscriptionId');
             toast({
               title: 'Subscription Activated!',
               description: 'You now have access to the talent pool.'
@@ -153,9 +154,6 @@ const PartnerTalentPool = () => {
         });
       } finally {
         setVerifyingPayment(false);
-        setTimeout(() => {
-          navigate(`${baseUrl}/talent-pool`, { replace: true });
-        }, 2000);
       }
     } else if (payment === 'cancelled') {
       toast({

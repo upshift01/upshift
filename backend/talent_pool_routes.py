@@ -80,6 +80,14 @@ class ImproveBioRequest(BaseModel):
     experience_level: str = ""
     skills: List[str] = []
 
+class ImproveSummaryRequest(BaseModel):
+    current_summary: str = ""
+    job_title: str = ""
+    industry: str = ""
+    experience_level: str = ""
+    skills: List[str] = []
+    bio: str = ""
+
 
 def get_talent_pool_routes(db, get_current_user):
     """Factory function to create talent pool routes with database dependency"""

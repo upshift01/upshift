@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePartner } from '../../context/PartnerContext';
 import { Button } from '../../components/ui/button';
@@ -9,7 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import {
   Search, Users, Briefcase, MapPin, Award, Filter, ChevronRight,
-  Loader2, Lock, Crown, FileText, Star, CheckCircle, Eye, UserPlus
+  Loader2, Lock, Crown, FileText, Star, CheckCircle, Eye, UserPlus, PartyPopper
 } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 
@@ -17,13 +17,16 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PartnerTalentPool = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, token } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { isAuthenticated, token, loading: authLoading } = useAuth();
   const { brandName, primaryColor, secondaryColor, baseUrl, resellerId } = usePartner();
   const { toast } = useToast();
   
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [plans, setPlans] = useState([]);
@@ -46,8 +49,30 @@ const PartnerTalentPool = () => {
     totalPages: 0
   });
 
+  // Check for payment callback on mount and when auth is ready
   useEffect(() => {
-    fetchInitialData();
+    const payment = searchParams.get('payment');
+    const subscriptionId = searchParams.get('subscription_id');
+    
+    if (payment === 'success' && subscriptionId) {
+      setVerifyingPayment(true);
+      
+      if (!authLoading && isAuthenticated && token) {
+        handlePaymentCallback();
+      } else if (!authLoading && !isAuthenticated) {
+        sessionStorage.setItem('postAuthRedirect', `${baseUrl}/talent-pool?payment=success&subscription_id=${subscriptionId}`);
+        navigate(`${baseUrl}/login`);
+      }
+    } else if (payment === 'cancelled' || payment === 'failed') {
+      handlePaymentCallback();
+    }
+  }, [authLoading, isAuthenticated, token, searchParams]);
+
+  useEffect(() => {
+    if (!verifyingPayment) {
+      fetchInitialData();
+    }
+  }, [verifyingPayment]);
   }, []);
 
   useEffect(() => {

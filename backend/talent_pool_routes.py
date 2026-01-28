@@ -331,10 +331,10 @@ def get_talent_pool_routes(db, get_current_user):
             raise HTTPException(status_code=500, detail=str(e))
     
     @talent_pool_router.post("/request-contact/{profile_id}")
-    async def request_contact(profile_id: str, data: ContactRequest, current_user: dict = Depends(get_current_user)):
+    async def request_contact(profile_id: str, data: ContactRequest, current_user = Depends(get_current_user)):
         """Recruiter requests contact with a candidate"""
         try:
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             # Check recruiter access
             recruiter_access = await db.recruiter_subscriptions.find_one({
@@ -343,7 +343,7 @@ def get_talent_pool_routes(db, get_current_user):
                 "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
             })
             
-            if not recruiter_access and current_user.get("role") != "super_admin":
+            if not recruiter_access and current_user.role != "super_admin":
                 raise HTTPException(status_code=403, detail="Recruiter subscription required")
             
             # Get candidate profile

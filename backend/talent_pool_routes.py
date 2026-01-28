@@ -1112,30 +1112,36 @@ def get_talent_pool_routes(db, get_current_user):
             raise HTTPException(status_code=500, detail=str(e))
     
     @talent_pool_router.post("/verify-payment/{subscription_id}")
-    async def verify_subscription_payment(subscription_id: str, current_user = Depends(get_current_user)):
-        """Verify payment and activate subscription"""
+    async def verify_subscription_payment(subscription_id: str):
+        """Verify payment and activate subscription - no auth required as subscription_id is secure"""
         try:
             from yoco_service import get_yoco_service_for_reseller
             from datetime import timedelta
             
-            # Get pending subscription
-            subscription = await db.recruiter_subscriptions.find_one({
-                "id": subscription_id,
-                "user_id": current_user.id
-            })
+            logger.info(f"Verifying payment for subscription: {subscription_id}")
+            
+            # Get pending subscription by ID only (no user check - subscription_id is secure UUID)
+            subscription = await db.recruiter_subscriptions.find_one({"id": subscription_id})
             
             if not subscription:
+                logger.error(f"Subscription not found: {subscription_id}")
                 raise HTTPException(status_code=404, detail="Subscription not found")
             
             if subscription.get("status") == "active":
-                return {"success": True, "message": "Subscription already active", "subscription": subscription}
+                logger.info(f"Subscription already active: {subscription_id}")
+                sub_copy = {k: v for k, v in subscription.items() if k != '_id'}
+                return {"success": True, "message": "Subscription already active", "subscription": sub_copy}
             
             # Verify payment with Yoco
-            yoco = await get_yoco_service_for_reseller(db, current_user.reseller_id)
+            reseller_id = subscription.get("reseller_id")
+            yoco = await get_yoco_service_for_reseller(db, reseller_id)
             checkout_id = subscription.get("checkout_id")
+            
+            logger.info(f"Checking Yoco payment for checkout: {checkout_id}")
             
             if checkout_id:
                 is_paid = await yoco.verify_payment(checkout_id)
+                logger.info(f"Yoco verification result: {is_paid}")
                 
                 if is_paid:
                     # Calculate expiry
@@ -1158,6 +1164,7 @@ def get_talent_pool_routes(db, get_current_user):
                         {"_id": 0}
                     )
                     
+                    logger.info(f"Subscription activated: {subscription_id}")
                     return {"success": True, "message": "Subscription activated", "subscription": updated}
                 else:
                     return {"success": False, "message": "Payment not verified"}

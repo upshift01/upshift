@@ -1816,6 +1816,10 @@ app.include_router(content_router)
 app.include_router(cv_template_router)
 app.include_router(help_router)
 
+# Initialize and include talent pool router
+talent_pool_router = get_talent_pool_routes(db, get_current_user)
+app.include_router(talent_pool_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

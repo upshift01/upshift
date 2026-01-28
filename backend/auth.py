@@ -27,6 +27,8 @@ class UserRegister(BaseModel):
     full_name: str
     phone: Optional[str] = None
     reseller_id: Optional[str] = None  # For white-label signups
+    account_type: Optional[str] = "customer"  # "customer" (job seeker) or "recruiter" (hiring company)
+    company_name: Optional[str] = None  # For recruiters
 
 class UserLogin(BaseModel):
     email: EmailStr

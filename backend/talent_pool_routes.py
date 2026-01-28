@@ -30,6 +30,7 @@ class TalentPoolProfile(BaseModel):
     experience_level: str  # entry, mid, senior, executive
     location: str
     skills: List[str]
+    bio: Optional[str] = None
     summary: str
     cv_url: Optional[str] = None
     is_visible: bool = True
@@ -41,6 +42,7 @@ class TalentPoolOptIn(BaseModel):
     experience_level: str
     location: str
     skills: List[str]
+    bio: Optional[str] = None
     summary: str
     cv_document_id: Optional[str] = None  # Reference to user's CV document
     profile_picture: Optional[str] = None  # Base64 or URL of profile picture
@@ -52,6 +54,7 @@ class TalentPoolUpdate(BaseModel):
     experience_level: Optional[str] = None
     location: Optional[str] = None
     skills: Optional[List[str]] = None
+    bio: Optional[str] = None
     summary: Optional[str] = None
     cv_document_id: Optional[str] = None
     profile_picture_url: Optional[str] = None

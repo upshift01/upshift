@@ -3253,3 +3253,240 @@ async def update_calendar_settings(
     except Exception as e:
         logger.error(f"Error updating calendar settings: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Recruiter Management ====================
+
+class RecruiterCreate(BaseModel):
+    full_name: str
+    email: str
+    company_name: str
+    phone: Optional[str] = None
+    password: str
+
+class RecruiterUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    company_name: Optional[str] = None
+    phone: Optional[str] = None
+
+class RecruiterPasswordReset(BaseModel):
+    password: str
+
+class RecruiterStatusUpdate(BaseModel):
+    status: str  # active, suspended
+
+
+@admin_router.get("/recruiters", response_model=dict)
+async def list_recruiters(
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """List all recruiter accounts"""
+    try:
+        recruiters = await db.users.find(
+            {"role": "recruiter"},
+            {"_id": 0, "hashed_password": 0}
+        ).sort("created_at", -1).to_list(500)
+        
+        # Check subscription status for each recruiter
+        for recruiter in recruiters:
+            subscription = await db.recruiter_subscriptions.find_one({
+                "user_id": recruiter.get("id"),
+                "status": "active",
+                "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
+            })
+            recruiter["has_subscription"] = subscription is not None
+            recruiter["subscription"] = {
+                "plan_name": subscription.get("plan_name"),
+                "expires_at": subscription.get("expires_at")
+            } if subscription else None
+        
+        return {"success": True, "recruiters": recruiters}
+    except Exception as e:
+        logger.error(f"Error listing recruiters: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.post("/recruiters", response_model=dict)
+async def create_recruiter(
+    data: RecruiterCreate,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Create a new recruiter account"""
+    try:
+        # Check if email already exists
+        existing = await db.users.find_one({"email": data.email.lower()})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        user_id = str(uuid.uuid4())
+        hashed_password = get_password_hash(data.password)
+        
+        new_user = {
+            "id": user_id,
+            "email": data.email.lower(),
+            "full_name": data.full_name,
+            "phone": data.phone,
+            "company_name": data.company_name,
+            "hashed_password": hashed_password,
+            "role": "recruiter",
+            "status": "active",
+            "created_at": datetime.now(timezone.utc),
+            "created_by": admin.email,
+            "is_active": True
+        }
+        
+        await db.users.insert_one(new_user)
+        
+        logger.info(f"Recruiter created: {data.email} by {admin.email}")
+        
+        return {
+            "success": True,
+            "message": "Recruiter created successfully",
+            "recruiter": {k: v for k, v in new_user.items() if k != "hashed_password" and k != "_id"}
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating recruiter: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.put("/recruiters/{recruiter_id}", response_model=dict)
+async def update_recruiter(
+    recruiter_id: str,
+    data: RecruiterUpdate,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Update recruiter details"""
+    try:
+        recruiter = await db.users.find_one({"id": recruiter_id, "role": "recruiter"})
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        update_data = {k: v for k, v in data.dict().items() if v is not None}
+        if "email" in update_data:
+            update_data["email"] = update_data["email"].lower()
+            # Check if new email is taken
+            existing = await db.users.find_one({
+                "email": update_data["email"],
+                "id": {"$ne": recruiter_id}
+            })
+            if existing:
+                raise HTTPException(status_code=400, detail="Email already in use")
+        
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        update_data["updated_by"] = admin.email
+        
+        await db.users.update_one(
+            {"id": recruiter_id},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"Recruiter updated: {recruiter_id} by {admin.email}")
+        
+        return {"success": True, "message": "Recruiter updated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating recruiter: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.put("/recruiters/{recruiter_id}/password", response_model=dict)
+async def reset_recruiter_password(
+    recruiter_id: str,
+    data: RecruiterPasswordReset,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Reset recruiter password"""
+    try:
+        recruiter = await db.users.find_one({"id": recruiter_id, "role": "recruiter"})
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        if len(data.password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        hashed_password = get_password_hash(data.password)
+        
+        await db.users.update_one(
+            {"id": recruiter_id},
+            {"$set": {
+                "hashed_password": hashed_password,
+                "password_updated_at": datetime.now(timezone.utc),
+                "password_updated_by": admin.email
+            }}
+        )
+        
+        logger.info(f"Recruiter password reset: {recruiter_id} by {admin.email}")
+        
+        return {"success": True, "message": "Password reset successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error resetting recruiter password: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.put("/recruiters/{recruiter_id}/status", response_model=dict)
+async def update_recruiter_status(
+    recruiter_id: str,
+    data: RecruiterStatusUpdate,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Activate or deactivate recruiter account"""
+    try:
+        recruiter = await db.users.find_one({"id": recruiter_id, "role": "recruiter"})
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        if data.status not in ["active", "suspended"]:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        
+        await db.users.update_one(
+            {"id": recruiter_id},
+            {"$set": {
+                "status": data.status,
+                "is_active": data.status == "active",
+                "status_updated_at": datetime.now(timezone.utc),
+                "status_updated_by": admin.email
+            }}
+        )
+        
+        logger.info(f"Recruiter status changed: {recruiter_id} to {data.status} by {admin.email}")
+        
+        return {"success": True, "message": f"Recruiter {data.status}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating recruiter status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@admin_router.delete("/recruiters/{recruiter_id}", response_model=dict)
+async def delete_recruiter(
+    recruiter_id: str,
+    admin: UserResponse = Depends(get_current_super_admin)
+):
+    """Delete a recruiter account"""
+    try:
+        recruiter = await db.users.find_one({"id": recruiter_id, "role": "recruiter"})
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        # Delete user
+        await db.users.delete_one({"id": recruiter_id})
+        
+        # Also delete their subscriptions and contact requests
+        await db.recruiter_subscriptions.delete_many({"user_id": recruiter_id})
+        await db.contact_requests.delete_many({"recruiter_user_id": recruiter_id})
+        
+        logger.info(f"Recruiter deleted: {recruiter_id} by {admin.email}")
+        
+        return {"success": True, "message": "Recruiter deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting recruiter: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

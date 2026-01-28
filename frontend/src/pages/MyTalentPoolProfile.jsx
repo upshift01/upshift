@@ -619,6 +619,48 @@ const MyTalentPoolProfile = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Profile Picture Upload */}
+                  <div className="flex flex-col items-center gap-4 pb-4 border-b">
+                    <Label className="text-center">Profile Picture</Label>
+                    <div className="relative">
+                      <div 
+                        className="w-32 h-32 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden cursor-pointer hover:border-blue-500 transition-colors"
+                        onClick={triggerFileInput}
+                        data-testid="edit-profile-picture-area"
+                      >
+                        {uploadingPicture ? (
+                          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                        ) : profilePicturePreview ? (
+                          <img 
+                            src={profilePicturePreview} 
+                            alt="Profile preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center p-4">
+                            <User className="h-12 w-12 text-gray-400 mx-auto mb-1" />
+                            <span className="text-xs text-gray-500">Click to upload</span>
+                          </div>
+                        )}
+                      </div>
+                      {profilePicturePreview && !uploadingPicture && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full"
+                          onClick={triggerFileInput}
+                        >
+                          <Camera className="h-3 w-3 mr-1" />
+                          Change
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 text-center">
+                      JPEG, PNG, WebP, or GIF. Max 5MB.
+                    </p>
+                  </div>
+
                   {/* Same form fields as opt-in */}
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>

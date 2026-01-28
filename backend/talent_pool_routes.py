@@ -195,12 +195,12 @@ def get_talent_pool_routes(db, get_current_user):
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
         reseller_id: Optional[str] = Query(None),
-        current_user: dict = Depends(get_current_user)
+        current_user = Depends(get_current_user)
     ):
         """Browse talent pool - requires recruiter access (paid)"""
         try:
             # Check if user has recruiter access
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             recruiter_access = await db.recruiter_subscriptions.find_one({
                 "user_id": user_id,
@@ -208,7 +208,7 @@ def get_talent_pool_routes(db, get_current_user):
                 "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
             })
             
-            if not recruiter_access and current_user.get("role") != "super_admin":
+            if not recruiter_access and current_user.role != "super_admin":
                 raise HTTPException(
                     status_code=403, 
                     detail="Recruiter subscription required to browse talent pool"

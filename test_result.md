@@ -101,6 +101,18 @@ backend:
         agent: "testing"
         comment: "✅ RESELLER SUBSCRIPTION FLOW FULLY TESTED AND WORKING. All 3 test components passed: (1) Demo Reseller Login successful with credentials demo@talenthub.upshift.works/demo123, user has role='reseller_admin', (2) Subscription Plans API (GET /api/reseller/subscription/plans) returns 3 plans correctly: Starter (R2,499, 1000 CVs/month), Professional (R4,999, 3500 CVs/month), Enterprise (Custom, Unlimited CVs), all plans include required fields (price, features, monthly_cv_limit), (3) Trial Status API (GET /api/reseller/trial-status) working correctly with required flags: is_trial (boolean), days_remaining (integer), trial_expired (boolean), plus additional fields like trial_status, trial_start_date, trial_end_date. All backend endpoints functioning as per review request specifications."
 
+  - task: "Talent Pool Feature"
+    implemented: true
+    working: true
+    file: "/app/backend/talent_pool_routes.py, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TALENT POOL FEATURE FULLY TESTED AND WORKING. All 6 backend API endpoints tested successfully: (1) GET /api/talent-pool/industries returns 25 industries including Technology, Healthcare, Finance as expected, (2) GET /api/talent-pool/experience-levels returns all 4 expected levels (entry, mid, senior, executive) with correct structure, (3) GET /api/talent-pool/recruiter/plans returns 3 subscription plans with correct prices in cents (R999, R2499, R7999), (4) POST /api/talent-pool/opt-in working correctly with authentication - handles both new opt-ins and existing users appropriately, (5) GET /api/talent-pool/my-profile returns correct user profile data for opted-in users, (6) GET /api/talent-pool/contact-requests returns empty array initially as expected. All endpoints functioning as per review request specifications with proper authentication and data validation."
+
 frontend:
   - task: "Free Account Gate Feature"
     implemented: true

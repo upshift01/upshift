@@ -93,6 +93,48 @@ const PartnerTalentPool = () => {
     }
   };
 
+  const handleSubscribe = async (planId) => {
+    if (!isAuthenticated) {
+      sessionStorage.setItem('postAuthRedirect', `${baseUrl}/talent-pool`);
+      navigate(`${baseUrl}/login`);
+      return;
+    }
+    
+    setSubscribing(true);
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/subscribe/${planId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.checkout_url) {
+          // Redirect to Yoco payment page
+          window.location.href = data.checkout_url;
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.detail || 'Failed to start subscription',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to connect to payment service',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   const fetchCandidates = async () => {
     if (!isAuthenticated || !token) return;
     

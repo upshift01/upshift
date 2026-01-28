@@ -226,6 +226,7 @@ const AppContent = () => {
           <Route path="calendar" element={<ResellerCalendar />} />
           <Route path="cv-templates" element={<ResellerCVTemplates />} />
           <Route path="talent-pool" element={<ResellerTalentPool />} />
+          <Route path="recruiters" element={<ResellerRecruiters />} />
         </Route>
 
         {/* Partner/White-Label Routes (URL-based subdomain routing) */}

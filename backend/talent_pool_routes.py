@@ -54,6 +54,7 @@ class TalentPoolUpdate(BaseModel):
     skills: Optional[List[str]] = None
     summary: Optional[str] = None
     cv_document_id: Optional[str] = None
+    profile_picture_url: Optional[str] = None
     is_visible: Optional[bool] = None
 
 class ContactRequest(BaseModel):

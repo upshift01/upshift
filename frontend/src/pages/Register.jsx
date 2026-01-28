@@ -101,6 +101,49 @@ const Register = () => {
               </Alert>
             )}
 
+            {/* Account Type Selection */}
+            <div className="space-y-2">
+              <Label>I am a...</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, accountType: 'customer', companyName: '' })}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    formData.accountType === 'customer'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  data-testid="account-type-customer"
+                >
+                  <User className={`h-6 w-6 mb-2 ${formData.accountType === 'customer' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <div className={`font-medium ${formData.accountType === 'customer' ? 'text-blue-900' : 'text-gray-700'}`}>
+                    Job Seeker
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Looking for work opportunities
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, accountType: 'recruiter' })}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    formData.accountType === 'recruiter'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  data-testid="account-type-recruiter"
+                >
+                  <Building2 className={`h-6 w-6 mb-2 ${formData.accountType === 'recruiter' ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <div className={`font-medium ${formData.accountType === 'recruiter' ? 'text-purple-900' : 'text-gray-700'}`}>
+                    Recruiter / Employer
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Looking to hire talent
+                  </div>
+                </button>
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="fullName">Full Name</Label>
               <Input
@@ -112,6 +155,22 @@ const Register = () => {
                 required
               />
             </div>
+
+            {/* Company Name - only for recruiters */}
+            {formData.accountType === 'recruiter' && (
+              <div>
+                <Label htmlFor="companyName">Company Name</Label>
+                <Input
+                  id="companyName"
+                  name="companyName"
+                  value={formData.companyName}
+                  onChange={handleChange}
+                  placeholder="Acme Corporation"
+                  required
+                  data-testid="company-name-input"
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="email">Email</Label>

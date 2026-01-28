@@ -334,6 +334,9 @@ def get_talent_pool_routes(db, get_current_user):
     async def request_contact(profile_id: str, data: ContactRequest, current_user = Depends(get_current_user)):
         """Recruiter requests contact with a candidate"""
         try:
+            from email_service import email_service
+            import os
+            
             user_id = current_user.id
             
             # Check recruiter access
@@ -382,7 +385,74 @@ def get_talent_pool_routes(db, get_current_user):
             
             await db.contact_requests.insert_one(contact_request)
             
-            # TODO: Send notification email to candidate
+            # Send notification email to candidate
+            if email_service.is_configured and profile.get("contact_email"):
+                try:
+                    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+                    recruiter_name = contact_request["recruiter_name"]
+                    candidate_name = profile["full_name"]
+                    
+                    html_body = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                            .header {{ background: linear-gradient(135deg, #1e40af, #7c3aed); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                            .content {{ background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }}
+                            .message-box {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af; }}
+                            .btn {{ display: inline-block; background: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 10px 5px; }}
+                            .btn-outline {{ background: white; color: #1e40af; border: 2px solid #1e40af; }}
+                            .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h1>New Contact Request!</h1>
+                            </div>
+                            <div class="content">
+                                <p>Hi {candidate_name},</p>
+                                
+                                <p>Great news! A recruiter is interested in connecting with you through the UpShift Talent Pool.</p>
+                                
+                                <h3>Recruiter Details</h3>
+                                <p><strong>Name:</strong> {recruiter_name}</p>
+                                
+                                <h3>Their Message</h3>
+                                <div class="message-box">
+                                    <p>{data.message}</p>
+                                </div>
+                                
+                                <p>Log in to your dashboard to review and respond to this request:</p>
+                                
+                                <p style="text-align: center;">
+                                    <a href="{frontend_url}/dashboard/talent-pool" class="btn">View Request</a>
+                                </p>
+                                
+                                <p style="color: #6b7280; font-size: 14px;">
+                                    When you approve a contact request, the recruiter will receive your contact details to reach out directly.
+                                </p>
+                            </div>
+                            <div class="footer">
+                                <p>This email was sent because you opted into the UpShift Talent Pool.</p>
+                                <p>&copy; {datetime.now().year} UpShift. All rights reserved.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    
+                    await email_service.send_email(
+                        to_email=profile["contact_email"],
+                        subject=f"New Contact Request from {recruiter_name} - UpShift Talent Pool",
+                        html_body=html_body,
+                        raise_exceptions=False
+                    )
+                    logger.info(f"Contact request notification sent to {profile['contact_email']}")
+                except Exception as email_error:
+                    logger.error(f"Failed to send contact request email: {email_error}")
             
             return {"success": True, "message": "Contact request sent", "request_id": contact_request["id"]}
             

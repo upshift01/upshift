@@ -34,6 +34,7 @@ import WhiteLabelPage from "./pages/WhiteLabelPage";
 import TalentPool from "./pages/TalentPool";
 import TalentPoolProfile from "./pages/TalentPoolProfile";
 import MyTalentPoolProfile from "./pages/MyTalentPoolProfile";
+import RecruiterDashboard from "./pages/RecruiterDashboard";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages

@@ -129,10 +129,10 @@ def get_talent_pool_routes(db, get_current_user):
             raise HTTPException(status_code=500, detail=str(e))
     
     @talent_pool_router.put("/my-profile")
-    async def update_talent_profile(data: TalentPoolUpdate, current_user: dict = Depends(get_current_user)):
+    async def update_talent_profile(data: TalentPoolUpdate, current_user = Depends(get_current_user)):
         """Update talent pool profile"""
         try:
-            user_id = current_user.get("id") or current_user.get("user_id")
+            user_id = current_user.id
             
             profile = await db.talent_pool_profiles.find_one({"user_id": user_id})
             if not profile:

@@ -60,6 +60,7 @@ const PartnerTalentPool = () => {
       if (!authLoading && isAuthenticated && token) {
         handlePaymentCallback();
       } else if (!authLoading && !isAuthenticated) {
+        sessionStorage.setItem('pendingSubscriptionId', subscriptionId);
         sessionStorage.setItem('postAuthRedirect', `${baseUrl}/talent-pool?payment=success&subscription_id=${subscriptionId}`);
         navigate(`${baseUrl}/login`);
       }
@@ -67,6 +68,44 @@ const PartnerTalentPool = () => {
       handlePaymentCallback();
     }
   }, [authLoading, isAuthenticated, token, searchParams]);
+
+  // Check for pending subscription verification after login redirect
+  useEffect(() => {
+    const pendingSubscriptionId = sessionStorage.getItem('pendingSubscriptionId');
+    if (pendingSubscriptionId && isAuthenticated && token && !verifyingPayment) {
+      setVerifyingPayment(true);
+      verifyPendingSubscription(pendingSubscriptionId);
+    }
+  }, [isAuthenticated, token]);
+
+  const verifyPendingSubscription = async (subscriptionId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setPaymentSuccess(true);
+          setHasAccess(true);
+          setSubscription(data.subscription);
+          sessionStorage.removeItem('pendingSubscriptionId');
+          toast({
+            title: 'Subscription Activated!',
+            description: 'You now have access to the talent pool.'
+          });
+          fetchInitialData();
+        }
+      }
+    } catch (error) {
+      console.error('Error verifying pending subscription:', error);
+    } finally {
+      setVerifyingPayment(false);
+      sessionStorage.removeItem('pendingSubscriptionId');
+    }
+  };
 
   useEffect(() => {
     if (!verifyingPayment) {

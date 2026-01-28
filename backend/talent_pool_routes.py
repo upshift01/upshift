@@ -64,9 +64,179 @@ class ContactRequestResponse(BaseModel):
     approved: bool
     message: Optional[str] = None
 
+# AI Improvement Request Models
+class ImproveSkillsRequest(BaseModel):
+    current_skills: List[str] = []
+    job_title: str = ""
+    industry: str = ""
+
+class ImproveBioRequest(BaseModel):
+    current_bio: str = ""
+    job_title: str = ""
+    industry: str = ""
+    experience_level: str = ""
+    skills: List[str] = []
+
 
 def get_talent_pool_routes(db, get_current_user):
     """Factory function to create talent pool routes with database dependency"""
+    
+    # ==================== AI IMPROVEMENT ENDPOINTS ====================
+    
+    @talent_pool_router.post("/ai/improve-skills")
+    async def ai_improve_skills(
+        data: ImproveSkillsRequest,
+        current_user = Depends(get_current_user)
+    ):
+        """AI-powered skill suggestions for talent pool profile"""
+        try:
+            from emergentintegrations.llm import LlmChat, UserMessage
+            
+            EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
+            if not EMERGENT_LLM_KEY:
+                raise HTTPException(status_code=500, detail="AI service not configured")
+            
+            current_skills_str = ", ".join(data.current_skills) if data.current_skills else "None provided"
+            
+            prompt = f"""You are an expert career advisor helping candidates optimize their talent pool profile to attract recruiters.
+
+Based on the following profile, suggest 8-12 relevant, high-impact skills:
+
+Job Title: {data.job_title or 'Not specified'}
+Industry: {data.industry or 'Not specified'}
+Current Skills: {current_skills_str}
+
+Instructions:
+- Suggest skills that are highly sought after by recruiters in this industry
+- Include a mix of technical/hard skills and soft skills
+- If current skills are provided, enhance and expand upon them
+- Use professional, industry-standard terminology
+- Make skills ATS-friendly and keyword-optimized
+- Return ONLY a JSON array of skill strings, nothing else
+
+Example output: ["Project Management", "Data Analysis", "Team Leadership", "Python", "Agile Methodology"]
+
+Generate skills now:"""
+
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"talent-skills-{current_user.id}",
+                system_message="You are an expert career advisor specializing in talent optimization."
+            ).with_model("openai", "gpt-4o")
+            
+            response = await chat.send_message(UserMessage(text=prompt))
+            
+            if hasattr(response, 'text'):
+                response_text = response.text.strip()
+            else:
+                response_text = str(response).strip()
+            
+            # Parse JSON array
+            import json
+            import re
+            
+            json_match = re.search(r'\[.*?\]', response_text, re.DOTALL)
+            if json_match:
+                skills = json.loads(json_match.group())
+            else:
+                skills = [s.strip().strip('"\'- ') for s in response_text.split('\n') if s.strip()]
+                skills = [s for s in skills if s and len(s) < 50][:12]
+            
+            clean_skills = [s.strip() for s in skills if isinstance(s, str) and s.strip()][:12]
+            
+            logger.info(f"AI skills generated for user {current_user.email}")
+            
+            return {"success": True, "skills": clean_skills}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error generating AI skills: {e}")
+            raise HTTPException(status_code=500, detail="Failed to generate skills. Please try again.")
+    
+    @talent_pool_router.post("/ai/improve-bio")
+    async def ai_improve_bio(
+        data: ImproveBioRequest,
+        current_user = Depends(get_current_user)
+    ):
+        """AI-powered bio generation/improvement for talent pool profile"""
+        try:
+            from emergentintegrations.llm import LlmChat, UserMessage
+            
+            EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
+            if not EMERGENT_LLM_KEY:
+                raise HTTPException(status_code=500, detail="AI service not configured")
+            
+            skills_str = ", ".join(data.skills) if data.skills else "Not specified"
+            
+            if data.current_bio:
+                prompt = f"""You are an expert career advisor helping candidates optimize their talent pool profile bio to attract recruiters.
+
+Improve and enhance this existing bio:
+
+Current Bio: {data.current_bio}
+
+Profile Context:
+- Job Title: {data.job_title or 'Not specified'}
+- Industry: {data.industry or 'Not specified'}
+- Experience Level: {data.experience_level or 'Not specified'}
+- Skills: {skills_str}
+
+Instructions:
+- Enhance the bio while preserving the candidate's voice and key points
+- Make it compelling and recruiter-friendly
+- Keep it concise (3-5 sentences, 80-120 words max)
+- Highlight key strengths and value proposition
+- Use professional yet personable tone
+- Include keywords relevant to the industry
+- Write in first person without using "I" repeatedly (e.g., "Results-driven professional..." or use sparingly)
+
+Write ONLY the improved bio text, no explanations or quotes."""
+            else:
+                prompt = f"""You are an expert career advisor helping candidates create compelling talent pool profile bios.
+
+Create a professional bio based on:
+
+Job Title: {data.job_title or 'Not specified'}
+Industry: {data.industry or 'Not specified'}
+Experience Level: {data.experience_level or 'Not specified'}
+Skills: {skills_str}
+
+Instructions:
+- Create a compelling, recruiter-friendly bio
+- Keep it concise (3-5 sentences, 80-120 words max)
+- Highlight potential strengths and value proposition
+- Use professional yet personable tone
+- Include keywords relevant to the industry
+- Write in first person, using "I" sparingly (e.g., "Results-driven professional..." or "Passionate about...")
+
+Write ONLY the bio text, no explanations or quotes."""
+
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"talent-bio-{current_user.id}",
+                system_message="You are an expert career advisor specializing in personal branding for job seekers."
+            ).with_model("openai", "gpt-4o")
+            
+            response = await chat.send_message(UserMessage(text=prompt))
+            
+            if hasattr(response, 'text'):
+                bio_text = response.text.strip()
+            else:
+                bio_text = str(response).strip()
+            
+            # Clean up response
+            bio_text = bio_text.strip('"\'')
+            
+            logger.info(f"AI bio generated for user {current_user.email}")
+            
+            return {"success": True, "bio": bio_text}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error generating AI bio: {e}")
+            raise HTTPException(status_code=500, detail="Failed to generate bio. Please try again.")
     
     @talent_pool_router.post("/upload-profile-picture")
     async def upload_profile_picture(

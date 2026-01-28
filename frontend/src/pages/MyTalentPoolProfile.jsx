@@ -380,6 +380,98 @@ const MyTalentPoolProfile = () => {
     fileInputRef.current?.click();
   };
 
+  const handleAIImproveSkills = async () => {
+    setImprovingSkills(true);
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/ai/improve-skills`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          current_skills: formData.skills,
+          job_title: formData.job_title,
+          industry: formData.industry
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.skills && data.skills.length > 0) {
+          setFormData(prev => ({ ...prev, skills: data.skills }));
+          toast({
+            title: 'Skills Improved',
+            description: `Generated ${data.skills.length} optimized skills for your profile.`
+          });
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.detail || 'Failed to improve skills',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error improving skills:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to connect to AI service',
+        variant: 'destructive'
+      });
+    } finally {
+      setImprovingSkills(false);
+    }
+  };
+
+  const handleAIImproveBio = async () => {
+    setImprovingBio(true);
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/ai/improve-bio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          current_bio: formData.bio,
+          job_title: formData.job_title,
+          industry: formData.industry,
+          experience_level: formData.experience_level,
+          skills: formData.skills
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.bio) {
+          setFormData(prev => ({ ...prev, bio: data.bio }));
+          toast({
+            title: 'Bio Improved',
+            description: 'Your bio has been enhanced with AI.'
+          });
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.detail || 'Failed to improve bio',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error improving bio:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to connect to AI service',
+        variant: 'destructive'
+      });
+    } finally {
+      setImprovingBio(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

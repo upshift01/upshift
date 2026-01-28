@@ -1136,4 +1136,34 @@ def get_talent_pool_routes(db, get_current_user):
             logger.error(f"Error verifying payment: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    # ==============================================
+    # RECRUITER DASHBOARD ENDPOINTS
+    # ==============================================
+    
+    @talent_pool_router.get("/recruiter/my-requests")
+    async def get_my_contact_requests(current_user = Depends(get_current_user)):
+        """Get all contact requests sent by the current recruiter"""
+        try:
+            requests = await db.contact_requests.find(
+                {"recruiter_user_id": current_user.id},
+                {"_id": 0}
+            ).sort("created_at", -1).to_list(100)
+            
+            # For approved requests, include candidate contact details
+            for req in requests:
+                if req.get("status") == "approved":
+                    profile = await db.talent_pool_profiles.find_one(
+                        {"id": req.get("profile_id")},
+                        {"_id": 0, "contact_email": 1, "contact_phone": 1}
+                    )
+                    if profile:
+                        req["candidate_email"] = profile.get("contact_email")
+                        req["candidate_phone"] = profile.get("contact_phone")
+            
+            return {"success": True, "requests": requests}
+            
+        except Exception as e:
+            logger.error(f"Error getting recruiter requests: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return talent_pool_router

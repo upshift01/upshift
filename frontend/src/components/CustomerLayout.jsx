@@ -38,6 +38,7 @@ const CustomerLayout = ({ children }) => {
     { path: '/dashboard/billing', icon: CreditCard, label: 'Billing' },
     { path: '/dashboard/jobs', icon: Briefcase, label: 'Job Tracker', badge: 'NEW' },
     { path: '/dashboard/interview-prep', icon: MessageSquare, label: 'Interview Prep', badge: 'NEW' },
+    { path: '/dashboard/talent-pool', icon: Users, label: 'Talent Pool', badge: 'NEW' },
     { path: '/dashboard/strategy-call', icon: Calendar, label: 'Strategy Call', badge: 'BOOK' },
     { path: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];

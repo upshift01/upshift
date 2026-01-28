@@ -47,92 +47,68 @@ const TalentPool = () => {
     totalPages: 0
   });
 
-  // Check for payment callback on mount and when auth is ready
+  // Check for payment callback on mount
   useEffect(() => {
     const payment = searchParams.get('payment');
     const subscriptionId = searchParams.get('subscription_id');
     
-    // If we have payment success params
     if (payment === 'success' && subscriptionId) {
-      // Store the subscription ID immediately in case we need to redirect
-      sessionStorage.setItem('pendingSubscriptionId', subscriptionId);
-      
-      if (!authLoading) {
-        if (isAuthenticated && token) {
-          // User is authenticated, verify the payment
-          setVerifyingPayment(true);
-          handlePaymentCallback();
-        } else {
-          // User not logged in - redirect to login
-          sessionStorage.setItem('postAuthRedirect', `/talent-pool?payment=success&subscription_id=${subscriptionId}`);
-          navigate('/login');
-        }
-      }
-      // If authLoading is true, wait for it to finish (the effect will re-run)
-    } else if (payment === 'cancelled' || payment === 'failed') {
-      handlePaymentCallback();
-    }
-  }, [authLoading, isAuthenticated, token, searchParams]);
-
-  // Check for pending subscription verification after login redirect
-  useEffect(() => {
-    const pendingSubscriptionId = sessionStorage.getItem('pendingSubscriptionId');
-    if (pendingSubscriptionId && isAuthenticated && token && !authLoading && !verifyingPayment) {
-      // We have a pending subscription to verify after login
-      console.log('Verifying pending subscription:', pendingSubscriptionId);
+      // Verify payment immediately - no auth needed
       setVerifyingPayment(true);
-      verifyPendingSubscription(pendingSubscriptionId);
+      verifyPaymentDirect(subscriptionId);
+    } else if (payment === 'cancelled' || payment === 'failed') {
+      toast({
+        title: payment === 'cancelled' ? 'Payment Cancelled' : 'Payment Failed',
+        description: 'Your subscription was not activated.',
+        variant: 'destructive'
+      });
+      navigate('/talent-pool', { replace: true });
     }
-  }, [isAuthenticated, token, authLoading, verifyingPayment]);
+  }, [searchParams]);
 
-  const verifyPendingSubscription = async (subscriptionId) => {
-    console.log('Starting verification for subscription:', subscriptionId);
+  // Verify payment directly without requiring auth
+  const verifyPaymentDirect = async (subscriptionId) => {
     try {
       const response = await fetch(`${API_URL}/api/talent-pool/verify-payment/${subscriptionId}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        method: 'POST'
       });
-      
-      console.log('Verification response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Verification result:', data);
         if (data.success) {
           setPaymentSuccess(true);
-          setHasAccess(true);
-          setSubscription(data.subscription);
-          sessionStorage.removeItem('pendingSubscriptionId');
           toast({
             title: 'Subscription Activated!',
             description: 'You now have access to the talent pool.'
           });
-          // Clear URL params and fetch data
+          // Clear URL and reload data
           navigate('/talent-pool', { replace: true });
-          fetchInitialData();
+          // Refresh to get updated subscription status
+          window.location.reload();
         } else {
           toast({
             title: 'Verification Pending',
-            description: 'Payment is being processed. Please refresh.',
+            description: 'Please refresh the page in a moment.',
             variant: 'default'
           });
+          navigate('/talent-pool', { replace: true });
         }
       } else {
-        console.error('Verification failed with status:', response.status);
         toast({
           title: 'Verification Issue',
           description: 'Please contact support.',
           variant: 'destructive'
         });
-        sessionStorage.removeItem('pendingSubscriptionId');
+        navigate('/talent-pool', { replace: true });
       }
     } catch (error) {
-      console.error('Error verifying pending subscription:', error);
+      console.error('Error verifying payment:', error);
       toast({
-        title: 'Connection Error',
+        title: 'Error',
         description: 'Please refresh the page.',
         variant: 'destructive'
       });
+      navigate('/talent-pool', { replace: true });
     } finally {
       setVerifyingPayment(false);
     }

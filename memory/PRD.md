@@ -46,6 +46,8 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - [x] Yoco payment for recruiter subscriptions
 - [x] Contact request system
 - [x] Email notifications for contact requests (to candidate when recruiter requests, to recruiter when candidate responds)
+- [x] **Candidate Profile Picture Upload** (Jan 2025) - Candidates can upload profile pictures to their Talent Pool profile
+- [x] **CV Download for Recruiters** (Jan 2025) - Recruiters can download candidate CVs when available
 
 ## Technical Stack
 - **Frontend**: React 18, Tailwind CSS, Shadcn/UI
@@ -56,7 +58,7 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 
 ## Key API Endpoints
 
-### Talent Pool (New)
+### Talent Pool
 - `GET /api/talent-pool/industries` - List industries
 - `GET /api/talent-pool/experience-levels` - List experience levels
 - `GET /api/talent-pool/recruiter/plans` - Get subscription plans
@@ -64,6 +66,8 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - `POST /api/talent-pool/opt-in` - Customer opts into talent pool
 - `POST /api/talent-pool/subscribe/{plan_id}` - Create subscription checkout
 - `POST /api/talent-pool/verify-payment/{subscription_id}` - Verify and activate subscription
+- `POST /api/talent-pool/upload-profile-picture` - Upload candidate profile picture (NEW)
+- `GET /api/talent-pool/profile-picture/{filename}` - Serve profile picture (NEW)
 - `GET /api/talent-pool/admin/candidates` - Admin: Get all candidates
 - `POST /api/talent-pool/admin/candidates` - Admin: Add candidate
 - `PUT /api/talent-pool/admin/candidates/{id}/status` - Admin: Approve/reject
@@ -73,7 +77,7 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 ## Database Collections
 - `users` - User accounts with roles
 - `user_cvs` - CV documents
-- `talent_pool_profiles` - Candidate profiles in talent pool
+- `talent_pool_profiles` - Candidate profiles in talent pool (includes `profile_picture_url`, `cv_url`)
 - `recruiter_subscriptions` - Recruiter access subscriptions
 - `contact_requests` - Recruiter-candidate contact requests
 - `platform_settings` - Platform configuration including pricing
@@ -84,6 +88,12 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 | Super Admin | admin@upshift.works | Admin@2025! |
 | Demo Reseller | demo@talenthub.upshift.works | demo123 |
 | Test Customer | test@example.com | password123 |
+| Test Recruiter | john@woo.co.za | Test@1234 |
+
+## Recent Changes (Jan 2025)
+1. **Candidate Profile Picture Upload** - Added ability for candidates to upload profile pictures (stored locally at `/app/public/uploads/profile_pictures`)
+2. **Enhanced Candidate Cards** - Recruiter browse view now displays profile pictures with gradient avatar fallback
+3. **CV Download Button** - CV download button only shows when candidate has attached a CV
 
 ## Recent Fixes (Dec 2025)
 1. **Hardcoded Phone Number** - Fixed to use dynamic settings

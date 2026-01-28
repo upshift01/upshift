@@ -332,6 +332,7 @@ Write ONLY the bio text, no explanations or quotes."""
                 "experience_level": data.experience_level,
                 "location": data.location,
                 "skills": data.skills,
+                "bio": data.bio or "",
                 "summary": data.summary,
                 "cv_document_id": data.cv_document_id,
                 "cv_url": cv_url,

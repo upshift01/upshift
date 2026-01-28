@@ -517,18 +517,21 @@ const TalentPool = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero Section */}
+      {/* Hero Section - Clarified for Recruiters */}
       <section className="py-16 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <Badge className="mb-4 bg-white/20 text-white border-none">
             <Users className="mr-1 h-3 w-3" />
-            Talent Pool
+            For Recruiters & Hiring Managers
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Find Your Next Great Hire
           </h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
-            Browse our curated talent pool of job-ready candidates. Filter by skills, experience, and location to find the perfect match.
+          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-6">
+            Subscribe to access our curated talent pool of job-ready candidates. Filter by skills, experience, and location to find the perfect match for your team.
+          </p>
+          <p className="text-sm text-white/60">
+            Looking for a job instead? <Link to={isAuthenticated ? "/dashboard/talent-pool" : "/register?redirect=/dashboard/talent-pool"} className="underline hover:text-white">Join the Talent Pool as a candidate →</Link>
           </p>
         </div>
       </section>
@@ -537,6 +540,55 @@ const TalentPool = () => {
       <div className="max-w-6xl mx-auto px-4">
         {hasAccess ? renderCandidatesSection() : renderPlansSection()}
       </div>
+      
+      {/* Job Seeker CTA Section */}
+      {!hasAccess && (
+        <section className="py-16 px-4 bg-gradient-to-r from-green-50 to-emerald-50 border-t">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge className="mb-4 bg-green-100 text-green-700">
+              <UserPlus className="mr-1 h-3 w-3" />
+              For Job Seekers
+            </Badge>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Looking for Your Next Opportunity?
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+              Join our Talent Pool and get discovered by top recruiters. Create your profile, showcase your skills, and let opportunities come to you.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to={isAuthenticated ? "/dashboard/talent-pool" : "/register?redirect=/dashboard/talent-pool"}>
+                <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white">
+                  <UserPlus className="mr-2 h-5 w-5" />
+                  {isAuthenticated ? "Join Talent Pool" : "Create Free Account & Join"}
+                </Button>
+              </Link>
+            </div>
+            <div className="mt-8 grid md:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
+              <div className="flex gap-3">
+                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Free to Join</h4>
+                  <p className="text-sm text-gray-600">No cost to create your profile</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Control Your Visibility</h4>
+                  <p className="text-sm text-gray-600">Show or hide your profile anytime</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Approve Contacts</h4>
+                  <p className="text-sm text-gray-600">You decide who gets your details</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

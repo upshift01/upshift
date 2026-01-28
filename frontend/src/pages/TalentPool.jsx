@@ -656,42 +656,6 @@ const TalentPool = () => {
     return renderPaymentSuccess();
   }
 
-  // Show verification failed screen with retry option
-  if (verificationFailed && (pendingSubId || sessionStorage.getItem('pendingSubscriptionId'))) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center">
-        <Card className="max-w-md mx-4">
-          <CardContent className="pt-8 pb-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-6">
-              <Crown className="h-10 w-10 text-orange-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Almost There!</h2>
-            <p className="text-gray-600 mb-6">
-              Your payment was received, but we need to verify your subscription. 
-              Click the button below to complete activation.
-            </p>
-            <div className="space-y-3">
-              <Button 
-                onClick={retryVerification}
-                disabled={verifyingPayment}
-                className="w-full bg-orange-600 hover:bg-orange-700"
-              >
-                {verifyingPayment ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verifying...</>
-                ) : (
-                  'Activate My Subscription'
-                )}
-              </Button>
-              <p className="text-sm text-gray-500">
-                If this keeps failing, please <a href="mailto:support@upshift.works" className="text-blue-600 underline">contact support</a>.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Show loading state while auth is loading or data is loading initially
   if (authLoading || (loading && plans.length === 0)) {
     return (

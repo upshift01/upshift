@@ -101,7 +101,7 @@ def get_talent_pool_routes(db, get_current_user):
             profile_picture_url = f"/api/talent-pool/profile-picture/{unique_filename}"
             
             # Update user's talent pool profile if they have one
-            result = await db.talent_pool_profiles.update_one(
+            await db.talent_pool_profiles.update_one(
                 {"user_id": current_user.id},
                 {"$set": {
                     "profile_picture_url": profile_picture_url,

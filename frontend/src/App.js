@@ -35,6 +35,10 @@ import TalentPool from "./pages/TalentPool";
 import TalentPoolProfile from "./pages/TalentPoolProfile";
 import MyTalentPoolProfile from "./pages/MyTalentPoolProfile";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
+import RemoteJobs from "./pages/RemoteJobs";
+import PostJob from "./pages/PostJob";
+import JobDetails from "./pages/JobDetails";
+import MyJobs from "./pages/MyJobs";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages

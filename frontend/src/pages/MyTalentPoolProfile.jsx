@@ -92,6 +92,7 @@ const MyTalentPoolProfile = () => {
             skills: data.profile.skills || [],
             bio: data.profile.bio || '',
             summary: data.profile.summary || '',
+            is_remote_worker: data.profile.is_remote_worker || false,
             cv_document_id: data.profile.cv_document_id || '',
             profile_picture_url: data.profile.profile_picture_url || '',
             is_visible: data.profile.is_visible ?? true

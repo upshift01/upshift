@@ -95,7 +95,25 @@ const ContractDetails = () => {
       return;
     }
     fetchContract();
+    fetchPaymentProviders();
   }, [isAuthenticated, contractId]);
+
+  const fetchPaymentProviders = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/payments/config`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPaymentProviders(data.providers || []);
+        if (data.default_provider) {
+          setSelectedProvider(data.default_provider);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching payment providers:', error);
+    }
+  };
 
   const fetchContract = async () => {
     try {

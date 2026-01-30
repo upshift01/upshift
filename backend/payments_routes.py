@@ -631,6 +631,9 @@ def get_payments_routes(db, get_current_user):
             payment_type = transaction.get("type")
             amount = transaction.get("amount", 0)
             
+            # Get contract details for email
+            contract = await db.contracts.find_one({"id": contract_id})
+            
             if payment_type == "contract_funding":
                 await db.contracts.update_one(
                     {"id": contract_id},
@@ -639,14 +642,48 @@ def get_payments_routes(db, get_current_user):
                         "$set": {"escrow_status": "funded"}
                     }
                 )
+                
+                # Send email notifications for full contract funding
+                if contract:
+                    try:
+                        frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+                        contract_url = f"{frontend_url}/contracts/{contract_id}" if frontend_url else f"/contracts/{contract_id}"
+                        currency = contract.get("payment_currency", "USD")
+                        
+                        # Notify contractor
+                        await email_service.send_milestone_funded_email(
+                            to_email=contract.get("contractor_email"),
+                            recipient_name=contract.get("contractor_name"),
+                            contract_title=contract.get("title"),
+                            milestone_title="Full Contract",
+                            amount=f"{currency} {amount:,.2f}",
+                            contract_url=contract_url,
+                            is_contractor=True
+                        )
+                        
+                        # Notify employer (confirmation)
+                        await email_service.send_milestone_funded_email(
+                            to_email=contract.get("employer_email"),
+                            recipient_name=contract.get("employer_name"),
+                            contract_title=contract.get("title"),
+                            milestone_title="Full Contract",
+                            amount=f"{currency} {amount:,.2f}",
+                            contract_url=contract_url,
+                            is_contractor=False
+                        )
+                        logger.info(f"Contract funding emails sent for {contract_id}")
+                    except Exception as email_err:
+                        logger.warning(f"Failed to send contract funding emails: {email_err}")
+                        
             elif payment_type == "milestone_funding" and milestone_id:
-                contract = await db.contracts.find_one({"id": contract_id})
                 if contract:
                     milestones = contract.get("milestones", [])
+                    milestone_title = "Milestone"
                     for m in milestones:
                         if m.get("id") == milestone_id:
                             m["escrow_status"] = "funded"
                             m["funded_at"] = datetime.now(timezone.utc).isoformat()
+                            milestone_title = m.get("title", "Milestone")
                             break
                     
                     await db.contracts.update_one(
@@ -656,6 +693,37 @@ def get_payments_routes(db, get_current_user):
                             "$inc": {"escrow_funded": amount}
                         }
                     )
+                    
+                    # Send email notifications for milestone funding
+                    try:
+                        frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+                        contract_url = f"{frontend_url}/contracts/{contract_id}" if frontend_url else f"/contracts/{contract_id}"
+                        currency = contract.get("payment_currency", "USD")
+                        
+                        # Notify contractor
+                        await email_service.send_milestone_funded_email(
+                            to_email=contract.get("contractor_email"),
+                            recipient_name=contract.get("contractor_name"),
+                            contract_title=contract.get("title"),
+                            milestone_title=milestone_title,
+                            amount=f"{currency} {amount:,.2f}",
+                            contract_url=contract_url,
+                            is_contractor=True
+                        )
+                        
+                        # Notify employer (confirmation)
+                        await email_service.send_milestone_funded_email(
+                            to_email=contract.get("employer_email"),
+                            recipient_name=contract.get("employer_name"),
+                            contract_title=contract.get("title"),
+                            milestone_title=milestone_title,
+                            amount=f"{currency} {amount:,.2f}",
+                            contract_url=contract_url,
+                            is_contractor=False
+                        )
+                        logger.info(f"Milestone funding emails sent for {contract_id}/{milestone_id}")
+                    except Exception as email_err:
+                        logger.warning(f"Failed to send milestone funding emails: {email_err}")
         
         return {
             "success": True,

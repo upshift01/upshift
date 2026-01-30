@@ -112,6 +112,11 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - [x] Transaction history tracking
   - [x] Support for USD and ZAR currencies
   - [x] Contractor view showing escrow protection status
+  - [x] **Dual Payment Gateway Support** (Jan 2025) - Added Yoco as alternative to Stripe
+  - [x] **Payment Provider Selection Modal** (Jan 2025) - Employers can choose between Stripe/Yoco
+  - [x] **Admin Payment Settings Page** (Jan 2025) - Configure Stripe/Yoco API keys from UI
+  - [x] **Test Connection** (Jan 2025) - Test payment gateway connections from admin
+  - [x] **Default Provider Selection** (Jan 2025) - Set default payment provider
 - [ ] **Phase 5.6: Advanced Payment Features** (FUTURE)
   - [ ] Stripe Connect for direct contractor payouts
   - [ ] Automatic payment release on milestone approval

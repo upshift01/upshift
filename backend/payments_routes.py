@@ -797,6 +797,24 @@ def get_payments_routes(db, get_current_user):
             
             await db.payment_transactions.insert_one(release_transaction)
             
+            # Send email notification to contractor about payment release
+            try:
+                frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+                contract_url = f"{frontend_url}/contracts/{contract_id}" if frontend_url else f"/contracts/{contract_id}"
+                currency = contract.get("payment_currency", "USD")
+                
+                await email_service.send_payment_released_email(
+                    to_email=contract.get("contractor_email"),
+                    contractor_name=contract.get("contractor_name"),
+                    contract_title=contract.get("title"),
+                    milestone_title=milestone.get("title", "Milestone"),
+                    amount=f"{currency} {amount:,.2f}",
+                    contract_url=contract_url
+                )
+                logger.info(f"Payment release email sent to {contract.get('contractor_email')}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send payment release email: {email_err}")
+            
             return {
                 "success": True,
                 "message": "Payment released to contractor",

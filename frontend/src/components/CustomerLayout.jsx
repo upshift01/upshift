@@ -42,6 +42,7 @@ const CustomerLayout = ({ children }) => {
     { path: '/dashboard/talent-pool', icon: Users, label: 'Talent Pool', badge: 'NEW' },
     { path: '/remote-jobs/recommendations', icon: Rocket, label: 'Job Matches', badge: 'AI' },
     { path: '/remote-jobs/my-proposals', icon: Target, label: 'My Proposals', badge: 'NEW' },
+    { path: '/contracts', icon: FileText, label: 'My Contracts' },
     { path: '/dashboard/strategy-call', icon: Calendar, label: 'Strategy Call', badge: 'BOOK' },
     { path: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];

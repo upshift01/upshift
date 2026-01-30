@@ -430,12 +430,12 @@ const ContractDetails = () => {
                       <span className="font-semibold text-emerald-900">Escrow Protection</span>
                     </div>
                     <p className="text-sm text-emerald-700">
-                      {contract.escrow_funded > 0 
+                      {(contract.escrow_funded || 0) > 0 
                         ? `${formatCurrency(contract.escrow_funded, contract.payment_currency)} held in escrow`
                         : 'Fund the contract to protect both parties'}
                     </p>
                   </div>
-                  {contract.escrow_funded < contract.payment_amount && (
+                  {(contract.escrow_funded || 0) < contract.payment_amount && (
                     <Button
                       onClick={handleFundContract}
                       disabled={paymentLoading}
@@ -450,16 +450,16 @@ const ContractDetails = () => {
                     </Button>
                   )}
                 </div>
-                {contract.escrow_funded > 0 && (
+                {(contract.escrow_funded || 0) > 0 && (
                   <div className="mt-3">
                     <div className="flex justify-between text-xs text-emerald-600 mb-1">
                       <span>Escrow Funded</span>
-                      <span>{Math.round((contract.escrow_funded / contract.payment_amount) * 100)}%</span>
+                      <span>{Math.round(((contract.escrow_funded || 0) / contract.payment_amount) * 100)}%</span>
                     </div>
                     <div className="w-full bg-emerald-200 rounded-full h-2">
                       <div
                         className="bg-emerald-600 h-2 rounded-full transition-all"
-                        style={{ width: `${Math.min((contract.escrow_funded / contract.payment_amount) * 100, 100)}%` }}
+                        style={{ width: `${Math.min(((contract.escrow_funded || 0) / contract.payment_amount) * 100, 100)}%` }}
                       />
                     </div>
                   </div>

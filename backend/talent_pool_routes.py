@@ -1012,6 +1012,17 @@ Write ONLY the summary text, no explanations or quotes."""
         try:
             user_id = current_user.id
             
+            # Super admins always have access
+            if current_user.role == "super_admin":
+                return {
+                    "has_subscription": True,
+                    "subscription": {
+                        "plan_name": "Admin Access",
+                        "status": "active",
+                        "expires_at": "2099-12-31T23:59:59+00:00"
+                    }
+                }
+            
             # First, check for an active subscription
             subscription = await db.recruiter_subscriptions.find_one(
                 {"user_id": user_id, "status": "active"},

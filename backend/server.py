@@ -49,6 +49,7 @@ from help_routes import help_router, set_db as set_help_db
 from talent_pool_routes import get_talent_pool_routes
 from remote_jobs_routes import get_remote_jobs_routes, remote_jobs_router
 from proposals_routes import get_proposals_routes
+from contracts_routes import get_contracts_routes
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()
@@ -1833,6 +1834,10 @@ app.include_router(remote_jobs_router_instance)
 # Initialize and include proposals router
 proposals_router_instance = get_proposals_routes(db, get_current_user_dep)
 app.include_router(proposals_router_instance)
+
+# Initialize and include contracts router
+contracts_router_instance = get_contracts_routes(db, get_current_user_dep)
+app.include_router(contracts_router_instance)
 
 app.add_middleware(
     CORSMiddleware,

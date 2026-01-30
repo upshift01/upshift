@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import {
   Briefcase, Plus, Eye, Users, Clock, DollarSign,
   Edit, Trash2, Pause, Play, Loader2, ArrowLeft,
-  Building2, Calendar
+  Building2, Calendar, Target
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

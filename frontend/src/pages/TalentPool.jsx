@@ -229,6 +229,7 @@ const TalentPool = () => {
       if (filters.experience_level) params.append('experience_level', filters.experience_level);
       if (filters.location) params.append('location', filters.location);
       if (filters.skills) params.append('skills', filters.skills);
+      if (filters.is_remote_worker) params.append('is_remote_worker', 'true');
 
       const response = await fetch(`${API_URL}/api/talent-pool/browse?${params}`, {
         headers: { Authorization: `Bearer ${token}` }

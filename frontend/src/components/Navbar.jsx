@@ -261,13 +261,8 @@ const Navbar = () => {
             ) : (
               <div className="px-4 pt-2 space-y-2">
                 <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
                   <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                    Get Started
+                    Login
                   </Button>
                 </Link>
               </div>

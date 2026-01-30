@@ -541,6 +541,7 @@ Write ONLY the summary text, no explanations or quotes."""
         location: Optional[str] = Query(None),
         skills: Optional[str] = Query(None),  # Comma-separated
         search: Optional[str] = Query(None),
+        is_remote_worker: Optional[bool] = Query(None),  # Filter for remote workers
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
         reseller_id: Optional[str] = Query(None),
@@ -581,6 +582,10 @@ Write ONLY the summary text, no explanations or quotes."""
             if skills:
                 skills_list = [s.strip() for s in skills.split(",")]
                 query["skills"] = {"$in": skills_list}
+            
+            # Filter by remote worker status
+            if is_remote_worker is not None:
+                query["is_remote_worker"] = is_remote_worker
             
             if search:
                 query["$or"] = [

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -8,7 +8,8 @@ import { Progress } from '../components/ui/progress';
 import {
   FileText, Loader2, ArrowLeft, DollarSign, Calendar, CheckCircle,
   Clock, AlertCircle, Building2, User, XCircle, Milestone, Play,
-  Send, ThumbsUp, CreditCard, Edit, Trash2, FileSignature
+  Send, ThumbsUp, CreditCard, Edit, Trash2, FileSignature, Wallet,
+  BanknoteIcon, Shield
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -16,6 +17,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const ContractDetails = () => {
   const { contractId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { token, isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -23,6 +25,55 @@ const ContractDetails = () => {
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  // Handle payment callback
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    
+    if (payment === 'success' && sessionId) {
+      verifyPayment(sessionId);
+    } else if (payment === 'cancelled') {
+      toast({
+        title: 'Payment Cancelled',
+        description: 'Your payment was not processed.',
+        variant: 'destructive'
+      });
+      // Clear URL params
+      navigate(`/contracts/${contractId}`, { replace: true });
+    }
+  }, [searchParams]);
+
+  const verifyPayment = async (sessionId) => {
+    setPaymentLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/payments/status/${sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payment_status === 'paid') {
+          toast({
+            title: 'Payment Successful!',
+            description: 'The funds have been added to escrow.'
+          });
+          fetchContract(); // Refresh contract data
+        } else {
+          // Poll a few more times
+          setTimeout(() => verifyPayment(sessionId), 2000);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+    } finally {
+      setPaymentLoading(false);
+      // Clear URL params
+      navigate(`/contracts/${contractId}`, { replace: true });
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {

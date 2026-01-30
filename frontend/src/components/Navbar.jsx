@@ -106,6 +106,19 @@ const Navbar = () => {
               )}
             </div>
             
+            {/* Remote Jobs Link */}
+            <Link
+              to="/remote-jobs"
+              className={`text-sm font-medium transition-colors hover:text-blue-600 whitespace-nowrap flex items-center gap-1 ${
+                location.pathname.includes('remote-jobs')
+                  ? 'text-blue-600'
+                  : 'text-gray-700'
+              }`}
+            >
+              <Briefcase className="h-4 w-4" />
+              Remote Jobs
+            </Link>
+            
             {isAuthenticated ? (
               <>
                 <Link to={user?.role === 'recruiter' ? '/recruiter' : '/dashboard'}>

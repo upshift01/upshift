@@ -201,7 +201,36 @@ const ContractDetails = () => {
   };
 
   // Payment functions
-  const handleFundContract = async () => {
+  const openProviderSelection = (type, milestoneId = null) => {
+    // If only one provider or no providers configured, proceed directly
+    if (paymentProviders.length <= 1) {
+      if (type === 'contract') {
+        executeFundContract(paymentProviders[0]?.id || 'stripe');
+      } else {
+        executeFundMilestone(milestoneId, paymentProviders[0]?.id || 'stripe');
+      }
+      return;
+    }
+    
+    // Show provider selection modal
+    setPendingPaymentType(type);
+    setPendingMilestoneId(milestoneId);
+    setShowProviderModal(true);
+  };
+
+  const handleProviderConfirm = () => {
+    setShowProviderModal(false);
+    if (pendingPaymentType === 'contract') {
+      executeFundContract(selectedProvider);
+    } else if (pendingPaymentType === 'milestone' && pendingMilestoneId) {
+      executeFundMilestone(pendingMilestoneId, selectedProvider);
+    }
+  };
+
+  const handleFundContract = () => openProviderSelection('contract');
+  const handleFundMilestone = (milestoneId) => openProviderSelection('milestone', milestoneId);
+
+  const executeFundContract = async (provider) => {
     setPaymentLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/payments/fund-contract`, {
@@ -212,14 +241,32 @@ const ContractDetails = () => {
         },
         body: JSON.stringify({
           contract_id: contractId,
-          origin_url: window.location.origin
+          origin_url: window.location.origin,
+          provider: provider
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        // Redirect to Stripe checkout
-        window.location.href = data.checkout_url;
+        
+        if (data.provider === 'yoco' && data.payment_id) {
+          // Yoco uses inline SDK - for now, show instructions
+          toast({
+            title: 'Yoco Payment',
+            description: 'Yoco payment integration. Please complete the payment.'
+          });
+          // In a full implementation, we'd load Yoco SDK and process inline
+          // For now, redirect to a Yoco checkout if available
+          if (data.checkout_url) {
+            window.location.href = data.checkout_url;
+          } else {
+            setPaymentLoading(false);
+            fetchContract();
+          }
+        } else {
+          // Stripe - redirect to checkout
+          window.location.href = data.checkout_url;
+        }
       } else {
         const error = await response.json();
         throw new Error(error.detail || 'Failed to initiate payment');
@@ -234,7 +281,7 @@ const ContractDetails = () => {
     }
   };
 
-  const handleFundMilestone = async (milestoneId) => {
+  const executeFundMilestone = async (milestoneId, provider) => {
     setPaymentLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/payments/fund-milestone`, {
@@ -246,13 +293,28 @@ const ContractDetails = () => {
         body: JSON.stringify({
           contract_id: contractId,
           milestone_id: milestoneId,
-          origin_url: window.location.origin
+          origin_url: window.location.origin,
+          provider: provider
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        window.location.href = data.checkout_url;
+        
+        if (data.provider === 'yoco' && data.payment_id) {
+          toast({
+            title: 'Yoco Payment',
+            description: 'Processing Yoco payment...'
+          });
+          if (data.checkout_url) {
+            window.location.href = data.checkout_url;
+          } else {
+            setPaymentLoading(false);
+            fetchContract();
+          }
+        } else {
+          window.location.href = data.checkout_url;
+        }
       } else {
         const error = await response.json();
         throw new Error(error.detail || 'Failed to initiate payment');

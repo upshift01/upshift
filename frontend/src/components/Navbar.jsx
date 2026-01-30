@@ -142,6 +142,18 @@ const Navbar = () => {
                       My Posted Jobs
                     </Link>
                     <Link
+                      to="/remote-jobs/recommendations"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Job Recommendations
+                    </Link>
+                    <Link
+                      to="/remote-jobs/my-proposals"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      My Proposals
+                    </Link>
+                    <Link
                       to="/remote-jobs/post"
                       className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-b-lg font-medium"
                     >

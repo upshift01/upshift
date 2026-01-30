@@ -44,6 +44,7 @@ class TalentPoolOptIn(BaseModel):
     skills: List[str]
     bio: Optional[str] = None
     summary: str
+    is_remote_worker: bool = False
     cv_document_id: Optional[str] = None  # Reference to user's CV document
     profile_picture: Optional[str] = None  # Base64 or URL of profile picture
 
@@ -56,6 +57,7 @@ class TalentPoolUpdate(BaseModel):
     skills: Optional[List[str]] = None
     bio: Optional[str] = None
     summary: Optional[str] = None
+    is_remote_worker: Optional[bool] = None
     cv_document_id: Optional[str] = None
     profile_picture_url: Optional[str] = None
     is_visible: Optional[bool] = None

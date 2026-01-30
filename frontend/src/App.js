@@ -251,7 +251,6 @@ const AppContent = () => {
           <Route path="revenue" element={<ResellerRevenue />} />
           <Route path="invoices" element={<ResellerInvoices />} />
           <Route path="pricing" element={<ResellerPricing />} />
-          <Route path="payment-settings" element={<PaymentSettings />} />
           <Route path="branding" element={<ResellerBranding />} />
           <Route path="settings" element={<ResellerSettings />} />
           <Route path="subscription" element={<ResellerSubscription />} />

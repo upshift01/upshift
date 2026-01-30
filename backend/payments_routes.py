@@ -14,6 +14,8 @@ import logging
 import os
 import httpx
 
+from email_service import email_service
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)

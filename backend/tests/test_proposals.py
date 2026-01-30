@@ -28,7 +28,7 @@ def get_auth_token(email, password):
         headers={"Content-Type": "application/json"}
     )
     if response.status_code == 200:
-        return response.json().get("token")
+        return response.json().get("access_token")
     return None
 
 

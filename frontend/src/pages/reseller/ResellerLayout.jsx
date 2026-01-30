@@ -156,6 +156,7 @@ const ResellerLayout = () => {
   const settingsItems = [
     { path: '/reseller-dashboard/subscription', icon: CreditCard, label: 'Subscription', highlight: trialStatus?.is_trial || trialStatus?.trial_expired },
     { path: '/reseller-dashboard/pricing', icon: DollarSign, label: 'Pricing' },
+    { path: '/reseller-dashboard/payment-settings', icon: CreditCard, label: 'Payment Settings', badge: 'New' },
     { path: '/reseller-dashboard/branding', icon: Palette, label: 'Branding' },
     { path: '/reseller-dashboard/domain-setup', icon: Globe, label: 'Domain Setup', badge: 'New' },
     { path: '/reseller-dashboard/email-templates', icon: Mail, label: 'Email Templates', badge: 'New' },

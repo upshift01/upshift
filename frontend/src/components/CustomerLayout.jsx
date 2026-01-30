@@ -32,20 +32,37 @@ const CustomerLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navItems = [
+  // Check if user is a recruiter - they should use /recruiter dashboard instead
+  const isRecruiter = user?.role === 'recruiter';
+
+  // Base nav items for all customers
+  const baseNavItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/dashboard/documents', icon: FileText, label: 'My Documents' },
     { path: '/dashboard/analytics', icon: BarChart3, label: 'Usage & Analytics' },
     { path: '/dashboard/billing', icon: CreditCard, label: 'Billing' },
+  ];
+
+  // Job seeker specific items (NOT for recruiters)
+  const jobSeekerItems = [
     { path: '/dashboard/jobs', icon: Briefcase, label: 'Job Tracker', badge: 'NEW' },
     { path: '/dashboard/interview-prep', icon: MessageSquare, label: 'Interview Prep', badge: 'NEW' },
     { path: '/dashboard/talent-pool', icon: Users, label: 'Talent Pool', badge: 'NEW' },
     { path: '/remote-jobs/recommendations', icon: Rocket, label: 'Job Matches', badge: 'AI' },
     { path: '/remote-jobs/my-proposals', icon: Target, label: 'My Proposals', badge: 'NEW' },
     { path: '/contracts', icon: FileText, label: 'My Contracts' },
+  ];
+
+  // Common items for all
+  const commonEndItems = [
     { path: '/dashboard/strategy-call', icon: Calendar, label: 'Strategy Call', badge: 'BOOK' },
     { path: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
+
+  // Build nav items based on role
+  const navItems = isRecruiter 
+    ? [...baseNavItems, ...commonEndItems]
+    : [...baseNavItems, ...jobSeekerItems, ...commonEndItems];
 
   const toolItems = [
     { path: '/ats-checker', icon: Target, label: 'ATS Checker', badge: 'FREE' },

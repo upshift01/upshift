@@ -48,6 +48,7 @@ import JobProposals from "./pages/JobProposals";
 import MyContracts from "./pages/MyContracts";
 import ContractDetails from "./pages/ContractDetails";
 import CreateContract from "./pages/CreateContract";
+import AdminSettings from "./pages/AdminSettings";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages
@@ -183,6 +184,9 @@ const AppContent = () => {
         <Route path="/contracts" element={<PrivateRoute><MyContracts /></PrivateRoute>} />
         <Route path="/contracts/create/:proposalId" element={<PrivateRoute><CreateContract /></PrivateRoute>} />
         <Route path="/contracts/:contractId" element={<PrivateRoute><ContractDetails /></PrivateRoute>} />
+        
+        {/* Admin Settings */}
+        <Route path="/admin/settings" element={<PrivateRoute><AdminSettings /></PrivateRoute>} />
         
         <Route path="/help" element={<HelpCenter />} />
         <Route path="/help-center" element={<HelpCenter />} />

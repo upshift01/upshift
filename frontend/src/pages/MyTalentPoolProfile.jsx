@@ -670,6 +670,21 @@ const MyTalentPoolProfile = () => {
                     placeholder="Johannesburg, South Africa"
                   />
                 </div>
+                <div className="flex items-center space-x-3 py-2">
+                  <Checkbox
+                    id="is_remote_worker"
+                    checked={formData.is_remote_worker}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_remote_worker: checked }))}
+                    data-testid="remote-worker-checkbox"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-blue-600" />
+                    <Label htmlFor="is_remote_worker" className="text-sm font-medium cursor-pointer">
+                      Remote Worker
+                    </Label>
+                  </div>
+                  <span className="text-xs text-gray-500">I am available for remote work opportunities</span>
+                </div>
                 <div>
                   <Label>Attach CV (Optional)</Label>
                   <Select

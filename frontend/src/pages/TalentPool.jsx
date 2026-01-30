@@ -37,7 +37,8 @@ const TalentPool = () => {
     industry: '',
     experience_level: '',
     location: '',
-    skills: ''
+    skills: '',
+    is_remote_worker: false
   });
   
   const [pagination, setPagination] = useState({

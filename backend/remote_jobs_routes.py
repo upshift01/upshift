@@ -247,7 +247,8 @@ Return as JSON in this exact format:
             
             await db.remote_jobs.insert_one(job)
             
-            # Remove internal fields for response
+            # Remove internal fields for response (including _id added by MongoDB)
+            job.pop("_id", None)
             job.pop("poster_email", None)
             
             logger.info(f"Job posting created by {current_user.email}: {data.title}")

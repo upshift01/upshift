@@ -18,7 +18,8 @@ import {
   UserPlus,
   Calendar,
   Upload,
-  UserSearch
+  UserSearch,
+  CreditCard
 } from 'lucide-react';
 
 const AdminLayout = () => {

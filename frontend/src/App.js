@@ -42,6 +42,9 @@ import MyJobs from "./pages/MyJobs";
 import JobRecommendations from "./pages/JobRecommendations";
 import CandidateMatches from "./pages/CandidateMatches";
 import CompanyDashboard from "./pages/CompanyDashboard";
+import SubmitProposal from "./pages/SubmitProposal";
+import MyProposals from "./pages/MyProposals";
+import JobProposals from "./pages/JobProposals";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages
@@ -169,6 +172,9 @@ const AppContent = () => {
         <Route path="/remote-jobs/company-dashboard" element={<PrivateRoute><CompanyDashboard /></PrivateRoute>} />
         <Route path="/remote-jobs/:jobId" element={<JobDetails />} />
         <Route path="/remote-jobs/:jobId/matches" element={<PrivateRoute><CandidateMatches /></PrivateRoute>} />
+        <Route path="/remote-jobs/:jobId/apply" element={<PrivateRoute><SubmitProposal /></PrivateRoute>} />
+        <Route path="/remote-jobs/:jobId/proposals" element={<PrivateRoute><JobProposals /></PrivateRoute>} />
+        <Route path="/remote-jobs/my-proposals" element={<PrivateRoute><MyProposals /></PrivateRoute>} />
         
         <Route path="/help" element={<HelpCenter />} />
         <Route path="/help-center" element={<HelpCenter />} />

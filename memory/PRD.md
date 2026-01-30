@@ -181,19 +181,20 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 | Test Recruiter | john@woo.co.za | Test@1234 |
 
 ## Recent Changes (Jan 2025)
-1. **Candidate Profile Picture Upload** - Added ability for candidates to upload profile pictures (stored locally at `/app/public/uploads/profile_pictures`)
-2. **Enhanced Candidate Cards** - Recruiter browse view now displays profile pictures with gradient avatar fallback
-3. **CV Download Button** - CV download button only shows when candidate has attached a CV
-4. **Job Seeker Registration Redirect** - Fixed to redirect to dashboard instead of pricing page
-5. **CV Selection Fix** - Fixed talent pool CV attachment to use correct `user_documents` collection
-6. **AI Improve Skills** - Added AI-powered skill generation button in Talent Pool profile form
-7. **Bio Field with AI** - Added new Bio text area with AI generate/improve functionality
-8. **AI Improve Summary** - Added AI improve button for Professional Summary
-9. **Remote Worker Checkbox** - Added "Remote Worker" checkbox to Talent Pool profile
-10. **Remote Work Space (Phase 5.1)** - Complete job posting portal with AI-assisted descriptions
-5. **CV Selection Fix** - Fixed talent pool CV attachment to use correct `user_documents` collection
-6. **AI Improve Skills** - Added AI-powered skill generation button in Talent Pool profile form
-7. **Bio Field with AI** - Added new Bio text area with AI generate/improve functionality
+1. **Dual Payment Gateway** - Added Yoco as alternative to Stripe for contract/milestone funding
+2. **Admin Payment Settings** - New admin page at `/admin/payment-settings` to configure Stripe and Yoco API keys
+3. **Payment Provider Selection** - Modal allowing employers to choose Stripe or Yoco when funding contracts
+4. **Test Connection Feature** - Admin can test payment gateway connections from settings page
+5. **Candidate Profile Picture Upload** - Added ability for candidates to upload profile pictures (stored locally at `/app/public/uploads/profile_pictures`)
+6. **Enhanced Candidate Cards** - Recruiter browse view now displays profile pictures with gradient avatar fallback
+7. **CV Download Button** - CV download button only shows when candidate has attached a CV
+8. **Job Seeker Registration Redirect** - Fixed to redirect to dashboard instead of pricing page
+9. **CV Selection Fix** - Fixed talent pool CV attachment to use correct `user_documents` collection
+10. **AI Improve Skills** - Added AI-powered skill generation button in Talent Pool profile form
+11. **Bio Field with AI** - Added new Bio text area with AI generate/improve functionality
+12. **AI Improve Summary** - Added AI improve button for Professional Summary
+13. **Remote Worker Checkbox** - Added "Remote Worker" checkbox to Talent Pool profile
+14. **Remote Work Space (Phase 5.1)** - Complete job posting portal with AI-assisted descriptions
 
 ## Recent Fixes (Dec 2025)
 1. **Hardcoded Phone Number** - Fixed to use dynamic settings

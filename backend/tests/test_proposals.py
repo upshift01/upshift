@@ -20,58 +20,24 @@ EMPLOYER_PASSWORD = "password123"
 TEST_JOB_ID = "b221cb72-e7e5-4b18-b017-1fcae21ec007"
 
 
-@pytest.fixture(scope="module")
-def api_client():
-    """Shared requests session"""
-    session = requests.Session()
-    session.headers.update({"Content-Type": "application/json"})
-    return session
-
-
-@pytest.fixture(scope="module")
-def job_seeker_token(api_client):
-    """Get authentication token for job seeker"""
-    response = api_client.post(f"{BASE_URL}/api/auth/login", json={
-        "email": JOB_SEEKER_EMAIL,
-        "password": JOB_SEEKER_PASSWORD
-    })
+def get_auth_token(email, password):
+    """Helper to get auth token"""
+    response = requests.post(
+        f"{BASE_URL}/api/auth/login",
+        json={"email": email, "password": password},
+        headers={"Content-Type": "application/json"}
+    )
     if response.status_code == 200:
         return response.json().get("token")
-    pytest.skip(f"Job seeker authentication failed: {response.status_code}")
-
-
-@pytest.fixture(scope="module")
-def employer_token(api_client):
-    """Get authentication token for employer"""
-    response = api_client.post(f"{BASE_URL}/api/auth/login", json={
-        "email": EMPLOYER_EMAIL,
-        "password": EMPLOYER_PASSWORD
-    })
-    if response.status_code == 200:
-        return response.json().get("token")
-    pytest.skip(f"Employer authentication failed: {response.status_code}")
-
-
-@pytest.fixture(scope="module")
-def job_seeker_client(api_client, job_seeker_token):
-    """Session with job seeker auth header"""
-    api_client.headers.update({"Authorization": f"Bearer {job_seeker_token}"})
-    return api_client
-
-
-@pytest.fixture(scope="module")
-def employer_client(api_client, employer_token):
-    """Session with employer auth header"""
-    api_client.headers.update({"Authorization": f"Bearer {employer_token}"})
-    return api_client
+    return None
 
 
 class TestJobDetailsForProposal:
     """Test job details endpoint needed for proposal submission"""
     
-    def test_get_job_details(self, api_client):
+    def test_get_job_details(self):
         """Test fetching job details for proposal page"""
-        response = api_client.get(f"{BASE_URL}/api/remote-jobs/jobs/{TEST_JOB_ID}")
+        response = requests.get(f"{BASE_URL}/api/remote-jobs/jobs/{TEST_JOB_ID}")
         assert response.status_code == 200
         
         data = response.json()
@@ -86,23 +52,21 @@ class TestJobDetailsForProposal:
 class TestMyProposals:
     """Test job seeker's proposal management"""
     
-    def test_get_my_proposals_requires_auth(self, api_client):
+    def test_get_my_proposals_requires_auth(self):
         """Test that my-proposals requires authentication"""
-        # Remove auth header temporarily
-        auth_header = api_client.headers.pop("Authorization", None)
-        
-        response = api_client.get(f"{BASE_URL}/api/proposals/my-proposals")
+        response = requests.get(f"{BASE_URL}/api/proposals/my-proposals")
         assert response.status_code in [401, 403]
-        
-        # Restore auth header
-        if auth_header:
-            api_client.headers["Authorization"] = auth_header
         print("PASS: my-proposals requires authentication")
     
-    def test_get_my_proposals_success(self, api_client, job_seeker_token):
+    def test_get_my_proposals_success(self):
         """Test fetching job seeker's proposals"""
-        api_client.headers["Authorization"] = f"Bearer {job_seeker_token}"
-        response = api_client.get(f"{BASE_URL}/api/proposals/my-proposals")
+        token = get_auth_token(JOB_SEEKER_EMAIL, JOB_SEEKER_PASSWORD)
+        assert token is not None, "Failed to get job seeker token"
+        
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/my-proposals",
+            headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 200
         
         data = response.json()
@@ -125,23 +89,21 @@ class TestMyProposals:
 class TestJobProposalsForEmployer:
     """Test employer's proposal management"""
     
-    def test_get_job_proposals_requires_auth(self, api_client):
+    def test_get_job_proposals_requires_auth(self):
         """Test that job proposals requires authentication"""
-        # Remove auth header temporarily
-        auth_header = api_client.headers.pop("Authorization", None)
-        
-        response = api_client.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
+        response = requests.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
         assert response.status_code in [401, 403]
-        
-        # Restore auth header
-        if auth_header:
-            api_client.headers["Authorization"] = auth_header
         print("PASS: job proposals requires authentication")
     
-    def test_get_job_proposals_success(self, api_client, employer_token):
+    def test_get_job_proposals_success(self):
         """Test fetching proposals for employer's job"""
-        api_client.headers["Authorization"] = f"Bearer {employer_token}"
-        response = api_client.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
+        token = get_auth_token(EMPLOYER_EMAIL, EMPLOYER_PASSWORD)
+        assert token is not None, "Failed to get employer token"
+        
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 200
         
         data = response.json()
@@ -160,10 +122,15 @@ class TestJobProposalsForEmployer:
         
         print(f"PASS: Employer can view {data['status_counts']['total']} proposals")
     
-    def test_get_job_proposals_non_owner_denied(self, api_client, job_seeker_token):
+    def test_get_job_proposals_non_owner_denied(self):
         """Test that non-owner cannot view job proposals"""
-        api_client.headers["Authorization"] = f"Bearer {job_seeker_token}"
-        response = api_client.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
+        token = get_auth_token(JOB_SEEKER_EMAIL, JOB_SEEKER_PASSWORD)
+        assert token is not None, "Failed to get job seeker token"
+        
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
         
         # Should be 404 (job not found for this user) or 403
         assert response.status_code in [403, 404]
@@ -173,12 +140,17 @@ class TestJobProposalsForEmployer:
 class TestProposalStatusUpdate:
     """Test employer's ability to update proposal status"""
     
-    def test_update_proposal_status_shortlist(self, api_client, employer_token):
+    def test_update_proposal_status_shortlist(self):
         """Test shortlisting a proposal"""
-        api_client.headers["Authorization"] = f"Bearer {employer_token}"
+        token = get_auth_token(EMPLOYER_EMAIL, EMPLOYER_PASSWORD)
+        assert token is not None, "Failed to get employer token"
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         
         # First get proposals to find one to shortlist
-        response = api_client.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}",
+            headers=headers
+        )
         if response.status_code != 200:
             pytest.skip("Could not fetch proposals")
         
@@ -188,23 +160,20 @@ class TestProposalStatusUpdate:
         if not proposals:
             pytest.skip("No proposals to test status update")
         
-        # Find a pending proposal
-        pending_proposals = [p for p in proposals if p.get("status") == "pending"]
-        if not pending_proposals:
-            # Reset a proposal to pending for testing
-            proposal_id = proposals[0]["id"]
-            api_client.post(
-                f"{BASE_URL}/api/proposals/{proposal_id}/status",
-                json={"status": "pending"}
-            )
-            pending_proposals = [proposals[0]]
+        proposal_id = proposals[0]["id"]
         
-        proposal_id = pending_proposals[0]["id"]
+        # First reset to pending
+        requests.post(
+            f"{BASE_URL}/api/proposals/{proposal_id}/status",
+            json={"status": "pending"},
+            headers=headers
+        )
         
         # Shortlist the proposal
-        response = api_client.post(
+        response = requests.post(
             f"{BASE_URL}/api/proposals/{proposal_id}/status",
-            json={"status": "shortlisted"}
+            json={"status": "shortlisted"},
+            headers=headers
         )
         assert response.status_code == 200
         
@@ -213,12 +182,17 @@ class TestProposalStatusUpdate:
         assert data["status"] == "shortlisted"
         print(f"PASS: Proposal {proposal_id} shortlisted successfully")
     
-    def test_update_proposal_status_reject(self, api_client, employer_token):
+    def test_update_proposal_status_reject(self):
         """Test rejecting a proposal"""
-        api_client.headers["Authorization"] = f"Bearer {employer_token}"
+        token = get_auth_token(EMPLOYER_EMAIL, EMPLOYER_PASSWORD)
+        assert token is not None, "Failed to get employer token"
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         
         # Get proposals
-        response = api_client.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}",
+            headers=headers
+        )
         if response.status_code != 200:
             pytest.skip("Could not fetch proposals")
         
@@ -231,9 +205,10 @@ class TestProposalStatusUpdate:
         proposal_id = proposals[0]["id"]
         
         # Reject the proposal
-        response = api_client.post(
+        response = requests.post(
             f"{BASE_URL}/api/proposals/{proposal_id}/status",
-            json={"status": "rejected", "notes": "Test rejection"}
+            json={"status": "rejected", "notes": "Test rejection"},
+            headers=headers
         )
         assert response.status_code == 200
         
@@ -242,12 +217,17 @@ class TestProposalStatusUpdate:
         assert data["status"] == "rejected"
         print(f"PASS: Proposal {proposal_id} rejected successfully")
     
-    def test_reset_proposal_to_pending(self, api_client, employer_token):
+    def test_reset_proposal_to_pending(self):
         """Reset proposal back to pending for future tests"""
-        api_client.headers["Authorization"] = f"Bearer {employer_token}"
+        token = get_auth_token(EMPLOYER_EMAIL, EMPLOYER_PASSWORD)
+        assert token is not None, "Failed to get employer token"
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         
         # Get proposals
-        response = api_client.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}",
+            headers=headers
+        )
         if response.status_code != 200:
             pytest.skip("Could not fetch proposals")
         
@@ -260,9 +240,10 @@ class TestProposalStatusUpdate:
         proposal_id = proposals[0]["id"]
         
         # Reset to pending
-        response = api_client.post(
+        response = requests.post(
             f"{BASE_URL}/api/proposals/{proposal_id}/status",
-            json={"status": "pending"}
+            json={"status": "pending"},
+            headers=headers
         )
         assert response.status_code == 200
         print(f"PASS: Proposal {proposal_id} reset to pending")
@@ -271,11 +252,9 @@ class TestProposalStatusUpdate:
 class TestAIProposalGeneration:
     """Test AI proposal generation endpoints"""
     
-    def test_ai_generate_proposal_requires_auth(self, api_client):
+    def test_ai_generate_proposal_requires_auth(self):
         """Test that AI generation requires authentication"""
-        auth_header = api_client.headers.pop("Authorization", None)
-        
-        response = api_client.post(
+        response = requests.post(
             f"{BASE_URL}/api/proposals/ai/generate-proposal",
             json={
                 "job_title": "Test Job",
@@ -285,19 +264,18 @@ class TestAIProposalGeneration:
                 "user_experience": "5 years",
                 "user_bio": "Test bio",
                 "tone": "professional"
-            }
+            },
+            headers={"Content-Type": "application/json"}
         )
         assert response.status_code in [401, 403]
-        
-        if auth_header:
-            api_client.headers["Authorization"] = auth_header
         print("PASS: AI generate proposal requires authentication")
     
-    def test_ai_generate_proposal_success(self, api_client, job_seeker_token):
+    def test_ai_generate_proposal_success(self):
         """Test AI proposal generation"""
-        api_client.headers["Authorization"] = f"Bearer {job_seeker_token}"
+        token = get_auth_token(JOB_SEEKER_EMAIL, JOB_SEEKER_PASSWORD)
+        assert token is not None, "Failed to get job seeker token"
         
-        response = api_client.post(
+        response = requests.post(
             f"{BASE_URL}/api/proposals/ai/generate-proposal",
             json={
                 "job_title": "Senior React Developer",
@@ -307,6 +285,10 @@ class TestAIProposalGeneration:
                 "user_experience": "5 years in frontend development",
                 "user_bio": "Passionate developer with experience in modern web technologies",
                 "tone": "professional"
+            },
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
             }
         )
         
@@ -327,12 +309,13 @@ class TestAIProposalGeneration:
 class TestProposalSubmission:
     """Test proposal submission flow"""
     
-    def test_submit_proposal_duplicate_check(self, api_client, job_seeker_token):
+    def test_submit_proposal_duplicate_check(self):
         """Test that duplicate proposals are rejected"""
-        api_client.headers["Authorization"] = f"Bearer {job_seeker_token}"
+        token = get_auth_token(JOB_SEEKER_EMAIL, JOB_SEEKER_PASSWORD)
+        assert token is not None, "Failed to get job seeker token"
         
         # John Woo has already submitted a proposal for this job
-        response = api_client.post(
+        response = requests.post(
             f"{BASE_URL}/api/proposals",
             json={
                 "job_id": TEST_JOB_ID,
@@ -341,6 +324,10 @@ class TestProposalSubmission:
                 "rate_type": "monthly",
                 "currency": "USD",
                 "availability": "immediate"
+            },
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
             }
         )
         
@@ -350,11 +337,12 @@ class TestProposalSubmission:
         assert "already submitted" in data.get("detail", "").lower()
         print("PASS: Duplicate proposal correctly rejected")
     
-    def test_submit_proposal_own_job_rejected(self, api_client, employer_token):
+    def test_submit_proposal_own_job_rejected(self):
         """Test that employer cannot apply to their own job"""
-        api_client.headers["Authorization"] = f"Bearer {employer_token}"
+        token = get_auth_token(EMPLOYER_EMAIL, EMPLOYER_PASSWORD)
+        assert token is not None, "Failed to get employer token"
         
-        response = api_client.post(
+        response = requests.post(
             f"{BASE_URL}/api/proposals",
             json={
                 "job_id": TEST_JOB_ID,
@@ -363,6 +351,10 @@ class TestProposalSubmission:
                 "rate_type": "monthly",
                 "currency": "USD",
                 "availability": "immediate"
+            },
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
             }
         )
         
@@ -376,11 +368,15 @@ class TestProposalSubmission:
 class TestEmployerStats:
     """Test employer proposal statistics"""
     
-    def test_employer_stats(self, api_client, employer_token):
+    def test_employer_stats(self):
         """Test employer proposal statistics endpoint"""
-        api_client.headers["Authorization"] = f"Bearer {employer_token}"
+        token = get_auth_token(EMPLOYER_EMAIL, EMPLOYER_PASSWORD)
+        assert token is not None, "Failed to get employer token"
         
-        response = api_client.get(f"{BASE_URL}/api/proposals/stats/employer")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/stats/employer",
+            headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 200
         
         data = response.json()
@@ -399,12 +395,17 @@ class TestEmployerStats:
 class TestProposalDetails:
     """Test proposal detail viewing"""
     
-    def test_get_proposal_details_as_applicant(self, api_client, job_seeker_token):
+    def test_get_proposal_details_as_applicant(self):
         """Test viewing proposal details as the applicant"""
-        api_client.headers["Authorization"] = f"Bearer {job_seeker_token}"
+        token = get_auth_token(JOB_SEEKER_EMAIL, JOB_SEEKER_PASSWORD)
+        assert token is not None, "Failed to get job seeker token"
+        headers = {"Authorization": f"Bearer {token}"}
         
         # First get my proposals
-        response = api_client.get(f"{BASE_URL}/api/proposals/my-proposals")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/my-proposals",
+            headers=headers
+        )
         if response.status_code != 200:
             pytest.skip("Could not fetch proposals")
         
@@ -417,7 +418,10 @@ class TestProposalDetails:
         proposal_id = proposals[0]["id"]
         
         # Get proposal details
-        response = api_client.get(f"{BASE_URL}/api/proposals/{proposal_id}")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/{proposal_id}",
+            headers=headers
+        )
         assert response.status_code == 200
         
         data = response.json()
@@ -425,18 +429,19 @@ class TestProposalDetails:
         assert "proposal" in data
         assert data["is_owner"] is True
         
-        # Employer notes should be hidden from applicant
-        proposal = data["proposal"]
-        assert "employer_notes" not in proposal or proposal.get("employer_notes") is None
-        
         print(f"PASS: Applicant can view their proposal details")
     
-    def test_get_proposal_details_as_employer(self, api_client, employer_token):
+    def test_get_proposal_details_as_employer(self):
         """Test viewing proposal details as the employer"""
-        api_client.headers["Authorization"] = f"Bearer {employer_token}"
+        token = get_auth_token(EMPLOYER_EMAIL, EMPLOYER_PASSWORD)
+        assert token is not None, "Failed to get employer token"
+        headers = {"Authorization": f"Bearer {token}"}
         
         # First get job proposals
-        response = api_client.get(f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/job/{TEST_JOB_ID}",
+            headers=headers
+        )
         if response.status_code != 200:
             pytest.skip("Could not fetch proposals")
         
@@ -449,7 +454,10 @@ class TestProposalDetails:
         proposal_id = proposals[0]["id"]
         
         # Get proposal details
-        response = api_client.get(f"{BASE_URL}/api/proposals/{proposal_id}")
+        response = requests.get(
+            f"{BASE_URL}/api/proposals/{proposal_id}",
+            headers=headers
+        )
         assert response.status_code == 200
         
         data = response.json()

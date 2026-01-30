@@ -157,6 +157,13 @@ const AppContent = () => {
         <Route path="/skills-generator" element={<SkillsGenerator />} />
         <Route path="/talent-pool" element={<TalentPool />} />
         <Route path="/talent-pool/:profileId" element={<TalentPoolProfile />} />
+        
+        {/* Remote Jobs / Work Space */}
+        <Route path="/remote-jobs" element={<RemoteJobs />} />
+        <Route path="/remote-jobs/post" element={<PrivateRoute><PostJob /></PrivateRoute>} />
+        <Route path="/remote-jobs/my-jobs" element={<PrivateRoute><MyJobs /></PrivateRoute>} />
+        <Route path="/remote-jobs/:jobId" element={<JobDetails />} />
+        
         <Route path="/help" element={<HelpCenter />} />
         <Route path="/help-center" element={<HelpCenter />} />
         

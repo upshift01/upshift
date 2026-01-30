@@ -1,0 +1,80 @@
+{
+  "summary": "Completed comprehensive testing of Yoco payment integration and Admin Payment Settings feature. All 15 backend API tests passed. Frontend UI testing verified Admin Payment Settings page and Contract Details payment provider selection modal.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_payment_settings.py",
+    "/app/test_reports/pytest/payment_settings_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_payment_settings.py"
+  ],
+  "success_rate": {
+    "backend": "100% (15/15 tests passed)",
+    "frontend": "100% (all UI flows verified)"
+  },
+  "seed_data_creation": "Used existing contract bd2ecf7a-c5c9-470a-88d6-953f65871831 for payment testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Payment gateway integration fully tested. Both Stripe and Yoco providers configured and working. Admin can configure payment keys via /admin/payment-settings. Employers see payment provider selection modal when funding contracts. Test credentials: Super Admin (admin@upshift.works / Admin@2025!), Employer (test@example.com / password123). Test Contract ID: bd2ecf7a-c5c9-470a-88d6-953f65871831",
+  "test_results": {
+    "backend_tests": {
+      "GET /api/payments/config (no auth)": "PASS - Returns 401/403 without auth",
+      "GET /api/payments/config (success)": "PASS - Returns both Stripe and Yoco providers",
+      "GET /api/admin/settings/payments (non-admin)": "PASS - Returns 403 for non-admin",
+      "GET /api/admin/settings/payments (admin)": "PASS - Returns payment settings with masked keys",
+      "PUT /api/admin/settings/payments (non-admin)": "PASS - Returns 403 for non-admin",
+      "PUT /api/admin/settings/payments (admin)": "PASS - Updates settings successfully",
+      "POST /api/payments/fund-contract (no auth)": "PASS - Returns 401/403 without auth",
+      "POST /api/payments/fund-contract (stripe)": "PASS - Returns Stripe checkout URL",
+      "POST /api/payments/fund-contract (yoco currency)": "PASS - Validates ZAR currency requirement",
+      "POST /api/payments/fund-contract (invalid provider)": "PASS - Returns 400 for invalid provider",
+      "POST /api/payments/fund-contract (not found)": "PASS - Returns 404 for non-existent contract",
+      "GET /api/payments/transactions (no auth)": "PASS - Returns 401/403 without auth",
+      "GET /api/payments/transactions (success)": "PASS - Returns transaction list",
+      "POST /api/admin/settings/payments/test (stripe)": "PASS - Tests Stripe connection",
+      "POST /api/admin/settings/payments/test (yoco)": "PASS - Tests Yoco connection"
+    },
+    "frontend_tests": {
+      "Admin Payment Settings page access": "PASS - Accessible at /admin/payment-settings",
+      "Stripe configuration section": "PASS - Shows Stripe with Configured badge, public/secret key fields",
+      "Yoco configuration section": "PASS - Shows Yoco with Configured badge, public/secret key fields",
+      "Test Connection buttons": "PASS - Both Stripe and Yoco test connections work",
+      "Default Provider dropdown": "PASS - Shows Stripe (Recommended) as default",
+      "Save Payment Settings button": "PASS - Button visible and functional",
+      "Contract Details Fund Contract button": "PASS - Button visible for employers",
+      "Payment Provider Selection Modal": "PASS - Shows both Stripe and Yoco options",
+      "Modal Stripe option": "PASS - Shows USD and ZAR currency badges",
+      "Modal Yoco option": "PASS - Shows ZAR currency badge only",
+      "Proceed to Payment button": "PASS - Button visible in modal"
+    }
+  },
+  "features_verified": [
+    "Admin can access Payment Settings page at /admin/payment-settings",
+    "Payment Settings page shows both Stripe and Yoco configuration sections",
+    "Payment Settings page allows saving updated API keys",
+    "Test Connection functionality works for both providers",
+    "Contract Details page shows 'Fund Contract' button for employers",
+    "Clicking 'Fund Contract' shows payment provider selection modal with Stripe and Yoco options",
+    "Payment config API endpoint returns both providers correctly",
+    "Admin settings API endpoints work for fetching and updating payment settings"
+  ],
+  "test_credentials_used": {
+    "super_admin": "admin@upshift.works / Admin@2025!",
+    "employer": "test@example.com / password123"
+  },
+  "test_contract_id": "bd2ecf7a-c5c9-470a-88d6-953f65871831",
+  "mocked_apis": {
+    "stripe": "Uses test key sk_test_emergent (MOCKED)",
+    "yoco": "Uses test keys from .env (MOCKED)"
+  }
+}

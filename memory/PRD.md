@@ -87,11 +87,24 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - [x] Shortlist and Reject buttons for employers
   - [x] View Full Profile link for employers
   - [x] Stats dashboard with proposal counts
-- [ ] **Phase 5.4: Contract & Payment System** (FUTURE)
-  - [ ] Accept proposal workflow
-  - [ ] Contract creation and management
-  - [ ] Payment/escrow integration
-  - [ ] Milestone tracking
+- [ ] **Phase 5.4: Contract & Payment System** (COMPLETED - Jan 2025)
+  - [x] Contract creation from accepted proposals
+  - [x] Contract details: title, description, dates, payment terms
+  - [x] Payment types: fixed, hourly, monthly
+  - [x] Payment schedules: on completion, weekly, bi-weekly, monthly, milestones
+  - [x] Milestone system with due dates and amounts
+  - [x] Milestone workflow: pending → submitted → approved → paid
+  - [x] Contract signing by contractor
+  - [x] Contract status: draft, active, completed, cancelled
+  - [x] My Contracts page with filters (by status, by role)
+  - [x] Contract stats dashboard
+  - [x] Payment progress tracking
+  - [x] "Create Contract" button on accepted proposals
+  - [x] Navigation links in Navbar and sidebar
+- [ ] **Phase 5.5: Payment Gateway Integration** (FUTURE)
+  - [ ] Stripe/Yoco escrow integration
+  - [ ] Automatic payments on milestone approval
+  - [ ] Payment dispute handling
 
 ## Technical Stack
 - **Frontend**: React 18, Tailwind CSS, Shadcn/UI

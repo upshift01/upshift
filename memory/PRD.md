@@ -89,21 +89,37 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - `POST /api/talent-pool/opt-in` - Customer opts into talent pool
 - `POST /api/talent-pool/subscribe/{plan_id}` - Create subscription checkout
 - `POST /api/talent-pool/verify-payment/{subscription_id}` - Verify and activate subscription
-- `POST /api/talent-pool/upload-profile-picture` - Upload candidate profile picture (NEW)
-- `GET /api/talent-pool/profile-picture/{filename}` - Serve profile picture (NEW)
+- `POST /api/talent-pool/upload-profile-picture` - Upload candidate profile picture
+- `GET /api/talent-pool/profile-picture/{filename}` - Serve profile picture
+- `POST /api/talent-pool/ai/improve-skills` - AI skill suggestions
+- `POST /api/talent-pool/ai/improve-bio` - AI bio generation
+- `POST /api/talent-pool/ai/improve-summary` - AI summary generation
 - `GET /api/talent-pool/admin/candidates` - Admin: Get all candidates
 - `POST /api/talent-pool/admin/candidates` - Admin: Add candidate
 - `PUT /api/talent-pool/admin/candidates/{id}/status` - Admin: Approve/reject
 - `DELETE /api/talent-pool/admin/candidates/{id}` - Admin: Delete candidate
 - `GET/PUT /api/talent-pool/admin/pricing` - Admin: Get/update pricing
 
+### Remote Jobs (NEW - Phase 5)
+- `GET /api/remote-jobs/options` - Get form options (job types, currencies, etc.)
+- `GET /api/remote-jobs/jobs` - List active jobs (public, with filters)
+- `GET /api/remote-jobs/jobs/{id}` - Get job details (public)
+- `POST /api/remote-jobs/jobs` - Create job posting (authenticated)
+- `PUT /api/remote-jobs/jobs/{id}` - Update job posting (owner only)
+- `DELETE /api/remote-jobs/jobs/{id}` - Delete job posting (owner only)
+- `POST /api/remote-jobs/jobs/{id}/toggle-status` - Pause/activate job (owner only)
+- `GET /api/remote-jobs/my-jobs` - Get user's posted jobs (authenticated)
+- `POST /api/remote-jobs/ai/generate-description` - AI job description generator
+- `POST /api/remote-jobs/ai/suggest-skills` - AI skill suggestions for job
+
 ## Database Collections
 - `users` - User accounts with roles
 - `user_cvs` - CV documents
-- `talent_pool_profiles` - Candidate profiles in talent pool (includes `profile_picture_url`, `cv_url`)
+- `talent_pool_profiles` - Candidate profiles in talent pool (includes `profile_picture_url`, `cv_url`, `is_remote_worker`)
 - `recruiter_subscriptions` - Recruiter access subscriptions
 - `contact_requests` - Recruiter-candidate contact requests
 - `platform_settings` - Platform configuration including pricing
+- `remote_jobs` - Remote job postings (NEW)
 
 ## Credentials
 | Role | Email | Password |
@@ -118,6 +134,12 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 2. **Enhanced Candidate Cards** - Recruiter browse view now displays profile pictures with gradient avatar fallback
 3. **CV Download Button** - CV download button only shows when candidate has attached a CV
 4. **Job Seeker Registration Redirect** - Fixed to redirect to dashboard instead of pricing page
+5. **CV Selection Fix** - Fixed talent pool CV attachment to use correct `user_documents` collection
+6. **AI Improve Skills** - Added AI-powered skill generation button in Talent Pool profile form
+7. **Bio Field with AI** - Added new Bio text area with AI generate/improve functionality
+8. **AI Improve Summary** - Added AI improve button for Professional Summary
+9. **Remote Worker Checkbox** - Added "Remote Worker" checkbox to Talent Pool profile
+10. **Remote Work Space (Phase 5.1)** - Complete job posting portal with AI-assisted descriptions
 5. **CV Selection Fix** - Fixed talent pool CV attachment to use correct `user_documents` collection
 6. **AI Improve Skills** - Added AI-powered skill generation button in Talent Pool profile form
 7. **Bio Field with AI** - Added new Bio text area with AI generate/improve functionality

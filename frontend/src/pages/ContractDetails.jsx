@@ -168,6 +168,118 @@ const ContractDetails = () => {
     }
   };
 
+  // Payment functions
+  const handleFundContract = async () => {
+    setPaymentLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/payments/fund-contract`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          contract_id: contractId,
+          origin_url: window.location.origin
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Redirect to Stripe checkout
+        window.location.href = data.checkout_url;
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to initiate payment');
+      }
+    } catch (error) {
+      toast({
+        title: 'Payment Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleFundMilestone = async (milestoneId) => {
+    setPaymentLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/payments/fund-milestone`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          contract_id: contractId,
+          milestone_id: milestoneId,
+          origin_url: window.location.origin
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        window.location.href = data.checkout_url;
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to initiate payment');
+      }
+    } catch (error) {
+      toast({
+        title: 'Payment Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleReleaseMilestone = async (milestoneId) => {
+    if (!confirm('Release payment to contractor? This action cannot be undone.')) return;
+    
+    setActionLoading(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/api/payments/release-milestone/${contractId}/${milestoneId}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: 'Payment Released!',
+          description: 'The funds have been released to the contractor.'
+        });
+        fetchContract();
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to release payment');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const getEscrowBadge = (escrowStatus) => {
+    switch (escrowStatus) {
+      case 'funded':
+        return <Badge className="bg-emerald-100 text-emerald-800 gap-1"><Shield className="h-3 w-3" />Funded</Badge>;
+      case 'released':
+        return <Badge className="bg-blue-100 text-blue-800 gap-1"><BanknoteIcon className="h-3 w-3" />Released</Badge>;
+      default:
+        return <Badge variant="outline" className="gap-1"><Wallet className="h-3 w-3" />Not Funded</Badge>;
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'draft':

@@ -105,7 +105,8 @@ const Navbar = () => {
               )}
             </div>
             
-            {/* Remote Jobs Dropdown */}
+            {/* Remote Jobs Dropdown - Hidden for recruiters */}
+            {user?.role !== 'recruiter' && (
             <div className="relative group">
               <Link
                 to="/remote-jobs"
@@ -168,6 +169,7 @@ const Navbar = () => {
                 )}
               </div>
             </div>
+            )}
             
             {isAuthenticated ? (
               <>

@@ -156,6 +156,28 @@ def get_contracts_routes(db, get_current_user):
             
             logger.info(f"Contract created: {contract['id']} for proposal {data.proposal_id}")
             
+            # Send email notification to contractor
+            try:
+                frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+                if frontend_url:
+                    contract_url = f"{frontend_url}/contracts/{contract['id']}"
+                else:
+                    contract_url = f"/contracts/{contract['id']}"
+                
+                await email_service.send_contract_created_email(
+                    to_email=contract["contractor_email"],
+                    contractor_name=contract["contractor_name"],
+                    contract_title=contract["title"],
+                    employer_name=contract["employer_name"],
+                    company_name=contract.get("company_name") or "Not specified",
+                    contract_value=f"{contract['payment_currency']} {contract['payment_amount']:,.2f}",
+                    start_date=contract["start_date"][:10] if contract["start_date"] else "TBD",
+                    contract_url=contract_url
+                )
+                logger.info(f"Contract creation email sent to {contract['contractor_email']}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send contract creation email: {email_err}")
+            
             return {"success": True, "message": "Contract created", "contract": contract}
             
         except HTTPException:

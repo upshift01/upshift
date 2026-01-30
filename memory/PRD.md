@@ -205,8 +205,13 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 6. **Talent Pool Pricing Bug** - Fixed the `/api/talent-pool/recruiter/plans` endpoint to fetch dynamic pricing from database instead of returning hardcoded values. Admin pricing updates now reflect on public page and Yoco checkouts.
 
 ## Upcoming Tasks (P1)
+- [ ] Email Notifications for contract events (proposal accepted, contract signed, milestone funded)
 - [ ] Odoo Integration
 - [ ] Customer CV/vacancy upload to Talent Pool
+
+## Known Issues
+- **Admin Login Fragility** (P2) - Recurring issue, not addressed
+- **Yoco Payment Flow** (User Verification Pending) - Subscription payments need user verification
 
 ## Future/Backlog (P2-P3)
 - [ ] Refactor remaining partner pages (PartnerPricing, PartnerHome)

@@ -15,8 +15,7 @@ const Navbar = () => {
     { name: 'Improve Resume', path: '/improve' },
     { name: 'Cover Letter', path: '/cover-letter' },
     { name: 'ATS Checker', path: '/ats-checker', isFree: true },
-    { name: 'Skills Generator', path: '/skills-generator', isFree: true },
-    { name: 'Contact', path: '/contact' }
+    { name: 'Skills Generator', path: '/skills-generator', isFree: true }
   ];
 
   const handleLogout = () => {
@@ -183,18 +182,11 @@ const Navbar = () => {
                 </Button>
               </>
             ) : (
-              <>
-                <Link to="/login">
-                  <Button variant="ghost">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/pricing">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                    Get Started
-                  </Button>
-                </Link>
-              </>
+              <Link to="/login">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                  Login
+                </Button>
+              </Link>
             )}
           </div>
 

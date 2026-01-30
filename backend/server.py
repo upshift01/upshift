@@ -51,6 +51,7 @@ from remote_jobs_routes import get_remote_jobs_routes, remote_jobs_router
 from proposals_routes import get_proposals_routes
 from contracts_routes import get_contracts_routes
 from payments_routes import get_payments_routes
+from admin_settings_routes import get_admin_settings_routes
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()
@@ -1843,6 +1844,10 @@ app.include_router(contracts_router_instance)
 # Initialize and include payments router
 payments_router_instance = get_payments_routes(db, get_current_user_dep)
 app.include_router(payments_router_instance)
+
+# Initialize and include admin settings router
+admin_settings_router_instance = get_admin_settings_routes(db, get_current_user_dep)
+app.include_router(admin_settings_router_instance)
 
 app.add_middleware(
     CORSMiddleware,

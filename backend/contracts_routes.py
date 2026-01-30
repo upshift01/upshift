@@ -12,6 +12,8 @@ import uuid
 import logging
 import os
 
+from email_service import email_service
+
 logger = logging.getLogger(__name__)
 
 contracts_router = APIRouter(prefix="/api/contracts", tags=["Contracts"])

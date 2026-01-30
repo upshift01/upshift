@@ -387,7 +387,7 @@ const TalentPool = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Select
                 value={filters.industry}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, industry: value === 'all' ? '' : value }))}
@@ -429,6 +429,21 @@ const TalentPool = () => {
                 value={filters.skills}
                 onChange={(e) => setFilters(prev => ({ ...prev, skills: e.target.value }))}
               />
+
+              {/* Remote Worker Toggle */}
+              <button
+                type="button"
+                onClick={() => setFilters(prev => ({ ...prev, is_remote_worker: !prev.is_remote_worker }))}
+                className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all ${
+                  filters.is_remote_worker 
+                    ? 'bg-blue-600 text-white border-blue-600' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                }`}
+                data-testid="remote-worker-filter"
+              >
+                <Globe className="h-4 w-4" />
+                <span className="text-sm font-medium">Remote Workers</span>
+              </button>
             </div>
           </form>
         </CardContent>

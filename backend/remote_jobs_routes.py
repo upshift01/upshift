@@ -506,4 +506,221 @@ Return as JSON in this exact format:
             ]
         }
     
+    # ==================== MATCHING & RECOMMENDATIONS ====================
+    
+    @remote_jobs_router.get("/recommendations")
+    async def get_job_recommendations(
+        current_user = Depends(get_current_user),
+        limit: int = Query(10, ge=1, le=50)
+    ):
+        """Get AI-powered job recommendations based on user's Talent Pool profile"""
+        try:
+            # Get user's talent pool profile
+            profile = await db.talent_pool_profiles.find_one(
+                {"user_id": current_user.id},
+                {"_id": 0}
+            )
+            
+            if not profile:
+                # Return general active jobs if no profile
+                jobs = await db.remote_jobs.find(
+                    {"status": "active"},
+                    {"_id": 0, "poster_email": 0}
+                ).sort("created_at", -1).limit(limit).to_list(length=limit)
+                
+                return {
+                    "success": True,
+                    "has_profile": False,
+                    "message": "Create a Talent Pool profile to get personalized recommendations",
+                    "jobs": jobs
+                }
+            
+            # Build matching query based on profile
+            user_skills = profile.get("skills", [])
+            user_industry = profile.get("industry", "")
+            user_experience = profile.get("experience_level", "")
+            user_location = profile.get("location", "")
+            is_remote_worker = profile.get("is_remote_worker", False)
+            
+            # Calculate match scores for jobs
+            all_jobs = await db.remote_jobs.find(
+                {"status": "active"},
+                {"_id": 0, "poster_email": 0}
+            ).to_list(length=100)
+            
+            scored_jobs = []
+            for job in all_jobs:
+                score = 0
+                match_reasons = []
+                
+                # Skill matching (highest weight)
+                job_skills = set(s.lower() for s in job.get("required_skills", []))
+                user_skills_lower = set(s.lower() for s in user_skills)
+                matching_skills = job_skills.intersection(user_skills_lower)
+                
+                if matching_skills:
+                    skill_score = len(matching_skills) / max(len(job_skills), 1) * 40
+                    score += skill_score
+                    match_reasons.append(f"{len(matching_skills)} matching skills")
+                
+                # Experience level matching
+                if job.get("experience_level") == user_experience:
+                    score += 25
+                    match_reasons.append("Experience level match")
+                elif _experience_compatible(user_experience, job.get("experience_level", "")):
+                    score += 15
+                    match_reasons.append("Compatible experience")
+                
+                # Industry matching
+                if user_industry and user_industry.lower() in job.get("description", "").lower():
+                    score += 15
+                    match_reasons.append("Industry match")
+                
+                # Remote worker preference
+                if is_remote_worker and job.get("remote_type") == "fully-remote":
+                    score += 10
+                    match_reasons.append("Fully remote")
+                
+                # Location/region matching
+                if job.get("location_preference") == "worldwide":
+                    score += 5
+                elif user_location:
+                    regions = job.get("preferred_regions", [])
+                    for region in regions:
+                        if region.lower() in user_location.lower():
+                            score += 10
+                            match_reasons.append(f"Location: {region}")
+                            break
+                
+                if score > 0:
+                    job["match_score"] = round(score, 1)
+                    job["match_reasons"] = match_reasons
+                    scored_jobs.append(job)
+            
+            # Sort by match score
+            scored_jobs.sort(key=lambda x: x.get("match_score", 0), reverse=True)
+            
+            return {
+                "success": True,
+                "has_profile": True,
+                "profile_summary": {
+                    "skills": user_skills[:5],
+                    "experience": user_experience,
+                    "industry": user_industry,
+                    "is_remote_worker": is_remote_worker
+                },
+                "jobs": scored_jobs[:limit]
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting job recommendations: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @remote_jobs_router.get("/jobs/{job_id}/matches")
+    async def get_candidate_matches(
+        job_id: str,
+        current_user = Depends(get_current_user),
+        limit: int = Query(20, ge=1, le=50),
+        region: Optional[str] = None
+    ):
+        """Get matched candidates from Talent Pool for a specific job"""
+        try:
+            # Verify job ownership
+            job = await db.remote_jobs.find_one({"id": job_id, "poster_id": current_user.id})
+            if not job:
+                raise HTTPException(status_code=404, detail="Job not found or you don't have permission")
+            
+            # Build candidate query
+            candidate_query = {"is_visible": True}
+            
+            # Filter by region if specified
+            if region and region != "all":
+                candidate_query["location"] = {"$regex": region, "$options": "i"}
+            
+            # Get all visible candidates
+            candidates = await db.talent_pool_profiles.find(
+                candidate_query,
+                {"_id": 0, "contact_email": 0, "contact_phone": 0}
+            ).to_list(length=200)
+            
+            # Calculate match scores
+            job_skills = set(s.lower() for s in job.get("required_skills", []))
+            job_preferred_skills = set(s.lower() for s in job.get("preferred_skills", []))
+            job_experience = job.get("experience_level", "")
+            
+            scored_candidates = []
+            for candidate in candidates:
+                score = 0
+                match_reasons = []
+                
+                # Skill matching
+                candidate_skills = set(s.lower() for s in candidate.get("skills", []))
+                required_matches = job_skills.intersection(candidate_skills)
+                preferred_matches = job_preferred_skills.intersection(candidate_skills)
+                
+                if required_matches:
+                    skill_score = len(required_matches) / max(len(job_skills), 1) * 50
+                    score += skill_score
+                    match_reasons.append(f"{len(required_matches)}/{len(job_skills)} required skills")
+                
+                if preferred_matches:
+                    score += len(preferred_matches) * 3
+                    match_reasons.append(f"{len(preferred_matches)} preferred skills")
+                
+                # Experience matching
+                if candidate.get("experience_level") == job_experience:
+                    score += 25
+                    match_reasons.append("Experience match")
+                elif _experience_compatible(candidate.get("experience_level", ""), job_experience):
+                    score += 15
+                    match_reasons.append("Compatible experience")
+                
+                # Remote worker bonus
+                if candidate.get("is_remote_worker") and job.get("remote_type") == "fully-remote":
+                    score += 10
+                    match_reasons.append("Remote worker")
+                
+                # Has CV bonus
+                if candidate.get("cv_url"):
+                    score += 5
+                    match_reasons.append("CV available")
+                
+                if score > 0:
+                    candidate["match_score"] = round(score, 1)
+                    candidate["match_reasons"] = match_reasons
+                    scored_candidates.append(candidate)
+            
+            # Sort by match score
+            scored_candidates.sort(key=lambda x: x.get("match_score", 0), reverse=True)
+            
+            return {
+                "success": True,
+                "job": {
+                    "id": job["id"],
+                    "title": job["title"],
+                    "required_skills": job.get("required_skills", []),
+                    "experience_level": job.get("experience_level")
+                },
+                "candidates": scored_candidates[:limit],
+                "total_matches": len(scored_candidates)
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting candidate matches: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return remote_jobs_router
+
+
+def _experience_compatible(candidate_exp: str, job_exp: str) -> bool:
+    """Check if candidate experience is compatible with job requirement"""
+    levels = ["entry", "mid", "senior", "executive"]
+    try:
+        candidate_idx = levels.index(candidate_exp)
+        job_idx = levels.index(job_exp)
+        # Candidate can be same level or one level higher
+        return candidate_idx >= job_idx and candidate_idx <= job_idx + 1
+    except ValueError:
+        return False

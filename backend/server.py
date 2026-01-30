@@ -47,6 +47,7 @@ from content_routes import content_router, set_db as set_content_db
 from cv_template_routes import cv_template_router, set_db as set_cv_template_db
 from help_routes import help_router, set_db as set_help_db
 from talent_pool_routes import get_talent_pool_routes
+from remote_jobs_routes import get_remote_jobs_routes, remote_jobs_router
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()

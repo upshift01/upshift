@@ -69,11 +69,26 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - [x] Regional filtering (South Africa, Africa, Europe, Asia, Americas)
   - [x] Match reasons display (skills matched, experience level, remote worker)
   - [x] "Job Matches" link added to customer sidebar with AI badge
-- [ ] **Phase 5.3: Bid/Proposal System** (FUTURE)
-  - [ ] Job seekers submit AI-generated proposals
-  - [ ] Companies accept/reject bids
-  - [ ] Rate negotiation in chosen currency
-  - [ ] Contract management
+- [x] **Phase 5.3: Bid/Proposal System** (COMPLETED - Jan 2025)
+  - [x] Job seekers submit proposals via `/remote-jobs/{jobId}/apply`
+  - [x] AI-powered proposal generation with "Generate with AI" button
+  - [x] AI proposal improvement with "Improve" button
+  - [x] Proposed rate (hourly/monthly/fixed) in USD or ZAR
+  - [x] Availability selection (immediate, 1-week, 2-weeks, 1-month)
+  - [x] Portfolio links attachment
+  - [x] Profile snapshot automatically attached to proposals
+  - [x] "My Proposals" page for job seekers (`/remote-jobs/my-proposals`)
+  - [x] Status tracking: Pending, Shortlisted, Accepted, Rejected, Withdrawn
+  - [x] Withdraw proposal functionality
+  - [x] "Job Proposals" page for employers (`/remote-jobs/{jobId}/proposals`)
+  - [x] Shortlist and Reject buttons for employers
+  - [x] View Full Profile link for employers
+  - [x] Stats dashboard with proposal counts
+- [ ] **Phase 5.4: Contract & Payment System** (FUTURE)
+  - [ ] Accept proposal workflow
+  - [ ] Contract creation and management
+  - [ ] Payment/escrow integration
+  - [ ] Milestone tracking
 
 ## Technical Stack
 - **Frontend**: React 18, Tailwind CSS, Shadcn/UI

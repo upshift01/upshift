@@ -501,6 +501,327 @@ If you have any questions, feel free to reach out to our support team.
             return {"success": True, "message": "SMTP connection successful"}
         except Exception as e:
             return {"success": False, "error": str(e)}
+    
+    # ==================== CONTRACT EVENT EMAILS ====================
+    
+    async def send_proposal_accepted_email(
+        self,
+        to_email: str,
+        applicant_name: str,
+        job_title: str,
+        company_name: str,
+        employer_name: str,
+        next_steps: str = "The employer will reach out with contract details soon.",
+        platform_name: str = "UpShift"
+    ) -> bool:
+        """Send email when proposal is accepted"""
+        subject = f"🎉 Great News! Your Proposal Was Accepted - {job_title}"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .success-badge {{ background: #059669; color: white; padding: 10px 20px; border-radius: 20px; display: inline-block; }}
+                .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #059669; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🎉 Proposal Accepted!</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {applicant_name},</p>
+                    
+                    <p>Congratulations! Your proposal has been accepted!</p>
+                    
+                    <div class="details">
+                        <p><strong>📋 Job:</strong> {job_title}</p>
+                        <p><strong>🏢 Company:</strong> {company_name}</p>
+                        <p><strong>👤 Employer:</strong> {employer_name}</p>
+                    </div>
+                    
+                    <p><strong>What's Next?</strong></p>
+                    <p>{next_steps}</p>
+                    
+                    <p>Best of luck with this opportunity!</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+    
+    async def send_contract_created_email(
+        self,
+        to_email: str,
+        contractor_name: str,
+        contract_title: str,
+        employer_name: str,
+        company_name: str,
+        contract_value: str,
+        start_date: str,
+        contract_url: str,
+        platform_name: str = "UpShift"
+    ) -> bool:
+        """Send email when a contract is created for the contractor to review"""
+        subject = f"📄 New Contract: {contract_title} - Review Required"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #1e40af, #3b82f6); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af; }}
+                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>📄 New Contract</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {contractor_name},</p>
+                    
+                    <p>A new contract has been created for you. Please review the details and sign to activate it.</p>
+                    
+                    <div class="details">
+                        <p><strong>📋 Contract:</strong> {contract_title}</p>
+                        <p><strong>🏢 Company:</strong> {company_name}</p>
+                        <p><strong>👤 Employer:</strong> {employer_name}</p>
+                        <p><strong>💰 Value:</strong> {contract_value}</p>
+                        <p><strong>📅 Start Date:</strong> {start_date}</p>
+                    </div>
+                    
+                    <p style="text-align: center;">
+                        <a href="{contract_url}" class="btn">Review & Sign Contract</a>
+                    </p>
+                    
+                    <p>Please review the contract carefully before signing.</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+    
+    async def send_contract_signed_email(
+        self,
+        to_email: str,
+        recipient_name: str,
+        contract_title: str,
+        other_party_name: str,
+        contract_url: str,
+        platform_name: str = "UpShift"
+    ) -> bool:
+        """Send email when a contract is signed and activated"""
+        subject = f"✅ Contract Activated: {contract_title}"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .success-badge {{ background: #059669; color: white; padding: 10px 20px; border-radius: 20px; display: inline-block; }}
+                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>✅ Contract Active!</h1>
+                </div>
+                <div class="content">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <span class="success-badge">Contract Activated</span>
+                    </div>
+                    
+                    <p>Dear {recipient_name},</p>
+                    
+                    <p>The contract <strong>"{contract_title}"</strong> has been signed by {other_party_name} and is now active!</p>
+                    
+                    <p style="text-align: center;">
+                        <a href="{contract_url}" class="btn">View Contract</a>
+                    </p>
+                    
+                    <p>You can now proceed with the work as outlined in the contract.</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+    
+    async def send_milestone_funded_email(
+        self,
+        to_email: str,
+        recipient_name: str,
+        contract_title: str,
+        milestone_title: str,
+        amount: str,
+        contract_url: str,
+        is_contractor: bool = True,
+        platform_name: str = "UpShift"
+    ) -> bool:
+        """Send email when a milestone is funded"""
+        if is_contractor:
+            subject = f"💰 Milestone Funded: {milestone_title}"
+            message = f"Great news! The milestone <strong>'{milestone_title}'</strong> has been funded. The funds are now held in escrow and will be released upon approval of your work."
+        else:
+            subject = f"✅ Payment Successful: {milestone_title}"
+            message = f"Your payment for milestone <strong>'{milestone_title}'</strong> was successful. The funds are now held in escrow and will be released when you approve the contractor's work."
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .amount {{ font-size: 28px; font-weight: bold; color: #059669; text-align: center; margin: 20px 0; }}
+                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>💰 Milestone Funded</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {recipient_name},</p>
+                    
+                    <p>{message}</p>
+                    
+                    <p class="amount">{amount}</p>
+                    
+                    <p><strong>Contract:</strong> {contract_title}<br>
+                    <strong>Milestone:</strong> {milestone_title}</p>
+                    
+                    <p style="text-align: center;">
+                        <a href="{contract_url}" class="btn">View Contract</a>
+                    </p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+    
+    async def send_payment_released_email(
+        self,
+        to_email: str,
+        contractor_name: str,
+        contract_title: str,
+        milestone_title: str,
+        amount: str,
+        contract_url: str,
+        platform_name: str = "UpShift"
+    ) -> bool:
+        """Send email when payment is released to contractor"""
+        subject = f"💸 Payment Released: {amount} - {milestone_title}"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .amount {{ font-size: 32px; font-weight: bold; color: #059669; text-align: center; margin: 20px 0; }}
+                .success-badge {{ background: #059669; color: white; padding: 10px 20px; border-radius: 20px; display: inline-block; }}
+                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>💸 Payment Released!</h1>
+                </div>
+                <div class="content">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <span class="success-badge">Payment Successful</span>
+                    </div>
+                    
+                    <p>Dear {contractor_name},</p>
+                    
+                    <p>Great news! Your payment has been released!</p>
+                    
+                    <p class="amount">{amount}</p>
+                    
+                    <p><strong>Contract:</strong> {contract_title}<br>
+                    <strong>Milestone:</strong> {milestone_title}</p>
+                    
+                    <p>The funds will be transferred to your account shortly.</p>
+                    
+                    <p style="text-align: center;">
+                        <a href="{contract_url}" class="btn">View Contract</a>
+                    </p>
+                    
+                    <p>Keep up the great work!</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
 
 # Global instance
 email_service = EmailService()

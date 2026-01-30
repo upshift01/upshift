@@ -6,10 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+import {
   FileText, Loader2, ArrowLeft, DollarSign, Calendar, CheckCircle,
   Clock, AlertCircle, Building2, User, XCircle, Milestone, Play,
   Send, ThumbsUp, CreditCard, Edit, Trash2, FileSignature, Wallet,
-  BanknoteIcon, Shield
+  BanknoteIcon, Shield, Globe
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -26,6 +33,13 @@ const ContractDetails = () => {
   const [contract, setContract] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  
+  // Payment provider selection
+  const [paymentProviders, setPaymentProviders] = useState([]);
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState('stripe');
+  const [pendingPaymentType, setPendingPaymentType] = useState(null); // 'contract' or 'milestone'
+  const [pendingMilestoneId, setPendingMilestoneId] = useState(null);
 
   // Handle payment callback
   useEffect(() => {

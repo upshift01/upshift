@@ -383,9 +383,14 @@ const JobDetails = () => {
             </div>
 
             {/* Action Buttons */}
-            {!isOwner && (
+            {!isOwner && isAuthenticated && (
               <div className="flex gap-3 mt-6 pt-6 border-t">
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700" size="lg">
+                <Button 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                  size="lg"
+                  onClick={() => navigate(`/remote-jobs/${jobId}/apply`)}
+                  data-testid="apply-now-btn"
+                >
                   <Send className="h-4 w-4 mr-2" />
                   Apply Now
                 </Button>

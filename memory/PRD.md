@@ -127,7 +127,7 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - **Frontend**: React 18, Tailwind CSS, Shadcn/UI
 - **Backend**: FastAPI (Python)
 - **Database**: MongoDB
-- **Payments**: Yoco (South African payment gateway)
+- **Payments**: Yoco (South African), Stripe (International)
 - **AI**: OpenAI GPT-4o via Emergent LLM Key
 
 ## Key API Endpoints

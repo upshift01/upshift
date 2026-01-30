@@ -480,6 +480,21 @@ Return ONLY the improved proposal text."""
             
             logger.info(f"Proposal {proposal_id} status updated to {new_status} by {current_user.email}")
             
+            # Send email notification when proposal is accepted
+            if new_status == "accepted":
+                try:
+                    await email_service.send_proposal_accepted_email(
+                        to_email=proposal.get("applicant_email"),
+                        applicant_name=proposal.get("applicant_name"),
+                        job_title=proposal.get("job_title"),
+                        company_name=proposal.get("company_name") or "Company",
+                        employer_name=current_user.full_name or current_user.email,
+                        next_steps="The employer will create a contract for you to review and sign."
+                    )
+                    logger.info(f"Proposal accepted email sent to {proposal.get('applicant_email')}")
+                except Exception as email_err:
+                    logger.warning(f"Failed to send proposal accepted email: {email_err}")
+            
             return {"success": True, "message": f"Proposal {new_status}", "status": new_status}
             
         except HTTPException:

@@ -330,4 +330,184 @@ def get_admin_settings_routes(db, get_current_user):
             logger.error(f"Error getting all settings: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    # ==================== RESELLER PAYMENT SETTINGS ====================
+    
+    @admin_settings_router.get("/reseller/payments")
+    async def get_reseller_payment_settings(current_user = Depends(get_current_user)):
+        """Get payment gateway settings for reseller"""
+        if current_user.role not in ["reseller_admin", "super_admin"]:
+            raise HTTPException(status_code=403, detail="Reseller access required")
+        
+        try:
+            reseller_id = current_user.reseller_id if current_user.role == "reseller_admin" else None
+            
+            if not reseller_id and current_user.role == "reseller_admin":
+                raise HTTPException(status_code=400, detail="Reseller ID not found")
+            
+            # For reseller_admin, get their specific settings
+            if reseller_id:
+                settings = await db.reseller_settings.find_one({
+                    "reseller_id": reseller_id,
+                    "type": "payment_settings"
+                })
+            else:
+                # For super_admin testing, return empty
+                settings = None
+            
+            if not settings:
+                return {
+                    "success": True,
+                    "settings": {
+                        "stripe_public_key": "",
+                        "stripe_secret_key": "",
+                        "stripe_configured": False,
+                        "yoco_public_key": "",
+                        "yoco_secret_key": "",
+                        "yoco_configured": False,
+                        "default_provider": "yoco"  # Default to Yoco for South African resellers
+                    }
+                }
+            
+            return {
+                "success": True,
+                "settings": {
+                    "stripe_public_key": settings.get("stripe_public_key", ""),
+                    "stripe_secret_key": "••••••••" if settings.get("stripe_secret_key") else "",
+                    "stripe_configured": bool(settings.get("stripe_secret_key")),
+                    "yoco_public_key": settings.get("yoco_public_key", ""),
+                    "yoco_secret_key": "••••••••" if settings.get("yoco_secret_key") else "",
+                    "yoco_configured": bool(settings.get("yoco_secret_key")),
+                    "default_provider": settings.get("default_provider", "yoco")
+                }
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting reseller payment settings: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @admin_settings_router.put("/reseller/payments")
+    async def update_reseller_payment_settings(
+        data: PaymentSettingsUpdate,
+        current_user = Depends(get_current_user)
+    ):
+        """Update payment gateway settings for reseller"""
+        if current_user.role not in ["reseller_admin", "super_admin"]:
+            raise HTTPException(status_code=403, detail="Reseller access required")
+        
+        reseller_id = current_user.reseller_id
+        if not reseller_id and current_user.role == "reseller_admin":
+            raise HTTPException(status_code=400, detail="Reseller ID not found")
+        
+        try:
+            existing = await db.reseller_settings.find_one({
+                "reseller_id": reseller_id,
+                "type": "payment_settings"
+            })
+            
+            update_data = {
+                "reseller_id": reseller_id,
+                "type": "payment_settings",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_by": current_user.id
+            }
+            
+            # Only update fields that are provided
+            if data.stripe_public_key is not None:
+                update_data["stripe_public_key"] = data.stripe_public_key
+            elif existing:
+                update_data["stripe_public_key"] = existing.get("stripe_public_key", "")
+            
+            if data.stripe_secret_key and data.stripe_secret_key != "••••••••":
+                update_data["stripe_secret_key"] = data.stripe_secret_key
+            elif existing:
+                update_data["stripe_secret_key"] = existing.get("stripe_secret_key", "")
+            
+            if data.yoco_public_key is not None:
+                update_data["yoco_public_key"] = data.yoco_public_key
+            elif existing:
+                update_data["yoco_public_key"] = existing.get("yoco_public_key", "")
+            
+            if data.yoco_secret_key and data.yoco_secret_key != "••••••••":
+                update_data["yoco_secret_key"] = data.yoco_secret_key
+            elif existing:
+                update_data["yoco_secret_key"] = existing.get("yoco_secret_key", "")
+            
+            if data.default_provider:
+                update_data["default_provider"] = data.default_provider
+            elif existing:
+                update_data["default_provider"] = existing.get("default_provider", "yoco")
+            
+            await db.reseller_settings.update_one(
+                {"reseller_id": reseller_id, "type": "payment_settings"},
+                {"$set": update_data},
+                upsert=True
+            )
+            
+            logger.info(f"Reseller payment settings updated by {current_user.email}")
+            
+            return {
+                "success": True,
+                "message": "Payment settings updated successfully"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error updating reseller payment settings: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @admin_settings_router.post("/reseller/payments/test")
+    async def test_reseller_payment_connection(
+        data: dict,
+        current_user = Depends(get_current_user)
+    ):
+        """Test reseller payment provider connection"""
+        if current_user.role not in ["reseller_admin", "super_admin"]:
+            raise HTTPException(status_code=403, detail="Reseller access required")
+        
+        reseller_id = current_user.reseller_id
+        provider = data.get("provider", "yoco")
+        
+        try:
+            settings = await db.reseller_settings.find_one({
+                "reseller_id": reseller_id,
+                "type": "payment_settings"
+            })
+            
+            if provider == "stripe":
+                api_key = settings.get("stripe_secret_key") if settings else None
+                
+                if not api_key:
+                    return {"success": False, "message": "Stripe API key not configured"}
+                
+                from emergentintegrations.payments.stripe.checkout import StripeCheckout
+                stripe = StripeCheckout(api_key=api_key, webhook_url="")
+                return {"success": True, "message": "Stripe connection successful"}
+                
+            elif provider == "yoco":
+                api_key = settings.get("yoco_secret_key") if settings else None
+                
+                if not api_key:
+                    return {"success": False, "message": "Yoco API key not configured"}
+                
+                # Test Yoco connection
+                import httpx
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        "https://online.yoco.com/v1/charges",
+                        headers={"Authorization": f"Bearer {api_key}"},
+                        timeout=10
+                    )
+                    if response.status_code in [200, 401]:
+                        return {"success": True, "message": "Yoco connection successful"}
+                    return {"success": False, "message": f"Yoco API returned: {response.status_code}"}
+            
+            return {"success": False, "message": "Unknown provider"}
+            
+        except Exception as e:
+            logger.error(f"Error testing reseller payment connection: {e}")
+            return {"success": False, "message": str(e)}
+    
     return admin_settings_router

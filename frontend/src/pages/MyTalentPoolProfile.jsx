@@ -46,6 +46,7 @@ const MyTalentPoolProfile = () => {
     skills: [],
     bio: '',
     summary: '',
+    is_remote_worker: false,
     cv_document_id: '',
     profile_picture_url: '',
     is_visible: true

@@ -41,6 +41,7 @@ import JobDetails from "./pages/JobDetails";
 import MyJobs from "./pages/MyJobs";
 import JobRecommendations from "./pages/JobRecommendations";
 import CandidateMatches from "./pages/CandidateMatches";
+import CompanyDashboard from "./pages/CompanyDashboard";
 import { Toaster } from "./components/ui/toaster";
 
 // Admin Pages

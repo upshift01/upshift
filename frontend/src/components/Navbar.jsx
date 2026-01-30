@@ -171,7 +171,15 @@ const Navbar = () => {
             
             {isAuthenticated ? (
               <>
-                <Link to={user?.role === 'recruiter' ? '/recruiter' : '/dashboard'}>
+                {user?.role === 'super_admin' && (
+                  <Link to="/admin/payment-settings">
+                    <Button variant="ghost" size="sm" className="text-gray-600">
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Payment Settings
+                    </Button>
+                  </Link>
+                )}
+                <Link to={user?.role === 'recruiter' ? '/recruiter' : user?.role === 'super_admin' ? '/super-admin' : '/dashboard'}>
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-2" />
                     Dashboard

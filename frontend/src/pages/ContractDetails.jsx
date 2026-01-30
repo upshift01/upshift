@@ -583,11 +583,31 @@ const ContractDetails = () => {
                               Due: {formatDate(milestone.due_date)}
                             </span>
                           )}
+                          {/* Escrow status */}
+                          {milestone.escrow_status && getEscrowBadge(milestone.escrow_status)}
                         </div>
                       </div>
 
                       {/* Milestone Actions */}
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2 items-end">
+                        {/* Employer: Fund milestone if not funded */}
+                        {isEmployer && contract.status === 'active' && 
+                          !milestone.escrow_status && milestone.status !== 'paid' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleFundMilestone(milestone.id)}
+                            disabled={paymentLoading}
+                          >
+                            {paymentLoading ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            ) : (
+                              <Wallet className="h-4 w-4 mr-1" />
+                            )}
+                            Fund
+                          </Button>
+                        )}
+
                         {/* Contractor: Submit for review */}
                         {isContractor && contract.status === 'active' && 
                           (milestone.status === 'pending' || milestone.status === 'in_progress') && (
@@ -614,13 +634,26 @@ const ContractDetails = () => {
                           </Button>
                         )}
 
-                        {/* Employer: Accept and create contract */}
-                        {isEmployer && milestone.status === 'approved' && (
+                        {/* Employer: Release payment for approved milestone */}
+                        {isEmployer && milestone.status === 'approved' && milestone.escrow_status === 'funded' && (
                           <Button
                             size="sm"
-                            onClick={() => handleAction('pay_milestone', milestone.id)}
+                            onClick={() => handleReleaseMilestone(milestone.id)}
                             disabled={actionLoading}
                             className="bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            <BanknoteIcon className="h-4 w-4 mr-1" />
+                            Release Payment
+                          </Button>
+                        )}
+
+                        {/* Employer: Manual mark as paid (if not using escrow) */}
+                        {isEmployer && milestone.status === 'approved' && !milestone.escrow_status && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAction('pay_milestone', milestone.id)}
+                            disabled={actionLoading}
                           >
                             <CreditCard className="h-4 w-4 mr-1" />
                             Mark Paid

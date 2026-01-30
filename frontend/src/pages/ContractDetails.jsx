@@ -420,6 +420,66 @@ const ContractDetails = () => {
               <Progress value={paymentProgress} className="h-3" />
             </div>
 
+            {/* Escrow Status - Employer View */}
+            {isEmployer && contract.status === 'active' && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Shield className="h-5 w-5 text-emerald-600" />
+                      <span className="font-semibold text-emerald-900">Escrow Protection</span>
+                    </div>
+                    <p className="text-sm text-emerald-700">
+                      {contract.escrow_funded > 0 
+                        ? `${formatCurrency(contract.escrow_funded, contract.payment_currency)} held in escrow`
+                        : 'Fund the contract to protect both parties'}
+                    </p>
+                  </div>
+                  {contract.escrow_funded < contract.payment_amount && (
+                    <Button
+                      onClick={handleFundContract}
+                      disabled={paymentLoading}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      {paymentLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Wallet className="h-4 w-4 mr-2" />
+                      )}
+                      Fund Contract
+                    </Button>
+                  )}
+                </div>
+                {contract.escrow_funded > 0 && (
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs text-emerald-600 mb-1">
+                      <span>Escrow Funded</span>
+                      <span>{Math.round((contract.escrow_funded / contract.payment_amount) * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-emerald-200 rounded-full h-2">
+                      <div
+                        className="bg-emerald-600 h-2 rounded-full transition-all"
+                        style={{ width: `${Math.min((contract.escrow_funded / contract.payment_amount) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Contractor Escrow View */}
+            {isContractor && contract.escrow_funded > 0 && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  <span className="font-semibold text-blue-900">Payment Protected</span>
+                </div>
+                <p className="text-sm text-blue-700 mt-1">
+                  {formatCurrency(contract.escrow_funded, contract.payment_currency)} is held in escrow for this contract
+                </p>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 pt-4 border-t">
               {/* Contractor: Sign draft contract */}

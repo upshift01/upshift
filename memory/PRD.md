@@ -12,6 +12,7 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 2. **Recruiters**: Browse and subscribe to talent pool for hiring
 3. **Resellers**: White-label the platform with custom branding and pricing
 4. **Super Admin**: Manage entire platform, resellers, users, and content
+5. **Companies/Employers**: Post remote job opportunities (NEW)
 
 ## Core Requirements
 
@@ -48,6 +49,28 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - [x] Email notifications for contact requests (to candidate when recruiter requests, to recruiter when candidate responds)
 - [x] **Candidate Profile Picture Upload** (Jan 2025) - Candidates can upload profile pictures to their Talent Pool profile
 - [x] **CV Download for Recruiters** (Jan 2025) - Recruiters can download candidate CVs when available
+
+### Phase 5 - Remote Work Space (IN PROGRESS - Jan 2025)
+- [x] **Phase 5.1: Job Posting Portal** (COMPLETED)
+  - [x] Job posting form with AI-assisted description generation
+  - [x] AI-powered skill suggestions
+  - [x] Support for USD and ZAR currencies
+  - [x] Job types: Full-time, Contract, Gig/Micro-task
+  - [x] Remote type options: Fully Remote, Hybrid, Flexible
+  - [x] Timeline options: Ongoing, 1-3 months, 3-6 months, etc.
+  - [x] Location/region preferences
+  - [x] My Jobs management page (pause, activate, delete)
+  - [x] Job details page with owner controls
+- [ ] **Phase 5.2: Talent Matching Dashboard** (UPCOMING)
+  - [ ] AI-curated job recommendations for job seekers
+  - [ ] Company dashboard showing matched candidates
+  - [ ] Filters for regions (e.g., South African talent)
+  - [ ] Gig-style micro-task matching
+- [ ] **Phase 5.3: Bid/Proposal System** (FUTURE)
+  - [ ] Job seekers submit AI-generated proposals
+  - [ ] Companies accept/reject bids
+  - [ ] Rate negotiation in chosen currency
+  - [ ] Contract management
 
 ## Technical Stack
 - **Frontend**: React 18, Tailwind CSS, Shadcn/UI

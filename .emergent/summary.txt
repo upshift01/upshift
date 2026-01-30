@@ -1,68 +1,71 @@
 <analysis>**original_problem_statement**: The user is building UpShift, an AI-driven, white-label SaaS resume and career services platform.
 
-After fixing critical payment bugs in a previous session, the user requested a series of new features. The focus of this session was to rapidly build out the candidate talent pool profile and introduce a major new feature: the Remote Work Space.
+The initial goal was to enhance the candidate talent pool profile, fix bugs, and build a multi-phase Remote Work Space feature. After completing the initial phases of the Remote Work Space, the user requested a full bid/proposal system, a contract management system, and integrated payment gateways for milestone funding.
 
 **PRODUCT REQUIREMENTS:**
 1.  **Talent Pool Profile Enhancements:**
     -   Allow candidates to upload a profile picture.
-    -   Add AI-powered buttons to generate/improve Skills, a new Bio section, and the Professional Summary.
-    -   Add a Remote Worker checkbox.
+    -   Add AI-powered buttons for Skills, Bio, and Professional Summary.
+    -   Add a Remote Worker checkbox and a filter for recruiters.
 2.  **Bug Fixes & UI Cleanup:**
-    -   Fix the backend logic for selecting a CV (it was querying the wrong database collection).
-    -   Fix the registration flow for new Job Seekers to redirect to their dashboard instead of a pricing page.
-    -   Remove a duplicate Talent Pool menu item shown to job seekers.
-3.  **New Feature: Remote Work Space (Phased Approach):**
-    -   **Phase 1: Job Posting Portal**: Allow any registered user to post a job via a simple, AI-assisted form. List jobs on a public page. Support USD and ZAR currencies.
-    -   **Phase 2: Talent Matching Dashboard**:
-        -   Provide AI-powered job recommendations to job seekers based on their talent pool profile.
-        -   Provide AI-powered candidate matches to employers for their job postings.
-    -   **Phase 3: Company Dashboard**: Create a centralized dashboard for employers to view their job postings and matches.
-    -   **Future Phase: Bid/Proposal System**: Allow job seekers to bid on jobs.
+    -   Fix backend CV selection logic.
+    -   Fix new Job Seeker registration redirect.
+    -   Remove duplicate Talent Pool menu item.
+    -   Remove Contact and Get Started from the main navbar.
+3.  **New Feature: Remote Work Space:**
+    -   **Phase 1: Job Posting Portal**: Allow job posting with AI assistance.
+    -   **Phase 2: Talent Matching Dashboard**: AI-powered job and candidate recommendations.
+    -   **Phase 3: Company Dashboard**: Centralized dashboard for employers.
+    -   **Phase 4: Bid/Proposal System**: Allow job seekers to bid on jobs.
+    -   **Phase 5: Contract & Payment System**: Allow employers to accept proposals, create contracts, and fund milestones via an escrow-like system.
+4.  **Payment Gateway Integration:**
+    -   Integrate Stripe for contract milestone payments.
+    -   Integrate Yoco as an alternative for contract payments.
+    -   Create an admin settings page to manage payment gateway API keys from the UI.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack React/FastAPI/MongoDB platform. The key functionalities implemented in this session include:
-1.  **Enhanced Talent Pool Profile**: Candidates can now create a rich profile including a profile picture, an AI-generated bio, AI-improved skills and summary, and a Remote Worker status. The bug preventing CV selection has been fixed.
-2.  **Remote Work Space (Phase 1 & 2)**: A complete job board has been created.
-    -   Companies can post jobs using an AI-assisted form.
-    -   A public page () lists all active jobs.
-    -   Job seekers have a Job Matches dashboard with AI-powered recommendations.
-    -   Employers can view a Candidate Matches page with AI-ranked candidates for each of their jobs.
-3.  **Core Bug Fixes**: The new user registration redirect and a confusing duplicate menu item have been fixed.
+The application is a full-stack React/FastAPI/MongoDB platform. Major features include an AI-enhanced talent pool, a complete remote work/job board with AI matching, and a full project lifecycle system for remote jobs. This includes:
+- **Bidding/Proposals**: Job seekers can submit AI-assisted proposals for jobs.
+- **Contract Management**: Employers can accept proposals, which generates a formal contract with defined milestones. Both parties can view and manage their contracts.
+- **Escrow/Payments**: A system for funding contract milestones is in place. It was initially built with Stripe. The current work is to add Yoco as an alternative and build a UI for managing API keys.
 
 **Last working item**:
--   **Last item agent was working**: After realizing a dedicated Company Dashboard was needed (as requested by the user), the agent created the placeholder page (), added the route, and included a link in the navbar's Remote Jobs dropdown. The agent was in the process of logging in to visually verify the new, empty dashboard page after a previous screenshot attempt failed.
+-   **Last item agent was working**: The user requested two features simultaneously:
+    1.  Add Yoco as a payment option for contract/milestone funding (in addition to the newly-added Stripe).
+    2.  Create an admin settings page to configure payment gateway keys (Stripe, Yoco) from the UI.
+    The agent received the Yoco integration playbook, overwrote  to handle dual gateways, and created placeholder files for the admin settings feature ( and ). The agent was about to register the new admin routes and build the frontend UI for both features.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: screenshot tool
+-   **Which testing method agent to use?**: both
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
 -   **Issue 1: Yoco Payment Flow Fragility (P1)**
-    -   **Description**: This was the critical, recurring bug from the previous session. While the user confirmed it was fixed, the code in  is fragile.
+    -   **Description**: A recurring bug from a previous session related to the original Yoco integration for subscriptions.
     -   **Status**: USER VERIFICATION PENDING
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: both
 -   **Issue 2: Admin Login Fragility (P2)**
-    -   **Description**: A recurring issue from a previous session where admin login was unstable. This was not addressed.
+    -   **Description**: A recurring issue where admin login was unstable. This was not addressed.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both
 
 **In progress Task List**:
--   **Task 1: Build out the Company Dashboard (P0)**
-    -   **Where to resume**: The file  has been created but is a placeholder. The agent needs to log in, verify the page loads, and then implement the UI to provide an overview of a company's posted jobs, view counts, application counts, and top candidate matches across all jobs.
-    -   **What will be achieved with this?**: Employers will have a single, centralized dashboard to manage their recruitment efforts on the platform.
+-   **Task 1: Implement Dual Payment Options (Yoco/Stripe) and Admin Key Management (P0)**
+    -   **Where to resume**:
+        1.  Register the new  in .
+        2.  Add the route for  in  and a link in the UI (e.g., in  or a dedicated admin layout).
+        3.  Build out the UI in  to fetch, display, and save API keys for Stripe and Yoco.
+        4.  Update the UI in  to present the employer with a choice between Stripe and Yoco when funding a milestone.
+    -   **What will be achieved with this?**: Employers will be able to choose their preferred payment gateway (Stripe or Yoco) for contract payments. Admins will be able to manage API keys without editing  files.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: both
     -   **Blocked on something**: None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **(P0) Implement Bid/Proposal System**: Begin Phase 3 of the Remote Work Space, allowing job seekers to submit AI-generated proposals for jobs.
-    -   **(P1) Add Remote Worker Filter**: Add a filter to the main recruiter Talent Pool view to find candidates who have checked the Remote Worker box.
-    -   **(P2) Remote Jobs Payment/Contract System**: Allow companies to accept bids and manage contracts.
+    -   **(P1) Email Notifications**: Implement email alerts for contract events (e.g., proposal accepted, contract signed, milestone funded/released).
 -   **Future Tasks**:
     -   Odoo Integration
     -   Refactor Partner Pages
@@ -70,14 +73,12 @@ The application is a full-stack React/FastAPI/MongoDB platform. The key function
     -   Implement gig-style matching for micro-tasks
 
 **Completed work in this session**
--   **Candidate Profile Picture Upload**: Implemented a file upload field in  and a backend endpoint in .
--   **AI Enhancements for Talent Pool Profile**: Added new endpoints and frontend UI for AI-powered generation/improvement of Skills, Bio, and Professional Summary.
--   **CV Selection Bug Fix**: Corrected the database query in  to look in  instead of .
--   **Job Seeker Registration Redirect Fix**: Modified  to redirect new job seekers to .
--   **Remote Worker Checkbox Feature**: Added the field to the backend model and the checkbox UI to the  form.
--   **Duplicate Menu Item Removal**: Removed the incorrect Talent Pool link from .
--   **Remote Work Space (Phase 1 - Job Posting)**: Created  and associated frontend pages (, ) to allow users to post AI-assisted job ads.
--   **Remote Work Space (Phase 2 - Talent Matching)**: Created backend endpoints and frontend pages (, ) for AI-powered matching between jobs and candidates.
+-   **Company Dashboard Verification**: Confirmed the dashboard was already implemented and functional.
+-   **Bid/Proposal System**: Fully implemented and tested, allowing job seekers to apply for jobs with AI-assisted proposals. Employers can view and manage these proposals.
+-   **Remote Worker Filter**: Added a Remote Worker toggle to the recruiter's talent pool view and a corresponding badge on candidate cards. Fixed an access bug for the admin user.
+-   **Navbar Cleanup**: Removed Contact and Get Started links from the main navigation bar.
+-   **Contract Management System**: Implemented a full contract lifecycle where employers can generate contracts from accepted proposals, and both parties can view, sign, and manage them.
+-   **Stripe Payment Gateway Integration**: Integrated Stripe with an escrow-like system for funding and releasing contract milestone payments.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Admin Login Fragility**: This known recurring issue was mentioned in the previous handoff and was not addressed in this session.
@@ -90,15 +91,15 @@ The application is a full-stack React/FastAPI/MongoDB platform. The key function
 
 
 **Key Technical Concepts**
--   **AI Integration**: Heavily used  library to add multiple AI-powered features for content generation (job descriptions, skills, bios, summaries) and matching (jobs-to-candidates and vice-versa).
--   **Rapid Feature Scaffolding**: Quickly built a large new feature (Remote Work Space) by creating new backend route files, multiple new React pages and components, and integrating them into the existing navigation and routing.
--   **Python Import Debugging**: Resolved several  issues with the  library by correcting import paths (e.g., from  to ).
--   **MongoDB Serialization Fix**: Fixed a  crash on the backend when creating a new job by correctly handling the BSON  before returning the document as JSON in the API response.
+-   **Multi-Payment Gateway**: Architecting the backend to support multiple payment providers (Stripe, Yoco) for the same functionality (contract funding).
+-   **Admin Configuration UI**: Building a secure settings panel for administrators to manage sensitive API keys, abstracting them away from  files.
+-   **Full-Stack Feature Implementation**: Rapidly building complete, end-to-end features (Bidding, Contracts, Payments) across the entire stack.
+-   **Conditional UI Rendering**: Extensive use of role-based (Employer vs. Contractor) and state-based (Draft, Active, Funded) rendering in React components like .
 
 **key DB schema**
--   **talent_pool_profiles**: Added  (String),  (String), and  (Boolean).
--   **remote_jobs**: A new collection to store job postings, containing fields like , , , , , , and .
--   **user_documents**: Confirmed as the correct collection for storing user-generated CVs.
+-   **proposals**: New collection storing proposal details (, , , , ).
+-   **contracts**: New collection storing contract details (, , , , , , , ).
+-   **admin_settings**: (Implicit) A new collection will be needed to store the payment gateway keys.
 
 **All files of reference**
 -   
@@ -111,55 +112,55 @@ The application is a full-stack React/FastAPI/MongoDB platform. The key function
 -   
 -   
 -   
--   
 
 **Areas that need refactoring**:
--   **Frontend Componentization**: The many new pages for the Remote Work Space share common UI elements (cards, buttons, layout). This code could be extracted into reusable components to reduce duplication.
--   ****: This component has grown very large and complex. It manages the state and UI for two different forms (opt-in and edit) and multiple AI interactions. It should be broken down into smaller, more focused components.
+-   ****: This file has become very large and handles complex state logic for contract status, user roles, milestones, and payments. It should be broken down into smaller components (e.g., , , ).
 
 **key api endpoints**
--   : Upload a profile picture for a candidate.
--   : Endpoints for , , and .
--   : Create a new job posting.
--   : Get a list of all remote jobs.
--   : Get jobs posted by the current user.
--   : Generate a job description using AI.
--   : Get AI-powered job recommendations for a job seeker.
--   : Get AI-powered candidate matches for a job posting.
+-   : Submit a new proposal.
+-   : Get proposals for the current user.
+-   : Get all proposals for a specific job.
+-   : Create a new contract from a proposal.
+-   : Get all contracts for the current user.
+-   : Get details of a single contract.
+-   : Create a payment intent (Stripe/Yoco).
+-   : Get current admin settings (e.g., API keys).
+-   : Update admin settings.
 
 **Critical Info for New Agent**
--   **Immediate Task**: The immediate priority is to finish building the . It's currently an empty placeholder.
--   **AI Library Imports**: When using the  library, ensure chat-related imports (, ) come from . Incorrect paths were a recurring source of errors.
--   **MongoDB Serialization**: Remember to convert  fields to strings () and remove the  key from documents before returning them in FastAPI responses to prevent serialization errors.
--   **User's Next Request**: The user has clearly outlined the next major feature: a Bid/Proposal System for the Remote Work Space. Plan for this after completing the Company Dashboard.
+-   **Dual Task Priority**: The immediate task is a dual implementation: adding Yoco as a payment option and creating the admin UI to manage keys. These are linked and should be completed together.
+-   **Backend State**:  was overwritten.  is a new, empty file. The new admin router needs to be registered in .
+-   **Frontend State**:  is a new, empty placeholder. It needs to be built out, and a route/link must be added for it.  needs modification to allow the user to select a payment gateway.
+-   **API Keys**: Use the Stripe test key  from the playbook. For Yoco, refer to its playbook and prompt the user if keys are needed (or check if they exist in the environment). The new admin settings page will eventually be the source of truth for these keys.
 
 **documents and test reports created in this job**
 -   
--    (updated)
+-    (updated multiple times)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks to add a Remote Worker checkbox. (Status: Completed)
-2.  **User**: Provides detailed requirements for the Remote Work Space feature. (Status: In Progress)
-3.  **Agent**: Asks clarifying questions about the new feature. (Status: Handled)
-4.  **User**: Answers questions and confirms a phased approach. (Status: Handled)
-5.  **User**: continue with Talent Matching Dashboard (after agent finished Phase 1). (Status: Completed)
-6.  **User**: did you build the Company dashboard? (after agent finished Phase 2). (Status: **Pending** - This initiated the current task).
-7.  **User**: continue (after agent started building company dashboard). (Status: Handled)
-8.  **User**: continue (again, while agent was debugging job creation). (Status: Handled)
-9.  **User**: continue with Talent Matching Dashboard (This seems out of order and was likely a repeated prompt. The agent correctly proceeded with Phase 2). (Status: Handled)
-10. **Agent**: Proposes building a Bid/Proposal System next. (Status: User has not replied to this specific proposal yet, but it aligns with their earlier feature request).
+1.  **User**: Asks to continue with the Payment Gateway integration. (Status: Completed)
+2.  **Agent**: Implements Stripe integration for contract milestone payments. (Status: Completed)
+3.  **Agent**: Finishes and presents the Stripe integration. (Status: Completed)
+4.  **User**: Asks if Yoco was also implemented and where Stripe keys are configured. (Status: **Pending**)
+5.  **Agent**: Clarifies that only Stripe was added and asks if the user wants Yoco added and an admin UI for keys. (Status: Handled)
+6.  **User**: 1. and 2. (Confirms they want both features). (Status: **Pending**)
+7.  **Agent**: Starts implementing both features by getting the Yoco playbook. (Status: In Progress)
+8.  **User**: Asks to remove Contact and Get Started from the navbar (interjected request). (Status: Completed)
+9.  **User**: Asks to continue with the Contract & Payment system. (Status: Completed)
+10. **User**: Asks to continue with the Remote Worker filter. (Status: Completed)
 
 **Project Health Check:**
--   **Broken**: None. The company dashboard is incomplete but not broken.
--   **Mocked**: None.
+-   **Broken**: None.
+-   **Mocked**: The Stripe API key () in  is a test key.
 
 **3rd Party Integrations**
--   **Yoco (Payments)**: Integrated for Talent Pool subscriptions. Requires User API Key.
+-   **Yoco (Payments)**: Used for Talent Pool subscriptions. **Now being added** for Contract Payments. Requires User API Key.
+-   **Stripe (Payments)**: Used for Contract/Milestone payments. Requires User API Key (currently using a test key).
 -   **OpenAI GPT-4o**: Uses Emergent LLM Key via .
 -   **SMTP (Custom)**: Used for sending email notifications. Requires User SMTP credentials.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. Used to verify the profile picture upload feature.
+-   **Testing agent used after significant changes**: YES. A full test suite was run after implementing the Bid/Proposal system, and all tests passed.
 -   **Troubleshoot agent used after agent stuck in loop**: NO.
 -   **Test files created**: None.
 -   **Known regressions**: None from this session.
@@ -168,8 +169,8 @@ The application is a full-stack React/FastAPI/MongoDB platform. The key function
 | User Type | Email | Password |
 | :--- | :--- | :--- |
 | Super Admin |  |  |
-| Test Recruiter 1|  |  |
-| Test Job Seeker |  |  |
+| Test Recruiter/Employer |  |  |
+| Test Job Seeker/Candidate |  |  |
 
 **What agent forgot to execute**
--   The agent initially forgot to create a dedicated **Company Dashboard** and instead only built the candidate matching page for individual jobs. The user pointed this out, and the agent is now correcting this by building the dashboard.</analysis>
+-   The agent initially implemented the contract payment system with only Stripe, overlooking the user's established preference for Yoco (used elsewhere in the app) and the platform's South African user base. The user had to explicitly ask for Yoco to be included. The agent is now correcting this.</analysis>

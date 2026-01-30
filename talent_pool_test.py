@@ -8,7 +8,7 @@ import json
 import sys
 
 # Get backend URL from environment
-BACKEND_URL = "https://remote-workspace-5.preview.emergentagent.com/api"
+BACKEND_URL = "https://hirematch-53.preview.emergentagent.com/api"
 
 def test_talent_pool_public_endpoints():
     """Test the public talent pool endpoints"""

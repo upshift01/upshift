@@ -391,7 +391,7 @@ const ContractDetails = () => {
                           </Button>
                         )}
 
-                        {/* Employer: Mark as paid */}
+                        {/* Employer: Accept and create contract */}
                         {isEmployer && milestone.status === 'approved' && (
                           <Button
                             size="sm"

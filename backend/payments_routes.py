@@ -76,9 +76,9 @@ def get_payments_routes(db, get_current_user):
             providers.append({
                 "id": "stripe",
                 "name": "Stripe",
-                "description": "International payments (USD, ZAR)",
+                "description": "International payments (USD)",
                 "public_key": settings.get("stripe_public_key"),
-                "currencies": ["USD", "ZAR"]
+                "currencies": ["USD"]
             })
         if settings.get("yoco_secret_key"):
             providers.append({

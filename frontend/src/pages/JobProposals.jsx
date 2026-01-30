@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import {
   Users, Loader2, ArrowLeft, Star, CheckCircle, XCircle,
   Timer, Eye, DollarSign, Clock, MessageSquare, ExternalLink,
-  ThumbsUp, ThumbsDown, FileText, Briefcase, Globe
+  ThumbsUp, ThumbsDown, FileText, Briefcase, Globe, FileSignature
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -395,6 +395,16 @@ const JobProposals = () => {
                             Reject
                           </Button>
                         </>
+                      )}
+                      {proposal.status === 'accepted' && (
+                        <Button
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700"
+                          onClick={() => navigate(`/contracts/create/${proposal.id}`)}
+                        >
+                          <FileSignature className="h-4 w-4 mr-1" />
+                          Create Contract
+                        </Button>
                       )}
                     </div>
 

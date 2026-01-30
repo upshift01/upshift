@@ -774,6 +774,88 @@ const ContractDetails = () => {
           </Card>
         )}
       </div>
+
+      {/* Payment Provider Selection Modal */}
+      <Dialog open={showProviderModal} onOpenChange={setShowProviderModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-blue-600" />
+              Select Payment Method
+            </DialogTitle>
+            <DialogDescription>
+              Choose your preferred payment provider to fund this {pendingPaymentType === 'contract' ? 'contract' : 'milestone'}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 py-4">
+            {paymentProviders.map((provider) => (
+              <div
+                key={provider.id}
+                onClick={() => setSelectedProvider(provider.id)}
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  selectedProvider === provider.id
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {provider.id === 'stripe' ? (
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
+                        <CreditCard className="h-5 w-5 text-white" />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-[#00A3FF] flex items-center justify-center text-white text-xs font-bold">
+                        YOCO
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-gray-900">{provider.name}</p>
+                      <p className="text-sm text-gray-500">{provider.description}</p>
+                    </div>
+                  </div>
+                  {selectedProvider === provider.id && (
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  )}
+                </div>
+                <div className="mt-2 flex gap-2">
+                  {provider.currencies?.map((curr) => (
+                    <Badge key={curr} variant="outline" className="text-xs">
+                      {curr}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+            
+            {paymentProviders.length === 0 && (
+              <div className="text-center py-4 text-gray-500">
+                <AlertCircle className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                <p>No payment providers configured.</p>
+                <p className="text-sm">Please contact the administrator.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowProviderModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleProviderConfirm}
+              disabled={!selectedProvider || paymentProviders.length === 0}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Wallet className="h-4 w-4 mr-2" />
+              Proceed to Payment
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -7,12 +7,13 @@ import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Switch } from '../components/ui/switch';
+import { Checkbox } from '../components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Users, Eye, EyeOff, Loader2, Check, X, Save, Trash2,
   Mail, Clock, CheckCircle, XCircle, MessageSquare, Briefcase,
-  Plus, AlertCircle, Camera, Upload, User, Sparkles
+  Plus, AlertCircle, Camera, Upload, User, Sparkles, Globe
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

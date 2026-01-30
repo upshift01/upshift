@@ -311,6 +311,15 @@ const MyJobs = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => navigate(`/remote-jobs/${job.id}/matches`)}
+                        className="bg-indigo-600 hover:bg-indigo-700"
+                      >
+                        <Target className="h-4 w-4 mr-1" />
+                        Find Matches
+                      </Button>
+                      <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleToggleStatus(job.id, job.status)}

@@ -451,9 +451,17 @@ const TalentPool = () => {
 
       {/* Results Info */}
       <div className="flex justify-between items-center mb-4">
-        <p className="text-gray-600">
-          {pagination.total} candidate{pagination.total !== 1 ? 's' : ''} found
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-gray-600">
+            {pagination.total} candidate{pagination.total !== 1 ? 's' : ''} found
+          </p>
+          {filters.is_remote_worker && (
+            <Badge className="bg-blue-100 text-blue-700 gap-1">
+              <Globe className="h-3 w-3" />
+              Remote Only
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Candidates Grid */}

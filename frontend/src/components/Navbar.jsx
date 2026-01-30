@@ -106,18 +106,51 @@ const Navbar = () => {
               )}
             </div>
             
-            {/* Remote Jobs Link */}
-            <Link
-              to="/remote-jobs"
-              className={`text-sm font-medium transition-colors hover:text-blue-600 whitespace-nowrap flex items-center gap-1 ${
-                location.pathname.includes('remote-jobs')
-                  ? 'text-blue-600'
-                  : 'text-gray-700'
-              }`}
-            >
-              <Briefcase className="h-4 w-4" />
-              Remote Jobs
-            </Link>
+            {/* Remote Jobs Dropdown */}
+            <div className="relative group">
+              <Link
+                to="/remote-jobs"
+                className={`text-sm font-medium transition-colors hover:text-blue-600 whitespace-nowrap flex items-center gap-1 ${
+                  location.pathname.includes('remote-jobs')
+                    ? 'text-blue-600'
+                    : 'text-gray-700'
+                }`}
+              >
+                <Briefcase className="h-4 w-4" />
+                Remote Jobs
+                <ChevronDown className="h-3 w-3" />
+              </Link>
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <Link
+                  to="/remote-jobs"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg"
+                >
+                  Browse Jobs
+                </Link>
+                {isAuthenticated && (
+                  <>
+                    <Link
+                      to="/remote-jobs/company-dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Company Dashboard
+                    </Link>
+                    <Link
+                      to="/remote-jobs/my-jobs"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      My Posted Jobs
+                    </Link>
+                    <Link
+                      to="/remote-jobs/post"
+                      className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-b-lg font-medium"
+                    >
+                      + Post a Job
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
             
             {isAuthenticated ? (
               <>

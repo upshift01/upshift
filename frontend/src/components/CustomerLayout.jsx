@@ -20,7 +20,8 @@ import {
   Zap,
   Mail,
   Calendar,
-  Users
+  Users,
+  Rocket
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -39,6 +40,7 @@ const CustomerLayout = ({ children }) => {
     { path: '/dashboard/jobs', icon: Briefcase, label: 'Job Tracker', badge: 'NEW' },
     { path: '/dashboard/interview-prep', icon: MessageSquare, label: 'Interview Prep', badge: 'NEW' },
     { path: '/dashboard/talent-pool', icon: Users, label: 'Talent Pool', badge: 'NEW' },
+    { path: '/remote-jobs/recommendations', icon: Rocket, label: 'Job Matches', badge: 'AI' },
     { path: '/dashboard/strategy-call', icon: Calendar, label: 'Strategy Call', badge: 'BOOK' },
     { path: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];

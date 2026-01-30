@@ -433,6 +433,7 @@ Write ONLY the summary text, no explanations or quotes."""
                 "skills": data.skills,
                 "bio": data.bio or "",
                 "summary": data.summary,
+                "is_remote_worker": data.is_remote_worker,
                 "cv_document_id": data.cv_document_id,
                 "cv_url": cv_url,
                 "profile_picture_url": data.profile_picture,  # Can be set during opt-in or via upload

@@ -330,6 +330,32 @@ def get_contracts_routes(db, get_current_user):
             
             logger.info(f"Contract {contract_id} signed by contractor {current_user.email}")
             
+            # Send email notifications to both parties
+            try:
+                frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+                contract_url = f"{frontend_url}/contracts/{contract_id}" if frontend_url else f"/contracts/{contract_id}"
+                
+                # Notify employer
+                await email_service.send_contract_signed_email(
+                    to_email=contract.get("employer_email"),
+                    recipient_name=contract.get("employer_name"),
+                    contract_title=contract.get("title"),
+                    other_party_name=contract.get("contractor_name"),
+                    contract_url=contract_url
+                )
+                
+                # Notify contractor (confirmation)
+                await email_service.send_contract_signed_email(
+                    to_email=contract.get("contractor_email"),
+                    recipient_name=contract.get("contractor_name"),
+                    contract_title=contract.get("title"),
+                    other_party_name=contract.get("employer_name"),
+                    contract_url=contract_url
+                )
+                logger.info(f"Contract signed emails sent for contract {contract_id}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send contract signed emails: {email_err}")
+            
             return {"success": True, "message": "Contract signed and activated"}
             
         except HTTPException:

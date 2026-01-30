@@ -1825,6 +1825,10 @@ app.include_router(help_router)
 talent_pool_router = get_talent_pool_routes(db, get_current_user_dep)
 app.include_router(talent_pool_router)
 
+# Initialize and include remote jobs router
+remote_jobs_router_instance = get_remote_jobs_routes(db, get_current_user_dep)
+app.include_router(remote_jobs_router_instance)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

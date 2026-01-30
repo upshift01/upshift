@@ -512,6 +512,14 @@ const TalentPool = () => {
                     <MapPin className="h-4 w-4" />
                     <span>{candidate.location}</span>
                   </div>
+                  {candidate.is_remote_worker && (
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-blue-100 text-blue-700 gap-1">
+                        <Globe className="h-3 w-3" />
+                        Remote Worker
+                      </Badge>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-1 mb-4">

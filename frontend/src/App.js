@@ -238,6 +238,7 @@ const AppContent = () => {
           <Route path="cv-templates" element={<AdminCVTemplates />} />
           <Route path="content" element={<AdminContent />} />
           <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="payment-settings" element={<PaymentSettings />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="talent-pool" element={<AdminTalentPool />} />
           <Route path="recruiters" element={<AdminRecruiters />} />

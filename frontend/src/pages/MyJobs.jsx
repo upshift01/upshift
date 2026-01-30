@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import {
   Briefcase, Plus, Eye, Users, Clock, DollarSign,
   Edit, Trash2, Pause, Play, Loader2, ArrowLeft,
-  Building2, Calendar, Target
+  Building2, Calendar, Target, MessageSquare
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -313,11 +313,21 @@ const MyJobs = () => {
                       <Button
                         variant="default"
                         size="sm"
+                        onClick={() => navigate(`/remote-jobs/${job.id}/proposals`)}
+                        className="bg-orange-600 hover:bg-orange-700"
+                        data-testid={`view-proposals-${job.id}`}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Proposals ({job.applications_count || 0})
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
                         onClick={() => navigate(`/remote-jobs/${job.id}/matches`)}
                         className="bg-indigo-600 hover:bg-indigo-700"
                       >
                         <Target className="h-4 w-4 mr-1" />
-                        Find Matches
+                        AI Matches
                       </Button>
                       <Button
                         variant="outline"

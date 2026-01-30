@@ -49,6 +49,9 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - [x] Email notifications for contact requests (to candidate when recruiter requests, to recruiter when candidate responds)
 - [x] **Candidate Profile Picture Upload** (Jan 2025) - Candidates can upload profile pictures to their Talent Pool profile
 - [x] **CV Download for Recruiters** (Jan 2025) - Recruiters can download candidate CVs when available
+- [x] **Remote Worker Filter** (Jan 2025) - Recruiters can filter candidates by Remote Worker status
+- [x] **Remote Worker Badge** (Jan 2025) - Displays "Remote Worker" badge on candidate cards
+- [x] **Super Admin Access** (Jan 2025) - Super admins now have full recruiter access without subscription
 
 ### Phase 5 - Remote Work Space (IN PROGRESS - Jan 2025)
 - [x] **Phase 5.1: Job Posting Portal** (COMPLETED)

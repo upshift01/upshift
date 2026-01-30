@@ -32,6 +32,11 @@ const CustomerLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Redirect recruiters to their proper dashboard
+  if (user?.role === 'recruiter' && location.pathname === '/dashboard') {
+    return <Navigate to="/recruiter" replace />;
+  }
+
   // Check if user is a recruiter - they should use /recruiter dashboard instead
   const isRecruiter = user?.role === 'recruiter';
 

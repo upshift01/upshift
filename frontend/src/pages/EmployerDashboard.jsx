@@ -431,18 +431,50 @@ const EmployerDashboard = () => {
 
         {/* Subscription Plans */}
         <div id="plans" className="scroll-mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Crown className="h-6 w-6 text-green-600" />
-            Employer Subscription Plans
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Crown className="h-6 w-6 text-green-600" />
+              Employer Subscription Plans
+            </h2>
+            
+            {/* Currency Toggle */}
+            <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setSelectedCurrency('ZAR')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  selectedCurrency === 'ZAR' 
+                    ? 'bg-white shadow text-green-700' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                🇿🇦 ZAR
+              </button>
+              <button
+                onClick={() => setSelectedCurrency('USD')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  selectedCurrency === 'USD' 
+                    ? 'bg-white shadow text-blue-700' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                🌍 USD
+              </button>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-500 mb-4">
+            {selectedCurrency === 'ZAR' 
+              ? 'Pay with Yoco (South African Rand)' 
+              : 'Pay with Stripe (International USD)'}
+          </p>
 
           <div className="grid md:grid-cols-3 gap-6">
             {plans.map((plan, index) => (
               <Card 
                 key={plan.id} 
-                className={`relative ${index === 1 ? 'border-2 border-green-500 shadow-lg' : ''}`}
+                className={`relative ${plan.popular ? 'border-2 border-green-500 shadow-lg' : ''}`}
               >
-                {index === 1 && (
+                {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-green-600">Most Popular</Badge>
                   </div>
@@ -450,9 +482,14 @@ const EmployerDashboard = () => {
                 <CardHeader>
                   <CardTitle className="text-lg">{plan.name}</CardTitle>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-gray-900">R{plan.price}</span>
+                    <span className="text-3xl font-bold text-gray-900">
+                      {selectedCurrency === 'ZAR' ? `R${plan.price_zar}` : `$${plan.price_usd}`}
+                    </span>
                     <span className="text-gray-500">/month</span>
                   </div>
+                  <p className="text-xs text-gray-400">
+                    {plan.jobs_limit === -1 ? 'Unlimited jobs' : `Up to ${plan.jobs_limit} jobs`}
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3 mb-6">
@@ -464,9 +501,9 @@ const EmployerDashboard = () => {
                     ))}
                   </ul>
                   <Button 
-                    className={`w-full ${index === 1 ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                    variant={index === 1 ? 'default' : 'outline'}
-                    onClick={() => handleSubscribe(plan.id)}
+                    className={`w-full ${plan.popular ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                    variant={plan.popular ? 'default' : 'outline'}
+                    onClick={() => openPaymentModal(plan)}
                     disabled={subscription?.plan_id === plan.id && subscription?.status === 'active'}
                   >
                     {subscription?.plan_id === plan.id && subscription?.status === 'active' 
@@ -479,6 +516,80 @@ const EmployerDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment Method Selection Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-green-600" />
+              Select Payment Method
+            </DialogTitle>
+            <DialogDescription>
+              Choose how you'd like to pay for the {selectedPlan?.name} plan
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Yoco Option - ZAR */}
+            <button
+              onClick={() => handleSubscribe('yoco')}
+              disabled={processingPayment}
+              className="w-full p-4 rounded-lg border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all text-left group disabled:opacity-50"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-[#00A3FF] flex items-center justify-center text-white text-xs font-bold">
+                    YOCO
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 group-hover:text-green-700">
+                      Pay with Yoco
+                    </p>
+                    <p className="text-sm text-gray-500">South African Rand (ZAR)</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-gray-900">R{selectedPlan?.price_zar}</p>
+                  <p className="text-xs text-gray-500">🇿🇦 Local payment</p>
+                </div>
+              </div>
+            </button>
+
+            {/* Stripe Option - USD */}
+            <button
+              onClick={() => handleSubscribe('stripe')}
+              disabled={processingPayment}
+              className="w-full p-4 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left group disabled:opacity-50"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
+                    <CreditCard className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 group-hover:text-blue-700">
+                      Pay with Stripe
+                    </p>
+                    <p className="text-sm text-gray-500">US Dollars (USD)</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-gray-900">${selectedPlan?.price_usd}</p>
+                  <p className="text-xs text-gray-500">🌍 International</p>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {processingPayment && (
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Redirecting to payment...
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1883,6 +1883,21 @@ app.include_router(employer_router_instance)
 stripe_connect_router_instance = get_stripe_connect_routes(db, get_current_user_dep)
 app.include_router(stripe_connect_router_instance)
 
+# Token decode function for WebSocket authentication
+def decode_token_for_ws(token: str):
+    """Decode JWT token for WebSocket connections"""
+    try:
+        from jose import jwt
+        from auth import SECRET_KEY, ALGORITHM
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except Exception:
+        return None
+
+# Initialize and include WebSocket router
+websocket_router_instance = get_websocket_routes(db, get_current_user_dep, decode_token_for_ws)
+app.include_router(websocket_router_instance)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

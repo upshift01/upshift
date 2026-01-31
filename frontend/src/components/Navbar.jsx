@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Zap, LogOut, User, ChevronDown, Users, UserPlus, Briefcase, CreditCard } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

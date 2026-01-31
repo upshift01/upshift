@@ -1909,6 +1909,10 @@ app.include_router(employer_management_router_instance)
 email_templates_router_instance = get_email_templates_routes(db, get_current_user_dep)
 app.include_router(email_templates_router_instance)
 
+# Initialize and include Push Notifications router
+push_router_instance = get_push_routes(db, get_current_user_dep)
+app.include_router(push_router_instance)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

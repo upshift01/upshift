@@ -6,142 +6,135 @@
 3.  **Full Job Lifecycle**: Employers post jobs, job seekers submit proposals, employers accept proposals to create contracts with fundable milestones.
 4.  **Dual Payment Gateways**: Integrate both Stripe (for international USD payments) and Yoco (for South African ZAR payments) for both subscriptions and contract funding.
 5.  **Admin/Reseller Configuration**: Provide a UI for super admins and resellers to manage their own payment gateway API keys.
-6.  **Event-Driven Notifications**: Send email notifications for key events in the contract and proposal lifecycle.
+6.  **Event-Driven Notifications**: Send email and real-time notifications for key events in the contract and proposal lifecycle.
 7.  **Advanced Features**: Implement Stripe Connect for contractor payouts and provide job analytics for employers.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack React/FastAPI/MongoDB platform with distinct user roles (Job Seeker, Employer, Recruiter, Super Admin, Reseller). It features an employer subscription system with a 2-day free trial and job posting limits enforced. A complete remote job lifecycle is in place: employers post jobs, seekers submit proposals, and contracts are generated from accepted proposals. A dual payment gateway system using Stripe (USD) and Yoco (ZAR) is integrated for both employer subscriptions and contract milestone funding. Admins and resellers have dedicated UI pages to manage their API keys. Email notifications are implemented for most contract and proposal events.
+The application is a full-stack React/FastAPI/MongoDB platform with distinct user roles (Job Seeker, Employer, Recruiter, Super Admin, Reseller). It features a full job lifecycle, employer subscriptions with job limits, and a dual payment gateway system (Stripe/Yoco). A complete real-time notification system using WebSockets has been implemented for new proposals, contract updates, and milestones, accessible via a notification bell in a newly redesigned, uncluttered navbar. The platform also includes a job analytics dashboard for employers, and provides interfaces for admins and resellers to manage employer accounts. Initial backend and frontend files for Stripe Connect, browser push notifications, and email template customization have been created.
 
 **Last working item**:
--   **Last item agent was working**: The user requested a batch of three new features. The agent began work on the first and most straightforward one: adding an email notification to be sent to an employer whenever their job posting receives a new proposal. The agent had viewed the existing  to understand its structure and was preparing to add the new notification function.
+-   **Last item agent was working**: The user requested to change the dark theme of the newly created Employer Management and Email Template Management pages to a light theme. The agent had just acknowledged this request and was preparing to modify the frontend components.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: backend testing agent
+-   **Which testing method agent to use?**: screenshot tool
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
 -   **Issue 1: Stripe Payments Failing (P1)**
-    -   **Description**: All Stripe payment flows are failing because the configured test API key () is invalid. The system is correctly built to use a key from the admin settings, but a valid key has not been provided.
+    -   **Description**: All Stripe payment flows are failing because the configured test API key () is invalid.
     -   **Status**: BLOCKED (on user providing a valid Stripe test key via the admin UI).
-    -   **Is recurring issue?**: N
 -   **Issue 2: Yoco Payment Flow Fragility (P1)**
-    -   **Description**: A recurring bug related to Yoco payment failures. The most recent instance (Body is disturbed or locked) was fixed for employer subscriptions by using correct API keys from the database instead of expired keys from the  file. However, the integration has proven to be fragile.
+    -   **Description**: A recurring bug related to Yoco payment failures. The integration has proven to be fragile, although the last reported instance was fixed.
     -   **Status**: USER VERIFICATION PENDING
     -   **Is recurring issue?**: Y
 -   **Issue 3: Admin Login Fragility (P2)**
-    -   **Description**: A known recurring issue where admin login is sometimes unstable. While it worked correctly during the last test, the root cause has not been investigated, and the issue may reappear.
+    -   **Description**: A known recurring issue where admin login is sometimes unstable. While a specific login failure was fixed during this session (by correcting the password and identifying the  field in the DB), the root cause has not been investigated.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+-   **Issue 4: Screenshot Tool Login Failures (P2)**
+    -   **Description**: The agent repeatedly struggled to log users in via the screenshot tool, suggesting issues with session/state persistence in the tool's sandboxed browser environment. This is a tooling limitation to be aware of.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
 
 **In progress Task List**:
--   **Task 1: Email Notification for New Proposals (P0)**
-    -   **Where to resume**:
-        1.  Add a new function  to .
-        2.  Import and call this new function from  within the endpoint that handles new proposal submissions to notify the employer.
-    -   **What will be achieved with this?**: Employers will be instantly notified via email when a candidate applies to their job.
+-   **Task 1: Theme Change for Admin Pages (P0)**
+    -   **Where to resume**: Modify the following files to replace dark theme classes (e.g., , ) with light theme classes (e.g., , ).
+        1.  
+        2.  
+        3.  
+    -   **What will be achieved with this?**: The new admin and reseller pages will have a consistent light theme as requested.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Should Test frontend/backend/both after fix?**: frontend
     -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **(P0) Stripe Connect for Contractor Payouts**: Implement Stripe Connect to facilitate direct payouts from employers to contractors upon milestone approval.
-    -   **(P1) Job Analytics for Employers**: Develop a dashboard for employers to view performance analytics for their job postings (e.g., views, proposals received, engagement rate).
+    -   **(P1) Implement Email Template Customization**: The backend routes and frontend page exist. The next steps are to implement the full CRUD logic on the frontend and update the  to use templates from the database instead of hardcoded HTML.
+    -   **(P1) Implement Browser Push Notifications**: The initial files (, , ) are created. The agent needs to implement the service worker logic, backend subscription management, and frontend permission/subscription flow.
+    -   **(P1) Finalize Stripe Connect for Contractor Payouts**: The boilerplate is in place. The full onboarding flow (creating account links via the Stripe API, handling redirects, and updating the user's status in the DB) needs to be implemented.
 -   **Future Tasks**:
     -   Odoo Integration
     -   Refactor Partner Pages
     -   Secure/remove emergency admin password reset endpoints
     -   Implement gig-style matching for micro-tasks
-    -   Address existing linting errors.
+    -   Address remaining linting errors.
 
 **Completed work in this session**
--   **New 'Employer' Role & Subscription System**: Fully implemented a new  user role with a dedicated dashboard, a 2-day free trial, and three subscription tiers (Starter, Professional, Enterprise) with pricing in both ZAR (Yoco) and USD (Stripe).
--   **Job Posting Limit Enforcement**: Backend and frontend logic to enforce job posting limits based on the employer's subscription plan. The UI now blocks posting and provides an upgrade path when limits are reached.
--   **Role-Based Dashboard & Navigation**: Separated the user experience for Recruiters, Job Seekers, and Employers with dedicated dashboards and role-specific navigation menus. Recruiters are now correctly isolated from Remote Jobs features.
--   **Reseller-Specific Payment Settings**: Created a new UI and corresponding backend endpoints for resellers to configure their own Yoco/Stripe API keys, separate from the super admin's platform-wide settings.
--   **Payment Bug Fixes**: Resolved a critical Body is disturbed or locked error for Yoco payments by ensuring the correct, valid API keys from the database were used instead of expired keys from the environment. Fixed a callback URL protocol error.
--   **Currency Logic Refinement**: Limited the Stripe payment option to USD only, leaving Yoco as the exclusive gateway for ZAR payments.
--   **Email Notifications**: Implemented email alerts for contract creation, signing, milestone funding, and payment release.
+-   **Real-time WebSocket Notifications**: Implemented a full real-time notification system for new proposals, contract creation/signing, and milestone updates, complete with a frontend  component.
+-   **Job Analytics for Employers**: Created a new backend endpoint and a dedicated frontend page () showing job performance statistics.
+-   **Employer Management for Admins/Resellers**: Built a feature for super admins and resellers to manage employers (list, create, reset password, suspend, etc.), including email notifications for these actions.
+-   **Navbar Redesign**: Fixed a congested navbar by implementing a user dropdown menu containing dashboard/settings links and a clearly visible logout button.
+-   **Email Notifications for Admin Actions**: Added email notifications that are sent to employers when an admin creates, modifies, or resets a password for their account.
+-   **Bug Fix - SMTP Configuration**: Diagnosed and fixed an SSL/TLS mismatch in the SMTP settings stored in the database, which was preventing emails from being sent.
+-   **Bug Fix - Broken Post Job Link**: Corrected a navigation link on the Job Analytics page.
 
 **Earlier issues found/mentioned but not fixed**
--   **Admin Login Fragility**: This known recurring issue was mentioned and tested (it worked at the time) but was not deeply investigated or permanently fixed.
+-   **Admin Login Fragility**: This known recurring issue was mentioned and a specific instance was fixed, but it was not deeply investigated or permanently resolved.
+-   **Yoco Payment Flow Fragility**: The underlying fragility of the integration was not addressed.
 
 **Known issue recurrence from previous fork**
--   **Admin Login Failure**: Recurrence count > 2. Status: NOT STARTED.
--   **Yoco Payment Flow Fragility**: Recurrence count > 2. Status: USER VERIFICATION PENDING (The latest occurrence was fixed, but the underlying fragility is a recurring theme).
+-   **Admin Login Failure**: Recurrence count > 3. Status: NOT STARTED (on root cause analysis).
+-   **Yoco Payment Flow Fragility**: Recurrence count > 2. Status: USER VERIFICATION PENDING.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Multi-tenant Role Architecture**: Deep separation of features based on user roles (Job Seeker, Employer, Recruiter, Super Admin, Reseller), each with dedicated dashboards and access control.
--   **Subscription Lifecycle Management**: Implementation of free trials, plan-based feature limits (e.g., job posts), and clear upgrade paths for the  role.
--   **Dynamic Payment Gateway Integration**: The backend and frontend support both Stripe (USD) and Yoco (ZAR) for subscriptions, allowing users to choose their preferred gateway.
--   **Centralized vs. Delegated Settings**: The architecture distinguishes between platform-wide settings (managed by Super Admin) and per-reseller settings, enabling multi-tenancy for white-label partners.
+-   **WebSockets for Real-Time UI**: Implemented a real-time notification system using FastAPI's WebSockets to push updates to the client without page reloads.
+-   **Service Worker for Push Notifications**: Initial setup for using a browser service worker to enable native push notifications.
+-   **Admin/Reseller Employer Management**: Extended the multi-tenant architecture to allow both super admins and resellers to manage their respective sets of employer accounts.
+-   **Dynamic SMTP Configuration**: Discovered and fixed a bug where the SMTP  setting ( vs. ) in the database was mismatched with the , causing email failures.
+-   **Composable UI Redesign**: Refactored a cluttered navigation bar into a clean layout with a user dropdown menu, improving UX and scalability.
 
 **key DB schema**
--   **users**:  field now includes 'employer'. An  object stores subscription details (, , , , ).
--   **admin_settings**: Stores platform-wide and reseller-specific Stripe/Yoco keys.
--   **jobs**:  links jobs to the new  user role.
+-   **users**: The  field is used for password verification. A  field will be needed for Stripe payouts.
+-   **platform_settings**: Contains the SMTP configuration. The agent corrected the  field from  to  to match port 587.
+-   **notifications**: New collection to store user notifications for the real-time system. Fields include , , , , .
+-   **email_templates**: New collection to store customizable email templates.
+-   **push_subscriptions**: New collection to store user push notification subscription objects.
 
 **All files of reference**
--    (To be modified)
--    (To be modified)
 -   
 -   
 -   
 -   
 -   
 -   
-
-**Areas that need refactoring**:
--   ****: This new component is already large, managing state for stats, subscription plans, currency selection, and payment modals. It should be broken into smaller, more focused components.
--   ****: This component remains large and complex and is a candidate for being decomposed into smaller pieces.
-
-**key api endpoints**
--   : Handles employer subscriptions for both Stripe and Yoco.
--   : Verifies subscription payments from either gateway.
--   : Returns available employer subscription plans with dual-currency pricing.
--   : (Modified) Enforces subscription status and job posting limits.
--   : Allows resellers to configure their own payment gateway keys.
+-   
 
 **Critical Info for New Agent**
--   **Resume from Email Notifications**: Your immediate task is to continue implementing email notifications for new proposals. You need to add a function to  and then call it from the proposal submission route in .
--   **Stripe is BLOCKED**: All Stripe payments are currently failing due to an invalid test key. The user must provide a valid key via the Super Admin settings page to unblock this functionality. Do not spend time debugging Stripe until a valid key is provided.
--   **Yoco Integration is Stable (For Now)**: Yoco payments were fixed by using valid API keys stored in the database ( collection) instead of expired keys in the  file. The  helper is the correct way to initialize the Yoco service.
--   **Roles are Paramount**: All new features must be built with the distinct user roles (, , , ) in mind, ensuring correct access control and UI presentation.
+-   **Immediate Task**: The user's first priority is to change the theme of the , , and  pages to a light theme. Start with this.
+-   **Stripe is BLOCKED**: All Stripe payments are non-functional due to an invalid test key. Do not spend time debugging Stripe payments. The user must provide a valid key to unblock this functionality and properly test the Stripe Connect integration.
+-   **Admin Login**: Be aware that admin login can be unstable. The last fix involved resetting the password in the correct database field (). The screenshot tool seems to have particular trouble maintaining login state, so API testing via  may be more reliable for auth-gated routes.
+-   **Database Name**: The correct database name is .
 
 **documents and test reports created in this job**
--   
--   
--   
+-    (updated multiple times)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks why the Remote Jobs menu is visible. (Status: Handled)
-2.  **Agent**: Asks for clarification on Remote Jobs visibility rules. (Status: Handled)
-3.  **User**: Specifies detailed rules for a new 'Employer' role with paid subscriptions. (Status: Handled)
-4.  **Agent**: Asks for confirmation on the new employer subscription structure. (Status: Handled)
-5.  **User**: Asks for the definition of a Proposal. (Status: Handled)
-6.  **User**: Provides full details for employer subscriptions: pricing tiers, trial period, etc. (Status: Completed)
-7.  **User**: Continue with Job posting limit enforcement. (Status: Completed)
-8.  **User**: Link the actual subscription options in the employer dashboard to Stripe...and Yoco.... (Status: Completed)
-9.  **User**: Reports a Body is disturbed or locked error when making test payments. (Status: Completed)
-10. **User**: Requests three new features: email notifications for new proposals, Stripe Connect for contractor payouts, and job analytics for employers. (Status: **Pending/In Progress**)
+1.  **User**: Asks to implement Stripe Connect, Analytics, and Email Notifications. (Status: Completed/In Progress)
+2.  **User**: Asks to add real-time WebSocket notifications. (Status: Completed)
+3.  **User**: Reports a broken link on the analytics page and requests employer management features for admins/resellers. (Status: Completed)
+4.  **User**: Reports a congested navbar and requests more real-time notification types for contracts. (Status: Completed)
+5.  **User**: Requests three new features: 1) Email notifications for admin actions on employers, 2) Email template customization, 3) Browser push notifications. (Status: In Progress)
+6.  **User**: Can you please change the dark theme in the new template management function you just added to a light theme and also change the manage employee to a light theme. (Status: **Pending - This is the immediate next action**)
 
 **Project Health Check:**
--   **Broken**: Stripe payments are non-functional due to an invalid API key. This is a configuration issue waiting on the user.
+-   **Broken**: Stripe payments are non-functional due to an invalid API key.
 -   **Mocked**: Yoco is running on test keys.
 
 **3rd Party Integrations**
 -   **Yoco (Payments)**: Used for subscriptions (ZAR). Requires User API Key.
 -   **Stripe (Payments)**: Used for subscriptions and contracts (USD). Requires User API Key (**currently invalid**).
+-   **Stripe Connect**: In progress for contractor payouts. Will require User API Key.
 -   **OpenAI GPT-4o**: Uses Emergent LLM Key.
 -   **SMTP (Custom)**: Used for sending emails. Requires User SMTP credentials.
+-   **pywebpush**: New dependency installed for browser push notifications.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES
+-   **Testing agent used after significant changes**: NO
 -   **Test files created**: None
 -   **Known regressions**: None
 
@@ -156,4 +149,5 @@ The application is a full-stack React/FastAPI/MongoDB platform with distinct use
 
 **What agent forgot to execute**
 -   The agent has not prompted the user to provide a valid Stripe test key, which is currently blocking all Stripe payment functionality.
--   The agent has not performed a root cause analysis on the recurring Admin Login Fragility issue.</analysis>
+-   The agent has not performed a root cause analysis on the recurring Admin Login Fragility or Yoco Payment Flow Fragility issues.
+-   The agent noted but did not fix minor linting warnings in new frontend components (e.g., missing dependencies in  arrays).</analysis>

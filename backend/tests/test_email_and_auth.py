@@ -15,7 +15,7 @@ import sys
 # Add backend to path for imports
 sys.path.insert(0, '/app/backend')
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://hire-shift.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://jobmatch-pro-45.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 SUPER_ADMIN_EMAIL = "admin@upshift.works"

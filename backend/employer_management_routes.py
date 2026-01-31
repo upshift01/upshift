@@ -228,6 +228,23 @@ def get_employer_management_routes(db, get_current_user):
             
             logger.info(f"Employer created by {current_user.email}: {data.email}")
             
+            # Send welcome email to the new employer
+            try:
+                import os
+                frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+                login_url = f"{frontend_url}/login" if frontend_url else "https://upshift.works/login"
+                
+                await email_service.send_employer_welcome_email(
+                    to_email=data.email.lower(),
+                    employer_name=data.full_name,
+                    password=password,
+                    login_url=login_url,
+                    created_by=current_user.full_name or current_user.email
+                )
+                logger.info(f"Welcome email sent to new employer: {data.email}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send welcome email: {email_err}")
+            
             return {
                 "success": True,
                 "message": "Employer created successfully",

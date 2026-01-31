@@ -1899,6 +1899,10 @@ def decode_token_for_ws(token: str):
 websocket_router_instance = get_websocket_routes(db, get_current_user_dep, decode_token_for_ws)
 app.include_router(websocket_router_instance)
 
+# Initialize and include Employer Management router
+employer_management_router_instance = get_employer_management_routes(db, get_current_user_dep)
+app.include_router(employer_management_router_instance)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

@@ -91,6 +91,7 @@ import ResellerCVTemplates from "./pages/reseller/ResellerCVTemplates";
 import ResellerPaymentSettings from "./pages/reseller/ResellerPaymentSettings";
 import ResellerTalentPool from "./pages/reseller/ResellerTalentPool";
 import ResellerRecruiters from "./pages/reseller/ResellerRecruiters";
+import ResellerEmployers from "./pages/reseller/ResellerEmployers";
 
 // Partner Pages (White-Label URL-based routing)
 import PartnerLayout from "./components/PartnerLayout";

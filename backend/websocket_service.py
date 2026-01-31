@@ -89,10 +89,11 @@ def get_websocket_routes(db, get_current_user, decode_token_func):
             payload = decode_token_func(token)
             if not payload:
                 return None
-            user_id = payload.get("sub")
-            if not user_id:
+            # JWT stores email in 'sub' field
+            email = payload.get("sub")
+            if not email:
                 return None
-            user = await db.users.find_one({"id": user_id}, {"_id": 0})
+            user = await db.users.find_one({"email": email}, {"_id": 0})
             return user
         except Exception as e:
             logger.error(f"Token validation error: {e}")

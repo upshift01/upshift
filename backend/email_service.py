@@ -822,6 +822,83 @@ If you have any questions, feel free to reach out to our support team.
         """
         
         return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+    
+    async def send_new_proposal_notification_email(
+        self,
+        to_email: str,
+        employer_name: str,
+        job_title: str,
+        applicant_name: str,
+        applicant_rate: str,
+        cover_letter_preview: str,
+        proposals_url: str,
+        total_proposals: int = 1,
+        platform_name: str = "UpShift"
+    ) -> bool:
+        """Send email to employer when a new proposal is submitted for their job"""
+        subject = f"📬 New Proposal: {job_title}"
+        
+        # Truncate cover letter preview
+        if len(cover_letter_preview) > 200:
+            cover_letter_preview = cover_letter_preview[:200] + "..."
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .proposal-card {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #059669; }}
+                .applicant-name {{ font-size: 18px; font-weight: bold; color: #1f2937; }}
+                .rate {{ color: #059669; font-weight: bold; }}
+                .cover-letter {{ font-style: italic; color: #6b7280; margin-top: 10px; font-size: 14px; }}
+                .btn {{ display: inline-block; background: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                .stats {{ background: #ecfdf5; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>📬 New Proposal Received!</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {employer_name},</p>
+                    
+                    <p>Great news! You've received a new proposal for your job posting:</p>
+                    
+                    <div class="stats">
+                        <strong>📋 {job_title}</strong><br>
+                        <span style="color: #059669;">Total Proposals: {total_proposals}</span>
+                    </div>
+                    
+                    <div class="proposal-card">
+                        <p class="applicant-name">👤 {applicant_name}</p>
+                        <p class="rate">💰 Proposed Rate: {applicant_rate}</p>
+                        <p class="cover-letter">"{cover_letter_preview}"</p>
+                    </div>
+                    
+                    <p style="text-align: center;">
+                        <a href="{proposals_url}" class="btn">Review All Proposals</a>
+                    </p>
+                    
+                    <p>Don't miss out on great talent! Review proposals promptly to find the best fit for your role.</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
 
 # Global instance
 email_service = EmailService()

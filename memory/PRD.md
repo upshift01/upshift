@@ -181,20 +181,25 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 | Test Recruiter | john@woo.co.za | Test@1234 |
 
 ## Recent Changes (Jan 2025)
-1. **Dual Payment Gateway** - Added Yoco as alternative to Stripe for contract/milestone funding
-2. **Admin Payment Settings** - New admin page at `/admin/payment-settings` to configure Stripe and Yoco API keys
-3. **Payment Provider Selection** - Modal allowing employers to choose Stripe or Yoco when funding contracts
-4. **Test Connection Feature** - Admin can test payment gateway connections from settings page
-5. **Candidate Profile Picture Upload** - Added ability for candidates to upload profile pictures (stored locally at `/app/public/uploads/profile_pictures`)
-6. **Enhanced Candidate Cards** - Recruiter browse view now displays profile pictures with gradient avatar fallback
-7. **CV Download Button** - CV download button only shows when candidate has attached a CV
-8. **Job Seeker Registration Redirect** - Fixed to redirect to dashboard instead of pricing page
-9. **CV Selection Fix** - Fixed talent pool CV attachment to use correct `user_documents` collection
-10. **AI Improve Skills** - Added AI-powered skill generation button in Talent Pool profile form
-11. **Bio Field with AI** - Added new Bio text area with AI generate/improve functionality
-12. **AI Improve Summary** - Added AI improve button for Professional Summary
-13. **Remote Worker Checkbox** - Added "Remote Worker" checkbox to Talent Pool profile
-14. **Remote Work Space (Phase 5.1)** - Complete job posting portal with AI-assisted descriptions
+1. **Employer Role & Subscription System** - NEW
+   - Added "Employer" as separate user role (distinct from Job Seeker and Recruiter)
+   - Employer registration with 2-day free trial (3 job posts)
+   - Employer subscription plans: Starter R299/mo (10 jobs), Professional R599/mo (50 jobs), Enterprise R1999/mo (unlimited)
+   - Employer Dashboard at `/employer` with subscription management and stats
+2. **Role-Based Access Control for Remote Jobs**
+   - Job Seekers: Browse jobs, submit proposals, view contracts
+   - Employers: Post jobs (with subscription), review proposals, manage contracts
+   - Recruiters: No access to Remote Jobs (Talent Pool only)
+   - Public: Browse jobs only
+3. **Dual Payment Gateway** - Added Yoco as alternative to Stripe for contract/milestone funding
+4. **Admin Payment Settings** - New admin page at `/admin/payment-settings` to configure Stripe and Yoco API keys
+5. **Reseller Payment Settings** - Resellers can configure their own payment gateway keys
+6. **Payment Provider Selection** - Modal allowing employers to choose Stripe or Yoco when funding contracts
+7. **ZAR Removed from Stripe** - Stripe now USD only, Yoco for ZAR payments
+8. **Email Notifications** - Added for contract events (proposal accepted, contract created, signed, milestone funded, payment released)
+9. **Candidate Profile Picture Upload** - Added ability for candidates to upload profile pictures
+10. **Remote Worker Checkbox** - Added "Remote Worker" checkbox to Talent Pool profile
+11. **Remote Work Space (Phase 5.1)** - Complete job posting portal with AI-assisted descriptions
 
 ## Recent Fixes (Dec 2025)
 1. **Hardcoded Phone Number** - Fixed to use dynamic settings

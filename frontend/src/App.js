@@ -255,6 +255,7 @@ const AppContent = () => {
           <Route path="content" element={<AdminContent />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="payment-settings" element={<PaymentSettings />} />
+          <Route path="email-templates" element={<AdminEmailTemplates />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="talent-pool" element={<AdminTalentPool />} />
           <Route path="recruiters" element={<AdminRecruiters />} />

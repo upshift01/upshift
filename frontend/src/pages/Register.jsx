@@ -105,7 +105,7 @@ const Register = () => {
             {/* Account Type Selection */}
             <div className="space-y-2">
               <Label>I am a...</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, accountType: 'customer', companyName: '' })}
@@ -116,12 +116,30 @@ const Register = () => {
                   }`}
                   data-testid="account-type-customer"
                 >
-                  <User className={`h-6 w-6 mb-2 ${formData.accountType === 'customer' ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <div className={`font-medium ${formData.accountType === 'customer' ? 'text-blue-900' : 'text-gray-700'}`}>
+                  <User className={`h-5 w-5 mb-2 ${formData.accountType === 'customer' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <div className={`font-medium text-sm ${formData.accountType === 'customer' ? 'text-blue-900' : 'text-gray-700'}`}>
                     Job Seeker
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Looking for work opportunities
+                    Find work
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, accountType: 'employer' })}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    formData.accountType === 'employer'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  data-testid="account-type-employer"
+                >
+                  <Briefcase className={`h-5 w-5 mb-2 ${formData.accountType === 'employer' ? 'text-green-600' : 'text-gray-400'}`} />
+                  <div className={`font-medium text-sm ${formData.accountType === 'employer' ? 'text-green-900' : 'text-gray-700'}`}>
+                    Employer
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Post jobs
                   </div>
                 </button>
                 <button
@@ -134,12 +152,12 @@ const Register = () => {
                   }`}
                   data-testid="account-type-recruiter"
                 >
-                  <Building2 className={`h-6 w-6 mb-2 ${formData.accountType === 'recruiter' ? 'text-purple-600' : 'text-gray-400'}`} />
-                  <div className={`font-medium ${formData.accountType === 'recruiter' ? 'text-purple-900' : 'text-gray-700'}`}>
-                    Recruiter / Employer
+                  <Building2 className={`h-5 w-5 mb-2 ${formData.accountType === 'recruiter' ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <div className={`font-medium text-sm ${formData.accountType === 'recruiter' ? 'text-purple-900' : 'text-gray-700'}`}>
+                    Recruiter
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Looking to hire talent
+                    Talent pool
                   </div>
                 </button>
               </div>

@@ -299,15 +299,38 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - Milestone submitted notification (to employer)
   - Milestone approved notification (to contractor)
   - Payment received notification (to contractor)
+- [x] **Email Notifications for Admin Actions** (COMPLETED - Jan 2025)
+  - Email sent when admin creates new employer account
+  - Email with new password when admin resets employer password
+  - Email when employer account is suspended
+  - Email when employer account is reactivated
+- [x] **Admin/Reseller UI Theme Update** (COMPLETED - Jan 2025)
+  - Changed AdminEmployers page from dark to light theme
+  - ResellerEmployers inherits light theme from AdminEmployers
+  - AdminEmailTemplates already had light theme
+- [ ] **Email Template Customization** (IN PROGRESS)
+  - Backend routes created (`/api/email-templates/`)
+  - Frontend page at `/super-admin/email-templates`
+  - Needs: Full CRUD integration, update email_service to use DB templates
+- [ ] **Browser Push Notifications** (IN PROGRESS)
+  - Service worker file created (`/public/sw.js`)
+  - Backend routes for subscriptions (`/api/push/`)
+  - Frontend hook (`usePushNotifications.js`)
+  - Needs: Implementation of service worker logic and subscription flow
+- [ ] **Stripe Connect Full Integration** (BLOCKED)
+  - Boilerplate exists, needs valid Stripe API key to complete
 - [ ] Odoo Integration
 - [ ] Customer CV/vacancy upload to Talent Pool
 
 ## Known Issues
-- **Admin Login Fragility** - RESOLVED ✅ (Tested and working correctly)
-- **Yoco Payment Flow** - VERIFIED ✅ (Subscription checkout working, returns valid Yoco URL)
+- **Admin Login Fragility** - KNOWN ISSUE (recurring, needs RCA)
+- **Yoco Payment Flow** - VERIFIED ✅ (Subscription checkout working)
+- **Stripe Payments** - BLOCKED (invalid test API key `sk_test_emergent`)
+- **Screenshot Tool Session Loss** - Known tooling limitation with session persistence
 
 ## Future/Backlog (P2-P3)
 - [ ] Refactor remaining partner pages (PartnerPricing, PartnerHome)
 - [ ] Secure/remove emergency admin endpoints
 - [ ] Clean up duplicate admin accounts
 - [ ] Address linting errors in ATSChecker, SkillsGenerator
+- [ ] Gig-style matching for micro-tasks

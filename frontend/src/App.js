@@ -263,6 +263,7 @@ const AppContent = () => {
         <Route path="/reseller-dashboard" element={<ResellerLayout />}>
           <Route index element={<ResellerDashboard />} />
           <Route path="customers" element={<ResellerCustomers />} />
+          <Route path="employers" element={<ResellerEmployers />} />
           <Route path="revenue" element={<ResellerRevenue />} />
           <Route path="invoices" element={<ResellerInvoices />} />
           <Route path="pricing" element={<ResellerPricing />} />

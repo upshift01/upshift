@@ -97,7 +97,7 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
                     exp_date = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
                     if exp_date < datetime.now(timezone.utc):
                         subscription["status"] = "expired"
-                except:
+                except ValueError:
                     pass
         
         # Get jobs posted count

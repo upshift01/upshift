@@ -225,6 +225,9 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - [x] Contract signed/activated notification (to both parties)
   - [x] Milestone funded notification (to both parties)
   - [x] Payment released notification (to contractor)
+  - [x] **New proposal notification to employer** (COMPLETED - Jan 2025)
+- [ ] Stripe Connect for Contractor Payouts
+- [ ] Job Analytics for Employers
 - [ ] Odoo Integration
 - [ ] Customer CV/vacancy upload to Talent Pool
 

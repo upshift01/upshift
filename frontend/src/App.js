@@ -189,6 +189,9 @@ const AppContent = () => {
         <Route path="/contracts/create/:proposalId" element={<PrivateRoute><CreateContract /></PrivateRoute>} />
         <Route path="/contracts/:contractId" element={<PrivateRoute><ContractDetails /></PrivateRoute>} />
         
+        {/* Stripe Connect (Contractor Payouts) */}
+        <Route path="/stripe-connect" element={<PrivateRoute><StripeConnect /></PrivateRoute>} />
+        
         {/* Admin Payment Settings */}
         <Route path="/admin/payment-settings" element={<PrivateRoute><PaymentSettings /></PrivateRoute>} />
         

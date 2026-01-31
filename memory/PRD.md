@@ -151,7 +151,15 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - `DELETE /api/talent-pool/admin/candidates/{id}` - Admin: Delete candidate
 - `GET/PUT /api/talent-pool/admin/pricing` - Admin: Get/update pricing
 
-### Remote Jobs (NEW - Phase 5)
+### Employer (NEW - Jan 2025)
+- `GET /api/employer/plans` - Get employer subscription plans
+- `GET /api/employer/subscription` - Get current subscription status
+- `GET /api/employer/dashboard-stats` - Get employer dashboard stats
+- `POST /api/employer/subscribe/{plan_id}` - Subscribe to plan (Yoco checkout)
+- `POST /api/employer/verify-payment` - Verify payment and activate subscription
+- `GET /api/employer/can-post-job` - Check if employer can post more jobs
+
+### Remote Jobs (Phase 5)
 - `GET /api/remote-jobs/options` - Get form options (job types, currencies, etc.)
 - `GET /api/remote-jobs/jobs` - List active jobs (public, with filters)
 - `GET /api/remote-jobs/jobs/{id}` - Get job details (public)

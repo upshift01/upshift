@@ -311,70 +311,70 @@ const AdminEmployers = () => {
   };
 
   const getStatusBadge = (status) => {
-    if (status === 'active') return <Badge className="bg-green-500/20 text-green-400">Active</Badge>;
-    if (status === 'suspended') return <Badge className="bg-red-500/20 text-red-400">Suspended</Badge>;
-    return <Badge className="bg-slate-500/20 text-slate-400">{status}</Badge>;
+    if (status === 'active') return <Badge className="bg-green-100 text-green-700">Active</Badge>;
+    if (status === 'suspended') return <Badge className="bg-red-100 text-red-700">Suspended</Badge>;
+    return <Badge className="bg-gray-100 text-gray-600">{status}</Badge>;
   };
 
   const getSubscriptionBadge = (subscription) => {
-    if (!subscription) return <Badge className="bg-slate-500/20 text-slate-400">None</Badge>;
+    if (!subscription) return <Badge className="bg-gray-100 text-gray-600">None</Badge>;
     const status = subscription.status;
-    if (status === 'active') return <Badge className="bg-blue-500/20 text-blue-400">Subscribed</Badge>;
-    if (status === 'trial') return <Badge className="bg-amber-500/20 text-amber-400">Trial</Badge>;
-    if (status === 'expired') return <Badge className="bg-red-500/20 text-red-400">Expired</Badge>;
-    return <Badge className="bg-slate-500/20 text-slate-400">{status}</Badge>;
+    if (status === 'active') return <Badge className="bg-blue-100 text-blue-700">Subscribed</Badge>;
+    if (status === 'trial') return <Badge className="bg-amber-100 text-amber-700">Trial</Badge>;
+    if (status === 'expired') return <Badge className="bg-red-100 text-red-700">Expired</Badge>;
+    return <Badge className="bg-gray-100 text-gray-600">{status}</Badge>;
   };
 
   return (
     <div className="space-y-6" data-testid="admin-employers-page">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4">
-            <p className="text-slate-400 text-sm">Total Employers</p>
-            <p className="text-2xl font-bold text-white">{stats.total || 0}</p>
+            <p className="text-gray-500 text-sm">Total Employers</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.total || 0}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4">
-            <p className="text-slate-400 text-sm">Active</p>
-            <p className="text-2xl font-bold text-green-400">{stats.active || 0}</p>
+            <p className="text-gray-500 text-sm">Active</p>
+            <p className="text-2xl font-bold text-green-600">{stats.active || 0}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4">
-            <p className="text-slate-400 text-sm">Suspended</p>
-            <p className="text-2xl font-bold text-red-400">{stats.suspended || 0}</p>
+            <p className="text-gray-500 text-sm">Suspended</p>
+            <p className="text-2xl font-bold text-red-600">{stats.suspended || 0}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4">
-            <p className="text-slate-400 text-sm">On Trial</p>
-            <p className="text-2xl font-bold text-amber-400">{stats.trial || 0}</p>
+            <p className="text-gray-500 text-sm">On Trial</p>
+            <p className="text-2xl font-bold text-amber-600">{stats.trial || 0}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4">
-            <p className="text-slate-400 text-sm">Subscribed</p>
-            <p className="text-2xl font-bold text-blue-400">{stats.subscribed || 0}</p>
+            <p className="text-gray-500 text-sm">Subscribed</p>
+            <p className="text-2xl font-bold text-blue-600">{stats.subscribed || 0}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Header with Search and Actions */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200">
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-blue-400" />
+              <CardTitle className="text-gray-900 flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-600" />
                 Employer Management
               </CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardDescription className="text-gray-500">
                 Create, edit, and manage employer accounts
               </CardDescription>
             </div>
-            <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
               <Plus className="h-4 w-4 mr-2" />
               Add Employer
             </Button>
@@ -384,33 +384,33 @@ const AdminEmployers = () => {
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search by name, email, or company..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-slate-900 border-slate-700 text-white"
+                className="pl-10 bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40 bg-slate-900 border-slate-700 text-white">
+              <SelectTrigger className="w-40 bg-gray-50 border-gray-300 text-gray-900">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700">
-                <SelectItem value="all" className="text-white">All Status</SelectItem>
-                <SelectItem value="active" className="text-white">Active</SelectItem>
-                <SelectItem value="suspended" className="text-white">Suspended</SelectItem>
+              <SelectContent className="bg-white border-gray-200">
+                <SelectItem value="all" className="text-gray-900">All Status</SelectItem>
+                <SelectItem value="active" className="text-gray-900">Active</SelectItem>
+                <SelectItem value="suspended" className="text-gray-900">Suspended</SelectItem>
               </SelectContent>
             </Select>
             <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
-              <SelectTrigger className="w-40 bg-slate-900 border-slate-700 text-white">
+              <SelectTrigger className="w-40 bg-gray-50 border-gray-300 text-gray-900">
                 <SelectValue placeholder="Subscription" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700">
-                <SelectItem value="all" className="text-white">All Subscriptions</SelectItem>
-                <SelectItem value="active" className="text-white">Subscribed</SelectItem>
-                <SelectItem value="trial" className="text-white">Trial</SelectItem>
-                <SelectItem value="expired" className="text-white">Expired</SelectItem>
+              <SelectContent className="bg-white border-gray-200">
+                <SelectItem value="all" className="text-gray-900">All Subscriptions</SelectItem>
+                <SelectItem value="active" className="text-gray-900">Subscribed</SelectItem>
+                <SelectItem value="trial" className="text-gray-900">Trial</SelectItem>
+                <SelectItem value="expired" className="text-gray-900">Expired</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -418,34 +418,34 @@ const AdminEmployers = () => {
           {/* Employers Table */}
           {loading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             </div>
           ) : employers.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
+            <div className="text-center py-8 text-gray-500">
               No employers found
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left border-b border-slate-700">
-                    <th className="pb-3 text-slate-400 font-medium">Employer</th>
-                    <th className="pb-3 text-slate-400 font-medium">Company</th>
-                    <th className="pb-3 text-slate-400 font-medium text-center">Status</th>
-                    <th className="pb-3 text-slate-400 font-medium text-center">Subscription</th>
-                    <th className="pb-3 text-slate-400 font-medium text-center">Jobs</th>
-                    <th className="pb-3 text-slate-400 font-medium text-right">Actions</th>
+                  <tr className="text-left border-b border-gray-200">
+                    <th className="pb-3 text-gray-600 font-medium">Employer</th>
+                    <th className="pb-3 text-gray-600 font-medium">Company</th>
+                    <th className="pb-3 text-gray-600 font-medium text-center">Status</th>
+                    <th className="pb-3 text-gray-600 font-medium text-center">Subscription</th>
+                    <th className="pb-3 text-gray-600 font-medium text-center">Jobs</th>
+                    <th className="pb-3 text-gray-600 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {employers.map((employer) => (
-                    <tr key={employer.id} className="border-b border-slate-800 hover:bg-slate-800/50">
+                    <tr key={employer.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4">
-                        <p className="text-white font-medium">{employer.full_name}</p>
-                        <p className="text-slate-500 text-sm">{employer.email}</p>
+                        <p className="text-gray-900 font-medium">{employer.full_name}</p>
+                        <p className="text-gray-500 text-sm">{employer.email}</p>
                       </td>
                       <td className="py-4">
-                        <p className="text-slate-300">{employer.company_name || '-'}</p>
+                        <p className="text-gray-700">{employer.company_name || '-'}</p>
                       </td>
                       <td className="py-4 text-center">
                         {getStatusBadge(employer.status)}
@@ -454,7 +454,7 @@ const AdminEmployers = () => {
                         {getSubscriptionBadge(employer.employer_subscription)}
                       </td>
                       <td className="py-4 text-center">
-                        <span className="text-white">
+                        <span className="text-gray-900">
                           {employer.employer_subscription?.jobs_posted || 0} / {employer.employer_subscription?.jobs_limit || 0}
                         </span>
                       </td>
@@ -465,32 +465,36 @@ const AdminEmployers = () => {
                             size="icon"
                             onClick={() => openDetailsModal(employer)}
                             title="View Details"
+                            className="hover:bg-gray-100"
                           >
-                            <Eye className="h-4 w-4 text-slate-400" />
+                            <Eye className="h-4 w-4 text-gray-500" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditModal(employer)}
                             title="Edit"
+                            className="hover:bg-gray-100"
                           >
-                            <Edit className="h-4 w-4 text-slate-400" />
+                            <Edit className="h-4 w-4 text-gray-500" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => openPasswordModal(employer)}
                             title="Reset Password"
+                            className="hover:bg-gray-100"
                           >
-                            <Key className="h-4 w-4 text-slate-400" />
+                            <Key className="h-4 w-4 text-gray-500" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => openSubscriptionModal(employer)}
                             title="Manage Subscription"
+                            className="hover:bg-gray-100"
                           >
-                            <Crown className="h-4 w-4 text-slate-400" />
+                            <Crown className="h-4 w-4 text-gray-500" />
                           </Button>
                           {employer.status === 'active' ? (
                             <Button
@@ -498,8 +502,9 @@ const AdminEmployers = () => {
                               size="icon"
                               onClick={() => handleSuspend(employer)}
                               title="Suspend"
+                              className="hover:bg-red-50"
                             >
-                              <Ban className="h-4 w-4 text-red-400" />
+                              <Ban className="h-4 w-4 text-red-600" />
                             </Button>
                           ) : (
                             <Button
@@ -507,8 +512,9 @@ const AdminEmployers = () => {
                               size="icon"
                               onClick={() => handleReactivate(employer)}
                               title="Reactivate"
+                              className="hover:bg-green-50"
                             >
-                              <CheckCircle className="h-4 w-4 text-green-400" />
+                              <CheckCircle className="h-4 w-4 text-green-600" />
                             </Button>
                           )}
                         </div>
@@ -528,11 +534,11 @@ const AdminEmployers = () => {
                 size="sm"
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
-                className="border-slate-700 text-white"
+                className="border-gray-300 text-gray-700"
               >
                 Previous
               </Button>
-              <span className="text-slate-400 py-2 px-4">
+              <span className="text-gray-600 py-2 px-4">
                 Page {page} of {totalPages}
               </span>
               <Button
@@ -540,7 +546,7 @@ const AdminEmployers = () => {
                 size="sm"
                 disabled={page === totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="border-slate-700 text-white"
+                className="border-gray-300 text-gray-700"
               >
                 Next
               </Button>

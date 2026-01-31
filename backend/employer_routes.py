@@ -208,10 +208,24 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
         
         try:
             if provider == "stripe":
-                # Use Stripe for USD payments
-                stripe_key = os.environ.get("STRIPE_API_KEY")
-                if not stripe_key or stripe_key == "sk_test_emergent":
-                    raise HTTPException(status_code=500, detail="Valid Stripe API key not configured. Please add your Stripe secret key in the Payment Settings.")
+                # Use Stripe for USD payments - check database settings first, then env
+                stripe_key = None
+                
+                # Check admin settings in database
+                admin_settings = await db.admin_settings.find_one({"type": "payment_settings"})
+                if admin_settings and admin_settings.get("stripe_api_key"):
+                    stripe_key = admin_settings.get("stripe_api_key")
+                
+                # Fallback to environment variable
+                if not stripe_key:
+                    stripe_key = os.environ.get("STRIPE_API_KEY")
+                
+                # Check if we have a valid key (not the placeholder)
+                if not stripe_key or stripe_key == "sk_test_emergent" or not stripe_key.startswith("sk_"):
+                    raise HTTPException(
+                        status_code=500, 
+                        detail="Stripe is not configured. Please add a valid Stripe API key in the Admin Payment Settings, or choose Yoco for payment."
+                    )
                 
                 import stripe
                 stripe.api_key = stripe_key

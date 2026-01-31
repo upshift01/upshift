@@ -396,6 +396,17 @@ def get_employer_management_routes(db, get_current_user):
             
             logger.info(f"Employer {employer_id} suspended by {current_user.email}")
             
+            # Send suspension email
+            try:
+                await email_service.send_employer_suspended_email(
+                    to_email=employer.get("email"),
+                    employer_name=employer.get("full_name") or "Employer",
+                    suspended_by=current_user.full_name or current_user.email
+                )
+                logger.info(f"Suspension email sent to employer: {employer.get('email')}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send suspension email: {email_err}")
+            
             return {"success": True, "message": "Employer suspended successfully"}
             
         except HTTPException:

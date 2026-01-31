@@ -35,6 +35,7 @@ const AdminLayout = () => {
   const navItems = [
     { path: '/super-admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/super-admin/resellers', icon: Building2, label: 'Resellers' },
+    { path: '/super-admin/employers', icon: Building2, label: 'Employers' },
     { path: '/super-admin/crm', icon: UserPlus, label: 'CRM / Leads' },
     { path: '/super-admin/calendar', icon: Calendar, label: 'Bookings' },
     { path: '/super-admin/users', icon: Users, label: 'Users' },

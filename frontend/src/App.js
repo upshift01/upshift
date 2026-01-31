@@ -3,6 +3,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AIAssistantBot from "./components/AIAssistantBot";

@@ -253,6 +253,13 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - [x] Frontend page at `/employer/analytics`
 - [x] **SMTP Configuration Fix** (COMPLETED - Jan 2025)
   - Fixed SSL/TLS mismatch (port 587 requires TLS, not SSL)
+- [x] **Real-time WebSocket Notifications** (COMPLETED - Jan 2025)
+  - WebSocket service for real-time push notifications
+  - Notification bell component with badge count
+  - Notification dropdown showing recent notifications
+  - Mark as read / Mark all as read functionality
+  - Auto-reconnect on connection loss
+  - Integrated with proposal submission (employers notified instantly)
 - [ ] Odoo Integration
 - [ ] Customer CV/vacancy upload to Talent Pool
 

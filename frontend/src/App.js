@@ -69,6 +69,7 @@ import AdminCRM from "./pages/admin/AdminCRM";
 import AdminCalendar from "./pages/admin/AdminCalendar";
 import AdminCVTemplates from "./pages/admin/AdminCVTemplates";
 import AdminEmployers from "./pages/admin/AdminEmployers";
+import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminTalentPool from "./pages/admin/AdminTalentPool";
 import AdminRecruiters from "./pages/admin/AdminRecruiters";
 

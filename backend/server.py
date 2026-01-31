@@ -52,6 +52,7 @@ from proposals_routes import get_proposals_routes
 from contracts_routes import get_contracts_routes
 from payments_routes import get_payments_routes
 from admin_settings_routes import get_admin_settings_routes
+from employer_routes import get_employer_routes
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()

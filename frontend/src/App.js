@@ -334,9 +334,11 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <AuthProvider>
-          <ThemeProvider>
-            <AppContent />
-          </ThemeProvider>
+          <NotificationProvider>
+            <ThemeProvider>
+              <AppContent />
+            </ThemeProvider>
+          </NotificationProvider>
         </AuthProvider>
       </BrowserRouter>
     </div>

@@ -309,10 +309,73 @@ const PostJob = () => {
     }
   };
 
-  if (!options) {
+  // Loading state
+  if (checkingAccess || !options) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  // Access blocked - show upgrade prompt
+  if (!canPost) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/remote-jobs')}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Jobs
+          </Button>
+
+          <Card className="border-2 border-orange-200">
+            <CardHeader className="text-center pb-2">
+              <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
+                {subscriptionStatus === 'none' || subscriptionStatus === 'expired' ? (
+                  <Lock className="h-8 w-8 text-orange-600" />
+                ) : (
+                  <AlertCircle className="h-8 w-8 text-orange-600" />
+                )}
+              </div>
+              <CardTitle className="text-xl text-orange-900">
+                {subscriptionStatus === 'none' ? 'Subscription Required' :
+                 subscriptionStatus === 'expired' ? 'Subscription Expired' :
+                 'Job Posting Limit Reached'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <p className="text-gray-600">{accessMessage}</p>
+              
+              {jobsLimit > 0 && (
+                <div className="bg-gray-100 rounded-lg p-4">
+                  <p className="text-sm text-gray-500">Jobs Posted</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {jobsPosted} / {jobsLimit === -1 ? '∞' : jobsLimit}
+                  </p>
+                </div>
+              )}
+
+              <div className="pt-4">
+                <Link to="/employer#plans">
+                  <Button className="bg-orange-600 hover:bg-orange-700">
+                    <Crown className="h-4 w-4 mr-2" />
+                    {subscriptionStatus === 'none' ? 'View Plans & Subscribe' :
+                     subscriptionStatus === 'expired' ? 'Renew Subscription' :
+                     'Upgrade Your Plan'}
+                  </Button>
+                </Link>
+              </div>
+
+              <p className="text-xs text-gray-500 pt-2">
+                Upgrade to post more jobs and access premium features
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -328,6 +391,25 @@ const PostJob = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Jobs
         </Button>
+
+        {/* Job posting limit indicator */}
+        {jobsLimit !== -1 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-blue-600" />
+              <span className="text-sm text-blue-800">
+                Jobs posted: <strong>{jobsPosted}</strong> / {jobsLimit}
+              </span>
+            </div>
+            {jobsPosted >= jobsLimit - 2 && (
+              <Link to="/employer#plans">
+                <Badge variant="outline" className="text-orange-600 border-orange-300 cursor-pointer hover:bg-orange-50">
+                  {jobsLimit - jobsPosted} remaining - Upgrade
+                </Badge>
+              </Link>
+            )}
+          </div>
+        )}
 
         <Card>
           <CardHeader>

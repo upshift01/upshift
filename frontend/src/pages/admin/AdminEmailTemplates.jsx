@@ -195,21 +195,21 @@ const AdminEmailTemplates = () => {
   };
 
   const renderTemplateCard = (template) => (
-    <Card key={template.id} className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
+    <Card key={template.id} className="bg-white border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-white font-medium truncate">{template.name}</h3>
+              <h3 className="text-gray-900 font-medium truncate">{template.name}</h3>
               {template.is_customized && (
-                <Badge className="bg-blue-500/20 text-blue-400 text-xs">Customized</Badge>
+                <Badge className="bg-blue-100 text-blue-700 text-xs">Customized</Badge>
               )}
               {!template.is_active && (
-                <Badge className="bg-red-500/20 text-red-400 text-xs">Disabled</Badge>
+                <Badge className="bg-red-100 text-red-700 text-xs">Disabled</Badge>
               )}
             </div>
-            <p className="text-slate-400 text-sm mb-2">{template.description}</p>
-            <p className="text-slate-500 text-xs font-mono truncate">
+            <p className="text-gray-500 text-sm mb-2">{template.description}</p>
+            <p className="text-gray-400 text-xs font-mono truncate">
               Subject: {template.custom_subject || template.default_subject}
             </p>
           </div>
@@ -219,24 +219,27 @@ const AdminEmailTemplates = () => {
               size="icon"
               onClick={() => openPreviewModal(template)}
               title="Preview"
+              className="hover:bg-gray-100"
             >
-              <Eye className="h-4 w-4 text-slate-400" />
+              <Eye className="h-4 w-4 text-gray-500" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => openEditModal(template)}
               title="Edit"
+              className="hover:bg-gray-100"
             >
-              <Edit className="h-4 w-4 text-slate-400" />
+              <Edit className="h-4 w-4 text-gray-500" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => handleSendTest(template)}
               title="Send Test Email"
+              className="hover:bg-gray-100"
             >
-              <Send className="h-4 w-4 text-slate-400" />
+              <Send className="h-4 w-4 text-gray-500" />
             </Button>
             {template.is_customized && (
               <Button
@@ -244,18 +247,19 @@ const AdminEmailTemplates = () => {
                 size="icon"
                 onClick={() => handleReset(template)}
                 title="Reset to Default"
+                className="hover:bg-amber-50"
               >
-                <RotateCcw className="h-4 w-4 text-amber-400" />
+                <RotateCcw className="h-4 w-4 text-amber-600" />
               </Button>
             )}
           </div>
         </div>
         {template.variables && (
-          <div className="mt-3 pt-3 border-t border-slate-700">
-            <p className="text-slate-500 text-xs mb-1">Variables:</p>
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-gray-400 text-xs mb-1">Variables:</p>
             <div className="flex flex-wrap gap-1">
               {template.variables.map((v) => (
-                <code key={v} className="text-xs bg-slate-700 text-blue-300 px-1.5 py-0.5 rounded">
+                <code key={v} className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">
                   {`{{${v}}}`}
                 </code>
               ))}
@@ -269,7 +273,7 @@ const AdminEmailTemplates = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -277,13 +281,13 @@ const AdminEmailTemplates = () => {
   return (
     <div className="space-y-6" data-testid="admin-email-templates">
       {/* Header */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-white border-gray-200">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Mail className="h-5 w-5 text-purple-400" />
+          <CardTitle className="text-gray-900 flex items-center gap-2">
+            <Mail className="h-5 w-5 text-purple-600" />
             Email Templates
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-500">
             Customize email notifications sent by the platform. Use variables like {`{{variable_name}}`} to insert dynamic content.
           </CardDescription>
         </CardHeader>
@@ -291,17 +295,17 @@ const AdminEmailTemplates = () => {
 
       {/* Templates by Category */}
       <Tabs defaultValue="employer" className="space-y-6">
-        <TabsList className="bg-slate-800 border-slate-700">
+        <TabsList className="bg-gray-100 border border-gray-200">
           {Object.keys(categories).map((cat) => (
             <TabsTrigger 
               key={cat} 
               value={cat}
-              className="data-[state=active]:bg-slate-700 text-slate-300"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-gray-600 data-[state=active]:text-gray-900"
             >
               <span className="flex items-center gap-2">
                 {getCategoryIcon(cat)}
                 {getCategoryLabel(cat)}
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <Badge variant="secondary" className="ml-1 text-xs bg-gray-200 text-gray-600">
                   {categories[cat].length}
                 </Badge>
               </span>
@@ -320,38 +324,38 @@ const AdminEmailTemplates = () => {
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-white border-gray-200 text-gray-900 max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Email Template</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogTitle className="text-gray-900">Edit Email Template</DialogTitle>
+            <DialogDescription className="text-gray-500">
               {selectedTemplate?.name} - {selectedTemplate?.description}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-slate-400 block mb-1">Subject Line</label>
+              <label className="text-sm text-gray-600 block mb-1">Subject Line</label>
               <Input
                 value={editForm.subject}
                 onChange={(e) => setEditForm(f => ({ ...f, subject: e.target.value }))}
-                className="bg-slate-800 border-slate-700 text-white font-mono"
+                className="bg-gray-50 border-gray-300 text-gray-900 font-mono"
                 placeholder={selectedTemplate?.default_subject}
               />
             </div>
             
             <div>
-              <label className="text-sm text-slate-400 block mb-1">Email Body (HTML)</label>
+              <label className="text-sm text-gray-600 block mb-1">Email Body (HTML)</label>
               <textarea
                 value={editForm.body_html}
                 onChange={(e) => setEditForm(f => ({ ...f, body_html: e.target.value }))}
-                className="w-full h-64 bg-slate-800 border border-slate-700 rounded-md p-3 text-white font-mono text-sm resize-y"
+                className="w-full h-64 bg-gray-50 border border-gray-300 rounded-md p-3 text-gray-900 font-mono text-sm resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Leave empty to use the default template. Enter custom HTML here..."
               />
             </div>
             
             {selectedTemplate?.variables && (
-              <div className="bg-slate-800 rounded-lg p-3">
-                <p className="text-slate-400 text-sm mb-2">Available Variables:</p>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">Available Variables:</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedTemplate.variables.map((v) => (
                     <button
@@ -360,7 +364,7 @@ const AdminEmailTemplates = () => {
                         const varText = `{{${v}}}`;
                         setEditForm(f => ({ ...f, body_html: f.body_html + varText }));
                       }}
-                      className="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-2 py-1 rounded transition-colors"
+                      className="text-xs bg-white border border-gray-300 hover:border-blue-400 hover:bg-blue-50 text-blue-600 px-2 py-1 rounded transition-colors"
                     >
                       {`{{${v}}}`}
                     </button>
@@ -375,19 +379,19 @@ const AdminEmailTemplates = () => {
                 id="is_active"
                 checked={editForm.is_active}
                 onChange={(e) => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
-                className="rounded"
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="is_active" className="text-sm text-slate-300">
+              <label htmlFor="is_active" className="text-sm text-gray-700">
                 Template is active (emails will be sent)
               </label>
             </div>
           </div>
           
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowEditModal(false)}>
+            <Button variant="outline" onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={processing} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleSave} disabled={processing} className="bg-blue-600 hover:bg-blue-700 text-white">
               {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Template
             </Button>
@@ -397,29 +401,29 @@ const AdminEmailTemplates = () => {
 
       {/* Preview Modal */}
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-white border-gray-200 text-gray-900 max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Email Preview</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogTitle className="text-gray-900">Email Preview</DialogTitle>
+            <DialogDescription className="text-gray-500">
               {selectedTemplate?.name}
             </DialogDescription>
           </DialogHeader>
           
           {previewData && (
             <div className="space-y-4">
-              <div className="bg-slate-800 rounded-lg p-3">
-                <p className="text-slate-400 text-xs mb-1">Subject:</p>
-                <p className="text-white font-medium">{previewData.subject}</p>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <p className="text-gray-500 text-xs mb-1">Subject:</p>
+                <p className="text-gray-900 font-medium">{previewData.subject}</p>
               </div>
               
-              <div className="bg-white rounded-lg overflow-hidden">
+              <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
                 {previewData.body_html ? (
                   <div 
                     className="p-4"
                     dangerouslySetInnerHTML={{ __html: previewData.body_html }}
                   />
                 ) : (
-                  <div className="p-8 text-center text-gray-500">
+                  <div className="p-8 text-center text-gray-400">
                     <Code className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>Using default template</p>
                     <p className="text-sm">Customize this template to see a preview</p>
@@ -427,13 +431,13 @@ const AdminEmailTemplates = () => {
                 )}
               </div>
               
-              <div className="bg-slate-800 rounded-lg p-3">
-                <p className="text-slate-400 text-xs mb-2">Sample Data Used:</p>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <p className="text-gray-500 text-xs mb-2">Sample Data Used:</p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {Object.entries(previewData.preview_data || {}).map(([key, value]) => (
                     <div key={key} className="flex gap-2">
-                      <span className="text-blue-400">{key}:</span>
-                      <span className="text-slate-300 truncate">{String(value)}</span>
+                      <span className="text-blue-600">{key}:</span>
+                      <span className="text-gray-700 truncate">{String(value)}</span>
                     </div>
                   ))}
                 </div>
@@ -442,12 +446,12 @@ const AdminEmailTemplates = () => {
           )}
           
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowPreviewModal(false)}>
+            <Button variant="outline" onClick={() => setShowPreviewModal(false)}>
               Close
             </Button>
             <Button 
               onClick={() => selectedTemplate && handleSendTest(selectedTemplate)}
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-purple-600 hover:bg-purple-700 text-white"
             >
               <Send className="h-4 w-4 mr-2" />
               Send Test Email

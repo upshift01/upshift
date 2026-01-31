@@ -386,27 +386,6 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
         except Exception as e:
             logger.error(f"Error verifying employer payment: {e}")
             raise HTTPException(status_code=500, detail=str(e))
-                    }}
-                )
-                
-                logger.info(f"Employer subscription activated for {current_user.email}")
-                
-                return {
-                    "success": True,
-                    "message": "Subscription activated",
-                    "plan": pending["plan_name"]
-                }
-            else:
-                return {
-                    "success": False,
-                    "message": "Payment not verified yet"
-                }
-                
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Error verifying employer payment: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
     
     @employer_router.get("/can-post-job")
     async def check_can_post_job(current_user = Depends(get_current_user)):

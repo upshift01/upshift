@@ -105,7 +105,7 @@ const Navbar = () => {
               )}
             </div>
             
-            {/* Remote Jobs Dropdown - Hidden for recruiters */}
+            {/* Remote Jobs Dropdown - Hidden for recruiters, different for employers vs job seekers */}
             {user?.role !== 'recruiter' && (
             <div className="relative group">
               <Link
@@ -127,13 +127,13 @@ const Navbar = () => {
                 >
                   Browse Jobs
                 </Link>
-                {isAuthenticated && (
+                {isAuthenticated && user?.role === 'employer' && (
                   <>
                     <Link
-                      to="/remote-jobs/company-dashboard"
+                      to="/employer"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      Company Dashboard
+                      Employer Dashboard
                     </Link>
                     <Link
                       to="/remote-jobs/my-jobs"
@@ -141,6 +141,22 @@ const Navbar = () => {
                     >
                       My Posted Jobs
                     </Link>
+                    <Link
+                      to="/contracts"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      My Contracts
+                    </Link>
+                    <Link
+                      to="/remote-jobs/post"
+                      className="block px-4 py-2 text-sm text-green-600 hover:bg-green-50 rounded-b-lg font-medium"
+                    >
+                      + Post a Job
+                    </Link>
+                  </>
+                )}
+                {isAuthenticated && user?.role !== 'employer' && (
+                  <>
                     <Link
                       to="/remote-jobs/recommendations"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -155,17 +171,19 @@ const Navbar = () => {
                     </Link>
                     <Link
                       to="/contracts"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-b-lg"
                     >
                       My Contracts
                     </Link>
-                    <Link
-                      to="/remote-jobs/post"
-                      className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-b-lg font-medium"
-                    >
-                      + Post a Job
-                    </Link>
                   </>
+                )}
+                {!isAuthenticated && (
+                  <Link
+                    to="/login"
+                    className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-b-lg"
+                  >
+                    Login to Apply
+                  </Link>
                 )}
               </div>
             </div>

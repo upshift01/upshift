@@ -194,7 +194,15 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
         currency = "USD" if provider == "stripe" else "ZAR"
         amount = plan["price_usd"] if provider == "stripe" else plan["price_zar"]
         
-        frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+        # Get frontend URL for redirects
+        frontend_url = os.environ.get("FRONTEND_URL", "").rstrip("/")
+        if not frontend_url:
+            # Fallback to REACT_APP_BACKEND_URL with /api removed
+            frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+        
+        if not frontend_url or not frontend_url.startswith("http"):
+            raise HTTPException(status_code=500, detail="Frontend URL not configured")
+        
         success_url = f"{frontend_url}/employer?subscription=success&provider={provider}"
         cancel_url = f"{frontend_url}/employer?subscription=cancelled"
         

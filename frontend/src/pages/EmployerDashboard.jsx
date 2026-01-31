@@ -526,7 +526,7 @@ const EmployerDashboard = () => {
               Select Payment Method
             </DialogTitle>
             <DialogDescription>
-              Choose how you'd like to pay for the {selectedPlan?.name} plan
+              Choose how you would like to pay for the {selectedPlan?.name} plan
             </DialogDescription>
           </DialogHeader>
           

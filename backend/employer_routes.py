@@ -72,11 +72,33 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
     """Factory function to create employer routes with dependencies"""
     
     @employer_router.get("/plans")
-    async def get_employer_plans():
-        """Get available employer subscription plans"""
+    async def get_employer_plans(currency: str = "ZAR"):
+        """Get available employer subscription plans with pricing in specified currency"""
+        plans = []
+        for plan_id, plan in EMPLOYER_PLANS.items():
+            plan_data = {
+                "id": plan["id"],
+                "name": plan["name"],
+                "duration_days": plan["duration_days"],
+                "jobs_limit": plan["jobs_limit"],
+                "features": plan["features"],
+                "popular": plan.get("popular", False),
+                # Include both prices for frontend flexibility
+                "price_zar": plan["price_zar"],
+                "price_usd": plan["price_usd"],
+                # Set primary price based on requested currency
+                "price": plan["price_zar"] if currency == "ZAR" else plan["price_usd"],
+                "currency": currency
+            }
+            plans.append(plan_data)
+        
         return {
             "success": True,
-            "plans": list(EMPLOYER_PLANS.values())
+            "plans": plans,
+            "payment_methods": {
+                "ZAR": {"provider": "yoco", "name": "Yoco", "description": "South African Rand payments"},
+                "USD": {"provider": "stripe", "name": "Stripe", "description": "International USD payments"}
+            }
         }
     
     @employer_router.get("/subscription")

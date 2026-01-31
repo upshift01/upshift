@@ -327,13 +327,13 @@ def can_employer_post_jobs(subscription: dict, jobs_posted: int) -> bool:
         return False
     
     # Check expiry
-    expires_at = subscription.get("expires_at")
-    if expires_at:
+    expires_at_str = subscription.get("expires_at")
+    if expires_at_str:
         try:
-            exp_date = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+            exp_date = datetime.fromisoformat(expires_at_str.replace('Z', '+00:00'))
             if exp_date < datetime.now(timezone.utc):
                 return False
-        except:
+        except ValueError:
             pass
     
     # Check job limit

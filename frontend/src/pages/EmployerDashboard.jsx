@@ -121,14 +121,23 @@ const EmployerDashboard = () => {
     }
   };
 
-  const handleSubscribe = async (planId) => {
+  const openPaymentModal = (plan) => {
+    setSelectedPlan(plan);
+    setShowPaymentModal(true);
+  };
+
+  const handleSubscribe = async (provider) => {
+    if (!selectedPlan) return;
+    
+    setProcessingPayment(true);
     try {
-      const response = await fetch(`${API_URL}/api/employer/subscribe/${planId}`, {
+      const response = await fetch(`${API_URL}/api/employer/subscribe/${selectedPlan.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ provider })
       });
 
       if (response.ok) {
@@ -144,6 +153,7 @@ const EmployerDashboard = () => {
         description: error.message,
         variant: 'destructive'
       });
+      setProcessingPayment(false);
     }
   };
 

@@ -370,8 +370,23 @@ def get_contracts_routes(db, get_current_user):
                     contract_url=contract_url
                 )
                 logger.info(f"Contract signed emails sent for contract {contract_id}")
+                
+                # Send real-time notification to employer
+                await create_notification(
+                    db=db,
+                    user_id=contract.get("employer_id"),
+                    notification_type="contract_signed",
+                    title="Contract Signed",
+                    message=f"{contract.get('contractor_name')} has signed the contract: {contract.get('title')}",
+                    link=f"/contracts/{contract_id}",
+                    metadata={
+                        "contract_id": contract_id,
+                        "contract_title": contract.get("title"),
+                        "contractor_name": contract.get("contractor_name")
+                    }
+                )
             except Exception as email_err:
-                logger.warning(f"Failed to send contract signed emails: {email_err}")
+                logger.warning(f"Failed to send contract signed notifications: {email_err}")
             
             return {"success": True, "message": "Contract signed and activated"}
             

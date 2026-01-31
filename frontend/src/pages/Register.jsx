@@ -62,6 +62,9 @@ const Register = () => {
       } else if (formData.accountType === 'recruiter') {
         // Recruiters go to talent pool to subscribe
         navigate('/talent-pool');
+      } else if (formData.accountType === 'employer') {
+        // Employers go to their dashboard (with trial)
+        navigate('/employer');
       } else {
         // Job seekers go to their dashboard
         navigate('/dashboard');

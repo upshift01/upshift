@@ -693,7 +693,6 @@ def get_posting_limit_message(subscription: dict, jobs_posted: int) -> str:
         return "Your subscription has expired. Please renew to post jobs."
     
     if status == "trial":
-        expires_at = subscription.get("expires_at", "")
         return f"Trial active. You can post up to {subscription.get('jobs_limit', 3)} jobs."
     
     if status != "active":

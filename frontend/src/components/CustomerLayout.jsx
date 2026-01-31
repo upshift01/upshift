@@ -36,9 +36,15 @@ const CustomerLayout = ({ children }) => {
   if (user?.role === 'recruiter' && location.pathname === '/dashboard') {
     return <Navigate to="/recruiter" replace />;
   }
+  
+  // Redirect employers to their proper dashboard
+  if (user?.role === 'employer' && location.pathname === '/dashboard') {
+    return <Navigate to="/employer" replace />;
+  }
 
-  // Check if user is a recruiter - they should use /recruiter dashboard instead
+  // Check if user is a recruiter or employer - they should use their dedicated dashboards
   const isRecruiter = user?.role === 'recruiter';
+  const isEmployer = user?.role === 'employer';
 
   // Base nav items for all customers
   const baseNavItems = [

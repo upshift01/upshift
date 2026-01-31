@@ -519,6 +519,25 @@ def get_employer_management_routes(db, get_current_user):
             
             logger.info(f"Subscription updated for employer {employer_id} by {current_user.email}")
             
+            # Send subscription update email
+            try:
+                plan_names = {
+                    "employer-starter": "Starter",
+                    "employer-professional": "Professional",
+                    "employer-enterprise": "Enterprise"
+                }
+                await email_service.send_employer_subscription_update_email(
+                    to_email=employer.get("email"),
+                    employer_name=employer.get("full_name") or "Employer",
+                    plan_name=plan_names.get(data.plan_id, data.plan_id),
+                    status=data.status,
+                    expires_at=expires_at.strftime("%B %d, %Y"),
+                    jobs_limit=plan_limits[data.plan_id]
+                )
+                logger.info(f"Subscription update email sent to employer: {employer.get('email')}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send subscription update email: {email_err}")
+            
             return {
                 "success": True,
                 "message": f"Subscription updated to {data.plan_id} ({data.status})",

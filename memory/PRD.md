@@ -287,6 +287,18 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - View detailed employer stats (jobs, contracts)
   - Super Admin: full access to all employers
   - Reseller: access only to employers they created
+- [x] **Navbar Redesign** (COMPLETED - Jan 2025)
+  - Fixed congested navbar by implementing user dropdown menu
+  - Avatar with name and role displayed
+  - Dropdown includes: Dashboard, My Contracts, Settings, Logout
+  - Role-specific menu items (Payment Settings for admin, Payout Settings for job seekers)
+  - Logout button now clearly visible and accessible
+- [x] **Extended Real-time Notifications** (COMPLETED - Jan 2025)
+  - Contract created notification (to contractor)
+  - Contract signed notification (to employer)
+  - Milestone submitted notification (to employer)
+  - Milestone approved notification (to contractor)
+  - Payment received notification (to contractor)
 - [ ] Odoo Integration
 - [ ] Customer CV/vacancy upload to Talent Pool
 

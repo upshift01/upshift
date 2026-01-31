@@ -431,6 +431,228 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
             "message": get_posting_limit_message(subscription, jobs_posted)
         }
     
+    # ==================== JOB ANALYTICS ====================
+    
+    @employer_router.get("/analytics")
+    async def get_job_analytics(current_user = Depends(get_current_user)):
+        """Get comprehensive job analytics for employer dashboard"""
+        if current_user.role != "employer":
+            raise HTTPException(status_code=403, detail="Employer access required")
+        
+        try:
+            # Get all jobs for this employer
+            jobs = await db.remote_jobs.find(
+                {"employer_id": current_user.id},
+                {"_id": 0}
+            ).to_list(length=1000)
+            
+            job_ids = [j["id"] for j in jobs]
+            
+            # Get all proposals for these jobs
+            proposals = await db.proposals.find(
+                {"job_id": {"$in": job_ids}},
+                {"_id": 0, "job_id": 1, "status": 1, "created_at": 1}
+            ).to_list(length=10000)
+            
+            # Get all contracts for this employer
+            contracts = await db.contracts.find(
+                {"employer_id": current_user.id},
+                {"_id": 0, "job_id": 1, "status": 1, "payment_amount": 1, "total_paid": 1}
+            ).to_list(length=1000)
+            
+            # Build per-job analytics
+            job_analytics = []
+            for job in jobs:
+                job_id = job["id"]
+                job_proposals = [p for p in proposals if p.get("job_id") == job_id]
+                job_contracts = [c for c in contracts if c.get("job_id") == job_id]
+                
+                # Calculate proposal stats
+                total_proposals = len(job_proposals)
+                pending_proposals = sum(1 for p in job_proposals if p.get("status") == "pending")
+                shortlisted_proposals = sum(1 for p in job_proposals if p.get("status") == "shortlisted")
+                accepted_proposals = sum(1 for p in job_proposals if p.get("status") == "accepted")
+                
+                # Calculate contract stats
+                total_contracts = len(job_contracts)
+                active_contracts = sum(1 for c in job_contracts if c.get("status") == "active")
+                completed_contracts = sum(1 for c in job_contracts if c.get("status") == "completed")
+                total_contract_value = sum(c.get("payment_amount", 0) for c in job_contracts)
+                total_paid = sum(c.get("total_paid", 0) for c in job_contracts)
+                
+                # Calculate engagement rate (proposals / views, approximate with applications_count)
+                views = job.get("views", job.get("applications_count", 0) * 10)  # Rough estimate
+                engagement_rate = (total_proposals / max(views, 1)) * 100 if views > 0 else 0
+                
+                job_analytics.append({
+                    "job_id": job_id,
+                    "title": job.get("title"),
+                    "status": job.get("status"),
+                    "created_at": job.get("created_at"),
+                    "proposals": {
+                        "total": total_proposals,
+                        "pending": pending_proposals,
+                        "shortlisted": shortlisted_proposals,
+                        "accepted": accepted_proposals
+                    },
+                    "contracts": {
+                        "total": total_contracts,
+                        "active": active_contracts,
+                        "completed": completed_contracts,
+                        "total_value": total_contract_value,
+                        "total_paid": total_paid
+                    },
+                    "metrics": {
+                        "views": views,
+                        "engagement_rate": round(engagement_rate, 2),
+                        "conversion_rate": round((accepted_proposals / max(total_proposals, 1)) * 100, 2)
+                    }
+                })
+            
+            # Calculate overall stats
+            overall_stats = {
+                "total_jobs": len(jobs),
+                "active_jobs": sum(1 for j in jobs if j.get("status") == "active"),
+                "paused_jobs": sum(1 for j in jobs if j.get("status") == "paused"),
+                "total_proposals": len(proposals),
+                "pending_proposals": sum(1 for p in proposals if p.get("status") == "pending"),
+                "total_contracts": len(contracts),
+                "active_contracts": sum(1 for c in contracts if c.get("status") == "active"),
+                "total_contract_value": sum(c.get("payment_amount", 0) for c in contracts),
+                "total_paid": sum(c.get("total_paid", 0) for c in contracts),
+                "avg_proposals_per_job": round(len(proposals) / max(len(jobs), 1), 1),
+                "overall_conversion_rate": round(
+                    (sum(1 for p in proposals if p.get("status") == "accepted") / max(len(proposals), 1)) * 100, 2
+                )
+            }
+            
+            # Get proposal trends (last 30 days)
+            from datetime import timedelta
+            thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+            recent_proposals = [p for p in proposals if p.get("created_at", "") >= thirty_days_ago]
+            
+            # Group by day
+            proposal_trends = {}
+            for p in recent_proposals:
+                created = p.get("created_at", "")[:10]  # Get date part only
+                proposal_trends[created] = proposal_trends.get(created, 0) + 1
+            
+            # Sort by date
+            sorted_trends = [{"date": k, "count": v} for k, v in sorted(proposal_trends.items())]
+            
+            return {
+                "success": True,
+                "overall": overall_stats,
+                "jobs": job_analytics,
+                "trends": {
+                    "proposals_last_30_days": sorted_trends,
+                    "total_proposals_last_30_days": len(recent_proposals)
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting job analytics: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @employer_router.get("/analytics/{job_id}")
+    async def get_single_job_analytics(
+        job_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Get detailed analytics for a specific job"""
+        if current_user.role != "employer":
+            raise HTTPException(status_code=403, detail="Employer access required")
+        
+        try:
+            # Get the job
+            job = await db.remote_jobs.find_one(
+                {"id": job_id, "employer_id": current_user.id},
+                {"_id": 0}
+            )
+            
+            if not job:
+                raise HTTPException(status_code=404, detail="Job not found")
+            
+            # Get proposals for this job
+            proposals = await db.proposals.find(
+                {"job_id": job_id},
+                {"_id": 0}
+            ).sort("created_at", -1).to_list(length=1000)
+            
+            # Get contracts for this job
+            contracts = await db.contracts.find(
+                {"job_id": job_id, "employer_id": current_user.id},
+                {"_id": 0}
+            ).to_list(length=100)
+            
+            # Proposal breakdown
+            proposal_stats = {
+                "total": len(proposals),
+                "by_status": {
+                    "pending": sum(1 for p in proposals if p.get("status") == "pending"),
+                    "shortlisted": sum(1 for p in proposals if p.get("status") == "shortlisted"),
+                    "accepted": sum(1 for p in proposals if p.get("status") == "accepted"),
+                    "rejected": sum(1 for p in proposals if p.get("status") == "rejected"),
+                    "withdrawn": sum(1 for p in proposals if p.get("status") == "withdrawn")
+                },
+                "by_availability": {},
+                "avg_proposed_rate": 0
+            }
+            
+            # Calculate availability distribution and average rate
+            rates = []
+            for p in proposals:
+                avail = p.get("availability", "unknown")
+                proposal_stats["by_availability"][avail] = proposal_stats["by_availability"].get(avail, 0) + 1
+                if p.get("proposed_rate"):
+                    rates.append(p["proposed_rate"])
+            
+            if rates:
+                proposal_stats["avg_proposed_rate"] = round(sum(rates) / len(rates), 2)
+            
+            # Contract stats
+            contract_stats = {
+                "total": len(contracts),
+                "active": sum(1 for c in contracts if c.get("status") == "active"),
+                "completed": sum(1 for c in contracts if c.get("status") == "completed"),
+                "total_value": sum(c.get("payment_amount", 0) for c in contracts),
+                "total_paid": sum(c.get("total_paid", 0) for c in contracts)
+            }
+            
+            # Proposal timeline
+            from datetime import timedelta
+            proposal_timeline = []
+            for p in proposals[:20]:  # Last 20 proposals
+                proposal_timeline.append({
+                    "id": p.get("id"),
+                    "applicant_name": p.get("applicant_name"),
+                    "status": p.get("status"),
+                    "proposed_rate": p.get("proposed_rate"),
+                    "rate_type": p.get("rate_type"),
+                    "availability": p.get("availability"),
+                    "created_at": p.get("created_at")
+                })
+            
+            return {
+                "success": True,
+                "job": {
+                    "id": job["id"],
+                    "title": job.get("title"),
+                    "status": job.get("status"),
+                    "created_at": job.get("created_at"),
+                    "views": job.get("views", job.get("applications_count", 0) * 10)
+                },
+                "proposals": proposal_stats,
+                "contracts": contract_stats,
+                "recent_proposals": proposal_timeline
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting job analytics: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return employer_router
 
 

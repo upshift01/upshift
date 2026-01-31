@@ -1,6 +1,7 @@
 """
 Employer Routes - API endpoints for Employer subscription and dashboard
 Handles employer plans, subscriptions, and job posting limits
+Supports both Stripe (USD/International) and Yoco (ZAR/South Africa)
 """
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -16,13 +17,13 @@ logger = logging.getLogger(__name__)
 
 employer_router = APIRouter(prefix="/api/employer", tags=["Employer"])
 
-# Employer subscription plans
+# Employer subscription plans - with both ZAR and USD pricing
 EMPLOYER_PLANS = {
     "employer-starter": {
         "id": "employer-starter",
         "name": "Starter",
-        "price": 299,
-        "currency": "ZAR",
+        "price_zar": 299,
+        "price_usd": 16,  # Approximately R299 / 18
         "duration_days": 30,
         "jobs_limit": 10,
         "features": [
@@ -35,10 +36,11 @@ EMPLOYER_PLANS = {
     "employer-professional": {
         "id": "employer-professional",
         "name": "Professional",
-        "price": 599,
-        "currency": "ZAR",
+        "price_zar": 599,
+        "price_usd": 33,  # Approximately R599 / 18
         "duration_days": 30,
         "jobs_limit": 50,
+        "popular": True,
         "features": [
             "Post up to 50 jobs",
             "View all proposals",
@@ -50,8 +52,8 @@ EMPLOYER_PLANS = {
     "employer-enterprise": {
         "id": "employer-enterprise",
         "name": "Enterprise",
-        "price": 1999,
-        "currency": "ZAR",
+        "price_zar": 1999,
+        "price_usd": 111,  # Approximately R1999 / 18
         "duration_days": 30,
         "jobs_limit": -1,  # Unlimited
         "features": [

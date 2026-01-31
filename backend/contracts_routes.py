@@ -632,6 +632,25 @@ def get_contracts_routes(db, get_current_user):
                 }}
             )
             
+            # Send real-time notification to contractor
+            try:
+                await create_notification(
+                    db=db,
+                    user_id=contract.get("contractor_id"),
+                    notification_type="milestone_approved",
+                    title="Milestone Approved!",
+                    message=f"'{milestones[milestone_idx].get('title')}' has been approved by {contract.get('employer_name')}",
+                    link=f"/contracts/{contract_id}",
+                    metadata={
+                        "contract_id": contract_id,
+                        "milestone_id": milestone_id,
+                        "milestone_title": milestones[milestone_idx].get("title"),
+                        "employer_name": contract.get("employer_name")
+                    }
+                )
+            except Exception as notif_err:
+                logger.warning(f"Failed to send milestone approval notification: {notif_err}")
+            
             return {"success": True, "message": "Milestone approved"}
             
         except HTTPException:

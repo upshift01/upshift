@@ -1878,6 +1878,10 @@ app.include_router(admin_settings_router_instance)
 employer_router_instance = get_employer_routes(db, get_current_user_dep)
 app.include_router(employer_router_instance)
 
+# Initialize and include Stripe Connect router
+stripe_connect_router_instance = get_stripe_connect_routes(db, get_current_user_dep)
+app.include_router(stripe_connect_router_instance)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

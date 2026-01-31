@@ -900,5 +900,346 @@ If you have any questions, feel free to reach out to our support team.
         
         return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
 
+    async def send_employer_welcome_email(
+        self,
+        to_email: str,
+        employer_name: str,
+        password: str,
+        login_url: str = None,
+        created_by: str = "Administrator"
+    ):
+        """Send welcome email to newly created employer account"""
+        platform_name = self.platform_name or "UpShift"
+        login_url = login_url or "https://upshift.works/login"
+        
+        subject = f"Welcome to {platform_name} - Your Employer Account"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
+                .credentials {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }}
+                .credential-row {{ margin: 10px 0; }}
+                .label {{ color: #6b7280; font-size: 12px; text-transform: uppercase; }}
+                .value {{ font-family: monospace; font-size: 16px; color: #1f2937; background: #f3f4f6; padding: 8px 12px; border-radius: 4px; margin-top: 4px; display: block; }}
+                .btn {{ display: inline-block; background: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                .warning {{ background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🎉 Welcome to {platform_name}!</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {employer_name},</p>
+                    
+                    <p>Your employer account has been created by {created_by}. You can now post jobs, review proposals, and hire talented professionals.</p>
+                    
+                    <div class="credentials">
+                        <h3 style="margin-top: 0;">Your Login Credentials</h3>
+                        <div class="credential-row">
+                            <span class="label">Email</span>
+                            <span class="value">{to_email}</span>
+                        </div>
+                        <div class="credential-row">
+                            <span class="label">Password</span>
+                            <span class="value">{password}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="warning">
+                        ⚠️ <strong>Important:</strong> Please change your password after your first login for security purposes.
+                    </div>
+                    
+                    <p style="text-align: center;">
+                        <a href="{login_url}" class="btn">Login to Your Account</a>
+                    </p>
+                    
+                    <h3>What's Next?</h3>
+                    <ul>
+                        <li>Complete your company profile</li>
+                        <li>Post your first job listing</li>
+                        <li>Browse our talent pool</li>
+                        <li>Start receiving proposals</li>
+                    </ul>
+                    
+                    <p>If you have any questions, feel free to reach out to our support team.</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This email was sent because an account was created for you on {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+
+    async def send_employer_password_reset_email(
+        self,
+        to_email: str,
+        employer_name: str,
+        new_password: str,
+        reset_by: str = "Administrator"
+    ):
+        """Send password reset notification to employer"""
+        platform_name = self.platform_name or "UpShift"
+        
+        subject = f"{platform_name} - Your Password Has Been Reset"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #f59e0b; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
+                .credentials {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }}
+                .value {{ font-family: monospace; font-size: 18px; color: #1f2937; background: #f3f4f6; padding: 12px; border-radius: 4px; margin-top: 8px; display: block; text-align: center; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🔐 Password Reset</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {employer_name},</p>
+                    
+                    <p>Your password has been reset by {reset_by}. Please use the new password below to login:</p>
+                    
+                    <div class="credentials">
+                        <h3 style="margin-top: 0; text-align: center;">Your New Password</h3>
+                        <span class="value">{new_password}</span>
+                    </div>
+                    
+                    <p><strong>⚠️ Please change this password immediately after logging in.</strong></p>
+                    
+                    <p>If you did not request this password reset, please contact our support team immediately.</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is a security notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+
+    async def send_employer_suspended_email(
+        self,
+        to_email: str,
+        employer_name: str,
+        reason: str = None,
+        suspended_by: str = "Administrator"
+    ):
+        """Send account suspension notification to employer"""
+        platform_name = self.platform_name or "UpShift"
+        reason_text = reason if reason else "Please contact support for more information."
+        
+        subject = f"{platform_name} - Account Suspended"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #dc2626; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
+                .notice {{ background: #fef2f2; border: 1px solid #dc2626; padding: 20px; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>⚠️ Account Suspended</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {employer_name},</p>
+                    
+                    <p>We regret to inform you that your employer account has been suspended.</p>
+                    
+                    <div class="notice">
+                        <strong>Reason:</strong><br>
+                        {reason_text}
+                    </div>
+                    
+                    <p><strong>What this means:</strong></p>
+                    <ul>
+                        <li>You cannot access your employer dashboard</li>
+                        <li>Your job listings have been paused</li>
+                        <li>Active contracts remain in place but cannot be modified</li>
+                    </ul>
+                    
+                    <p>If you believe this is an error or would like to appeal this decision, please contact our support team.</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an account notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+
+    async def send_employer_reactivated_email(
+        self,
+        to_email: str,
+        employer_name: str,
+        reactivated_by: str = "Administrator"
+    ):
+        """Send account reactivation notification to employer"""
+        platform_name = self.platform_name or "UpShift"
+        
+        subject = f"{platform_name} - Account Reactivated"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #059669; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
+                .notice {{ background: #ecfdf5; border: 1px solid #059669; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }}
+                .btn {{ display: inline-block; background: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>✅ Account Reactivated!</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {employer_name},</p>
+                    
+                    <p>Great news! Your employer account has been reactivated.</p>
+                    
+                    <div class="notice">
+                        <h3 style="margin: 0; color: #059669;">🎉 Welcome Back!</h3>
+                        <p style="margin-bottom: 0;">Your account is now fully active.</p>
+                    </div>
+                    
+                    <p><strong>What's restored:</strong></p>
+                    <ul>
+                        <li>Full access to your employer dashboard</li>
+                        <li>Ability to manage and post job listings</li>
+                        <li>Contract management capabilities</li>
+                    </ul>
+                    
+                    <p style="text-align: center;">
+                        <a href="https://upshift.works/login" class="btn">Login to Your Account</a>
+                    </p>
+                    
+                    <p>Thank you for your continued partnership!</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an account notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+
+    async def send_employer_subscription_update_email(
+        self,
+        to_email: str,
+        employer_name: str,
+        plan_name: str,
+        status: str,
+        expires_at: str,
+        jobs_limit: int
+    ):
+        """Send subscription update notification to employer"""
+        platform_name = self.platform_name or "UpShift"
+        status_color = "#059669" if status == "active" else "#f59e0b" if status == "trial" else "#dc2626"
+        status_text = "Active" if status == "active" else "Trial" if status == "trial" else "Expired"
+        
+        subject = f"{platform_name} - Subscription Updated"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
+                .plan-card {{ background: white; padding: 25px; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+                .plan-name {{ font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 10px; }}
+                .status {{ display: inline-block; padding: 6px 16px; border-radius: 20px; background: {status_color}; color: white; font-weight: bold; font-size: 14px; }}
+                .detail {{ margin: 15px 0; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }}
+                .detail-label {{ color: #6b7280; font-size: 12px; text-transform: uppercase; }}
+                .detail-value {{ font-size: 16px; color: #1f2937; font-weight: 500; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>📋 Subscription Updated</h1>
+                </div>
+                <div class="content">
+                    <p>Dear {employer_name},</p>
+                    
+                    <p>Your subscription has been updated. Here are your new plan details:</p>
+                    
+                    <div class="plan-card">
+                        <div class="plan-name">{plan_name}</div>
+                        <span class="status">{status_text}</span>
+                        
+                        <div class="detail">
+                            <div class="detail-label">Job Posting Limit</div>
+                            <div class="detail-value">{jobs_limit} jobs</div>
+                        </div>
+                        
+                        <div class="detail">
+                            <div class="detail-label">Valid Until</div>
+                            <div class="detail-value">{expires_at}</div>
+                        </div>
+                    </div>
+                    
+                    <p>If you have any questions about your subscription, please contact our support team.</p>
+                    
+                    <p>Best regards,<br>The {platform_name} Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is a subscription notification from {platform_name}.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
+
 # Global instance
 email_service = EmailService()

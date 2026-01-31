@@ -143,6 +143,12 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - `GET /api/employer/analytics` - Get comprehensive job analytics
 - `GET /api/employer/analytics/{job_id}` - Get detailed analytics for specific job
 
+### WebSocket Notifications (NEW - Jan 2025)
+- `WS /api/ws/notifications?token=<jwt>` - WebSocket endpoint for real-time notifications
+- `GET /api/ws/notifications` - Get user's notifications list
+- `POST /api/ws/notifications/{id}/read` - Mark notification as read
+- `POST /api/ws/notifications/read-all` - Mark all notifications as read
+
 ### Talent Pool
 - `GET /api/talent-pool/industries` - List industries
 - `GET /api/talent-pool/experience-levels` - List experience levels

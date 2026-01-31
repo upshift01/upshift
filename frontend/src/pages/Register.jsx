@@ -175,8 +175,8 @@ const Register = () => {
               />
             </div>
 
-            {/* Company Name - only for recruiters */}
-            {formData.accountType === 'recruiter' && (
+            {/* Company Name - for recruiters and employers */}
+            {(formData.accountType === 'recruiter' || formData.accountType === 'employer') && (
               <div>
                 <Label htmlFor="companyName">Company Name</Label>
                 <Input

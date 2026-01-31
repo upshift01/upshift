@@ -132,6 +132,17 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 
 ## Key API Endpoints
 
+### Stripe Connect (NEW - Jan 2025)
+- `GET /api/stripe-connect/status` - Get contractor's Connect account status
+- `POST /api/stripe-connect/onboard` - Create Connect account and onboarding link
+- `POST /api/stripe-connect/dashboard-link` - Get link to Stripe Express dashboard
+- `POST /api/stripe-connect/payout` - Create payout to contractor (employer action)
+- `GET /api/stripe-connect/earnings` - Get contractor's earnings summary
+
+### Employer Analytics (NEW - Jan 2025)
+- `GET /api/employer/analytics` - Get comprehensive job analytics
+- `GET /api/employer/analytics/{job_id}` - Get detailed analytics for specific job
+
 ### Talent Pool
 - `GET /api/talent-pool/industries` - List industries
 - `GET /api/talent-pool/experience-levels` - List experience levels

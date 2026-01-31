@@ -13,6 +13,7 @@ import logging
 import os
 
 from email_service import email_service
+from websocket_service import create_notification
 
 logger = logging.getLogger(__name__)
 

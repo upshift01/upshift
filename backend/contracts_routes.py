@@ -700,6 +700,26 @@ def get_contracts_routes(db, get_current_user):
                 }}
             )
             
+            # Send real-time notification to contractor about payment
+            try:
+                await create_notification(
+                    db=db,
+                    user_id=contract.get("contractor_id"),
+                    notification_type="payment_received",
+                    title="Payment Received!",
+                    message=f"You received {contract.get('payment_currency', 'USD')} {milestone_amount:,.2f} for '{milestones[milestone_idx].get('title')}'",
+                    link=f"/contracts/{contract_id}",
+                    metadata={
+                        "contract_id": contract_id,
+                        "milestone_id": milestone_id,
+                        "milestone_title": milestones[milestone_idx].get("title"),
+                        "amount": milestone_amount,
+                        "currency": contract.get("payment_currency", "USD")
+                    }
+                )
+            except Exception as notif_err:
+                logger.warning(f"Failed to send payment notification: {notif_err}")
+            
             return {"success": True, "message": "Milestone marked as paid", "total_paid": total_paid}
             
         except HTTPException:

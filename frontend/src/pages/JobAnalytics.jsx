@@ -270,7 +270,7 @@ const JobAnalytics = () => {
                     {jobs.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-8 text-center text-slate-500">
-                          No jobs posted yet. <Link to="/post-job" className="text-blue-400 hover:underline">Post your first job</Link>
+                          No jobs posted yet. <Link to="/remote-jobs/post" className="text-blue-400 hover:underline">Post your first job</Link>
                         </td>
                       </tr>
                     ) : (

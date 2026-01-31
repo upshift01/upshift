@@ -15,7 +15,7 @@ import {
 import {
   Briefcase, Users, FileText, Clock, CheckCircle, AlertCircle,
   Plus, Crown, Search, Building2, Loader2, TrendingUp, Target,
-  Calendar, CreditCard, ArrowRight, Sparkles, Globe, DollarSign
+  Calendar, CreditCard, ArrowRight, Sparkles, Globe, DollarSign, BarChart3
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

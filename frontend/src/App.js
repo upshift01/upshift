@@ -50,6 +50,7 @@ import JobProposals from "./pages/JobProposals";
 import MyContracts from "./pages/MyContracts";
 import ContractDetails from "./pages/ContractDetails";
 import CreateContract from "./pages/CreateContract";
+import StripeConnect from "./pages/StripeConnect";
 import PaymentSettings from "./pages/AdminSettings";
 import { Toaster } from "./components/ui/toaster";
 

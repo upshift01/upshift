@@ -295,13 +295,15 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
         data: dict,
         current_user = Depends(get_current_user)
     ):
-        """Verify employer subscription payment"""
+        """Verify employer subscription payment for both Stripe and Yoco"""
         if current_user.role != "employer":
             raise HTTPException(status_code=403, detail="Employer access required")
         
-        checkout_id = data.get("checkout_id")
+        checkout_id = data.get("checkout_id") or data.get("session_id")
+        provider = data.get("provider", "yoco")
+        
         if not checkout_id:
-            raise HTTPException(status_code=400, detail="Checkout ID required")
+            raise HTTPException(status_code=400, detail="Checkout/Session ID required")
         
         try:
             # Find pending subscription
@@ -314,12 +316,24 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
             if not pending:
                 raise HTTPException(status_code=404, detail="Subscription not found")
             
-            # Verify with Yoco
-            yoco_secret = os.environ.get("YOCO_SECRET_KEY")
-            from emergentintegrations.payments.yoco import YocoClient
-            yoco = YocoClient(secret_key=yoco_secret)
+            is_paid = False
+            provider = pending.get("provider", "yoco")
             
-            is_paid = await yoco.verify_payment(checkout_id)
+            if provider == "stripe":
+                # Verify with Stripe
+                stripe_key = os.environ.get("STRIPE_API_KEY")
+                if stripe_key:
+                    import stripe
+                    stripe.api_key = stripe_key
+                    session = stripe.checkout.Session.retrieve(checkout_id)
+                    is_paid = session.payment_status == "paid"
+            else:
+                # Verify with Yoco
+                yoco_secret = os.environ.get("YOCO_SECRET_KEY")
+                if yoco_secret:
+                    from emergentintegrations.payments.yoco import YocoClient
+                    yoco = YocoClient(secret_key=yoco_secret)
+                    is_paid = await yoco.verify_payment(checkout_id)
             
             if is_paid:
                 plan = EMPLOYER_PLANS.get(pending["plan_id"])
@@ -336,7 +350,9 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
                             "jobs_limit": plan["jobs_limit"],
                             "jobs_posted": 0,
                             "activated_at": datetime.now(timezone.utc).isoformat(),
-                            "expires_at": expires_at.isoformat()
+                            "expires_at": expires_at.isoformat(),
+                            "provider": provider,
+                            "currency": pending.get("currency", "ZAR")
                         }
                     }}
                 )
@@ -348,6 +364,28 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
                         "status": "active",
                         "activated_at": datetime.now(timezone.utc).isoformat(),
                         "expires_at": expires_at.isoformat()
+                    }}
+                )
+                
+                logger.info(f"Employer subscription activated for {current_user.email} via {provider}")
+                
+                return {
+                    "success": True,
+                    "message": "Subscription activated",
+                    "plan": pending["plan_name"],
+                    "provider": provider
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": "Payment not verified yet"
+                }
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error verifying employer payment: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
                     }}
                 )
                 

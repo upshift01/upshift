@@ -328,17 +328,19 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
             if provider == "stripe":
                 # Verify with Stripe
                 stripe_key = os.environ.get("STRIPE_API_KEY")
-                if stripe_key:
+                if stripe_key and stripe_key != "sk_test_emergent":
                     import stripe
                     stripe.api_key = stripe_key
                     session = stripe.checkout.Session.retrieve(checkout_id)
                     is_paid = session.payment_status == "paid"
             else:
                 # Verify with Yoco
+                from yoco_service import YocoService
                 yoco_secret = os.environ.get("YOCO_SECRET_KEY")
+                yoco_public = os.environ.get("YOCO_PUBLIC_KEY")
+                
                 if yoco_secret:
-                    from emergentintegrations.payments.yoco import YocoClient
-                    yoco = YocoClient(secret_key=yoco_secret)
+                    yoco = YocoService(secret_key=yoco_secret, public_key=yoco_public)
                     is_paid = await yoco.verify_payment(checkout_id)
             
             if is_paid:

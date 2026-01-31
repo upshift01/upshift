@@ -145,7 +145,29 @@ async def register(user_data: UserRegister):
         hashed_password = get_password_hash(user_data.password)
         
         # Determine role based on account_type
-        user_role = "recruiter" if user_data.account_type == "recruiter" else "customer"
+        if user_data.account_type == "recruiter":
+            user_role = "recruiter"
+        elif user_data.account_type == "employer":
+            user_role = "employer"
+        else:
+            user_role = "customer"
+        
+        # Set up trial for employers (2-day trial)
+        employer_trial_data = {}
+        if user_role == "employer":
+            trial_end = datetime.now(timezone.utc) + timedelta(days=2)
+            employer_trial_data = {
+                "employer_subscription": {
+                    "status": "trial",
+                    "plan_id": "employer-trial",
+                    "plan_name": "Free Trial",
+                    "jobs_limit": 3,  # Limited jobs during trial
+                    "jobs_posted": 0,
+                    "trial_start": datetime.now(timezone.utc).isoformat(),
+                    "trial_end": trial_end.isoformat(),
+                    "expires_at": trial_end.isoformat()
+                }
+            }
         
         new_user = {
             "id": user_id,
@@ -155,12 +177,13 @@ async def register(user_data: UserRegister):
             "hashed_password": hashed_password,
             "role": user_role,
             "reseller_id": reseller_id,
-            "company_name": user_data.company_name if user_data.account_type == "recruiter" else None,
+            "company_name": user_data.company_name if user_data.account_type in ["recruiter", "employer"] else None,
             "active_tier": None,
             "tier_activation_date": None,
             "created_at": datetime.utcnow(),
             "is_active": True,
-            "payment_history": []
+            "payment_history": [],
+            **employer_trial_data
         }
         
         await db.users.insert_one(new_user)

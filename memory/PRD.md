@@ -266,6 +266,16 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - Mark as read / Mark all as read functionality
   - Auto-reconnect on connection loss
   - Integrated with proposal submission (employers notified instantly)
+- [x] **Employer Management for Admin/Reseller** (COMPLETED - Jan 2025)
+  - List employers with filtering (search, status, subscription)
+  - Create new employers (auto-generate password option)
+  - Edit employer details
+  - Reset employer password
+  - Suspend/Reactivate employers (pauses their jobs)
+  - Update employer subscription (plan, duration)
+  - View detailed employer stats (jobs, contracts)
+  - Super Admin: full access to all employers
+  - Reseller: access only to employers they created
 - [ ] Odoo Integration
 - [ ] Customer CV/vacancy upload to Talent Pool
 

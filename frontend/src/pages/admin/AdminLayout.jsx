@@ -47,6 +47,7 @@ const AdminLayout = () => {
     { path: '/super-admin/content', icon: FileText, label: 'Content' },
     { path: '/super-admin/analytics', icon: BarChart3, label: 'Analytics' },
     { path: '/super-admin/payment-settings', icon: CreditCard, label: 'Payment Settings' },
+    { path: '/super-admin/email-templates', icon: FileText, label: 'Email Templates' },
     { path: '/super-admin/settings', icon: Settings, label: 'Settings' },
   ];
 

@@ -428,6 +428,26 @@ const EmployerDashboard = () => {
               </Link>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <BarChart3 className="h-5 w-5 text-amber-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900">Job Analytics</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                View performance metrics, proposal trends, and conversion rates for your jobs.
+              </p>
+              <Link to="/employer/analytics">
+                <Button variant="outline" className="w-full">
+                  View Analytics
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Subscription Plans */}

@@ -348,7 +348,7 @@ const EmployerDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/employer/analytics')}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
@@ -357,6 +357,7 @@ const EmployerDashboard = () => {
                 <div>
                   <p className="text-2xl font-bold text-gray-900">{stats.total_proposals}</p>
                   <p className="text-sm text-gray-500">Total Proposals</p>
+                  <p className="text-xs text-blue-600 hover:underline">View Analytics →</p>
                 </div>
               </div>
             </CardContent>

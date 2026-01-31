@@ -563,22 +563,22 @@ const AdminEmployers = () => {
           setCreateForm({ email: '', full_name: '', company_name: '', phone: '', password: '' });
         }
       }}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white border-gray-200 text-gray-900">
           <DialogHeader>
-            <DialogTitle>Create New Employer</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogTitle className="text-gray-900">Create New Employer</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Add a new employer account to the platform
             </DialogDescription>
           </DialogHeader>
           
           {generatedPassword ? (
             <div className="space-y-4">
-              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                <p className="text-green-400 font-medium mb-2">Employer Created Successfully!</p>
-                <p className="text-slate-300 text-sm mb-3">Save this auto-generated password:</p>
-                <div className="flex items-center gap-2 bg-slate-800 rounded p-2">
-                  <code className="text-green-400 flex-1">{generatedPassword}</code>
-                  <Button size="icon" variant="ghost" onClick={() => copyToClipboard(generatedPassword)}>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-green-700 font-medium mb-2">Employer Created Successfully!</p>
+                <p className="text-gray-600 text-sm mb-3">Save this auto-generated password:</p>
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded p-2">
+                  <code className="text-green-600 flex-1">{generatedPassword}</code>
+                  <Button size="icon" variant="ghost" onClick={() => copyToClipboard(generatedPassword)} className="hover:bg-gray-100">
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
@@ -587,62 +587,62 @@ const AdminEmployers = () => {
                 setShowCreateModal(false);
                 setGeneratedPassword('');
                 setCreateForm({ email: '', full_name: '', company_name: '', phone: '', password: '' });
-              }} className="w-full">
+              }} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                 Done
               </Button>
             </div>
           ) : (
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="text-sm text-slate-400">Email *</label>
+                <label className="text-sm text-gray-600">Email *</label>
                 <Input
                   type="email"
                   required
                   value={createForm.email}
                   onChange={(e) => setCreateForm(f => ({ ...f, email: e.target.value }))}
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-gray-50 border-gray-300 text-gray-900"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400">Full Name *</label>
+                <label className="text-sm text-gray-600">Full Name *</label>
                 <Input
                   required
                   value={createForm.full_name}
                   onChange={(e) => setCreateForm(f => ({ ...f, full_name: e.target.value }))}
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-gray-50 border-gray-300 text-gray-900"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400">Company Name</label>
+                <label className="text-sm text-gray-600">Company Name</label>
                 <Input
                   value={createForm.company_name}
                   onChange={(e) => setCreateForm(f => ({ ...f, company_name: e.target.value }))}
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-gray-50 border-gray-300 text-gray-900"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400">Phone</label>
+                <label className="text-sm text-gray-600">Phone</label>
                 <Input
                   value={createForm.phone}
                   onChange={(e) => setCreateForm(f => ({ ...f, phone: e.target.value }))}
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-gray-50 border-gray-300 text-gray-900"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400">Password (leave empty to auto-generate)</label>
+                <label className="text-sm text-gray-600">Password (leave empty to auto-generate)</label>
                 <Input
                   type="password"
                   value={createForm.password}
                   onChange={(e) => setCreateForm(f => ({ ...f, password: e.target.value }))}
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-gray-50 border-gray-300 text-gray-900"
                   placeholder="Auto-generate if empty"
                 />
               </div>
               <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => setShowCreateModal(false)}>
+                <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={processing} className="bg-blue-600 hover:bg-blue-700">
+                <Button type="submit" disabled={processing} className="bg-blue-600 hover:bg-blue-700 text-white">
                   {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Create Employer
                 </Button>
@@ -654,55 +654,55 @@ const AdminEmployers = () => {
 
       {/* Edit Employer Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white border-gray-200 text-gray-900">
           <DialogHeader>
-            <DialogTitle>Edit Employer</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogTitle className="text-gray-900">Edit Employer</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Update employer details for {selectedEmployer?.email}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4">
             <div>
-              <label className="text-sm text-slate-400">Full Name</label>
+              <label className="text-sm text-gray-600">Full Name</label>
               <Input
                 value={editForm.full_name || ''}
                 onChange={(e) => setEditForm(f => ({ ...f, full_name: e.target.value }))}
-                className="bg-slate-800 border-slate-700 text-white"
+                className="bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
             <div>
-              <label className="text-sm text-slate-400">Company Name</label>
+              <label className="text-sm text-gray-600">Company Name</label>
               <Input
                 value={editForm.company_name || ''}
                 onChange={(e) => setEditForm(f => ({ ...f, company_name: e.target.value }))}
-                className="bg-slate-800 border-slate-700 text-white"
+                className="bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
             <div>
-              <label className="text-sm text-slate-400">Phone</label>
+              <label className="text-sm text-gray-600">Phone</label>
               <Input
                 value={editForm.phone || ''}
                 onChange={(e) => setEditForm(f => ({ ...f, phone: e.target.value }))}
-                className="bg-slate-800 border-slate-700 text-white"
+                className="bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
             <div>
-              <label className="text-sm text-slate-400">Status</label>
+              <label className="text-sm text-gray-600">Status</label>
               <Select value={editForm.status} onValueChange={(v) => setEditForm(f => ({ ...f, status: v }))}>
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-700">
-                  <SelectItem value="active" className="text-white">Active</SelectItem>
-                  <SelectItem value="suspended" className="text-white">Suspended</SelectItem>
+                <SelectContent className="bg-white border-gray-200">
+                  <SelectItem value="active" className="text-gray-900">Active</SelectItem>
+                  <SelectItem value="suspended" className="text-gray-900">Suspended</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>
+              <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={processing} className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" disabled={processing} className="bg-blue-600 hover:bg-blue-700 text-white">
                 {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Save Changes
               </Button>
@@ -716,22 +716,22 @@ const AdminEmployers = () => {
         setShowPasswordModal(open);
         if (!open) setGeneratedPassword('');
       }}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white border-gray-200 text-gray-900">
           <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogTitle className="text-gray-900">Reset Password</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Reset password for {selectedEmployer?.email}
             </DialogDescription>
           </DialogHeader>
           
           {generatedPassword ? (
             <div className="space-y-4">
-              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                <p className="text-green-400 font-medium mb-2">Password Reset Successfully!</p>
-                <p className="text-slate-300 text-sm mb-3">New password:</p>
-                <div className="flex items-center gap-2 bg-slate-800 rounded p-2">
-                  <code className="text-green-400 flex-1">{generatedPassword}</code>
-                  <Button size="icon" variant="ghost" onClick={() => copyToClipboard(generatedPassword)}>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-green-700 font-medium mb-2">Password Reset Successfully!</p>
+                <p className="text-gray-600 text-sm mb-3">New password:</p>
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded p-2">
+                  <code className="text-green-600 flex-1">{generatedPassword}</code>
+                  <Button size="icon" variant="ghost" onClick={() => copyToClipboard(generatedPassword)} className="hover:bg-gray-100">
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
@@ -739,26 +739,26 @@ const AdminEmployers = () => {
               <Button onClick={() => {
                 setShowPasswordModal(false);
                 setGeneratedPassword('');
-              }} className="w-full">
+              }} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                 Done
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-slate-300 text-sm">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-gray-700 text-sm">
                     This will generate a new random password for the employer. 
                     Make sure to share it with them securely.
                   </p>
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => setShowPasswordModal(false)}>
+                <Button type="button" variant="outline" onClick={() => setShowPasswordModal(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleResetPassword} disabled={processing} className="bg-amber-600 hover:bg-amber-700">
+                <Button onClick={handleResetPassword} disabled={processing} className="bg-amber-600 hover:bg-amber-700 text-white">
                   {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Reset Password
                 </Button>
@@ -770,55 +770,55 @@ const AdminEmployers = () => {
 
       {/* Subscription Modal */}
       <Dialog open={showSubscriptionModal} onOpenChange={setShowSubscriptionModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white border-gray-200 text-gray-900">
           <DialogHeader>
-            <DialogTitle>Manage Subscription</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogTitle className="text-gray-900">Manage Subscription</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Update subscription for {selectedEmployer?.email}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateSubscription} className="space-y-4">
             <div>
-              <label className="text-sm text-slate-400">Plan</label>
+              <label className="text-sm text-gray-600">Plan</label>
               <Select value={subscriptionForm.plan_id} onValueChange={(v) => setSubscriptionForm(f => ({ ...f, plan_id: v }))}>
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-700">
-                  <SelectItem value="employer-starter" className="text-white">Starter (3 jobs)</SelectItem>
-                  <SelectItem value="employer-professional" className="text-white">Professional (10 jobs)</SelectItem>
-                  <SelectItem value="employer-enterprise" className="text-white">Enterprise (Unlimited)</SelectItem>
+                <SelectContent className="bg-white border-gray-200">
+                  <SelectItem value="employer-starter" className="text-gray-900">Starter (3 jobs)</SelectItem>
+                  <SelectItem value="employer-professional" className="text-gray-900">Professional (10 jobs)</SelectItem>
+                  <SelectItem value="employer-enterprise" className="text-gray-900">Enterprise (Unlimited)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm text-slate-400">Status</label>
+              <label className="text-sm text-gray-600">Status</label>
               <Select value={subscriptionForm.status} onValueChange={(v) => setSubscriptionForm(f => ({ ...f, status: v }))}>
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-700">
-                  <SelectItem value="active" className="text-white">Active</SelectItem>
-                  <SelectItem value="trial" className="text-white">Trial</SelectItem>
-                  <SelectItem value="expired" className="text-white">Expired</SelectItem>
+                <SelectContent className="bg-white border-gray-200">
+                  <SelectItem value="active" className="text-gray-900">Active</SelectItem>
+                  <SelectItem value="trial" className="text-gray-900">Trial</SelectItem>
+                  <SelectItem value="expired" className="text-gray-900">Expired</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm text-slate-400">Duration (days)</label>
+              <label className="text-sm text-gray-600">Duration (days)</label>
               <Input
                 type="number"
                 min="1"
                 value={subscriptionForm.duration_days}
                 onChange={(e) => setSubscriptionForm(f => ({ ...f, duration_days: parseInt(e.target.value) || 30 }))}
-                className="bg-slate-800 border-slate-700 text-white"
+                className="bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setShowSubscriptionModal(false)}>
+              <Button type="button" variant="outline" onClick={() => setShowSubscriptionModal(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={processing} className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" disabled={processing} className="bg-blue-600 hover:bg-blue-700 text-white">
                 {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Update Subscription
               </Button>
@@ -829,59 +829,59 @@ const AdminEmployers = () => {
 
       {/* Details Modal */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl">
+        <DialogContent className="bg-white border-gray-200 text-gray-900 max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Employer Details</DialogTitle>
+            <DialogTitle className="text-gray-900">Employer Details</DialogTitle>
           </DialogHeader>
           {selectedEmployer && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-slate-400 text-sm">Full Name</p>
-                  <p className="text-white">{selectedEmployer.full_name}</p>
+                  <p className="text-gray-500 text-sm">Full Name</p>
+                  <p className="text-gray-900">{selectedEmployer.full_name}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Email</p>
-                  <p className="text-white">{selectedEmployer.email}</p>
+                  <p className="text-gray-500 text-sm">Email</p>
+                  <p className="text-gray-900">{selectedEmployer.email}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Company</p>
-                  <p className="text-white">{selectedEmployer.company_name || '-'}</p>
+                  <p className="text-gray-500 text-sm">Company</p>
+                  <p className="text-gray-900">{selectedEmployer.company_name || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Phone</p>
-                  <p className="text-white">{selectedEmployer.phone || '-'}</p>
+                  <p className="text-gray-500 text-sm">Phone</p>
+                  <p className="text-gray-900">{selectedEmployer.phone || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Status</p>
+                  <p className="text-gray-500 text-sm">Status</p>
                   {getStatusBadge(selectedEmployer.status)}
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Created</p>
-                  <p className="text-white">{new Date(selectedEmployer.created_at).toLocaleDateString()}</p>
+                  <p className="text-gray-500 text-sm">Created</p>
+                  <p className="text-gray-900">{new Date(selectedEmployer.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
               
-              <div className="border-t border-slate-700 pt-4">
-                <h4 className="text-white font-medium mb-3">Subscription</h4>
+              <div className="border-t border-gray-200 pt-4">
+                <h4 className="text-gray-900 font-medium mb-3">Subscription</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-slate-400 text-sm">Plan</p>
-                    <p className="text-white">{selectedEmployer.employer_subscription?.plan_id || 'None'}</p>
+                    <p className="text-gray-500 text-sm">Plan</p>
+                    <p className="text-gray-900">{selectedEmployer.employer_subscription?.plan_id || 'None'}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400 text-sm">Status</p>
+                    <p className="text-gray-500 text-sm">Status</p>
                     {getSubscriptionBadge(selectedEmployer.employer_subscription)}
                   </div>
                   <div>
-                    <p className="text-slate-400 text-sm">Jobs Posted</p>
-                    <p className="text-white">
+                    <p className="text-gray-500 text-sm">Jobs Posted</p>
+                    <p className="text-gray-900">
                       {selectedEmployer.employer_subscription?.jobs_posted || 0} / {selectedEmployer.employer_subscription?.jobs_limit || 0}
                     </p>
                   </div>
                   <div>
-                    <p className="text-slate-400 text-sm">Expires</p>
-                    <p className="text-white">
+                    <p className="text-gray-500 text-sm">Expires</p>
+                    <p className="text-gray-900">
                       {selectedEmployer.employer_subscription?.expires_at 
                         ? new Date(selectedEmployer.employer_subscription.expires_at).toLocaleDateString()
                         : '-'}
@@ -891,23 +891,23 @@ const AdminEmployers = () => {
               </div>
               
               {selectedEmployer.stats && (
-                <div className="border-t border-slate-700 pt-4">
-                  <h4 className="text-white font-medium mb-3">Activity Stats</h4>
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-gray-900 font-medium mb-3">Activity Stats</h4>
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-slate-800 rounded-lg p-3 text-center">
-                      <Briefcase className="h-5 w-5 text-blue-400 mx-auto mb-1" />
-                      <p className="text-2xl font-bold text-white">{selectedEmployer.stats.jobs_posted}</p>
-                      <p className="text-slate-400 text-xs">Jobs Posted</p>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                      <Briefcase className="h-5 w-5 text-blue-600 mx-auto mb-1" />
+                      <p className="text-2xl font-bold text-gray-900">{selectedEmployer.stats.jobs_posted}</p>
+                      <p className="text-gray-500 text-xs">Jobs Posted</p>
                     </div>
-                    <div className="bg-slate-800 rounded-lg p-3 text-center">
-                      <FileText className="h-5 w-5 text-purple-400 mx-auto mb-1" />
-                      <p className="text-2xl font-bold text-white">{selectedEmployer.stats.total_contracts}</p>
-                      <p className="text-slate-400 text-xs">Total Contracts</p>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                      <FileText className="h-5 w-5 text-purple-600 mx-auto mb-1" />
+                      <p className="text-2xl font-bold text-gray-900">{selectedEmployer.stats.total_contracts}</p>
+                      <p className="text-gray-500 text-xs">Total Contracts</p>
                     </div>
-                    <div className="bg-slate-800 rounded-lg p-3 text-center">
-                      <CheckCircle className="h-5 w-5 text-green-400 mx-auto mb-1" />
-                      <p className="text-2xl font-bold text-white">{selectedEmployer.stats.active_contracts}</p>
-                      <p className="text-slate-400 text-xs">Active Contracts</p>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                      <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                      <p className="text-2xl font-bold text-gray-900">{selectedEmployer.stats.active_contracts}</p>
+                      <p className="text-gray-500 text-xs">Active Contracts</p>
                     </div>
                   </div>
                 </div>

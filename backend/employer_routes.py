@@ -330,12 +330,10 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
                     is_paid = session.payment_status == "paid"
             else:
                 # Verify with Yoco
-                from yoco_service import YocoService
-                yoco_secret = os.environ.get("YOCO_SECRET_KEY")
-                yoco_public = os.environ.get("YOCO_PUBLIC_KEY")
+                from yoco_service import get_yoco_service_for_reseller
                 
-                if yoco_secret:
-                    yoco = YocoService(secret_key=yoco_secret, public_key=yoco_public)
+                yoco = await get_yoco_service_for_reseller(db, None)
+                if yoco.is_configured():
                     is_paid = await yoco.verify_payment(checkout_id)
             
             if is_paid:

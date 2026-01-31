@@ -1904,6 +1904,10 @@ app.include_router(websocket_router_instance)
 employer_management_router_instance = get_employer_management_routes(db, get_current_user_dep)
 app.include_router(employer_management_router_instance)
 
+# Initialize and include Email Templates router
+email_templates_router_instance = get_email_templates_routes(db, get_current_user_dep)
+app.include_router(email_templates_router_instance)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

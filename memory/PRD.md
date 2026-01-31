@@ -149,6 +149,17 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - `POST /api/ws/notifications/{id}/read` - Mark notification as read
 - `POST /api/ws/notifications/read-all` - Mark all notifications as read
 
+### Employer Management (NEW - Jan 2025)
+- `GET /api/employer-management/employers` - List employers (filtered by reseller if applicable)
+- `GET /api/employer-management/employers/{id}` - Get employer details with stats
+- `POST /api/employer-management/employers` - Create new employer
+- `PUT /api/employer-management/employers/{id}` - Update employer details
+- `POST /api/employer-management/employers/{id}/reset-password` - Reset password
+- `POST /api/employer-management/employers/{id}/suspend` - Suspend employer
+- `POST /api/employer-management/employers/{id}/reactivate` - Reactivate employer
+- `PUT /api/employer-management/employers/{id}/subscription` - Update subscription
+- `DELETE /api/employer-management/employers/{id}` - Delete employer (super admin only)
+
 ### Talent Pool
 - `GET /api/talent-pool/industries` - List industries
 - `GET /api/talent-pool/experience-levels` - List experience levels

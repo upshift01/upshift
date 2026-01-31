@@ -215,7 +215,7 @@ def get_employer_management_routes(db, get_current_user):
                     "jobs_limit": 3
                 },
                 "created_by": current_user.id,
-                "created_by_reseller": current_user.id if current_user.role == "reseller" else None,
+                "created_by_reseller": current_user.id if current_user.role in ["reseller", "reseller_admin"] else None,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }

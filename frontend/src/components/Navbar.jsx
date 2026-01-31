@@ -200,6 +200,10 @@ const Navbar = () => {
                     </Button>
                   </Link>
                 )}
+                
+                {/* Notification Bell */}
+                <NotificationBell />
+                
                 <Link to={
                   user?.role === 'recruiter' ? '/recruiter' : 
                   user?.role === 'employer' ? '/employer' :

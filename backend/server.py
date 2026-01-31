@@ -55,6 +55,7 @@ from admin_settings_routes import get_admin_settings_routes
 from employer_routes import get_employer_routes
 from stripe_connect_routes import get_stripe_connect_routes
 from websocket_service import get_websocket_routes, create_notification
+from employer_management_routes import get_employer_management_routes
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()

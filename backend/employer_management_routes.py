@@ -13,6 +13,8 @@ import logging
 import secrets
 import string
 
+from email_service import email_service
+
 logger = logging.getLogger(__name__)
 
 employer_management_router = APIRouter(prefix="/api/employer-management", tags=["Employer Management"])

@@ -253,6 +253,42 @@ Return ONLY the improved proposal text."""
             
             logger.info(f"Proposal submitted by {current_user.email} for job {data.job_id}")
             
+            # Send email notification to employer about new proposal
+            try:
+                # Get employer details
+                employer = await db.users.find_one(
+                    {"id": job.get("poster_id")},
+                    {"_id": 0, "email": 1, "full_name": 1}
+                )
+                if employer and employer.get("email"):
+                    # Get total proposal count for this job
+                    total_proposals = await db.proposals.count_documents({"job_id": data.job_id})
+                    
+                    # Format rate for display
+                    rate_display = f"{data.currency} {data.proposed_rate}" if data.proposed_rate else "Not specified"
+                    if data.rate_type:
+                        rate_display += f" ({data.rate_type})"
+                    
+                    # Get frontend URL for proposals link
+                    frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "")
+                    if not frontend_url:
+                        frontend_url = "https://upshift.works"
+                    proposals_url = f"{frontend_url}/remote-jobs/{data.job_id}/proposals"
+                    
+                    await email_service.send_new_proposal_notification_email(
+                        to_email=employer.get("email"),
+                        employer_name=employer.get("full_name") or "Employer",
+                        job_title=job.get("title"),
+                        applicant_name=current_user.full_name or current_user.email,
+                        applicant_rate=rate_display,
+                        cover_letter_preview=data.cover_letter[:200] if data.cover_letter else "",
+                        proposals_url=proposals_url,
+                        total_proposals=total_proposals
+                    )
+                    logger.info(f"New proposal notification sent to {employer.get('email')} for job {data.job_id}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send new proposal notification email: {email_err}")
+            
             return {"success": True, "message": "Proposal submitted successfully", "proposal": proposal}
             
         except HTTPException:

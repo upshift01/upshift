@@ -202,8 +202,8 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
             if provider == "stripe":
                 # Use Stripe for USD payments
                 stripe_key = os.environ.get("STRIPE_API_KEY")
-                if not stripe_key:
-                    raise HTTPException(status_code=500, detail="Stripe payment gateway not configured")
+                if not stripe_key or stripe_key == "sk_test_emergent":
+                    raise HTTPException(status_code=500, detail="Valid Stripe API key not configured. Please add your Stripe secret key in the Payment Settings.")
                 
                 import stripe
                 stripe.api_key = stripe_key
@@ -237,23 +237,29 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
                 
             else:
                 # Use Yoco for ZAR payments
+                from yoco_service import YocoService
+                
                 yoco_secret = os.environ.get("YOCO_SECRET_KEY")
+                yoco_public = os.environ.get("YOCO_PUBLIC_KEY")
+                
                 if not yoco_secret:
                     raise HTTPException(status_code=500, detail="Yoco payment gateway not configured")
                 
-                from emergentintegrations.payments.yoco import YocoClient
-                yoco = YocoClient(secret_key=yoco_secret)
+                yoco = YocoService(secret_key=yoco_secret, public_key=yoco_public)
+                
+                if not yoco.is_configured():
+                    raise HTTPException(status_code=500, detail="Yoco payment gateway not fully configured")
                 
                 checkout = await yoco.create_checkout(
                     amount_cents=amount * 100,
-                    currency=currency,
-                    success_url=success_url,
-                    cancel_url=cancel_url,
+                    email=current_user.email,
                     metadata={
                         "user_id": current_user.id,
                         "plan_id": plan_id,
                         "type": "employer_subscription"
-                    }
+                    },
+                    success_url=success_url,
+                    cancel_url=cancel_url
                 )
                 
                 checkout_id = checkout.get("id")

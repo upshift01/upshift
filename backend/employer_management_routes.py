@@ -57,14 +57,14 @@ def get_employer_management_routes(db, get_current_user):
     
     async def check_admin_or_reseller(current_user):
         """Check if user is super admin or reseller"""
-        if current_user.role not in ['super_admin', 'reseller']:
+        if current_user.role not in ['super_admin', 'reseller', 'reseller_admin']:
             raise HTTPException(status_code=403, detail="Admin or Reseller access required")
         return current_user
     
     async def get_accessible_employers_query(current_user):
         """Get query filter based on user role"""
         query = {"role": "employer"}
-        if current_user.role == 'reseller':
+        if current_user.role in ['reseller', 'reseller_admin']:
             # Resellers can only manage employers they created
             query["created_by_reseller"] = current_user.id
         return query

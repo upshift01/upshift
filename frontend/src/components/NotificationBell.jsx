@@ -31,10 +31,16 @@ const NotificationBell = () => {
     switch (type) {
       case 'new_proposal':
         return <Users className="h-4 w-4 text-blue-400" />;
-      case 'contract_update':
+      case 'contract_created':
         return <FileText className="h-4 w-4 text-purple-400" />;
+      case 'contract_signed':
+        return <FileText className="h-4 w-4 text-green-400" />;
+      case 'milestone_submitted':
+        return <Briefcase className="h-4 w-4 text-amber-400" />;
+      case 'milestone_approved':
+        return <Briefcase className="h-4 w-4 text-green-400" />;
       case 'milestone_funded':
-        return <DollarSign className="h-4 w-4 text-green-400" />;
+        return <DollarSign className="h-4 w-4 text-blue-400" />;
       case 'payment_received':
         return <DollarSign className="h-4 w-4 text-green-400" />;
       default:

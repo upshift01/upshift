@@ -453,6 +453,17 @@ def get_employer_management_routes(db, get_current_user):
             
             logger.info(f"Employer {employer_id} reactivated by {current_user.email}")
             
+            # Send reactivation email
+            try:
+                await email_service.send_employer_reactivated_email(
+                    to_email=employer.get("email"),
+                    employer_name=employer.get("full_name") or "Employer",
+                    reactivated_by=current_user.full_name or current_user.email
+                )
+                logger.info(f"Reactivation email sent to employer: {employer.get('email')}")
+            except Exception as email_err:
+                logger.warning(f"Failed to send reactivation email: {email_err}")
+            
             return {"success": True, "message": "Employer reactivated successfully"}
             
         except HTTPException:

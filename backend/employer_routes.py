@@ -175,8 +175,12 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
         }
     
     @employer_router.post("/subscribe/{plan_id}")
-    async def subscribe_employer(plan_id: str, current_user = Depends(get_current_user)):
-        """Subscribe to an employer plan"""
+    async def subscribe_employer(
+        plan_id: str, 
+        data: dict = None,
+        current_user = Depends(get_current_user)
+    ):
+        """Subscribe to an employer plan using Stripe (USD) or Yoco (ZAR)"""
         if current_user.role != "employer":
             raise HTTPException(status_code=403, detail="Employer access required")
         
@@ -185,32 +189,75 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
         
         plan = EMPLOYER_PLANS[plan_id]
         
-        # Check if Yoco is configured
-        yoco_secret = os.environ.get("YOCO_SECRET_KEY")
-        if not yoco_secret:
-            raise HTTPException(status_code=500, detail="Payment gateway not configured")
+        # Get payment provider preference (default to Yoco/ZAR for South African market)
+        provider = (data or {}).get("provider", "yoco")
+        currency = "USD" if provider == "stripe" else "ZAR"
+        amount = plan["price_usd"] if provider == "stripe" else plan["price_zar"]
+        
+        frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
+        success_url = f"{frontend_url}/employer?subscription=success&provider={provider}"
+        cancel_url = f"{frontend_url}/employer?subscription=cancelled"
         
         try:
-            # Create Yoco checkout
-            from emergentintegrations.payments.yoco import YocoClient
-            yoco = YocoClient(secret_key=yoco_secret)
-            
-            frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "")
-            success_url = f"{frontend_url}/employer?subscription=success"
-            cancel_url = f"{frontend_url}/employer?subscription=cancelled"
-            
-            # Create checkout session
-            checkout = await yoco.create_checkout(
-                amount_cents=plan["price"] * 100,
-                currency=plan["currency"],
-                success_url=success_url,
-                cancel_url=cancel_url,
-                metadata={
-                    "user_id": current_user.id,
-                    "plan_id": plan_id,
-                    "type": "employer_subscription"
-                }
-            )
+            if provider == "stripe":
+                # Use Stripe for USD payments
+                stripe_key = os.environ.get("STRIPE_API_KEY")
+                if not stripe_key:
+                    raise HTTPException(status_code=500, detail="Stripe payment gateway not configured")
+                
+                import stripe
+                stripe.api_key = stripe_key
+                
+                # Create Stripe checkout session
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=["card"],
+                    line_items=[{
+                        "price_data": {
+                            "currency": "usd",
+                            "unit_amount": amount * 100,  # Stripe uses cents
+                            "product_data": {
+                                "name": f"Employer {plan['name']} Plan",
+                                "description": f"{plan['jobs_limit'] if plan['jobs_limit'] != -1 else 'Unlimited'} job postings per month"
+                            }
+                        },
+                        "quantity": 1
+                    }],
+                    mode="payment",
+                    success_url=success_url + "&session_id={CHECKOUT_SESSION_ID}",
+                    cancel_url=cancel_url,
+                    metadata={
+                        "user_id": current_user.id,
+                        "plan_id": plan_id,
+                        "type": "employer_subscription"
+                    }
+                )
+                
+                checkout_id = checkout_session.id
+                checkout_url = checkout_session.url
+                
+            else:
+                # Use Yoco for ZAR payments
+                yoco_secret = os.environ.get("YOCO_SECRET_KEY")
+                if not yoco_secret:
+                    raise HTTPException(status_code=500, detail="Yoco payment gateway not configured")
+                
+                from emergentintegrations.payments.yoco import YocoClient
+                yoco = YocoClient(secret_key=yoco_secret)
+                
+                checkout = await yoco.create_checkout(
+                    amount_cents=amount * 100,
+                    currency=currency,
+                    success_url=success_url,
+                    cancel_url=cancel_url,
+                    metadata={
+                        "user_id": current_user.id,
+                        "plan_id": plan_id,
+                        "type": "employer_subscription"
+                    }
+                )
+                
+                checkout_id = checkout.get("id")
+                checkout_url = checkout.get("redirectUrl")
             
             # Store pending subscription
             subscription_id = str(uuid.uuid4())
@@ -219,20 +266,26 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
                 "user_id": current_user.id,
                 "plan_id": plan_id,
                 "plan_name": plan["name"],
-                "amount": plan["price"],
-                "currency": plan["currency"],
-                "checkout_id": checkout.get("id"),
+                "amount": amount,
+                "currency": currency,
+                "provider": provider,
+                "checkout_id": checkout_id,
                 "status": "pending",
                 "created_at": datetime.now(timezone.utc).isoformat()
             })
             
+            logger.info(f"Employer subscription checkout created: {current_user.email} - {plan['name']} via {provider}")
+            
             return {
                 "success": True,
-                "checkout_url": checkout.get("redirectUrl"),
-                "checkout_id": checkout.get("id"),
-                "subscription_id": subscription_id
+                "checkout_url": checkout_url,
+                "checkout_id": checkout_id,
+                "subscription_id": subscription_id,
+                "provider": provider
             }
             
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Error creating employer subscription checkout: {e}")
             raise HTTPException(status_code=500, detail=str(e))

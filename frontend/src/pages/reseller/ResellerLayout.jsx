@@ -143,6 +143,7 @@ const ResellerLayout = () => {
   const navItems = [
     { path: '/reseller-dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/reseller-dashboard/customers', icon: Users, label: 'Customers' },
+    { path: '/reseller-dashboard/employers', icon: Users, label: 'Employers', badge: 'New' },
     { path: '/reseller-dashboard/recruiters', icon: UserSearch, label: 'Recruiters', badge: 'New' },
     { path: '/reseller-dashboard/talent-pool', icon: UserSearch, label: 'Talent Pool' },
     { path: '/reseller-dashboard/calendar', icon: Calendar, label: 'Bookings' },

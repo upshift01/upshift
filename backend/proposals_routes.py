@@ -259,7 +259,7 @@ Return ONLY the improved proposal text."""
                 # Get employer details
                 employer = await db.users.find_one(
                     {"id": job.get("poster_id")},
-                    {"_id": 0, "email": 1, "full_name": 1}
+                    {"_id": 0, "id": 1, "email": 1, "full_name": 1}
                 )
                 if employer and employer.get("email"):
                     # Get total proposal count for this job
@@ -287,8 +287,25 @@ Return ONLY the improved proposal text."""
                         total_proposals=total_proposals
                     )
                     logger.info(f"New proposal notification sent to {employer.get('email')} for job {data.job_id}")
+                    
+                    # Send real-time notification via WebSocket
+                    await create_notification(
+                        db=db,
+                        user_id=employer.get("id"),
+                        notification_type="new_proposal",
+                        title="New Proposal Received",
+                        message=f"{current_user.full_name or 'A candidate'} applied for {job.get('title')}",
+                        link=f"/remote-jobs/{data.job_id}/proposals",
+                        metadata={
+                            "job_id": data.job_id,
+                            "job_title": job.get("title"),
+                            "applicant_name": current_user.full_name or current_user.email,
+                            "proposed_rate": rate_display,
+                            "total_proposals": total_proposals
+                        }
+                    )
             except Exception as email_err:
-                logger.warning(f"Failed to send new proposal notification email: {email_err}")
+                logger.warning(f"Failed to send new proposal notification: {email_err}")
             
             return {"success": True, "message": "Proposal submitted successfully", "proposal": proposal}
             

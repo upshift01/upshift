@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../components/ui/checkbox';
 import {
   Briefcase, Sparkles, Loader2, Plus, X, ArrowLeft,
-  DollarSign, Clock, Globe, Building2, Wand2
+  DollarSign, Clock, Globe, Building2, Wand2, AlertCircle, Crown, Lock
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -23,13 +23,20 @@ const PostJob = () => {
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [canPost, setCanPost] = useState(false);
+  const [accessMessage, setAccessMessage] = useState('');
+  const [jobsPosted, setJobsPosted] = useState(0);
+  const [jobsLimit, setJobsLimit] = useState(0);
+  const [subscriptionStatus, setSubscriptionStatus] = useState('none');
+  
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [suggestingSkills, setSuggestingSkills] = useState(false);
   const [options, setOptions] = useState(null);
   
   const [formData, setFormData] = useState({
     title: '',
-    company_name: '',
+    company_name: user?.company_name || '',
     description: '',
     job_type: 'full-time',
     required_skills: [],
@@ -57,8 +64,42 @@ const PostJob = () => {
       navigate('/login');
       return;
     }
+    
+    // Check if user is employer
+    if (user?.role !== 'employer') {
+      toast({
+        title: 'Access Denied',
+        description: 'Only employers can post jobs. Please register as an employer.',
+        variant: 'destructive'
+      });
+      navigate('/register');
+      return;
+    }
+    
+    checkPostingAccess();
     fetchOptions();
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
+
+  const checkPostingAccess = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/employer/can-post-job`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCanPost(data.can_post);
+        setAccessMessage(data.message);
+        setJobsPosted(data.jobs_posted);
+        setJobsLimit(data.jobs_limit);
+        setSubscriptionStatus(data.subscription_status);
+      }
+    } catch (error) {
+      console.error('Error checking posting access:', error);
+    } finally {
+      setCheckingAccess(false);
+    }
+  };
 
   const fetchOptions = async () => {
     try {

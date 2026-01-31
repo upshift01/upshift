@@ -181,7 +181,12 @@ const Navbar = () => {
                     </Button>
                   </Link>
                 )}
-                <Link to={user?.role === 'recruiter' ? '/recruiter' : user?.role === 'super_admin' ? '/super-admin' : '/dashboard'}>
+                <Link to={
+                  user?.role === 'recruiter' ? '/recruiter' : 
+                  user?.role === 'employer' ? '/employer' :
+                  user?.role === 'super_admin' ? '/super-admin' : 
+                  '/dashboard'
+                }>
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-2" />
                     Dashboard

@@ -213,11 +213,58 @@ Return as JSON in this exact format:
         data: JobPostingCreate,
         current_user = Depends(get_current_user)
     ):
-        """Create a new job posting"""
+        """Create a new job posting - Employers only with active subscription"""
         try:
+            # Check if user is an employer
+            if current_user.role != "employer":
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Only employers can post jobs. Please register as an employer."
+                )
+            
+            # Get user's subscription status
+            user = await db.users.find_one({"id": current_user.id})
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            
+            subscription = user.get("employer_subscription", {})
+            
+            # Check subscription status
+            if not subscription or subscription.get("status") not in ["active", "trial"]:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Active subscription required to post jobs. Please subscribe to an employer plan."
+                )
+            
+            # Check if subscription has expired
+            expires_at = subscription.get("expires_at")
+            if expires_at:
+                try:
+                    exp_date = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+                    if exp_date < datetime.now(timezone.utc):
+                        raise HTTPException(
+                            status_code=403,
+                            detail="Your subscription has expired. Please renew to post jobs."
+                        )
+                except ValueError:
+                    pass
+            
+            # Check job posting limit
+            jobs_limit = subscription.get("jobs_limit", 0)
+            jobs_posted = await db.remote_jobs.count_documents({"poster_id": current_user.id})
+            
+            if jobs_limit != -1 and jobs_posted >= jobs_limit:  # -1 means unlimited
+                plan_name = subscription.get("plan_name", "current plan")
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"You've reached your limit of {jobs_limit} job postings on the {plan_name}. Please upgrade your plan to post more jobs."
+                )
+            
+            # Create the job posting
             job = {
                 "id": str(uuid.uuid4()),
                 "poster_id": current_user.id,
+                "employer_id": current_user.id,  # Also store as employer_id for consistency
                 "poster_email": current_user.email,
                 "poster_name": current_user.full_name or current_user.email,
                 "title": data.title,
@@ -251,10 +298,18 @@ Return as JSON in this exact format:
             job.pop("_id", None)
             job.pop("poster_email", None)
             
-            logger.info(f"Job posting created by {current_user.email}: {data.title}")
+            logger.info(f"Job posting created by employer {current_user.email}: {data.title} ({jobs_posted + 1}/{jobs_limit if jobs_limit != -1 else 'unlimited'})")
             
-            return {"success": True, "message": "Job posted successfully", "job": job}
+            return {
+                "success": True, 
+                "message": "Job posted successfully", 
+                "job": job,
+                "jobs_posted": jobs_posted + 1,
+                "jobs_limit": jobs_limit
+            }
             
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Error creating job posting: {e}")
             raise HTTPException(status_code=500, detail=str(e))

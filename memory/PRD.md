@@ -177,8 +177,9 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 |------|-------|----------|
 | Super Admin | admin@upshift.works | Admin@2025! |
 | Demo Reseller | demo@talenthub.upshift.works | demo123 |
-| Test Customer | test@example.com | password123 |
+| Test Job Seeker | test@example.com | password123 |
 | Test Recruiter | john@woo.co.za | Test@1234 |
+| Test Employer | employer@testcompany.com | Test@1234 |
 
 ## Recent Changes (Jan 2025)
 1. **Employer Role & Subscription System** - NEW

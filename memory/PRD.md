@@ -226,8 +226,22 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
   - [x] Milestone funded notification (to both parties)
   - [x] Payment released notification (to contractor)
   - [x] **New proposal notification to employer** (COMPLETED - Jan 2025)
-- [ ] Stripe Connect for Contractor Payouts
-- [ ] Job Analytics for Employers
+- [x] **Stripe Connect for Contractor Payouts** (COMPLETED - Jan 2025)
+  - [x] Contractor onboarding to Stripe Connect (Express accounts)
+  - [x] Connect status checking and management
+  - [x] Dashboard link generation for connected accounts
+  - [x] Payout creation with platform fee deduction (5%)
+  - [x] Earnings summary for contractors
+  - [x] Frontend page at `/stripe-connect`
+- [x] **Job Analytics for Employers** (COMPLETED - Jan 2025)
+  - [x] Overall stats (jobs, proposals, contracts, conversion rate)
+  - [x] Financial overview (contract value, paid out, pending)
+  - [x] Per-job analytics (proposals, contracts, engagement)
+  - [x] Proposal trends (last 30 days)
+  - [x] Individual job details view
+  - [x] Frontend page at `/employer/analytics`
+- [x] **SMTP Configuration Fix** (COMPLETED - Jan 2025)
+  - Fixed SSL/TLS mismatch (port 587 requires TLS, not SSL)
 - [ ] Odoo Integration
 - [ ] Customer CV/vacancy upload to Talent Pool
 

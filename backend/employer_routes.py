@@ -237,18 +237,13 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
                 
             else:
                 # Use Yoco for ZAR payments
-                from yoco_service import YocoService
+                from yoco_service import get_yoco_service_for_reseller
                 
-                yoco_secret = os.environ.get("YOCO_SECRET_KEY")
-                yoco_public = os.environ.get("YOCO_PUBLIC_KEY")
-                
-                if not yoco_secret:
-                    raise HTTPException(status_code=500, detail="Yoco payment gateway not configured")
-                
-                yoco = YocoService(secret_key=yoco_secret, public_key=yoco_public)
+                # Get Yoco service (may use reseller-specific keys or platform defaults)
+                yoco = await get_yoco_service_for_reseller(db, current_user.reseller_id if hasattr(current_user, 'reseller_id') else None)
                 
                 if not yoco.is_configured():
-                    raise HTTPException(status_code=500, detail="Yoco payment gateway not fully configured")
+                    raise HTTPException(status_code=500, detail="Yoco payment gateway not configured. Please contact support.")
                 
                 checkout = await yoco.create_checkout(
                     amount_cents=amount * 100,

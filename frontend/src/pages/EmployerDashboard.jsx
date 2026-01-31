@@ -6,9 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+import {
   Briefcase, Users, FileText, Clock, CheckCircle, AlertCircle,
   Plus, Crown, Search, Building2, Loader2, TrendingUp, Target,
-  Calendar, CreditCard, ArrowRight, Sparkles
+  Calendar, CreditCard, ArrowRight, Sparkles, Globe, DollarSign
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -33,6 +40,12 @@ const EmployerDashboard = () => {
   const [plans, setPlans] = useState([]);
   const [canPostJob, setCanPostJob] = useState(false);
   const [jobsPosted, setJobsPosted] = useState(0);
+  
+  // Currency and payment method selection
+  const [selectedCurrency, setSelectedCurrency] = useState('ZAR');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {

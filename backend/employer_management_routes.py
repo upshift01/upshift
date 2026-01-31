@@ -149,7 +149,7 @@ def get_employer_management_routes(db, get_current_user):
         
         try:
             query = {"id": employer_id, "role": "employer"}
-            if current_user.role == 'reseller':
+            if current_user.role in ['reseller', 'reseller_admin']:
                 query["created_by_reseller"] = current_user.id
             
             employer = await db.users.find_one(query, {"_id": 0, "password": 0})
@@ -269,7 +269,7 @@ def get_employer_management_routes(db, get_current_user):
         
         try:
             query = {"id": employer_id, "role": "employer"}
-            if current_user.role == 'reseller':
+            if current_user.role in ['reseller', 'reseller_admin']:
                 query["created_by_reseller"] = current_user.id
             
             employer = await db.users.find_one(query)
@@ -313,7 +313,7 @@ def get_employer_management_routes(db, get_current_user):
         
         try:
             query = {"id": employer_id, "role": "employer"}
-            if current_user.role == 'reseller':
+            if current_user.role in ['reseller', 'reseller_admin']:
                 query["created_by_reseller"] = current_user.id
             
             employer = await db.users.find_one(query)
@@ -368,7 +368,7 @@ def get_employer_management_routes(db, get_current_user):
         
         try:
             query = {"id": employer_id, "role": "employer"}
-            if current_user.role == 'reseller':
+            if current_user.role in ['reseller', 'reseller_admin']:
                 query["created_by_reseller"] = current_user.id
             
             employer = await db.users.find_one(query)
@@ -425,7 +425,7 @@ def get_employer_management_routes(db, get_current_user):
         
         try:
             query = {"id": employer_id, "role": "employer"}
-            if current_user.role == 'reseller':
+            if current_user.role in ['reseller', 'reseller_admin']:
                 query["created_by_reseller"] = current_user.id
             
             employer = await db.users.find_one(query)
@@ -483,7 +483,7 @@ def get_employer_management_routes(db, get_current_user):
         
         try:
             query = {"id": employer_id, "role": "employer"}
-            if current_user.role == 'reseller':
+            if current_user.role in ['reseller', 'reseller_admin']:
                 query["created_by_reseller"] = current_user.id
             
             employer = await db.users.find_one(query)

@@ -57,6 +57,7 @@ from stripe_connect_routes import get_stripe_connect_routes
 from websocket_service import get_websocket_routes, create_notification
 from employer_management_routes import get_employer_management_routes
 from email_templates_routes import get_email_templates_routes
+from push_routes import get_push_routes, send_push_notification
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()

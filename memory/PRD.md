@@ -8,11 +8,11 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - AI-powered CV/resume building, ATS checking, and career tools
 
 ## User Personas
-1. **Job Seekers (Customers)**: Create CVs, check ATS scores, generate cover letters
-2. **Recruiters**: Browse and subscribe to talent pool for hiring
-3. **Resellers**: White-label the platform with custom branding and pricing
-4. **Super Admin**: Manage entire platform, resellers, users, and content
-5. **Companies/Employers**: Post remote job opportunities (NEW)
+1. **Job Seekers (Customers)**: Create CVs, check ATS scores, generate cover letters, browse jobs, submit proposals
+2. **Recruiters**: Browse and subscribe to talent pool for hiring candidates
+3. **Employers**: Post job opportunities, review proposals, manage contracts (NEW - Jan 2025)
+4. **Resellers**: White-label the platform with custom branding and pricing
+5. **Super Admin**: Manage entire platform, resellers, users, and content
 
 ## Core Requirements
 

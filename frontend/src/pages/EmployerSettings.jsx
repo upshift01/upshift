@@ -76,6 +76,17 @@ const EmployerSettings = () => {
         });
         setCompanyLogo(data.company_logo || null);
       }
+
+      // Fetch employer signature
+      const signatureRes = await fetch(`${API_URL}/api/employer/my-signature`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (signatureRes.ok) {
+        const sigData = await signatureRes.json();
+        if (sigData.signature_url) {
+          setSignature(sigData.signature_url);
+        }
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {

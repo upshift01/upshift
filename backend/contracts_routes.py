@@ -32,6 +32,14 @@ class ContractCreate(BaseModel):
     payment_schedule: str = "on_completion"  # on_completion, weekly, bi-weekly, monthly
     milestones: List[dict] = []  # [{title, description, amount, due_date}]
     terms: Optional[str] = None
+    # New comprehensive fields
+    scope_of_work: Optional[str] = None
+    deliverables: List[str] = []
+    payment_terms: Optional[str] = None
+    confidentiality_clause: Optional[str] = None
+    termination_conditions: Optional[str] = None
+    dispute_resolution: Optional[str] = None
+    intellectual_property: Optional[str] = None
 
 class ContractUpdate(BaseModel):
     title: Optional[str] = None
@@ -40,6 +48,13 @@ class ContractUpdate(BaseModel):
     end_date: Optional[str] = None
     terms: Optional[str] = None
     status: Optional[str] = None
+    scope_of_work: Optional[str] = None
+    deliverables: Optional[List[str]] = None
+    payment_terms: Optional[str] = None
+    confidentiality_clause: Optional[str] = None
+    termination_conditions: Optional[str] = None
+    dispute_resolution: Optional[str] = None
+    intellectual_property: Optional[str] = None
 
 class MilestoneCreate(BaseModel):
     title: str

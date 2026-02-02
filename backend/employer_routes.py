@@ -732,11 +732,28 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
     
     @employer_router.get("/logo/{filename}")
     async def get_company_logo(filename: str):
-        """Serve company logo file"""
+        """Serve company logo file with correct MIME type"""
+        import mimetypes
         file_path = os.path.join(COMPANY_LOGO_PATH, filename)
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="Logo not found")
-        return FileResponse(file_path)
+        
+        # Determine MIME type based on file extension
+        mime_type, _ = mimetypes.guess_type(filename)
+        if mime_type is None:
+            # Default mappings for common image types
+            ext = filename.split('.')[-1].lower() if '.' in filename else ''
+            mime_mappings = {
+                'svg': 'image/svg+xml',
+                'png': 'image/png',
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'gif': 'image/gif',
+                'webp': 'image/webp'
+            }
+            mime_type = mime_mappings.get(ext, 'application/octet-stream')
+        
+        return FileResponse(file_path, media_type=mime_type)
     
     @employer_router.delete("/logo")
     async def delete_company_logo(current_user = Depends(get_current_user)):

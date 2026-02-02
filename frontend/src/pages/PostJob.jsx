@@ -92,6 +92,13 @@ const PostJob = () => {
   }, [isAuthenticated, user, jobId]);
 
   const fetchJobData = async () => {
+    // Don't fetch until user is loaded
+    if (!user?.id) {
+      console.log('User not loaded, skipping job fetch');
+      setLoadingJob(false);
+      return;
+    }
+    
     setLoadingJob(true);
     try {
       const response = await fetch(`${API_URL}/api/remote-jobs/jobs/${jobId}`, {
@@ -101,12 +108,10 @@ const PostJob = () => {
       if (response.ok) {
         const job = await response.json();
         
-        // Check if user owns this job (ensure user is loaded)
-        if (!user?.id) {
-          console.log('User not loaded yet, waiting...');
-          return; // Will retry when user is loaded
-        }
+        console.log('Job poster_id:', job.poster_id);
+        console.log('User id:', user.id);
         
+        // Check if user owns this job
         if (job.poster_id !== user.id) {
           toast({
             title: 'Access Denied',

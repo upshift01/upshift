@@ -356,9 +356,10 @@ def get_contracts_routes(db, get_current_user):
     @contracts_router.post("/{contract_id}/sign")
     async def sign_contract(
         contract_id: str,
+        data: dict = None,
         current_user = Depends(get_current_user)
     ):
-        """Sign/accept contract (contractor only)"""
+        """Sign/accept contract (contractor only) - uses saved signature from talent pool profile"""
         try:
             contract = await db.contracts.find_one({"id": contract_id})
             
@@ -374,11 +375,32 @@ def get_contracts_routes(db, get_current_user):
             if contract.get("contractor_signed"):
                 raise HTTPException(status_code=400, detail="Already signed")
             
+            # Get contractor's signature from talent pool profile
+            talent_profile = await db.talent_pool_profiles.find_one(
+                {"user_id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            
+            contractor_signature = None
+            if talent_profile and talent_profile.get("signature_url"):
+                contractor_signature = talent_profile.get("signature_url")
+            elif data and data.get("signature_data"):
+                # Allow inline signature if not saved in profile
+                contractor_signature = data.get("signature_data")
+            
+            if not contractor_signature:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Please save your signature in your Talent Pool profile before signing contracts"
+                )
+            
             # Sign and activate contract
             await db.contracts.update_one(
                 {"id": contract_id},
                 {"$set": {
                     "contractor_signed": True,
+                    "contractor_signature": contractor_signature,
+                    "contractor_signed_at": datetime.now(timezone.utc).isoformat(),
                     "status": "active",
                     "activated_at": datetime.now(timezone.utc).isoformat(),
                     "updated_at": datetime.now(timezone.utc).isoformat()

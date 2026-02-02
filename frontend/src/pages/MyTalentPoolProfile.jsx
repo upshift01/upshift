@@ -705,7 +705,7 @@ const MyTalentPoolProfile = () => {
                     <SelectContent>
                       <SelectItem value="none">No CV attached</SelectItem>
                       {userCVs.map((cv) => (
-                        <SelectItem key={cv.id} value={cv.id}>{cv.title || 'Untitled CV'}</SelectItem>
+                        <SelectItem key={cv.id} value={cv.id}>{cv.name || cv.title || 'Untitled CV'}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -989,7 +989,7 @@ const MyTalentPoolProfile = () => {
                         <SelectContent>
                           <SelectItem value="none">No CV attached</SelectItem>
                           {userCVs.map((cv) => (
-                            <SelectItem key={cv.id} value={cv.id}>{cv.title || 'Untitled CV'}</SelectItem>
+                            <SelectItem key={cv.id} value={cv.id}>{cv.name || cv.title || 'Untitled CV'}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

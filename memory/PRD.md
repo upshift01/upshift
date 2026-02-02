@@ -249,6 +249,26 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
    - Added `/api/auth/profile` endpoint for profile updates
    - Supports: full_name, phone, company_name, company_description, company_website, company_size, industry
 3. **UserResponse Model Enhanced** - Added employer-specific fields (company_logo, company_name, etc.)
+4. **Electronic Signature System** - NEW
+   - Job seekers can save signatures in Talent Pool profile (draw or upload)
+   - Signatures stored and served via `/api/talent-pool/signature/*` endpoints
+   - Used automatically when signing contracts
+   - SignatureCanvas component with draw and upload modes
+5. **Comprehensive Contract System** - ENHANCED
+   - Added new contract fields: scope_of_work, deliverables, payment_terms, confidentiality_clause, termination_conditions, dispute_resolution, intellectual_property
+   - Contracts now include employer and contractor signatures with timestamps
+   - Contract signing requires saved signature from talent pool profile
+6. **Employer Access to Talent Pool** - FIXED
+   - Employers can now view candidate profiles from AI Matches
+   - Employers can send contact requests to candidates
+   - Profile lookup works with both profile_id and user_id
+7. **Apply Button Status** - ENHANCED
+   - Shows application status (Pending, Shortlisted, Accepted)
+   - Disabled when already applied
+   - "Apply Again" option for rejected applications
+8. **Talent Pool Profile View** - ENHANCED
+   - Shows all profile information including profile picture, bio, remote worker status
+   - Details panel with industry, location, experience level, work preference
 
 ## Recent Fixes (Dec 2025)
 1. **Hardcoded Phone Number** - Fixed to use dynamic settings

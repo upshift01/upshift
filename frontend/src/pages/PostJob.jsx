@@ -888,7 +888,7 @@ const PostJob = () => {
                 ) : (
                   <Briefcase className="h-4 w-4 mr-2" />
                 )}
-                Post Job
+                {isEditMode ? 'Update Job' : 'Post Job'}
               </Button>
             </div>
           </CardContent>

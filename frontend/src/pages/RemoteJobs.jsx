@@ -100,9 +100,9 @@ const RemoteJobs = () => {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setJobType('');
-    setExperienceLevel('');
-    setCurrency('');
+    setJobType('all');
+    setExperienceLevel('all');
+    setCurrency('all');
     fetchJobs(1);
   };
 

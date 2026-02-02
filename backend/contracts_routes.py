@@ -603,11 +603,20 @@ def get_contracts_routes(db, get_current_user):
                 if logo_url.startswith('/api/employer/logo/'):
                     filename = logo_url.split('/')[-1]
                     potential_path = f"/app/public/uploads/company_logos/{filename}"
-                    # Only use non-SVG images (ReportLab doesn't support SVG)
                     if os.path.exists(potential_path):
                         ext = filename.lower().split('.')[-1] if '.' in filename else ''
                         if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp']:
                             company_logo_path = potential_path
+                        elif ext == 'svg':
+                            # Convert SVG to PNG for PDF
+                            try:
+                                import cairosvg
+                                png_path = potential_path.replace('.svg', '_converted.png')
+                                cairosvg.svg2png(url=potential_path, write_to=png_path, output_width=200, output_height=200)
+                                company_logo_path = png_path
+                                logger.info(f"Converted SVG logo to PNG for PDF")
+                            except Exception as svg_err:
+                                logger.warning(f"Could not convert SVG logo: {svg_err}")
                         else:
                             logger.info(f"Skipping unsupported logo format: {ext}")
             

@@ -362,6 +362,76 @@ const EmployerSettings = () => {
 
           {/* Company Tab */}
           <TabsContent value="company">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Company Logo
+                </CardTitle>
+                <CardDescription>Upload your company logo to display on job postings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-6">
+                  {/* Logo Preview */}
+                  <div className="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 overflow-hidden">
+                    {companyLogo ? (
+                      <img 
+                        src={`${API_URL}${companyLogo}`} 
+                        alt="Company Logo" 
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="text-center text-gray-400">
+                        <Building2 className="h-10 w-10 mx-auto mb-1" />
+                        <span className="text-xs">No Logo</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Upload Controls */}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      ref={logoInputRef}
+                      onChange={handleLogoUpload}
+                      accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                      className="hidden"
+                    />
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                      >
+                        {uploadingLogo ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Upload className="h-4 w-4 mr-2" />
+                        )}
+                        {companyLogo ? 'Change Logo' : 'Upload Logo'}
+                      </Button>
+                      {companyLogo && (
+                        <Button
+                          variant="outline"
+                          onClick={handleDeleteLogo}
+                          disabled={uploadingLogo}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Recommended: Square image, 200x200px or larger. Max 5MB.
+                      <br />
+                      Supported formats: JPEG, PNG, GIF, WebP, SVG
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Company Information</CardTitle>

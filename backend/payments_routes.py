@@ -958,4 +958,700 @@ def get_payments_routes(db, get_current_user):
             logger.error(f"Error getting transactions: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    # ==================== ESCROW DASHBOARD & MANAGEMENT ====================
+    
+    @payments_router.get("/escrow/dashboard")
+    async def get_escrow_dashboard(
+        current_user = Depends(get_current_user)
+    ):
+        """Get comprehensive escrow dashboard for user"""
+        try:
+            # Get all contracts where user is employer or contractor
+            contracts = await db.contracts.find({
+                "$or": [
+                    {"employer_id": current_user.id},
+                    {"contractor_id": current_user.id}
+                ]
+            }, {"_id": 0}).to_list(length=500)
+            
+            # Calculate escrow statistics
+            as_employer = [c for c in contracts if c.get("employer_id") == current_user.id]
+            as_contractor = [c for c in contracts if c.get("contractor_id") == current_user.id]
+            
+            # Employer stats
+            total_funded_as_employer = sum(c.get("escrow_funded", 0) for c in as_employer)
+            total_released_as_employer = sum(c.get("total_paid", 0) for c in as_employer)
+            pending_release_as_employer = total_funded_as_employer - total_released_as_employer
+            
+            # Contractor stats (funds held for them)
+            total_funded_for_contractor = sum(c.get("escrow_funded", 0) for c in as_contractor)
+            total_received_as_contractor = sum(c.get("total_paid", 0) for c in as_contractor)
+            pending_for_contractor = total_funded_for_contractor - total_received_as_contractor
+            
+            # Get pending approvals (milestones submitted but not approved)
+            pending_approvals = []
+            for c in as_employer:
+                for m in c.get("milestones", []):
+                    if m.get("status") == "submitted" and m.get("escrow_status") == "funded":
+                        pending_approvals.append({
+                            "contract_id": c.get("id"),
+                            "contract_title": c.get("title"),
+                            "milestone_id": m.get("id"),
+                            "milestone_title": m.get("title"),
+                            "amount": m.get("amount"),
+                            "currency": c.get("payment_currency", "USD"),
+                            "submitted_at": m.get("submitted_at"),
+                            "contractor_name": c.get("contractor_name")
+                        })
+            
+            # Get milestones awaiting payment (contractor view)
+            awaiting_payment = []
+            for c in as_contractor:
+                for m in c.get("milestones", []):
+                    if m.get("status") == "approved" and m.get("escrow_status") == "funded":
+                        awaiting_payment.append({
+                            "contract_id": c.get("id"),
+                            "contract_title": c.get("title"),
+                            "milestone_id": m.get("id"),
+                            "milestone_title": m.get("title"),
+                            "amount": m.get("amount"),
+                            "currency": c.get("payment_currency", "USD"),
+                            "approved_at": m.get("approved_at"),
+                            "employer_name": c.get("employer_name")
+                        })
+            
+            # Get unfunded milestones
+            unfunded_milestones = []
+            for c in as_employer:
+                if c.get("status") == "active":
+                    for m in c.get("milestones", []):
+                        if not m.get("escrow_status") and m.get("status") not in ["paid", "cancelled"]:
+                            unfunded_milestones.append({
+                                "contract_id": c.get("id"),
+                                "contract_title": c.get("title"),
+                                "milestone_id": m.get("id"),
+                                "milestone_title": m.get("title"),
+                                "amount": m.get("amount"),
+                                "currency": c.get("payment_currency", "USD"),
+                                "due_date": m.get("due_date")
+                            })
+            
+            return {
+                "success": True,
+                "dashboard": {
+                    "as_employer": {
+                        "total_funded": total_funded_as_employer,
+                        "total_released": total_released_as_employer,
+                        "pending_release": pending_release_as_employer,
+                        "active_contracts": len([c for c in as_employer if c.get("status") == "active"]),
+                        "pending_approvals": len(pending_approvals),
+                        "unfunded_milestones": len(unfunded_milestones)
+                    },
+                    "as_contractor": {
+                        "total_funded_for_you": total_funded_for_contractor,
+                        "total_received": total_received_as_contractor,
+                        "pending_release": pending_for_contractor,
+                        "active_contracts": len([c for c in as_contractor if c.get("status") == "active"]),
+                        "awaiting_payment": len(awaiting_payment)
+                    },
+                    "pending_approvals": pending_approvals[:10],  # Latest 10
+                    "awaiting_payment": awaiting_payment[:10],
+                    "unfunded_milestones": unfunded_milestones[:10]
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting escrow dashboard: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @payments_router.get("/escrow/contract/{contract_id}")
+    async def get_contract_escrow_details(
+        contract_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Get detailed escrow information for a specific contract"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id}, {"_id": 0})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            # Verify access
+            if contract.get("employer_id") != current_user.id and contract.get("contractor_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Access denied")
+            
+            # Get all transactions for this contract
+            transactions = await db.payment_transactions.find(
+                {"contract_id": contract_id},
+                {"_id": 0}
+            ).sort("created_at", -1).to_list(length=100)
+            
+            # Calculate escrow breakdown by milestone
+            milestones_escrow = []
+            for m in contract.get("milestones", []):
+                milestone_transactions = [t for t in transactions if t.get("milestone_id") == m.get("id")]
+                funded_amount = sum(t.get("amount", 0) for t in milestone_transactions if t.get("type") == "milestone_funding" and t.get("status") == "completed")
+                released_amount = sum(t.get("amount", 0) for t in milestone_transactions if t.get("type") == "milestone_release")
+                
+                milestones_escrow.append({
+                    "milestone_id": m.get("id"),
+                    "title": m.get("title"),
+                    "amount": m.get("amount"),
+                    "status": m.get("status"),
+                    "escrow_status": m.get("escrow_status"),
+                    "funded_amount": funded_amount,
+                    "released_amount": released_amount,
+                    "held_amount": funded_amount - released_amount,
+                    "due_date": m.get("due_date"),
+                    "submitted_at": m.get("submitted_at"),
+                    "approved_at": m.get("approved_at"),
+                    "paid_at": m.get("paid_at")
+                })
+            
+            return {
+                "success": True,
+                "contract": {
+                    "id": contract.get("id"),
+                    "title": contract.get("title"),
+                    "status": contract.get("status"),
+                    "total_value": contract.get("payment_amount"),
+                    "currency": contract.get("payment_currency", "USD"),
+                    "total_funded": contract.get("escrow_funded", 0),
+                    "total_paid": contract.get("total_paid", 0),
+                    "escrow_balance": contract.get("escrow_funded", 0) - contract.get("total_paid", 0),
+                    "employer_name": contract.get("employer_name"),
+                    "contractor_name": contract.get("contractor_name")
+                },
+                "milestones": milestones_escrow,
+                "transactions": transactions
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting contract escrow details: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # ==================== ESCROW PROTECTION POLICIES ====================
+    
+    class DisputeRequest(BaseModel):
+        reason: str
+        description: str
+        evidence_urls: List[str] = []
+    
+    class DisputeResolution(BaseModel):
+        resolution: str  # "release_to_contractor", "refund_to_employer", "partial_release"
+        contractor_amount: Optional[float] = None  # For partial release
+        notes: str = ""
+    
+    @payments_router.post("/escrow/dispute/{contract_id}/{milestone_id}")
+    async def create_escrow_dispute(
+        contract_id: str,
+        milestone_id: str,
+        data: DisputeRequest,
+        current_user = Depends(get_current_user)
+    ):
+        """Create a dispute for a funded milestone"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            # Only contractor can dispute (employer controls release)
+            if contract.get("contractor_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Only contractors can create disputes")
+            
+            milestones = contract.get("milestones", [])
+            milestone = next((m for m in milestones if m.get("id") == milestone_id), None)
+            
+            if not milestone:
+                raise HTTPException(status_code=404, detail="Milestone not found")
+            
+            if milestone.get("escrow_status") != "funded":
+                raise HTTPException(status_code=400, detail="Can only dispute funded milestones")
+            
+            if milestone.get("status") not in ["submitted", "approved"]:
+                raise HTTPException(status_code=400, detail="Can only dispute submitted or approved milestones")
+            
+            # Create dispute record
+            dispute = {
+                "id": str(uuid.uuid4()),
+                "contract_id": contract_id,
+                "milestone_id": milestone_id,
+                "created_by": current_user.id,
+                "created_by_name": current_user.full_name,
+                "created_by_role": "contractor",
+                "employer_id": contract.get("employer_id"),
+                "contractor_id": contract.get("contractor_id"),
+                "reason": data.reason,
+                "description": data.description,
+                "evidence_urls": data.evidence_urls,
+                "amount": milestone.get("amount"),
+                "currency": contract.get("payment_currency", "USD"),
+                "status": "open",  # open, under_review, resolved
+                "resolution": None,
+                "resolution_notes": None,
+                "resolved_at": None,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.escrow_disputes.insert_one(dispute)
+            
+            # Update milestone with dispute info
+            milestone_idx = next(i for i, m in enumerate(milestones) if m.get("id") == milestone_id)
+            milestones[milestone_idx]["has_dispute"] = True
+            milestones[milestone_idx]["dispute_id"] = dispute["id"]
+            
+            await db.contracts.update_one(
+                {"id": contract_id},
+                {"$set": {"milestones": milestones, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            # Send notification to employer
+            try:
+                await email_service.send_generic_email(
+                    to_email=contract.get("employer_email"),
+                    subject=f"Dispute Created for {contract.get('title')}",
+                    message=f"""
+                    <p>A dispute has been created by {current_user.full_name} for milestone <strong>{milestone.get('title')}</strong>.</p>
+                    <p><strong>Reason:</strong> {data.reason}</p>
+                    <p><strong>Description:</strong> {data.description}</p>
+                    <p>Please review and resolve this dispute as soon as possible.</p>
+                    """
+                )
+            except Exception as email_err:
+                logger.warning(f"Failed to send dispute notification: {email_err}")
+            
+            return {
+                "success": True,
+                "message": "Dispute created successfully",
+                "dispute_id": dispute["id"]
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error creating dispute: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @payments_router.get("/escrow/disputes")
+    async def get_my_disputes(
+        current_user = Depends(get_current_user),
+        status: Optional[str] = None
+    ):
+        """Get disputes for current user"""
+        try:
+            query = {
+                "$or": [
+                    {"employer_id": current_user.id},
+                    {"contractor_id": current_user.id}
+                ]
+            }
+            if status:
+                query["status"] = status
+            
+            disputes = await db.escrow_disputes.find(
+                query,
+                {"_id": 0}
+            ).sort("created_at", -1).to_list(length=100)
+            
+            return {"success": True, "disputes": disputes}
+            
+        except Exception as e:
+            logger.error(f"Error getting disputes: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @payments_router.post("/escrow/dispute/{dispute_id}/resolve")
+    async def resolve_dispute(
+        dispute_id: str,
+        data: DisputeResolution,
+        current_user = Depends(get_current_user)
+    ):
+        """Resolve a dispute (admin or employer only)"""
+        try:
+            dispute = await db.escrow_disputes.find_one({"id": dispute_id})
+            if not dispute:
+                raise HTTPException(status_code=404, detail="Dispute not found")
+            
+            # Only employer or admin can resolve
+            if dispute.get("employer_id") != current_user.id and current_user.role != "super_admin":
+                raise HTTPException(status_code=403, detail="Only employer or admin can resolve disputes")
+            
+            if dispute.get("status") == "resolved":
+                raise HTTPException(status_code=400, detail="Dispute already resolved")
+            
+            contract = await db.contracts.find_one({"id": dispute.get("contract_id")})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            milestone_id = dispute.get("milestone_id")
+            milestones = contract.get("milestones", [])
+            milestone_idx = next((i for i, m in enumerate(milestones) if m.get("id") == milestone_id), None)
+            
+            if milestone_idx is None:
+                raise HTTPException(status_code=404, detail="Milestone not found")
+            
+            amount = dispute.get("amount", 0)
+            
+            # Process resolution
+            if data.resolution == "release_to_contractor":
+                # Release full amount to contractor
+                milestones[milestone_idx]["status"] = "paid"
+                milestones[milestone_idx]["escrow_status"] = "released"
+                milestones[milestone_idx]["paid_at"] = datetime.now(timezone.utc).isoformat()
+                milestones[milestone_idx]["has_dispute"] = False
+                
+                total_paid = contract.get("total_paid", 0) + amount
+                
+                await db.contracts.update_one(
+                    {"id": contract.get("id")},
+                    {"$set": {
+                        "milestones": milestones,
+                        "total_paid": total_paid,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+            elif data.resolution == "refund_to_employer":
+                # Refund to employer (mark as refunded)
+                milestones[milestone_idx]["status"] = "refunded"
+                milestones[milestone_idx]["escrow_status"] = "refunded"
+                milestones[milestone_idx]["has_dispute"] = False
+                
+                escrow_funded = max(0, contract.get("escrow_funded", 0) - amount)
+                
+                await db.contracts.update_one(
+                    {"id": contract.get("id")},
+                    {"$set": {
+                        "milestones": milestones,
+                        "escrow_funded": escrow_funded,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+            elif data.resolution == "partial_release":
+                # Partial release
+                contractor_amount = data.contractor_amount or 0
+                employer_refund = amount - contractor_amount
+                
+                milestones[milestone_idx]["status"] = "paid"
+                milestones[milestone_idx]["escrow_status"] = "released"
+                milestones[milestone_idx]["paid_at"] = datetime.now(timezone.utc).isoformat()
+                milestones[milestone_idx]["has_dispute"] = False
+                milestones[milestone_idx]["partial_payment"] = {
+                    "contractor_received": contractor_amount,
+                    "employer_refunded": employer_refund
+                }
+                
+                total_paid = contract.get("total_paid", 0) + contractor_amount
+                escrow_funded = max(0, contract.get("escrow_funded", 0) - employer_refund)
+                
+                await db.contracts.update_one(
+                    {"id": contract.get("id")},
+                    {"$set": {
+                        "milestones": milestones,
+                        "total_paid": total_paid,
+                        "escrow_funded": escrow_funded,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+            
+            # Update dispute
+            await db.escrow_disputes.update_one(
+                {"id": dispute_id},
+                {"$set": {
+                    "status": "resolved",
+                    "resolution": data.resolution,
+                    "resolution_notes": data.notes,
+                    "resolved_by": current_user.id,
+                    "resolved_at": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Notify contractor
+            try:
+                await email_service.send_generic_email(
+                    to_email=contract.get("contractor_email"),
+                    subject=f"Dispute Resolved - {contract.get('title')}",
+                    message=f"""
+                    <p>The dispute for milestone <strong>{milestones[milestone_idx].get('title')}</strong> has been resolved.</p>
+                    <p><strong>Resolution:</strong> {data.resolution.replace('_', ' ').title()}</p>
+                    <p><strong>Notes:</strong> {data.notes or 'No additional notes'}</p>
+                    """
+                )
+            except Exception as email_err:
+                logger.warning(f"Failed to send dispute resolution email: {email_err}")
+            
+            return {
+                "success": True,
+                "message": f"Dispute resolved: {data.resolution.replace('_', ' ').title()}"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error resolving dispute: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @payments_router.post("/escrow/refund/{contract_id}/{milestone_id}")
+    async def request_escrow_refund(
+        contract_id: str,
+        milestone_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Request refund for a funded milestone (before work starts)"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            if contract.get("employer_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Only employer can request refunds")
+            
+            milestones = contract.get("milestones", [])
+            milestone_idx = next((i for i, m in enumerate(milestones) if m.get("id") == milestone_id), None)
+            
+            if milestone_idx is None:
+                raise HTTPException(status_code=404, detail="Milestone not found")
+            
+            milestone = milestones[milestone_idx]
+            
+            if milestone.get("escrow_status") != "funded":
+                raise HTTPException(status_code=400, detail="Milestone is not funded")
+            
+            # Can only refund if work hasn't started
+            if milestone.get("status") in ["submitted", "approved", "paid"]:
+                raise HTTPException(status_code=400, detail="Cannot refund after work has been submitted. Use dispute process instead.")
+            
+            amount = milestone.get("amount", 0)
+            
+            # Process refund
+            milestones[milestone_idx]["escrow_status"] = "refunded"
+            milestones[milestone_idx]["refunded_at"] = datetime.now(timezone.utc).isoformat()
+            
+            escrow_funded = max(0, contract.get("escrow_funded", 0) - amount)
+            
+            await db.contracts.update_one(
+                {"id": contract_id},
+                {"$set": {
+                    "milestones": milestones,
+                    "escrow_funded": escrow_funded,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Record refund transaction
+            refund_transaction = {
+                "id": str(uuid.uuid4()),
+                "type": "escrow_refund",
+                "contract_id": contract_id,
+                "milestone_id": milestone_id,
+                "user_id": current_user.id,
+                "amount": amount,
+                "currency": contract.get("payment_currency", "USD"),
+                "status": "completed",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.payment_transactions.insert_one(refund_transaction)
+            
+            return {
+                "success": True,
+                "message": f"Refund processed for {contract.get('payment_currency', 'USD')} {amount:,.2f}"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error processing refund: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # ==================== AUTO-RELEASE SETTINGS ====================
+    
+    class AutoReleaseSettings(BaseModel):
+        enabled: bool = True
+        days_after_submission: int = 14  # Auto-release after X days if no response
+    
+    @payments_router.post("/escrow/auto-release-settings/{contract_id}")
+    async def update_auto_release_settings(
+        contract_id: str,
+        data: AutoReleaseSettings,
+        current_user = Depends(get_current_user)
+    ):
+        """Update auto-release settings for a contract"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            # Both parties must agree to auto-release settings
+            if contract.get("employer_id") != current_user.id and contract.get("contractor_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Access denied")
+            
+            await db.contracts.update_one(
+                {"id": contract_id},
+                {"$set": {
+                    "auto_release_settings": {
+                        "enabled": data.enabled,
+                        "days_after_submission": data.days_after_submission,
+                        "updated_by": current_user.id,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    },
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "message": f"Auto-release {'enabled' if data.enabled else 'disabled'} ({data.days_after_submission} days)"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error updating auto-release settings: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @payments_router.get("/escrow/check-auto-release")
+    async def check_auto_release_milestones(
+        current_user = Depends(get_current_user)
+    ):
+        """Check for milestones that should be auto-released (admin/system use)"""
+        try:
+            if current_user.role != "super_admin":
+                raise HTTPException(status_code=403, detail="Admin only")
+            
+            # Find contracts with auto-release enabled
+            contracts = await db.contracts.find({
+                "auto_release_settings.enabled": True,
+                "status": "active"
+            }, {"_id": 0}).to_list(length=1000)
+            
+            auto_release_candidates = []
+            now = datetime.now(timezone.utc)
+            
+            for contract in contracts:
+                days_limit = contract.get("auto_release_settings", {}).get("days_after_submission", 14)
+                
+                for m in contract.get("milestones", []):
+                    if m.get("status") == "submitted" and m.get("escrow_status") == "funded":
+                        submitted_at = m.get("submitted_at")
+                        if submitted_at:
+                            submitted_date = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))
+                            days_since = (now - submitted_date).days
+                            
+                            if days_since >= days_limit:
+                                auto_release_candidates.append({
+                                    "contract_id": contract.get("id"),
+                                    "contract_title": contract.get("title"),
+                                    "milestone_id": m.get("id"),
+                                    "milestone_title": m.get("title"),
+                                    "amount": m.get("amount"),
+                                    "currency": contract.get("payment_currency", "USD"),
+                                    "days_since_submission": days_since,
+                                    "auto_release_limit": days_limit,
+                                    "contractor_id": contract.get("contractor_id"),
+                                    "employer_id": contract.get("employer_id")
+                                })
+            
+            return {
+                "success": True,
+                "candidates": auto_release_candidates,
+                "count": len(auto_release_candidates)
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error checking auto-release: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # ==================== ESCROW STATEMENTS ====================
+    
+    @payments_router.get("/escrow/statement/{contract_id}")
+    async def generate_escrow_statement(
+        contract_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Generate escrow statement data for a contract"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id}, {"_id": 0})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            if contract.get("employer_id") != current_user.id and contract.get("contractor_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Access denied")
+            
+            transactions = await db.payment_transactions.find(
+                {"contract_id": contract_id},
+                {"_id": 0}
+            ).sort("created_at", 1).to_list(length=500)
+            
+            # Build statement
+            statement_entries = []
+            running_balance = 0
+            
+            for t in transactions:
+                if t.get("type") in ["contract_funding", "milestone_funding"] and t.get("status") == "completed":
+                    running_balance += t.get("amount", 0)
+                    statement_entries.append({
+                        "date": t.get("created_at"),
+                        "type": "DEPOSIT",
+                        "description": f"Funding: {t.get('type').replace('_', ' ').title()}",
+                        "milestone": t.get("milestone_id"),
+                        "credit": t.get("amount"),
+                        "debit": 0,
+                        "balance": running_balance
+                    })
+                elif t.get("type") == "milestone_release":
+                    running_balance -= t.get("amount", 0)
+                    statement_entries.append({
+                        "date": t.get("created_at"),
+                        "type": "RELEASE",
+                        "description": "Payment released to contractor",
+                        "milestone": t.get("milestone_id"),
+                        "credit": 0,
+                        "debit": t.get("amount"),
+                        "balance": running_balance
+                    })
+                elif t.get("type") == "escrow_refund":
+                    running_balance -= t.get("amount", 0)
+                    statement_entries.append({
+                        "date": t.get("created_at"),
+                        "type": "REFUND",
+                        "description": "Refund to employer",
+                        "milestone": t.get("milestone_id"),
+                        "credit": 0,
+                        "debit": t.get("amount"),
+                        "balance": running_balance
+                    })
+            
+            return {
+                "success": True,
+                "statement": {
+                    "contract": {
+                        "id": contract.get("id"),
+                        "title": contract.get("title"),
+                        "employer": contract.get("employer_name"),
+                        "contractor": contract.get("contractor_name"),
+                        "currency": contract.get("payment_currency", "USD"),
+                        "total_value": contract.get("payment_amount"),
+                        "status": contract.get("status")
+                    },
+                    "summary": {
+                        "total_funded": contract.get("escrow_funded", 0),
+                        "total_released": contract.get("total_paid", 0),
+                        "current_balance": running_balance
+                    },
+                    "entries": statement_entries,
+                    "generated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error generating statement: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return payments_router

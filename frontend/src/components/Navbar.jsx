@@ -303,7 +303,7 @@ const Navbar = () => {
                         )}
                         
                         <Link
-                          to="/dashboard/settings"
+                          to={user?.role === 'employer' ? '/employer/settings' : '/dashboard/settings'}
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                           onClick={() => setUserMenuOpen(false)}
                         >

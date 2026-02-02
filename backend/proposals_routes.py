@@ -178,6 +178,30 @@ Return ONLY the improved proposal text."""
     
     # ==================== PROPOSAL CRUD ====================
     
+    @proposals_router.get("/check/{job_id}")
+    async def check_existing_proposal(
+        job_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Check if the current user has already submitted a proposal for a job"""
+        try:
+            proposal = await db.proposals.find_one(
+                {
+                    "job_id": job_id,
+                    "applicant_id": current_user.id
+                },
+                {"_id": 0, "id": 1, "status": 1, "created_at": 1, "updated_at": 1}
+            )
+            
+            return {
+                "has_proposal": proposal is not None,
+                "proposal": proposal
+            }
+            
+        except Exception as e:
+            logger.error(f"Error checking existing proposal: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     @proposals_router.post("")
     async def submit_proposal(
         data: ProposalCreate,

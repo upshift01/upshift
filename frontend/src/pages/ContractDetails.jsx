@@ -364,15 +364,16 @@ const ContractDetails = () => {
         const data = await response.json();
         
         if (data.provider === 'yoco' && data.payment_id) {
-          toast({
-            title: 'Yoco Payment',
-            description: 'Processing Yoco payment...'
-          });
+          // Yoco - redirect to checkout URL
           if (data.checkout_url) {
             window.location.href = data.checkout_url;
           } else {
+            toast({
+              title: 'Payment Error',
+              description: 'Yoco checkout URL not received. Please try again.',
+              variant: 'destructive'
+            });
             setPaymentLoading(false);
-            fetchContract();
           }
         } else {
           window.location.href = data.checkout_url;

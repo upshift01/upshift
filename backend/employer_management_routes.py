@@ -212,7 +212,7 @@ def get_employer_management_routes(db, get_current_user):
                     "trial_start": datetime.now(timezone.utc).isoformat(),
                     "expires_at": trial_end.isoformat(),
                     "jobs_posted": 0,
-                    "jobs_limit": 3
+                    "jobs_limit": 1
                 },
                 "created_by": current_user.id,
                 "created_by_reseller": current_user.id if current_user.role in ["reseller", "reseller_admin"] else None,
@@ -492,7 +492,7 @@ def get_employer_management_routes(db, get_current_user):
             
             # Define plan limits
             plan_limits = {
-                "employer-starter": 3,
+                "employer-starter": 1,
                 "employer-professional": 10,
                 "employer-enterprise": 999
             }

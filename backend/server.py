@@ -167,7 +167,7 @@ async def register(user_data: UserRegister):
                     "status": "trial",
                     "plan_id": "employer-trial",
                     "plan_name": "Free Trial",
-                    "jobs_limit": 3,  # Limited jobs during trial
+                    "jobs_limit": 1,  # Limited jobs during trial
                     "jobs_posted": 0,
                     "trial_start": datetime.now(timezone.utc).isoformat(),
                     "trial_end": trial_end.isoformat(),

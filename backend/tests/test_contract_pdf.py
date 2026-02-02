@@ -170,40 +170,58 @@ class TestContractPDF:
             print(f"  ⚠ Company logo not set - PDF will use text header")
     
     def test_pdf_content_structure(self):
-        """Test PDF contains expected content sections"""
+        """Test PDF contains expected content sections using PyPDF2"""
         self.get_auth_token()
         
         response = self.session.get(f"{BASE_URL}/api/contracts/{TEST_CONTRACT_ID}/pdf")
         
         assert response.status_code == 200
-        pdf_content = response.content.decode('latin-1', errors='ignore')
         
-        # Check for key PDF elements (these appear in PDF text streams)
-        checks = {
-            "SERVICE AGREEMENT": "Title section",
-            "PARTIES": "Parties section",
-            "SCOPE": "Scope section",
-            "COMPENSATION": "Compensation section",
-            "SIGNATURES": "Signatures section",
-        }
-        
-        found_sections = []
-        missing_sections = []
-        
-        for keyword, section_name in checks.items():
-            if keyword in pdf_content:
-                found_sections.append(section_name)
-            else:
-                missing_sections.append(section_name)
-        
-        print(f"✓ PDF content structure check:")
-        for section in found_sections:
-            print(f"  ✓ {section} found")
-        for section in missing_sections:
-            print(f"  ⚠ {section} not found in raw PDF")
-        
-        # At least title should be present
-        assert "SERVICE AGREEMENT" in pdf_content or "Contract" in pdf_content, "PDF missing title"
+        # Save PDF temporarily and extract text
+        import io
+        try:
+            from PyPDF2 import PdfReader
+            pdf_buffer = io.BytesIO(response.content)
+            reader = PdfReader(pdf_buffer)
+            
+            # Extract text from all pages
+            full_text = ""
+            for page in reader.pages:
+                full_text += page.extract_text() or ""
+            
+            print(f"✓ PDF has {len(reader.pages)} pages")
+            
+            # Check for key sections in extracted text
+            checks = {
+                "SERVICE AGREEMENT": "Title section",
+                "PARTIES": "Parties section",
+                "SCOPE": "Scope section",
+                "COMPENSATION": "Compensation section",
+                "SIGNATURES": "Signatures section",
+            }
+            
+            found_sections = []
+            missing_sections = []
+            
+            for keyword, section_name in checks.items():
+                if keyword in full_text:
+                    found_sections.append(section_name)
+                else:
+                    missing_sections.append(section_name)
+            
+            print(f"✓ PDF content structure check:")
+            for section in found_sections:
+                print(f"  ✓ {section} found")
+            for section in missing_sections:
+                print(f"  ⚠ {section} not found")
+            
+            # At least title should be present
+            assert "SERVICE AGREEMENT" in full_text or "Contract" in full_text, "PDF missing title"
+            
+        except ImportError:
+            # Fallback if PyPDF2 not available
+            print("⚠ PyPDF2 not available, skipping detailed content check")
+            assert response.content[:4] == b'%PDF', "Response is not a valid PDF"
     
     def test_pdf_for_different_contract_statuses(self):
         """Test PDF can be generated for contracts in any status"""

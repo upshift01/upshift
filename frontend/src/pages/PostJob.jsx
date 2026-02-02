@@ -106,10 +106,8 @@ const PostJob = () => {
       });
       
       if (response.ok) {
-        const job = await response.json();
-        
-        console.log('Job poster_id:', job.poster_id);
-        console.log('User id:', user.id);
+        const data = await response.json();
+        const job = data.job || data; // Handle both response formats
         
         // Check if user owns this job
         if (job.poster_id !== user.id) {

@@ -62,6 +62,13 @@ class UserResponse(BaseModel):
     subscription_expires_at: Optional[datetime] = None
     status: str = "active"
     created_at: datetime
+    # Employer-specific fields
+    company_logo: Optional[str] = None
+    company_name: Optional[str] = None
+    company_description: Optional[str] = None
+    company_website: Optional[str] = None
+    company_size: Optional[str] = None
+    industry: Optional[str] = None
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against a hash."""

@@ -284,6 +284,35 @@ def get_contracts_routes(db, get_current_user):
             logger.error(f"Error getting contracts: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    @contracts_router.get("/check-proposal/{proposal_id}")
+    async def check_contract_exists_for_proposal(
+        proposal_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Check if a contract already exists for a proposal"""
+        try:
+            contract = await db.contracts.find_one(
+                {"proposal_id": proposal_id},
+                {"_id": 0, "id": 1, "status": 1, "title": 1}
+            )
+            
+            if contract:
+                return {
+                    "success": True,
+                    "has_contract": True,
+                    "contract": contract
+                }
+            
+            return {
+                "success": True,
+                "has_contract": False,
+                "contract": None
+            }
+            
+        except Exception as e:
+            logger.error(f"Error checking contract for proposal: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     @contracts_router.get("/{contract_id}")
     async def get_contract_details(
         contract_id: str,

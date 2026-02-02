@@ -420,15 +420,57 @@ const JobDetails = () => {
             {!isOwner && isAuthenticated && job.status === 'active' && 
              (!user?.role || user?.role === 'customer' || user?.role === 'job_seeker') && (
               <div className="flex gap-3 mt-6 pt-6 border-t">
-                <Button 
-                  className="flex-1 bg-blue-600 hover:bg-blue-700" 
-                  size="lg"
-                  onClick={() => navigate(`/remote-jobs/${jobId}/apply`)}
-                  data-testid="apply-now-btn"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  Apply Now
-                </Button>
+                {checkingProposal ? (
+                  <Button className="flex-1" size="lg" disabled>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Checking...
+                  </Button>
+                ) : existingProposal ? (
+                  // User has already applied
+                  existingProposal.status === 'rejected' ? (
+                    // Rejected - allow re-application
+                    <Button 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                      size="lg"
+                      onClick={() => navigate(`/remote-jobs/${jobId}/apply`)}
+                      data-testid="apply-again-btn"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Apply Again
+                    </Button>
+                  ) : (
+                    // Pending or accepted - show status
+                    <Button 
+                      className={`flex-1 ${
+                        existingProposal.status === 'accepted' 
+                          ? 'bg-green-600 hover:bg-green-600' 
+                          : 'bg-yellow-600 hover:bg-yellow-600'
+                      }`}
+                      size="lg"
+                      disabled
+                      data-testid="already-applied-btn"
+                    >
+                      {existingProposal.status === 'accepted' ? (
+                        <>✓ Proposal Accepted</>
+                      ) : existingProposal.status === 'shortlisted' ? (
+                        <>⭐ Shortlisted</>
+                      ) : (
+                        <>⏳ Application Pending</>
+                      )}
+                    </Button>
+                  )
+                ) : (
+                  // No existing proposal - show apply button
+                  <Button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                    size="lg"
+                    onClick={() => navigate(`/remote-jobs/${jobId}/apply`)}
+                    data-testid="apply-now-btn"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Apply Now
+                  </Button>
+                )}
                 <Button variant="outline" size="lg">
                   <Bookmark className="h-4 w-4 mr-2" />
                   Save

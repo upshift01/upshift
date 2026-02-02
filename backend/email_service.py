@@ -853,60 +853,88 @@ If you have any questions, feel free to reach out to our support team.
         platform_name: str = "UpShift"
     ) -> bool:
         """Send email when payment is released to contractor"""
-        subject = f"💸 Payment Released: {amount} - {milestone_title}"
+        platform_name = self.platform_name or platform_name
         
-        html_body = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
-                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
-                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
-                .amount {{ font-size: 32px; font-weight: bold; color: #059669; text-align: center; margin: 20px 0; }}
-                .success-badge {{ background: #059669; color: white; padding: 10px 20px; border-radius: 20px; display: inline-block; }}
-                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
-                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>💸 Payment Released!</h1>
-                </div>
-                <div class="content">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <span class="success-badge">Payment Successful</span>
+        # Check for custom template
+        custom_template = await self.get_custom_template("payment_released")
+        
+        # Determine currency from amount string or default
+        currency = "USD"
+        if "R" in amount or "ZAR" in amount:
+            currency = "ZAR"
+        
+        variables = {
+            "platform_name": platform_name,
+            "contractor_name": contractor_name,
+            "amount": amount,
+            "currency": currency,
+            "milestone_title": milestone_title,
+            "contract_title": contract_title,
+            "contract_url": contract_url
+        }
+        
+        # Use custom subject if available
+        if custom_template and custom_template.get("subject"):
+            subject = self.replace_variables(custom_template["subject"], variables)
+        else:
+            subject = f"💸 Payment Released: {amount} - {milestone_title}"
+        
+        # Use custom body if available
+        if custom_template and custom_template.get("body_html"):
+            html_body = self.replace_variables(custom_template["body_html"], variables)
+        else:
+            html_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                    .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                    .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                    .amount {{ font-size: 32px; font-weight: bold; color: #059669; text-align: center; margin: 20px 0; }}
+                    .success-badge {{ background: #059669; color: white; padding: 10px 20px; border-radius: 20px; display: inline-block; }}
+                    .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                    .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>💸 Payment Released!</h1>
                     </div>
-                    
-                    <p>Dear {contractor_name},</p>
-                    
-                    <p>Great news! Your payment has been released!</p>
-                    
-                    <p class="amount">{amount}</p>
-                    
-                    <p><strong>Contract:</strong> {contract_title}<br>
-                    <strong>Milestone:</strong> {milestone_title}</p>
-                    
-                    <p>The funds will be transferred to your account shortly.</p>
-                    
-                    <p style="text-align: center;">
-                        <a href="{contract_url}" class="btn">View Contract</a>
-                    </p>
-                    
-                    <p>Keep up the great work!</p>
-                    
-                    <p>Best regards,<br>The {platform_name} Team</p>
+                    <div class="content">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <span class="success-badge">Payment Successful</span>
+                        </div>
+                        
+                        <p>Dear {contractor_name},</p>
+                        
+                        <p>Great news! Your payment has been released!</p>
+                        
+                        <p class="amount">{amount}</p>
+                        
+                        <p><strong>Contract:</strong> {contract_title}<br>
+                        <strong>Milestone:</strong> {milestone_title}</p>
+                        
+                        <p>The funds will be transferred to your account shortly.</p>
+                        
+                        <p style="text-align: center;">
+                            <a href="{contract_url}" class="btn">View Contract</a>
+                        </p>
+                        
+                        <p>Keep up the great work!</p>
+                        
+                        <p>Best regards,<br>The {platform_name} Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated notification from {platform_name}.</p>
+                    </div>
                 </div>
-                <div class="footer">
-                    <p>This is an automated notification from {platform_name}.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
+            </body>
+            </html>
+            """
         
         return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
     

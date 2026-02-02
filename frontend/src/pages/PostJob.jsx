@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -19,10 +19,13 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PostJob = () => {
   const navigate = useNavigate();
+  const { jobId } = useParams();
+  const isEditMode = !!jobId;
   const { token, isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);
+  const [loadingJob, setLoadingJob] = useState(isEditMode);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [canPost, setCanPost] = useState(false);
   const [accessMessage, setAccessMessage] = useState('');

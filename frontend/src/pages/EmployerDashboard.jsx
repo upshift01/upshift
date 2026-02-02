@@ -365,7 +365,7 @@ const EmployerDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4 mb-4">
@@ -389,11 +389,31 @@ const EmployerDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="hover:shadow-lg transition-shadow border-2 border-blue-200 bg-blue-50/30">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <Target className="h-5 w-5 text-blue-600" />
+                  <Briefcase className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900">My Posted Jobs</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                View and manage all your job postings, track status, and see applications.
+              </p>
+              <Link to="/remote-jobs/my-jobs">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  View My Jobs
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <Target className="h-5 w-5 text-orange-600" />
                 </div>
                 <h3 className="font-semibold text-gray-900">Review Proposals</h3>
               </div>

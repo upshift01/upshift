@@ -729,8 +729,6 @@ def get_contracts_routes(db, get_current_user):
             content = []
             
             # ===== HEADER WITH LOGO =====
-            header_data = []
-            
             # Try to load company logo
             logo_element = None
             if company_logo_path and os.path.exists(company_logo_path):

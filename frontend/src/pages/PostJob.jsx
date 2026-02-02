@@ -98,8 +98,13 @@ const PostJob = () => {
       if (response.ok) {
         const job = await response.json();
         
-        // Check if user owns this job
-        if (job.poster_id !== user?.id) {
+        // Check if user owns this job (ensure user is loaded)
+        if (!user?.id) {
+          console.log('User not loaded yet, waiting...');
+          return; // Will retry when user is loaded
+        }
+        
+        if (job.poster_id !== user.id) {
           toast({
             title: 'Access Denied',
             description: 'You can only edit your own job postings.',

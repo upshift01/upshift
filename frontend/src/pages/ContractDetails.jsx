@@ -33,6 +33,7 @@ const ContractDetails = () => {
   const [contract, setContract] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   
   // Payment provider selection
   const [paymentProviders, setPaymentProviders] = useState([]);

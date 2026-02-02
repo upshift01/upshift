@@ -574,13 +574,14 @@ def get_contracts_routes(db, get_current_user):
         contract_id: str,
         current_user = Depends(get_current_user)
     ):
-        """Generate PDF for signed contract"""
+        """Generate professional PDF for contract"""
         from reportlab.lib.pagesizes import A4
         from reportlab.lib import colors
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch, cm
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, HRFlowable
-        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+        from reportlab.lib.units import inch, cm, mm
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, HRFlowable, PageBreak, KeepTogether
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY, TA_RIGHT
+        from reportlab.platypus.flowables import Flowable
         import base64
         
         try:
@@ -594,274 +595,541 @@ def get_contracts_routes(db, get_current_user):
                 if current_user.role != "super_admin":
                     raise HTTPException(status_code=403, detail="Access denied")
             
+            # Get employer info for logo
+            employer = await db.users.find_one({"id": contract.get("employer_id")}, {"_id": 0, "company_logo": 1, "company_name": 1})
+            company_logo_path = None
+            if employer and employer.get("company_logo"):
+                logo_url = employer.get("company_logo")
+                if logo_url.startswith('/api/employer/logo/'):
+                    filename = logo_url.split('/')[-1]
+                    company_logo_path = f"/app/public/uploads/company_logos/{filename}"
+                    if not os.path.exists(company_logo_path):
+                        company_logo_path = None
+            
             # Create PDF buffer
             buffer = io.BytesIO()
+            
+            # Custom page template for header/footer
+            page_width, page_height = A4
+            
+            def add_page_header_footer(canvas, doc):
+                canvas.saveState()
+                
+                # Page border
+                canvas.setStrokeColor(colors.HexColor('#e5e7eb'))
+                canvas.setLineWidth(0.5)
+                canvas.rect(0.5*inch, 0.5*inch, page_width - inch, page_height - inch)
+                
+                # Footer line
+                canvas.setStrokeColor(colors.HexColor('#3b82f6'))
+                canvas.setLineWidth(2)
+                canvas.line(0.75*inch, 0.65*inch, page_width - 0.75*inch, 0.65*inch)
+                
+                # Footer text
+                canvas.setFont('Helvetica', 8)
+                canvas.setFillColor(colors.HexColor('#6b7280'))
+                canvas.drawString(0.75*inch, 0.45*inch, f"Contract ID: {contract.get('id', 'N/A')}")
+                canvas.drawRightString(page_width - 0.75*inch, 0.45*inch, f"Page {doc.page}")
+                canvas.drawCentredString(page_width/2, 0.45*inch, "Confidential")
+                
+                canvas.restoreState()
+            
             doc = SimpleDocTemplate(
                 buffer,
                 pagesize=A4,
-                rightMargin=1*inch,
-                leftMargin=1*inch,
+                rightMargin=0.75*inch,
+                leftMargin=0.75*inch,
                 topMargin=0.75*inch,
-                bottomMargin=0.75*inch
+                bottomMargin=0.85*inch
             )
+            
+            # Professional color scheme
+            primary_color = colors.HexColor('#1e40af')  # Deep blue
+            secondary_color = colors.HexColor('#3b82f6')  # Bright blue
+            accent_color = colors.HexColor('#10b981')  # Green
+            dark_text = colors.HexColor('#1f2937')
+            light_text = colors.HexColor('#6b7280')
+            border_color = colors.HexColor('#e5e7eb')
+            bg_light = colors.HexColor('#f8fafc')
             
             # Styles
             styles = getSampleStyleSheet()
+            
             title_style = ParagraphStyle(
-                'CustomTitle',
+                'ContractTitle',
                 parent=styles['Heading1'],
-                fontSize=20,
+                fontSize=24,
+                alignment=TA_CENTER,
+                spaceAfter=5,
+                textColor=primary_color,
+                fontName='Helvetica-Bold'
+            )
+            
+            subtitle_style = ParagraphStyle(
+                'ContractSubtitle',
+                parent=styles['Normal'],
+                fontSize=11,
                 alignment=TA_CENTER,
                 spaceAfter=20,
-                textColor=colors.HexColor('#1e3a8a')
+                textColor=light_text,
+                fontName='Helvetica'
             )
-            heading_style = ParagraphStyle(
-                'CustomHeading',
+            
+            section_title_style = ParagraphStyle(
+                'SectionTitle',
                 parent=styles['Heading2'],
-                fontSize=14,
-                spaceBefore=15,
+                fontSize=13,
+                spaceBefore=20,
                 spaceAfter=10,
-                textColor=colors.HexColor('#1e40af')
+                textColor=primary_color,
+                fontName='Helvetica-Bold',
+                borderPadding=5,
+                leftIndent=0
             )
-            subheading_style = ParagraphStyle(
-                'SubHeading',
+            
+            subsection_style = ParagraphStyle(
+                'SubSection',
                 parent=styles['Heading3'],
-                fontSize=12,
-                spaceBefore=10,
-                spaceAfter=5,
-                textColor=colors.HexColor('#374151')
+                fontSize=11,
+                spaceBefore=12,
+                spaceAfter=6,
+                textColor=dark_text,
+                fontName='Helvetica-Bold'
             )
+            
             body_style = ParagraphStyle(
-                'CustomBody',
+                'ContractBody',
                 parent=styles['Normal'],
                 fontSize=10,
                 alignment=TA_JUSTIFY,
                 spaceAfter=8,
-                leading=14
+                leading=14,
+                textColor=dark_text,
+                fontName='Helvetica'
             )
+            
             label_style = ParagraphStyle(
-                'Label',
+                'FieldLabel',
                 parent=styles['Normal'],
                 fontSize=9,
-                textColor=colors.HexColor('#6b7280')
+                textColor=light_text,
+                fontName='Helvetica'
+            )
+            
+            value_style = ParagraphStyle(
+                'FieldValue',
+                parent=styles['Normal'],
+                fontSize=10,
+                textColor=dark_text,
+                fontName='Helvetica-Bold',
+                spaceAfter=4
             )
             
             # Build document content
             content = []
             
-            # Header
-            content.append(Paragraph("CONTRACT AGREEMENT", title_style))
-            content.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#1e3a8a')))
+            # ===== HEADER WITH LOGO =====
+            header_data = []
+            
+            # Try to load company logo
+            logo_element = None
+            if company_logo_path and os.path.exists(company_logo_path):
+                try:
+                    logo_element = Image(company_logo_path, width=1.2*inch, height=1.2*inch)
+                    logo_element.hAlign = 'LEFT'
+                except Exception as e:
+                    logger.warning(f"Could not load company logo: {e}")
+                    logo_element = None
+            
+            # Header table with logo and company info
+            company_name = contract.get("company_name") or employer.get("company_name") if employer else "Company"
+            
+            if logo_element:
+                header_left = [[logo_element]]
+                header_right = [
+                    [Paragraph(f"<b>{company_name}</b>", ParagraphStyle('CompanyName', fontSize=14, textColor=dark_text, fontName='Helvetica-Bold'))],
+                    [Paragraph(contract.get("employer_email", ""), ParagraphStyle('CompanyEmail', fontSize=9, textColor=light_text))]
+                ]
+                
+                left_table = Table(header_left, colWidths=[1.5*inch])
+                right_table = Table(header_right, colWidths=[4.5*inch])
+                right_table.setStyle(TableStyle([
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+                ]))
+                
+                header_table = Table([[left_table, right_table]], colWidths=[1.5*inch, 4.5*inch])
+                header_table.setStyle(TableStyle([
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ]))
+                content.append(header_table)
+            else:
+                # No logo - just company name header
+                content.append(Paragraph(f"<b>{company_name}</b>", ParagraphStyle('CompanyHeader', fontSize=14, alignment=TA_RIGHT, textColor=dark_text, fontName='Helvetica-Bold')))
+                content.append(Paragraph(contract.get("employer_email", ""), ParagraphStyle('CompanyEmail', fontSize=9, alignment=TA_RIGHT, textColor=light_text)))
+            
+            content.append(Spacer(1, 15))
+            content.append(HRFlowable(width="100%", thickness=2, color=secondary_color))
             content.append(Spacer(1, 20))
             
-            # Contract ID and Date
-            contract_date = contract.get("created_at", "")[:10] if contract.get("created_at") else "N/A"
-            content.append(Paragraph(f"<b>Contract ID:</b> {contract.get('id', 'N/A')}", label_style))
-            content.append(Paragraph(f"<b>Date Created:</b> {contract_date}", label_style))
-            content.append(Paragraph(f"<b>Status:</b> {contract.get('status', 'N/A').upper()}", label_style))
-            content.append(Spacer(1, 15))
+            # ===== CONTRACT TITLE =====
+            content.append(Paragraph("SERVICE AGREEMENT", title_style))
+            content.append(Paragraph(f"Contract for {contract.get('title', 'Professional Services')}", subtitle_style))
             
-            # Parties Section
-            content.append(Paragraph("PARTIES", heading_style))
-            content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
+            # ===== STATUS BADGE =====
+            status = contract.get("status", "draft").upper()
+            status_color = accent_color if status == "ACTIVE" else colors.HexColor('#f59e0b') if status == "DRAFT" else colors.HexColor('#ef4444')
+            
+            status_table = Table(
+                [[Paragraph(f"<b>{status}</b>", ParagraphStyle('StatusText', fontSize=9, textColor=colors.white, alignment=TA_CENTER))]],
+                colWidths=[1.2*inch]
+            )
+            status_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), status_color),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ]))
+            status_table.hAlign = 'CENTER'
+            content.append(status_table)
+            content.append(Spacer(1, 20))
+            
+            # ===== CONTRACT REFERENCE INFO =====
+            contract_date = contract.get("created_at", "")[:10] if contract.get("created_at") else "N/A"
+            
+            ref_data = [
+                [
+                    Paragraph("<b>Contract Reference</b>", label_style),
+                    Paragraph("<b>Effective Date</b>", label_style),
+                    Paragraph("<b>End Date</b>", label_style)
+                ],
+                [
+                    Paragraph(contract.get('id', 'N/A')[:20] + "...", value_style),
+                    Paragraph(contract.get("start_date", "N/A")[:10] if contract.get("start_date") else "N/A", value_style),
+                    Paragraph(contract.get("end_date", "Ongoing")[:10] if contract.get("end_date") else "Ongoing", value_style)
+                ]
+            ]
+            
+            ref_table = Table(ref_data, colWidths=[2.3*inch, 2.2*inch, 2.2*inch])
+            ref_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), bg_light),
+                ('BOX', (0, 0), (-1, -1), 1, border_color),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('LEFTPADDING', (0, 0), (-1, -1), 10),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ]))
+            content.append(ref_table)
+            content.append(Spacer(1, 25))
+            
+            # ===== PARTIES SECTION =====
+            content.append(Paragraph("1. PARTIES TO THIS AGREEMENT", section_title_style))
+            content.append(HRFlowable(width="100%", thickness=1, color=border_color))
+            content.append(Spacer(1, 10))
             
             parties_data = [
-                ["EMPLOYER", "CONTRACTOR"],
-                [contract.get("employer_name", "N/A"), contract.get("contractor_name", "N/A")],
-                [contract.get("company_name", "") or "", ""],
-                [contract.get("employer_email", "N/A"), contract.get("contractor_email", "N/A")]
+                [
+                    Paragraph("<b>THE EMPLOYER (Client)</b>", ParagraphStyle('PartyLabel', fontSize=9, textColor=secondary_color, fontName='Helvetica-Bold')),
+                    Paragraph("<b>THE CONTRACTOR (Service Provider)</b>", ParagraphStyle('PartyLabel', fontSize=9, textColor=secondary_color, fontName='Helvetica-Bold'))
+                ],
+                [
+                    Paragraph(f"<b>{contract.get('employer_name', 'N/A')}</b>", value_style),
+                    Paragraph(f"<b>{contract.get('contractor_name', 'N/A')}</b>", value_style)
+                ],
+                [
+                    Paragraph(contract.get("company_name", "") or "-", body_style),
+                    Paragraph("-", body_style)
+                ],
+                [
+                    Paragraph(contract.get("employer_email", "N/A"), label_style),
+                    Paragraph(contract.get("contractor_email", "N/A"), label_style)
+                ]
             ]
-            parties_table = Table(parties_data, colWidths=[3*inch, 3*inch])
+            
+            parties_table = Table(parties_data, colWidths=[3.3*inch, 3.3*inch])
             parties_table.setStyle(TableStyle([
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#eff6ff')),
+                ('BACKGROUND', (1, 0), (1, -1), colors.HexColor('#f0fdf4')),
+                ('BOX', (0, 0), (0, -1), 1, colors.HexColor('#bfdbfe')),
+                ('BOX', (1, 0), (1, -1), 1, colors.HexColor('#bbf7d0')),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
                 ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ]))
             content.append(parties_table)
-            content.append(Spacer(1, 15))
+            content.append(Spacer(1, 20))
             
-            # Contract Details
-            content.append(Paragraph("CONTRACT DETAILS", heading_style))
-            content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
+            # ===== SERVICES & SCOPE =====
+            content.append(Paragraph("2. SCOPE OF SERVICES", section_title_style))
+            content.append(HRFlowable(width="100%", thickness=1, color=border_color))
+            content.append(Spacer(1, 10))
             
-            content.append(Paragraph(f"<b>Title:</b> {contract.get('title', 'N/A')}", body_style))
+            content.append(Paragraph(f"<b>Project Title:</b> {contract.get('title', 'N/A')}", body_style))
             
             if contract.get("description"):
                 content.append(Paragraph(f"<b>Description:</b> {contract.get('description')}", body_style))
             
-            start_date = contract.get("start_date", "N/A")[:10] if contract.get("start_date") else "N/A"
-            end_date = contract.get("end_date", "Ongoing")[:10] if contract.get("end_date") else "Ongoing"
-            content.append(Paragraph(f"<b>Duration:</b> {start_date} to {end_date}", body_style))
-            content.append(Spacer(1, 10))
-            
-            # Payment Details
-            content.append(Paragraph("PAYMENT DETAILS", heading_style))
-            content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
-            
-            currency = contract.get("payment_currency", "USD")
-            amount = contract.get("payment_amount", 0)
-            content.append(Paragraph(f"<b>Total Contract Value:</b> {currency} {amount:,.2f}", body_style))
-            content.append(Paragraph(f"<b>Payment Type:</b> {contract.get('payment_type', 'Fixed').title()}", body_style))
-            content.append(Paragraph(f"<b>Payment Schedule:</b> {contract.get('payment_schedule', 'On Completion').replace('_', ' ').title()}", body_style))
-            
-            if contract.get("payment_terms"):
-                content.append(Paragraph(f"<b>Payment Terms:</b> {contract.get('payment_terms')}", body_style))
-            content.append(Spacer(1, 10))
-            
-            # Milestones
-            milestones = contract.get("milestones", [])
-            if milestones:
-                content.append(Paragraph("PAYMENT MILESTONES", heading_style))
-                content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
-                
-                milestone_data = [["#", "Milestone", "Amount", "Status"]]
-                for i, m in enumerate(milestones, 1):
-                    milestone_data.append([
-                        str(i),
-                        m.get("title", "N/A"),
-                        f"{currency} {m.get('amount', 0):,.2f}",
-                        m.get("status", "Pending").title()
-                    ])
-                
-                milestone_table = Table(milestone_data, colWidths=[0.5*inch, 3*inch, 1.2*inch, 1*inch])
-                milestone_table.setStyle(TableStyle([
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, -1), 9),
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f3f4f6')),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#374151')),
-                    ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e5e7eb')),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                    ('TOPPADDING', (0, 0), (-1, -1), 6),
-                ]))
-                content.append(milestone_table)
-                content.append(Spacer(1, 10))
-            
-            # Scope of Work
             if contract.get("scope_of_work"):
-                content.append(Paragraph("SCOPE OF WORK", heading_style))
-                content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
+                content.append(Spacer(1, 5))
+                content.append(Paragraph("<b>Scope of Work:</b>", body_style))
                 content.append(Paragraph(contract.get("scope_of_work"), body_style))
-                content.append(Spacer(1, 10))
             
             # Deliverables
             deliverables = contract.get("deliverables", [])
             if deliverables:
-                content.append(Paragraph("DELIVERABLES", heading_style))
-                content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
+                content.append(Spacer(1, 10))
+                content.append(Paragraph("<b>Deliverables:</b>", body_style))
                 for i, d in enumerate(deliverables, 1):
-                    content.append(Paragraph(f"{i}. {d}", body_style))
-                content.append(Spacer(1, 10))
-            
-            # Terms and Conditions
-            if contract.get("terms"):
-                content.append(Paragraph("ADDITIONAL TERMS", heading_style))
-                content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
-                content.append(Paragraph(contract.get("terms"), body_style))
-                content.append(Spacer(1, 10))
-            
-            # Legal Clauses
-            content.append(Paragraph("LEGAL PROVISIONS", heading_style))
-            content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
-            
-            if contract.get("confidentiality_clause"):
-                content.append(Paragraph("Confidentiality", subheading_style))
-                content.append(Paragraph(contract.get("confidentiality_clause"), body_style))
-            
-            if contract.get("intellectual_property"):
-                content.append(Paragraph("Intellectual Property", subheading_style))
-                content.append(Paragraph(contract.get("intellectual_property"), body_style))
-            
-            if contract.get("termination_conditions"):
-                content.append(Paragraph("Termination", subheading_style))
-                content.append(Paragraph(contract.get("termination_conditions"), body_style))
-            
-            if contract.get("dispute_resolution"):
-                content.append(Paragraph("Dispute Resolution", subheading_style))
-                content.append(Paragraph(contract.get("dispute_resolution"), body_style))
+                    content.append(Paragraph(f"    {i}. {d}", body_style))
             
             content.append(Spacer(1, 20))
             
-            # Signatures Section
-            content.append(Paragraph("SIGNATURES", heading_style))
-            content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
+            # ===== COMPENSATION =====
+            content.append(Paragraph("3. COMPENSATION & PAYMENT", section_title_style))
+            content.append(HRFlowable(width="100%", thickness=1, color=border_color))
             content.append(Spacer(1, 10))
             
+            currency = contract.get("payment_currency", "USD")
+            amount = contract.get("payment_amount", 0)
+            
+            payment_data = [
+                [
+                    Paragraph("<b>Total Contract Value</b>", label_style),
+                    Paragraph("<b>Payment Type</b>", label_style),
+                    Paragraph("<b>Payment Schedule</b>", label_style)
+                ],
+                [
+                    Paragraph(f"<font color='#10b981'><b>{currency} {amount:,.2f}</b></font>", ParagraphStyle('Amount', fontSize=14, fontName='Helvetica-Bold')),
+                    Paragraph(contract.get('payment_type', 'Fixed').title(), value_style),
+                    Paragraph(contract.get('payment_schedule', 'On Completion').replace('_', ' ').title(), value_style)
+                ]
+            ]
+            
+            payment_table = Table(payment_data, colWidths=[2.3*inch, 2.2*inch, 2.2*inch])
+            payment_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), bg_light),
+                ('BOX', (0, 0), (-1, -1), 1, border_color),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]))
+            content.append(payment_table)
+            
+            if contract.get("payment_terms"):
+                content.append(Spacer(1, 10))
+                content.append(Paragraph(f"<b>Payment Terms:</b> {contract.get('payment_terms')}", body_style))
+            
+            # Milestones
+            milestones = contract.get("milestones", [])
+            if milestones:
+                content.append(Spacer(1, 15))
+                content.append(Paragraph("<b>Payment Milestones:</b>", subsection_style))
+                
+                milestone_data = [["#", "Milestone Description", "Due Date", "Amount", "Status"]]
+                for i, m in enumerate(milestones, 1):
+                    due_date = m.get("due_date", "N/A")[:10] if m.get("due_date") else "N/A"
+                    milestone_data.append([
+                        str(i),
+                        m.get("title", "N/A"),
+                        due_date,
+                        f"{currency} {m.get('amount', 0):,.2f}",
+                        m.get("status", "Pending").title()
+                    ])
+                
+                milestone_table = Table(milestone_data, colWidths=[0.4*inch, 2.5*inch, 1*inch, 1.2*inch, 0.9*inch])
+                milestone_table.setStyle(TableStyle([
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                    ('BACKGROUND', (0, 0), (-1, 0), secondary_color),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 0.5, border_color),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                    ('TOPPADDING', (0, 0), (-1, -1), 8),
+                    ('ALIGN', (0, 0), (0, -1), 'CENTER'),
+                    ('ALIGN', (3, 0), (3, -1), 'RIGHT'),
+                    ('ALIGN', (4, 0), (4, -1), 'CENTER'),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, bg_light]),
+                ]))
+                content.append(milestone_table)
+            
+            content.append(Spacer(1, 20))
+            
+            # ===== TERMS & CONDITIONS =====
+            content.append(Paragraph("4. TERMS AND CONDITIONS", section_title_style))
+            content.append(HRFlowable(width="100%", thickness=1, color=border_color))
+            content.append(Spacer(1, 10))
+            
+            # Confidentiality
+            if contract.get("confidentiality_clause"):
+                content.append(Paragraph("<b>4.1 Confidentiality</b>", subsection_style))
+                content.append(Paragraph(contract.get("confidentiality_clause"), body_style))
+            
+            # Intellectual Property
+            if contract.get("intellectual_property"):
+                content.append(Paragraph("<b>4.2 Intellectual Property Rights</b>", subsection_style))
+                content.append(Paragraph(contract.get("intellectual_property"), body_style))
+            
+            # Termination
+            if contract.get("termination_conditions"):
+                content.append(Paragraph("<b>4.3 Termination</b>", subsection_style))
+                content.append(Paragraph(contract.get("termination_conditions"), body_style))
+            
+            # Dispute Resolution
+            if contract.get("dispute_resolution"):
+                content.append(Paragraph("<b>4.4 Dispute Resolution</b>", subsection_style))
+                content.append(Paragraph(contract.get("dispute_resolution"), body_style))
+            
+            # Additional Terms
+            if contract.get("terms"):
+                content.append(Paragraph("<b>4.5 Additional Terms</b>", subsection_style))
+                content.append(Paragraph(contract.get("terms"), body_style))
+            
+            content.append(Spacer(1, 25))
+            
+            # ===== SIGNATURES =====
+            content.append(Paragraph("5. SIGNATURES & ACCEPTANCE", section_title_style))
+            content.append(HRFlowable(width="100%", thickness=1, color=border_color))
+            content.append(Spacer(1, 10))
+            
+            content.append(Paragraph(
+                "By signing below, both parties acknowledge that they have read, understood, and agree to be bound by the terms and conditions set forth in this Agreement.",
+                body_style
+            ))
+            content.append(Spacer(1, 15))
+            
             # Helper function to load signature image
-            def get_signature_image(signature_url, max_width=2*inch, max_height=0.6*inch):
+            def get_signature_image(signature_url, max_width=2*inch, max_height=0.7*inch):
                 if not signature_url:
                     return None
                 try:
-                    if signature_url.startswith('/api/'):
-                        # Load from file system
+                    if '/api/employer/signature/' in signature_url:
+                        filename = signature_url.split('/')[-1]
+                        file_path = f"/app/public/uploads/employer_signatures/{filename}"
+                        if os.path.exists(file_path):
+                            img = Image(file_path, width=max_width, height=max_height)
+                            return img
+                    elif '/api/talent-pool/signature/' in signature_url:
                         filename = signature_url.split('/')[-1]
                         file_path = f"/app/public/uploads/signatures/{filename}"
                         if os.path.exists(file_path):
                             img = Image(file_path, width=max_width, height=max_height)
-                            img.hAlign = 'LEFT'
                             return img
                     elif signature_url.startswith('data:'):
-                        # Base64 data URL
                         header, encoded = signature_url.split(',', 1)
                         img_data = base64.b64decode(encoded)
                         img_buffer = io.BytesIO(img_data)
                         img = Image(img_buffer, width=max_width, height=max_height)
-                        img.hAlign = 'LEFT'
                         return img
                 except Exception as e:
                     logger.warning(f"Could not load signature image: {e}")
                 return None
             
+            # Build signature boxes
+            employer_sig_content = []
+            contractor_sig_content = []
+            
             # Employer signature
-            content.append(Paragraph("<b>EMPLOYER</b>", body_style))
             employer_sig = get_signature_image(contract.get("employer_signature"))
             if employer_sig:
-                content.append(employer_sig)
+                employer_sig_content.append(employer_sig)
             else:
-                content.append(Paragraph("_" * 40, body_style))
-            content.append(Paragraph(f"{contract.get('employer_name', 'N/A')}", body_style))
-            if contract.get("employer_signed_at"):
-                signed_date = contract.get("employer_signed_at")[:10]
-                content.append(Paragraph(f"Signed: {signed_date}", label_style))
-            else:
-                content.append(Paragraph("Signed: Upon contract creation", label_style))
+                employer_sig_content.append(Paragraph("<br/><br/><br/>", body_style))
             
-            content.append(Spacer(1, 20))
+            employer_signed_date = ""
+            if contract.get("employer_signed_at"):
+                employer_signed_date = contract.get("employer_signed_at")[:10]
+            elif contract.get("created_at"):
+                employer_signed_date = contract.get("created_at")[:10]
             
             # Contractor signature
-            content.append(Paragraph("<b>CONTRACTOR</b>", body_style))
             contractor_sig = get_signature_image(contract.get("contractor_signature"))
             if contractor_sig:
-                content.append(contractor_sig)
+                contractor_sig_content.append(contractor_sig)
             elif contract.get("contractor_signed"):
-                content.append(Paragraph("[Electronically Signed]", body_style))
+                contractor_sig_content.append(Paragraph("<i>[Electronically Signed]</i>", body_style))
             else:
-                content.append(Paragraph("_" * 40, body_style))
-            content.append(Paragraph(f"{contract.get('contractor_name', 'N/A')}", body_style))
-            if contract.get("contractor_signed_at"):
-                signed_date = contract.get("contractor_signed_at")[:10]
-                content.append(Paragraph(f"Signed: {signed_date}", label_style))
-            elif contract.get("contractor_signed"):
-                content.append(Paragraph("Signed: Electronically accepted", label_style))
-            else:
-                content.append(Paragraph("Signed: Pending", label_style))
+                contractor_sig_content.append(Paragraph("<br/><br/><br/>", body_style))
             
-            # Footer
+            contractor_signed_date = ""
+            if contract.get("contractor_signed_at"):
+                contractor_signed_date = contract.get("contractor_signed_at")[:10]
+            elif contract.get("contractor_signed"):
+                contractor_signed_date = "Electronically Accepted"
+            
+            # Create signature table
+            sig_data = [
+                [
+                    Paragraph("<b>EMPLOYER</b>", ParagraphStyle('SigLabel', fontSize=10, textColor=secondary_color, fontName='Helvetica-Bold')),
+                    Paragraph("", body_style),
+                    Paragraph("<b>CONTRACTOR</b>", ParagraphStyle('SigLabel', fontSize=10, textColor=accent_color, fontName='Helvetica-Bold'))
+                ],
+                [
+                    employer_sig_content[0] if employer_sig_content else Paragraph("", body_style),
+                    Paragraph("", body_style),
+                    contractor_sig_content[0] if contractor_sig_content else Paragraph("", body_style)
+                ],
+                [
+                    HRFlowable(width=2.5*inch, thickness=1, color=dark_text),
+                    Paragraph("", body_style),
+                    HRFlowable(width=2.5*inch, thickness=1, color=dark_text)
+                ],
+                [
+                    Paragraph(f"<b>{contract.get('employer_name', 'N/A')}</b>", body_style),
+                    Paragraph("", body_style),
+                    Paragraph(f"<b>{contract.get('contractor_name', 'N/A')}</b>", body_style)
+                ],
+                [
+                    Paragraph(contract.get("company_name", "") or "", label_style),
+                    Paragraph("", body_style),
+                    Paragraph("", label_style)
+                ],
+                [
+                    Paragraph(f"Date: {employer_signed_date or '________________'}", label_style),
+                    Paragraph("", body_style),
+                    Paragraph(f"Date: {contractor_signed_date or '________________'}", label_style)
+                ]
+            ]
+            
+            sig_table = Table(sig_data, colWidths=[2.8*inch, 0.6*inch, 2.8*inch])
+            sig_table.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('TOPPADDING', (0, 0), (-1, -1), 5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ]))
+            content.append(sig_table)
+            
+            # ===== FOOTER =====
             content.append(Spacer(1, 30))
-            content.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
+            content.append(HRFlowable(width="100%", thickness=1, color=border_color))
+            content.append(Spacer(1, 8))
+            
+            footer_text = f"This document was electronically generated on {datetime.now().strftime('%B %d, %Y at %H:%M')} UTC. " \
+                         f"Contract ID: {contract.get('id', 'N/A')}"
+            
             content.append(Paragraph(
-                f"This document was generated on {datetime.now().strftime('%Y-%m-%d at %H:%M')} UTC",
-                ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=colors.HexColor('#9ca3af'), alignment=TA_CENTER)
+                footer_text,
+                ParagraphStyle('FooterNote', parent=styles['Normal'], fontSize=8, textColor=light_text, alignment=TA_CENTER)
             ))
             
-            # Build PDF
-            doc.build(content)
+            content.append(Paragraph(
+                "This is a legally binding agreement. Please retain a copy for your records.",
+                ParagraphStyle('FooterWarning', parent=styles['Normal'], fontSize=8, textColor=light_text, alignment=TA_CENTER, spaceBefore=3)
+            ))
+            
+            # Build PDF with custom page template
+            doc.build(content, onFirstPage=add_page_header_footer, onLaterPages=add_page_header_footer)
             
             # Return PDF
             buffer.seek(0)
-            filename = f"Contract_{contract.get('id', 'unknown')[:8]}_{contract.get('title', 'Contract').replace(' ', '_')[:20]}.pdf"
+            safe_title = ''.join(c if c.isalnum() or c in ' -_' else '_' for c in contract.get('title', 'Contract'))
+            filename = f"Contract_{contract.get('id', 'unknown')[:8]}_{safe_title[:25]}.pdf"
             
             return StreamingResponse(
                 buffer,

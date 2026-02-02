@@ -483,7 +483,7 @@ const PostJob = () => {
                 Jobs posted: <strong>{jobsPosted}</strong> / {jobsLimit}
               </span>
             </div>
-            {jobsPosted >= jobsLimit - 2 && (
+            {jobsPosted >= jobsLimit - 2 && !isEditMode && (
               <Link to="/employer#plans">
                 <Badge variant="outline" className="text-orange-600 border-orange-300 cursor-pointer hover:bg-orange-50">
                   {jobsLimit - jobsPosted} remaining - Upgrade
@@ -497,10 +497,12 @@ const PostJob = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Briefcase className="h-6 w-6 text-blue-600" />
-              Post a Remote Job
+              {isEditMode ? 'Edit Job Posting' : 'Post a Remote Job'}
             </CardTitle>
             <CardDescription>
-              Use AI to help you create a compelling job posting
+              {isEditMode 
+                ? 'Update your job posting details' 
+                : 'Use AI to help you create a compelling job posting'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

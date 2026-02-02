@@ -403,6 +403,15 @@ Return as JSON in this exact format:
             if not job:
                 raise HTTPException(status_code=404, detail="Job not found")
             
+            # Fetch company logo if not stored in job
+            if not job.get("company_logo") and job.get("poster_id"):
+                employer = await db.users.find_one(
+                    {"id": job["poster_id"]},
+                    {"_id": 0, "company_logo": 1}
+                )
+                if employer and employer.get("company_logo"):
+                    job["company_logo"] = employer["company_logo"]
+            
             # Increment view count
             await db.remote_jobs.update_one(
                 {"id": job_id},

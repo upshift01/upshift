@@ -1381,6 +1381,100 @@ Write ONLY the summary text, no explanations or quotes."""
             logger.error(f"Error updating pricing: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    class AdminRecruiterSubscriptionCreate(BaseModel):
+        recruiter_id: str
+        plan_id: str  # recruiter-monthly, recruiter-quarterly, recruiter-annual
+        duration_days: int = 30
+        status: str = "active"  # active, trial, expired
+    
+    @talent_pool_router.post("/admin/allocate-subscription")
+    async def admin_allocate_recruiter_subscription(
+        data: AdminRecruiterSubscriptionCreate,
+        current_user = Depends(get_current_user)
+    ):
+        """Admin: Allocate a subscription to a recruiter"""
+        try:
+            if current_user.role not in ["super_admin", "admin", "reseller_admin"]:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            
+            # Find the recruiter
+            query = {"id": data.recruiter_id, "role": "recruiter"}
+            if current_user.role == "reseller_admin":
+                query["reseller_id"] = current_user.id
+            
+            recruiter = await db.users.find_one(query, {"_id": 0})
+            if not recruiter:
+                raise HTTPException(status_code=404, detail="Recruiter not found")
+            
+            # Validate plan
+            valid_plans = ["recruiter-monthly", "recruiter-quarterly", "recruiter-annual"]
+            if data.plan_id not in valid_plans:
+                raise HTTPException(status_code=400, detail=f"Invalid plan. Must be one of: {valid_plans}")
+            
+            # Validate status
+            if data.status not in ["active", "trial", "expired"]:
+                raise HTTPException(status_code=400, detail="Invalid status")
+            
+            # Calculate expiry date
+            expires_at = datetime.now(timezone.utc) + timedelta(days=data.duration_days)
+            
+            # Check for existing subscription
+            existing = await db.recruiter_subscriptions.find_one({"user_id": data.recruiter_id})
+            
+            plan_names = {
+                "recruiter-monthly": "Monthly Access",
+                "recruiter-quarterly": "Quarterly Access",
+                "recruiter-annual": "Annual Access"
+            }
+            
+            subscription_data = {
+                "user_id": data.recruiter_id,
+                "user_email": recruiter.get("email"),
+                "user_name": recruiter.get("full_name"),
+                "plan_id": data.plan_id,
+                "plan_name": plan_names.get(data.plan_id, data.plan_id),
+                "status": data.status,
+                "allocated_by": current_user.id,
+                "allocated_by_email": current_user.email,
+                "reseller_id": current_user.id if current_user.role == "reseller_admin" else None,
+                "expires_at": expires_at.isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            if existing:
+                # Update existing subscription
+                await db.recruiter_subscriptions.update_one(
+                    {"user_id": data.recruiter_id},
+                    {"$set": subscription_data}
+                )
+                message = "Recruiter subscription updated"
+            else:
+                # Create new subscription
+                subscription_data["id"] = str(uuid.uuid4())
+                subscription_data["created_at"] = datetime.now(timezone.utc).isoformat()
+                subscription_data["activated_at"] = datetime.now(timezone.utc).isoformat()
+                subscription_data["amount_cents"] = 0  # Admin allocated (free)
+                await db.recruiter_subscriptions.insert_one(subscription_data)
+                message = "Recruiter subscription created"
+            
+            logger.info(f"Recruiter subscription allocated: {data.recruiter_id} by {current_user.email}")
+            
+            return {
+                "success": True,
+                "message": message,
+                "subscription": {
+                    "plan_id": data.plan_id,
+                    "status": data.status,
+                    "expires_at": expires_at.isoformat()
+                }
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error allocating recruiter subscription: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     # ==============================================
     # YOCO PAYMENT ENDPOINTS FOR RECRUITER SUBSCRIPTIONS
     # ==============================================

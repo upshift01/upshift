@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { 
   User, Building2, Mail, Phone, Lock, Save, Loader2, 
   ArrowLeft, CheckCircle, AlertTriangle, CreditCard,
-  Bell, Shield, Eye, EyeOff
+  Bell, Shield, Eye, EyeOff, Upload, Trash2, Image
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -19,11 +19,14 @@ const EmployerSettings = () => {
   const navigate = useNavigate();
   const { user, token, refreshUser } = useAuth();
   const { toast } = useToast();
+  const logoInputRef = useRef(null);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState(null);
   
   const [profile, setProfile] = useState({
     full_name: '',

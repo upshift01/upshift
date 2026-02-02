@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import {
   ArrowLeft, Briefcase, MapPin, Award, FileText, Mail, Phone,
   Loader2, Send, CheckCircle, Clock, User, Star, Download,
-  MessageSquare, AlertCircle
+  MessageSquare, AlertCircle, Globe
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

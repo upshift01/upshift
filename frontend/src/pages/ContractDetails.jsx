@@ -1168,6 +1168,324 @@ const ContractDetails = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Work Report Submission Modal */}
+      <Dialog open={showWorkReportModal} onOpenChange={setShowWorkReportModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-blue-600" />
+              Submit Work Report
+            </DialogTitle>
+            <DialogDescription>
+              {selectedMilestoneForReport && (
+                <>Milestone: <span className="font-medium">{selectedMilestoneForReport.title}</span></>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="work_summary" className="text-sm font-medium">
+                Work Summary <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="work_summary"
+                placeholder="Describe the work you completed for this milestone..."
+                value={workReportForm.work_summary}
+                onChange={(e) => setWorkReportForm(prev => ({ ...prev, work_summary: e.target.value }))}
+                rows={4}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">Deliverables Completed</Label>
+              <div className="mt-1 space-y-2">
+                {workReportForm.deliverables_completed.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="flex-1 text-sm">{item}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeDeliverable(idx)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add a deliverable..."
+                    value={newDeliverable}
+                    onChange={(e) => setNewDeliverable(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addDeliverable())}
+                  />
+                  <Button type="button" variant="outline" onClick={addDeliverable}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="hours_worked" className="text-sm font-medium">
+                Hours Worked (Optional)
+              </Label>
+              <Input
+                id="hours_worked"
+                type="number"
+                placeholder="e.g., 40"
+                value={workReportForm.hours_worked}
+                onChange={(e) => setWorkReportForm(prev => ({ ...prev, hours_worked: e.target.value }))}
+                className="mt-1 max-w-xs"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="challenges" className="text-sm font-medium">
+                Challenges Faced (Optional)
+              </Label>
+              <Textarea
+                id="challenges"
+                placeholder="Any blockers or challenges you encountered..."
+                value={workReportForm.challenges_faced}
+                onChange={(e) => setWorkReportForm(prev => ({ ...prev, challenges_faced: e.target.value }))}
+                rows={2}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="next_steps" className="text-sm font-medium">
+                Next Steps (Optional)
+              </Label>
+              <Textarea
+                id="next_steps"
+                placeholder="What comes next after this milestone..."
+                value={workReportForm.next_steps}
+                onChange={(e) => setWorkReportForm(prev => ({ ...prev, next_steps: e.target.value }))}
+                rows={2}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowWorkReportModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitWorkReport}
+              disabled={workReportLoading || !workReportForm.work_summary.trim()}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {workReportLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Send className="h-4 w-4 mr-2" />
+              )}
+              Submit for Review
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Work Report Modal */}
+      <Dialog open={showViewReportModal} onOpenChange={setShowViewReportModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              Work Report
+            </DialogTitle>
+            <DialogDescription>
+              {viewingWorkReport?.milestone && (
+                <>Milestone: <span className="font-medium">{viewingWorkReport.milestone.title}</span></>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewingWorkReport?.report && (
+            <div className="space-y-4 py-4">
+              {/* Report Status */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm text-gray-600">Report Status</span>
+                <Badge
+                  className={
+                    viewingWorkReport.report.status === 'approved' ? 'bg-green-100 text-green-800' :
+                    viewingWorkReport.report.status === 'revision_requested' ? 'bg-amber-100 text-amber-800' :
+                    'bg-blue-100 text-blue-800'
+                  }
+                >
+                  {viewingWorkReport.report.status?.replace('_', ' ').toUpperCase() || 'PENDING REVIEW'}
+                </Badge>
+              </div>
+
+              {/* Submitted Info */}
+              <div className="text-sm text-gray-500">
+                Submitted by <span className="font-medium">{viewingWorkReport.report.submitted_by_name}</span> on{' '}
+                {new Date(viewingWorkReport.report.submitted_at).toLocaleDateString()}
+              </div>
+
+              {/* Work Summary */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Work Summary</h4>
+                <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-lg">
+                  {viewingWorkReport.report.work_summary}
+                </p>
+              </div>
+
+              {/* Deliverables */}
+              {viewingWorkReport.report.deliverables_completed?.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Deliverables Completed</h4>
+                  <ul className="space-y-1">
+                    {viewingWorkReport.report.deliverables_completed.map((item, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-gray-700">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Hours Worked */}
+              {viewingWorkReport.report.hours_worked && (
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Hours Worked</h4>
+                  <p className="text-gray-700">{viewingWorkReport.report.hours_worked} hours</p>
+                </div>
+              )}
+
+              {/* Challenges */}
+              {viewingWorkReport.report.challenges_faced && (
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Challenges Faced</h4>
+                  <p className="text-gray-700 whitespace-pre-wrap">{viewingWorkReport.report.challenges_faced}</p>
+                </div>
+              )}
+
+              {/* Next Steps */}
+              {viewingWorkReport.report.next_steps && (
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Next Steps</h4>
+                  <p className="text-gray-700 whitespace-pre-wrap">{viewingWorkReport.report.next_steps}</p>
+                </div>
+              )}
+
+              {/* Revision Feedback (if any) */}
+              {viewingWorkReport.report.revision_feedback && (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                  <h4 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Revision Requested
+                  </h4>
+                  <p className="text-amber-700">{viewingWorkReport.report.revision_feedback}</p>
+                  {viewingWorkReport.report.revision_issues?.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {viewingWorkReport.report.revision_issues.map((issue, idx) => (
+                        <li key={idx} className="text-amber-700 text-sm">• {issue}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowViewReportModal(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Revision Modal */}
+      <Dialog open={showRevisionModal} onOpenChange={setShowRevisionModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-amber-600" />
+              Request Revision
+            </DialogTitle>
+            <DialogDescription>
+              {selectedMilestoneForReport && (
+                <>Milestone: <span className="font-medium">{selectedMilestoneForReport.title}</span></>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="revision_feedback" className="text-sm font-medium">
+                Feedback <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="revision_feedback"
+                placeholder="Explain what needs to be revised or improved..."
+                value={revisionForm.feedback}
+                onChange={(e) => setRevisionForm(prev => ({ ...prev, feedback: e.target.value }))}
+                rows={4}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">Specific Issues (Optional)</Label>
+              <div className="mt-1 space-y-2">
+                {revisionForm.specific_issues.map((issue, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-amber-50 p-2 rounded">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <span className="flex-1 text-sm">{issue}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeIssue(idx)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add a specific issue..."
+                    value={newIssue}
+                    onChange={(e) => setNewIssue(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addIssue())}
+                  />
+                  <Button type="button" variant="outline" onClick={addIssue}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRevisionModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRequestRevision}
+              disabled={workReportLoading || !revisionForm.feedback.trim()}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {workReportLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <RotateCcw className="h-4 w-4 mr-2" />
+              )}
+              Request Revision
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

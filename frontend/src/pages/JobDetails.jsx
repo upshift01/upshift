@@ -383,7 +383,7 @@ const JobDetails = () => {
             </div>
 
             {/* Action Buttons */}
-            {!isOwner && isAuthenticated && (
+            {!isOwner && isAuthenticated && job.status === 'active' && (
               <div className="flex gap-3 mt-6 pt-6 border-t">
                 <Button 
                   className="flex-1 bg-blue-600 hover:bg-blue-700" 
@@ -398,6 +398,18 @@ const JobDetails = () => {
                   <Bookmark className="h-4 w-4 mr-2" />
                   Save
                 </Button>
+              </div>
+            )}
+
+            {/* Job Filled Notice */}
+            {!isOwner && isAuthenticated && job.status === 'filled' && (
+              <div className="mt-6 pt-6 border-t">
+                <Card className="bg-amber-50 border-amber-200">
+                  <CardContent className="p-4 text-center">
+                    <Badge className="bg-amber-500 mb-2">Position Filled</Badge>
+                    <p className="text-amber-800">This position has been filled and is no longer accepting applications.</p>
+                  </CardContent>
+                </Card>
               </div>
             )}
 

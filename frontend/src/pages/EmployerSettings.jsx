@@ -9,9 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { 
   User, Building2, Mail, Phone, Lock, Save, Loader2, 
   ArrowLeft, CheckCircle, AlertTriangle, CreditCard,
-  Bell, Shield, Eye, EyeOff, Upload, Trash2, Image
+  Bell, Shield, Eye, EyeOff, Upload, Trash2, Image, PenTool, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import SignatureCanvas from '../components/SignatureCanvas';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 

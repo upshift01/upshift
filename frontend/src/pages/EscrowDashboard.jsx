@@ -640,7 +640,7 @@ const EscrowDashboard = () => {
                   <div className="py-12 text-center">
                     <Scale className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900">No Disputes</h3>
-                    <p className="text-gray-600 mt-1">You don't have any escrow disputes</p>
+                    <p className="text-gray-600 mt-1">You do not have any escrow disputes</p>
                   </div>
                 )}
               </CardContent>

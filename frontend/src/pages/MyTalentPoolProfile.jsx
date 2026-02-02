@@ -277,6 +277,79 @@ const MyTalentPoolProfile = () => {
     }
   };
 
+  const handleSaveSignature = async (signatureData, mode) => {
+    setSavingSignature(true);
+    try {
+      let response;
+      
+      if (mode === 'draw') {
+        // Save drawn signature (base64 data URL)
+        response = await fetch(`${API_URL}/api/talent-pool/signature/draw`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ signature_data: signatureData })
+        });
+      } else {
+        // Upload signature file
+        const formData = new FormData();
+        formData.append('file', signatureData);
+        response = await fetch(`${API_URL}/api/talent-pool/signature`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData
+        });
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        setSignature(data.signature_url);
+        toast({
+          title: 'Signature Saved',
+          description: 'Your signature has been saved and will be used when signing contracts'
+        });
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to save signature');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save signature',
+        variant: 'destructive'
+      });
+    } finally {
+      setSavingSignature(false);
+    }
+  };
+
+  const handleDeleteSignature = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/signature`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setSignature(null);
+        toast({
+          title: 'Signature Deleted',
+          description: 'Your signature has been removed'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete signature',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleRespondToRequest = async (requestId, approved) => {
     try {
       const response = await fetch(`${API_URL}/api/talent-pool/contact-requests/${requestId}/respond`, {

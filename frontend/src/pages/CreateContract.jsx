@@ -443,14 +443,149 @@ const CreateContract = () => {
 
               {/* Terms */}
               <div>
-                <Label htmlFor="terms">Terms & Conditions (Optional)</Label>
+                <Label htmlFor="terms">Additional Terms & Conditions (Optional)</Label>
                 <Textarea
                   id="terms"
                   value={formData.terms}
                   onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
                   placeholder="Any specific terms, conditions, or agreements..."
-                  rows={4}
+                  rows={3}
                 />
+              </div>
+
+              {/* Comprehensive Contract Sections */}
+              <div className="space-y-6 pt-4 border-t">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Contract Details
+                </h3>
+
+                {/* Scope of Work */}
+                <div>
+                  <Label htmlFor="scope_of_work">Scope of Work *</Label>
+                  <Textarea
+                    id="scope_of_work"
+                    value={formData.scope_of_work}
+                    onChange={(e) => setFormData({ ...formData, scope_of_work: e.target.value })}
+                    placeholder="Describe the detailed scope of work, responsibilities, and expectations..."
+                    rows={4}
+                    required
+                  />
+                </div>
+
+                {/* Deliverables */}
+                <div>
+                  <Label>Deliverables</Label>
+                  <div className="space-y-2 mt-2">
+                    {formData.deliverables.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                        <span className="flex-1">{item}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const updated = formData.deliverables.filter((_, i) => i !== idx);
+                            setFormData({ ...formData, deliverables: updated });
+                          }}
+                          className="text-red-600 h-8 w-8 p-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="flex gap-2">
+                      <Input
+                        value={newDeliverable}
+                        onChange={(e) => setNewDeliverable(e.target.value)}
+                        placeholder="Add a deliverable..."
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newDeliverable.trim()) {
+                              setFormData({
+                                ...formData,
+                                deliverables: [...formData.deliverables, newDeliverable.trim()]
+                              });
+                              setNewDeliverable('');
+                            }
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (newDeliverable.trim()) {
+                            setFormData({
+                              ...formData,
+                              deliverables: [...formData.deliverables, newDeliverable.trim()]
+                            });
+                            setNewDeliverable('');
+                          }
+                        }}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Terms */}
+                <div>
+                  <Label htmlFor="payment_terms">Payment Terms</Label>
+                  <Textarea
+                    id="payment_terms"
+                    value={formData.payment_terms}
+                    onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
+                    placeholder="e.g., Payment due within 7 days of milestone approval..."
+                    rows={2}
+                  />
+                </div>
+
+                {/* Confidentiality */}
+                <div>
+                  <Label htmlFor="confidentiality">Confidentiality Clause</Label>
+                  <Textarea
+                    id="confidentiality"
+                    value={formData.confidentiality_clause}
+                    onChange={(e) => setFormData({ ...formData, confidentiality_clause: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                {/* Termination Conditions */}
+                <div>
+                  <Label htmlFor="termination">Termination Conditions</Label>
+                  <Textarea
+                    id="termination"
+                    value={formData.termination_conditions}
+                    onChange={(e) => setFormData({ ...formData, termination_conditions: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                {/* Dispute Resolution */}
+                <div>
+                  <Label htmlFor="dispute">Dispute Resolution</Label>
+                  <Textarea
+                    id="dispute"
+                    value={formData.dispute_resolution}
+                    onChange={(e) => setFormData({ ...formData, dispute_resolution: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                {/* Intellectual Property */}
+                <div>
+                  <Label htmlFor="ip">Intellectual Property Rights</Label>
+                  <Textarea
+                    id="ip"
+                    value={formData.intellectual_property}
+                    onChange={(e) => setFormData({ ...formData, intellectual_property: e.target.value })}
+                    rows={3}
+                  />
+                </div>
               </div>
 
               {/* Submit */}

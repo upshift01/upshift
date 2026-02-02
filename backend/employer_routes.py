@@ -700,8 +700,8 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
             with open(file_path, "wb") as f:
                 f.write(contents)
             
-            # Update user record with logo path
-            logo_url = f"/uploads/company_logos/{filename}"
+            # Update user record with logo path - use API endpoint for proper MIME type serving
+            logo_url = f"/api/employer/logo/{filename}"
             await db.users.update_one(
                 {"id": current_user.id},
                 {"$set": {

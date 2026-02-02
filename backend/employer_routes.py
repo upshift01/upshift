@@ -4,7 +4,8 @@ Handles employer plans, subscriptions, and job posting limits
 Supports both Stripe (USD/International) and Yoco (ZAR/South Africa)
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone, timedelta
@@ -12,8 +13,11 @@ from bson import ObjectId
 import uuid
 import logging
 import os
+import shutil
 
 logger = logging.getLogger(__name__)
+
+COMPANY_LOGO_PATH = "/app/public/uploads/company_logos"
 
 employer_router = APIRouter(prefix="/api/employer", tags=["Employer"])
 

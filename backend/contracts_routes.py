@@ -71,6 +71,15 @@ class MilestoneUpdate(BaseModel):
     due_date: Optional[str] = None
     status: Optional[str] = None  # pending, in_progress, submitted, approved, paid
 
+class MilestoneSubmission(BaseModel):
+    """Work report submitted with milestone payment request"""
+    work_summary: str  # Summary of work completed
+    deliverables_completed: List[str] = []  # List of completed deliverables
+    hours_worked: Optional[float] = None  # Optional hours tracking
+    challenges_faced: Optional[str] = None  # Any challenges or blockers
+    next_steps: Optional[str] = None  # What's next (if applicable)
+    attachments: List[str] = []  # URLs to uploaded files/screenshots
+
 
 def get_contracts_routes(db, get_current_user):
     """Factory function to create contracts routes with database dependency"""

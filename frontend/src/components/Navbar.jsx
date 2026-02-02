@@ -294,6 +294,17 @@ const Navbar = () => {
                           </Link>
                         )}
                         
+                        {(user?.role === 'job_seeker' || user?.role === 'employer') && (
+                          <Link
+                            to="/escrow"
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            <Shield className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm text-gray-700">Escrow Dashboard</span>
+                          </Link>
+                        )}
+                        
                         {user?.role === 'job_seeker' && (
                           <Link
                             to="/stripe-connect"

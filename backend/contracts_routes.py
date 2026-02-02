@@ -4,6 +4,7 @@ Handles contract creation, management, and milestone tracking
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
@@ -11,6 +12,7 @@ from bson import ObjectId
 import uuid
 import logging
 import os
+import io
 
 from email_service import email_service
 from websocket_service import create_notification

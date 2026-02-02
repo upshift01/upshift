@@ -382,8 +382,9 @@ const JobDetails = () => {
               )}
             </div>
 
-            {/* Action Buttons */}
-            {!isOwner && isAuthenticated && job.status === 'active' && (
+            {/* Action Buttons - Only for Job Seekers */}
+            {!isOwner && isAuthenticated && job.status === 'active' && 
+             (!user?.role || user?.role === 'customer' || user?.role === 'job_seeker') && (
               <div className="flex gap-3 mt-6 pt-6 border-t">
                 <Button 
                   className="flex-1 bg-blue-600 hover:bg-blue-700" 
@@ -398,6 +399,23 @@ const JobDetails = () => {
                   <Bookmark className="h-4 w-4 mr-2" />
                   Save
                 </Button>
+              </div>
+            )}
+
+            {/* Notice for Employers viewing jobs */}
+            {!isOwner && isAuthenticated && job.status === 'active' && 
+             (user?.role === 'employer' || user?.role === 'recruiter' || user?.role === 'reseller_admin' || user?.role === 'super_admin') && (
+              <div className="mt-6 pt-6 border-t">
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="p-4 text-center">
+                    <Badge className="bg-blue-500 mb-2">Viewing as {user?.role === 'employer' ? 'Employer' : 'Admin'}</Badge>
+                    <p className="text-blue-800">
+                      {user?.role === 'employer' 
+                        ? 'As an employer, you can post jobs but cannot apply for positions.'
+                        : 'You are viewing this job listing for administrative purposes.'}
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
             )}
 

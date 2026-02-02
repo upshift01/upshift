@@ -724,6 +724,82 @@ const AdminRecruiters = () => {
           </Card>
         </div>
       )}
+
+      {/* Subscription Modal */}
+      {showSubscriptionModal && selectedRecruiter && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4 bg-white">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Allocate Subscription</CardTitle>
+                  <CardDescription>
+                    Assign a subscription to {selectedRecruiter.full_name}
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setShowSubscriptionModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Plan</Label>
+                <select
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={subscriptionForm.plan_id}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, plan_id: e.target.value })}
+                >
+                  <option value="recruiter-monthly">Monthly Access (30 days)</option>
+                  <option value="recruiter-quarterly">Quarterly Access (90 days)</option>
+                  <option value="recruiter-annual">Annual Access (365 days)</option>
+                </select>
+              </div>
+              <div>
+                <Label>Duration (days)</Label>
+                <Input
+                  type="number"
+                  value={subscriptionForm.duration_days}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, duration_days: parseInt(e.target.value) || 30 })}
+                  min={1}
+                  max={365}
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <select
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={subscriptionForm.status}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, status: e.target.value })}
+                >
+                  <option value="active">Active</option>
+                  <option value="trial">Trial</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  <Crown className="h-4 w-4 inline mr-1" />
+                  This will grant the recruiter access to browse and contact candidates in the Talent Pool.
+                </p>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowSubscriptionModal(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleAllocateSubscription} 
+                  disabled={saving}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Crown className="h-4 w-4 mr-2" />}
+                  Allocate Subscription
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

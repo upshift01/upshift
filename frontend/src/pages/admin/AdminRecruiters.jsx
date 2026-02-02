@@ -27,6 +27,7 @@ const AdminRecruiters = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [selectedRecruiter, setSelectedRecruiter] = useState(null);
   const [saving, setSaving] = useState(false);
   
@@ -36,6 +37,12 @@ const AdminRecruiters = () => {
     email: '',
     phone: '',
     company_name: ''
+  });
+  
+  const [subscriptionForm, setSubscriptionForm] = useState({
+    plan_id: 'recruiter-monthly',
+    duration_days: 30,
+    status: 'active'
   });
   
   const [newPassword, setNewPassword] = useState('');

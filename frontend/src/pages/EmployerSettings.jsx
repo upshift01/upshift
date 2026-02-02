@@ -25,9 +25,11 @@ const EmployerSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [savingSignature, setSavingSignature] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [companyLogo, setCompanyLogo] = useState(null);
+  const [signature, setSignature] = useState(null);
   
   const [profile, setProfile] = useState({
     full_name: '',

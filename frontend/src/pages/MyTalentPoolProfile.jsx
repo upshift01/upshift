@@ -149,13 +149,21 @@ const MyTalentPoolProfile = () => {
 
     setSaving(true);
     try {
+      // Map frontend field names to backend expected names
+      const payload = {
+        ...formData,
+        profile_picture: formData.profile_picture_url  // Backend expects 'profile_picture'
+      };
+      delete payload.profile_picture_url;
+      delete payload.is_visible;  // Not needed for opt-in
+      
       const response = await fetch(`${API_URL}/api/talent-pool/opt-in`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();

@@ -281,8 +281,8 @@ class TestCompanyLogoForPDF:
         """Test company logo endpoint exists"""
         self.get_auth_token()
         
-        # Get employer profile to find logo URL
-        response = self.session.get(f"{BASE_URL}/api/employer/profile")
+        # Get employer profile to find logo URL using /api/auth/me
+        response = self.session.get(f"{BASE_URL}/api/auth/me")
         assert response.status_code == 200
         
         profile = response.json()

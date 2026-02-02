@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import {
   Users, Loader2, ArrowLeft, Star, CheckCircle, XCircle,
   Timer, Eye, DollarSign, Clock, MessageSquare, ExternalLink,
-  ThumbsUp, ThumbsDown, FileText, Briefcase, Globe, FileSignature
+  ThumbsUp, ThumbsDown, FileText, Briefcase, Globe, FileSignature, FileCheck
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

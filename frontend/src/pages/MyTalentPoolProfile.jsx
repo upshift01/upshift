@@ -28,8 +28,10 @@ const MyTalentPoolProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
+  const [savingSignature, setSavingSignature] = useState(false);
   const [optedIn, setOptedIn] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [signature, setSignature] = useState(null);
   const [contactRequests, setContactRequests] = useState([]);
   const [industries, setIndustries] = useState([]);
   const [experienceLevels, setExperienceLevels] = useState([]);

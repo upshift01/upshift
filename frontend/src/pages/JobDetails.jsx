@@ -22,10 +22,36 @@ const JobDetails = () => {
   const [loading, setLoading] = useState(true);
   const [job, setJob] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [existingProposal, setExistingProposal] = useState(null);
+  const [checkingProposal, setCheckingProposal] = useState(false);
 
   useEffect(() => {
     fetchJobDetails();
   }, [jobId]);
+
+  useEffect(() => {
+    // Check if user has already applied when authenticated
+    if (isAuthenticated && token && user && job && !isOwner) {
+      checkExistingProposal();
+    }
+  }, [isAuthenticated, token, user, job, isOwner]);
+
+  const checkExistingProposal = async () => {
+    try {
+      setCheckingProposal(true);
+      const response = await fetch(`${API_URL}/api/proposals/check/${jobId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setExistingProposal(data.proposal);
+      }
+    } catch (error) {
+      console.error('Error checking existing proposal:', error);
+    } finally {
+      setCheckingProposal(false);
+    }
+  };
 
   const fetchJobDetails = async () => {
     try {

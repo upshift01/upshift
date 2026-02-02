@@ -208,21 +208,6 @@ const Navbar = () => {
                       </div>
                     </Link>
                   )}
-                  {user?.role === 'employer' && (
-                    <Link
-                      to="/remote-jobs/my-jobs"
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
-                      onClick={() => setRemoteJobsDropdownOpen(false)}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Briefcase className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">My Posted Jobs</div>
-                        <div className="text-xs text-gray-500">Manage your job listings</div>
-                      </div>
-                    </Link>
-                  )}
                   {!isAuthenticated && (
                     <Link
                       to="/login"

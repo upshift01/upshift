@@ -701,22 +701,40 @@ Write ONLY the summary text, no explanations or quotes."""
     
     @talent_pool_router.post("/request-contact/{profile_id}")
     async def request_contact(profile_id: str, data: ContactRequest, current_user = Depends(get_current_user)):
-        """Recruiter requests contact with a candidate"""
+        """Recruiter or Employer requests contact with a candidate"""
         try:
             from email_service import email_service
             import os
             
             user_id = current_user.id
+            user_role = current_user.role
             
-            # Check recruiter access
-            recruiter_access = await db.recruiter_subscriptions.find_one({
-                "user_id": user_id,
-                "status": "active",
-                "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
-            })
+            # Check access - allow recruiters with subscription, employers, and super_admin
+            has_access = False
+            requester_type = "Recruiter"  # Default label
             
-            if not recruiter_access and current_user.role != "super_admin":
-                raise HTTPException(status_code=403, detail="Recruiter subscription required")
+            # Super admin always has access
+            if user_role == "super_admin":
+                has_access = True
+                requester_type = "Administrator"
+            
+            # Employers have access (to contact candidates who applied or matched)
+            elif user_role == "employer":
+                has_access = True
+                requester_type = "Employer"
+            
+            # Recruiters need active subscription
+            else:
+                recruiter_access = await db.recruiter_subscriptions.find_one({
+                    "user_id": user_id,
+                    "status": "active",
+                    "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
+                })
+                if recruiter_access:
+                    has_access = True
+            
+            if not has_access:
+                raise HTTPException(status_code=403, detail="Subscription required to contact candidates")
             
             # Get candidate profile
             profile = await db.talent_pool_profiles.find_one({"id": profile_id, "is_visible": True})
@@ -735,17 +753,23 @@ Write ONLY the summary text, no explanations or quotes."""
                     raise HTTPException(status_code=400, detail="Contact already approved")
                 raise HTTPException(status_code=400, detail="Contact request already pending")
             
-            # Get recruiter info
-            recruiter = await db.users.find_one({"id": user_id}, {"_id": 0, "full_name": 1, "email": 1})
+            # Get requester info
+            requester = await db.users.find_one({"id": user_id}, {"_id": 0, "full_name": 1, "email": 1, "company_name": 1})
+            requester_name = requester.get("full_name", requester_type) if requester else requester_type
+            
+            # For employers, include company name
+            if user_role == "employer" and requester and requester.get("company_name"):
+                requester_name = f"{requester_name} ({requester.get('company_name')})"
             
             contact_request = {
                 "id": str(uuid.uuid4()),
                 "profile_id": profile_id,
                 "candidate_user_id": profile["user_id"],
                 "candidate_name": profile["full_name"],
-                "recruiter_user_id": user_id,
-                "recruiter_name": recruiter.get("full_name", "Recruiter") if recruiter else "Recruiter",
-                "recruiter_email": recruiter.get("email", "") if recruiter else "",
+                "recruiter_user_id": user_id,  # Keep field name for compatibility
+                "requester_type": requester_type,
+                "recruiter_name": requester_name,
+                "recruiter_email": requester.get("email", "") if requester else "",
                 "message": data.message,
                 "status": "pending",  # pending, approved, rejected
                 "created_at": datetime.now(timezone.utc).isoformat(),

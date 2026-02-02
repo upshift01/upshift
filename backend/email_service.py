@@ -610,56 +610,80 @@ If you have any questions, feel free to reach out to our support team.
         platform_name: str = "UpShift"
     ) -> bool:
         """Send email when a contract is created for the contractor to review"""
-        subject = f"📄 New Contract: {contract_title} - Review Required"
+        platform_name = self.platform_name or platform_name
         
-        html_body = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #1e40af, #3b82f6); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
-                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
-                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
-                .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af; }}
-                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
-                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>📄 New Contract</h1>
-                </div>
-                <div class="content">
-                    <p>Dear {contractor_name},</p>
-                    
-                    <p>A new contract has been created for you. Please review the details and sign to activate it.</p>
-                    
-                    <div class="details">
-                        <p><strong>📋 Contract:</strong> {contract_title}</p>
-                        <p><strong>🏢 Company:</strong> {company_name}</p>
-                        <p><strong>👤 Employer:</strong> {employer_name}</p>
-                        <p><strong>💰 Value:</strong> {contract_value}</p>
-                        <p><strong>📅 Start Date:</strong> {start_date}</p>
+        # Check for custom template
+        custom_template = await self.get_custom_template("contract_created")
+        
+        variables = {
+            "platform_name": platform_name,
+            "contractor_name": contractor_name,
+            "contract_title": contract_title,
+            "employer_name": employer_name,
+            "company_name": company_name,
+            "contract_value": contract_value,
+            "start_date": start_date,
+            "contract_url": contract_url
+        }
+        
+        # Use custom subject if available
+        if custom_template and custom_template.get("subject"):
+            subject = self.replace_variables(custom_template["subject"], variables)
+        else:
+            subject = f"📄 New Contract: {contract_title} - Review Required"
+        
+        # Use custom body if available
+        if custom_template and custom_template.get("body_html"):
+            html_body = self.replace_variables(custom_template["body_html"], variables)
+        else:
+            html_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #1e40af, #3b82f6); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                    .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                    .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                    .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af; }}
+                    .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                    .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>📄 New Contract</h1>
                     </div>
-                    
-                    <p style="text-align: center;">
-                        <a href="{contract_url}" class="btn">Review & Sign Contract</a>
-                    </p>
-                    
-                    <p>Please review the contract carefully before signing.</p>
-                    
-                    <p>Best regards,<br>The {platform_name} Team</p>
+                    <div class="content">
+                        <p>Dear {contractor_name},</p>
+                        
+                        <p>A new contract has been created for you. Please review the details and sign to activate it.</p>
+                        
+                        <div class="details">
+                            <p><strong>📋 Contract:</strong> {contract_title}</p>
+                            <p><strong>🏢 Company:</strong> {company_name}</p>
+                            <p><strong>👤 Employer:</strong> {employer_name}</p>
+                            <p><strong>💰 Value:</strong> {contract_value}</p>
+                            <p><strong>📅 Start Date:</strong> {start_date}</p>
+                        </div>
+                        
+                        <p style="text-align: center;">
+                            <a href="{contract_url}" class="btn">Review & Sign Contract</a>
+                        </p>
+                        
+                        <p>Please review the contract carefully before signing.</p>
+                        
+                        <p>Best regards,<br>The {platform_name} Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated notification from {platform_name}.</p>
+                    </div>
                 </div>
-                <div class="footer">
-                    <p>This is an automated notification from {platform_name}.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
+            </body>
+            </html>
+            """
         
         return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
     

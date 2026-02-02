@@ -43,17 +43,17 @@ const TalentPoolProfile = () => {
       } else if (response.status === 403) {
         toast({
           title: 'Access Denied',
-          description: 'Recruiter subscription required to view profiles',
+          description: 'Subscription required to view profiles',
           variant: 'destructive'
         });
-        navigate('/talent-pool');
+        navigate(-1);
       } else if (response.status === 404) {
         toast({
           title: 'Not Found',
           description: 'Candidate profile not found',
           variant: 'destructive'
         });
-        navigate('/talent-pool');
+        navigate(-1);
       }
     } catch (error) {
       console.error('Error fetching candidate:', error);

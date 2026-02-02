@@ -232,7 +232,7 @@ const RemoteJobs = () => {
                   <SelectValue placeholder="Job Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   {options?.job_types?.map((type) => (
                     <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
                   ))}
@@ -244,7 +244,7 @@ const RemoteJobs = () => {
                   <SelectValue placeholder="Experience Level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Levels</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
                   {options?.experience_levels?.map((level) => (
                     <SelectItem key={level.id} value={level.id}>{level.name}</SelectItem>
                   ))}
@@ -256,7 +256,7 @@ const RemoteJobs = () => {
                   <SelectValue placeholder="Currency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Currencies</SelectItem>
+                  <SelectItem value="all">All Currencies</SelectItem>
                   {options?.currencies?.map((curr) => (
                     <SelectItem key={curr.id} value={curr.id}>{curr.name}</SelectItem>
                   ))}

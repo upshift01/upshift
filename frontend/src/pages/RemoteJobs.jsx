@@ -17,7 +17,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const RemoteJobs = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, token } = useAuth();
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,9 @@ const RemoteJobs = () => {
   const [experienceLevel, setExperienceLevel] = useState('');
   const [currency, setCurrency] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+
+  // Check if user is employer - they should only see their own jobs
+  const isEmployer = user?.role === 'employer';
 
   useEffect(() => {
     fetchOptions();
@@ -58,11 +61,20 @@ const RemoteJobs = () => {
       if (experienceLevel) params.append('experience_level', experienceLevel);
       if (currency) params.append('currency', currency);
       
-      const response = await fetch(`${API_URL}/api/remote-jobs/jobs?${params}`);
+      // If employer, fetch only their own jobs
+      let endpoint = `${API_URL}/api/remote-jobs/jobs?${params}`;
+      let headers = {};
+      
+      if (isEmployer && token) {
+        endpoint = `${API_URL}/api/remote-jobs/my-jobs?${params}`;
+        headers = { Authorization: `Bearer ${token}` };
+      }
+      
+      const response = await fetch(endpoint, { headers });
       if (response.ok) {
         const data = await response.json();
         setJobs(data.jobs);
-        setPagination(data.pagination);
+        setPagination(data.pagination || { page: 1, totalPages: 1, total: data.jobs?.length || 0 });
       }
     } catch (error) {
       console.error('Error fetching jobs:', error);

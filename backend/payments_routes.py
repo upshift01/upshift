@@ -981,12 +981,12 @@ def get_payments_routes(db, get_current_user):
             # Employer stats
             total_funded_as_employer = sum(c.get("escrow_funded", 0) for c in as_employer)
             total_released_as_employer = sum(c.get("total_paid", 0) for c in as_employer)
-            pending_release_as_employer = total_funded_as_employer - total_released_as_employer
+            pending_release_as_employer = max(0, total_funded_as_employer - total_released_as_employer)
             
             # Contractor stats (funds held for them)
             total_funded_for_contractor = sum(c.get("escrow_funded", 0) for c in as_contractor)
             total_received_as_contractor = sum(c.get("total_paid", 0) for c in as_contractor)
-            pending_for_contractor = total_funded_for_contractor - total_received_as_contractor
+            pending_for_contractor = max(0, total_funded_for_contractor - total_received_as_contractor)
             
             # Get pending approvals (milestones submitted but not approved)
             pending_approvals = []

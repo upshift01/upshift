@@ -328,8 +328,16 @@ const RemoteJobs = () => {
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-start gap-3 mb-3">
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                            {job.company_name?.charAt(0)?.toUpperCase() || 'C'}
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden">
+                            {job.company_logo ? (
+                              <img 
+                                src={`${API_URL}${job.company_logo}`} 
+                                alt={job.company_name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              job.company_name?.charAt(0)?.toUpperCase() || 'C'
+                            )}
                           </div>
                           <div>
                             <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600">

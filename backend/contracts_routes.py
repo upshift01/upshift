@@ -141,6 +141,15 @@ def get_contracts_routes(db, get_current_user):
                 "start_date": data.start_date,
                 "end_date": data.end_date,
                 
+                # Comprehensive contract fields
+                "scope_of_work": data.scope_of_work,
+                "deliverables": data.deliverables or [],
+                "payment_terms": data.payment_terms,
+                "confidentiality_clause": data.confidentiality_clause,
+                "termination_conditions": data.termination_conditions,
+                "dispute_resolution": data.dispute_resolution,
+                "intellectual_property": data.intellectual_property,
+                
                 # Payment
                 "payment_amount": data.payment_amount,
                 "payment_currency": data.payment_currency,
@@ -154,6 +163,12 @@ def get_contracts_routes(db, get_current_user):
                 
                 # Terms
                 "terms": data.terms,
+                
+                # Signatures
+                "employer_signature": None,
+                "employer_signed_at": None,
+                "contractor_signature": None,
+                "contractor_signed_at": None,
                 
                 # Status
                 "status": "draft",  # draft, active, completed, cancelled, disputed

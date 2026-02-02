@@ -180,6 +180,7 @@ const AppContent = () => {
         {/* Remote Jobs / Work Space */}
         <Route path="/remote-jobs" element={<RemoteJobs />} />
         <Route path="/remote-jobs/post" element={<PrivateRoute><PostJob /></PrivateRoute>} />
+        <Route path="/remote-jobs/edit/:jobId" element={<PrivateRoute><PostJob /></PrivateRoute>} />
         <Route path="/remote-jobs/my-jobs" element={<PrivateRoute><MyJobs /></PrivateRoute>} />
         <Route path="/remote-jobs/recommendations" element={<PrivateRoute><JobRecommendations /></PrivateRoute>} />
         <Route path="/remote-jobs/company-dashboard" element={<PrivateRoute><CompanyDashboard /></PrivateRoute>} />

@@ -371,26 +371,26 @@ const CreateContract = () => {
                       <SelectItem value="weekly">Weekly</SelectItem>
                       <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
                       <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="milestones">By Milestones</SelectItem>
+                      <SelectItem value="milestones">By Payment Milestones</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              {/* Milestones */}
+              {/* Payment Milestones */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Milestones (Optional)</h4>
+                  <h4 className="font-medium">Payment Milestones (Optional)</h4>
                   <Button type="button" variant="outline" size="sm" onClick={addMilestone}>
                     <Plus className="h-4 w-4 mr-1" />
-                    Add Milestone
+                    Add Payment Milestone
                   </Button>
                 </div>
 
                 {formData.milestones.map((milestone, idx) => (
                   <div key={idx} className="p-4 border rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-500">Milestone #{idx + 1}</span>
+                      <span className="text-sm font-medium text-gray-500">Payment Milestone #{idx + 1}</span>
                       <Button
                         type="button"
                         variant="ghost"

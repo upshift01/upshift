@@ -8,7 +8,7 @@ import requests
 import os
 import io
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://jobhubai.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://upshift-jobs.preview.emergentagent.com')
 
 # Test credentials
 EMPLOYER_EMAIL = "employer@testcompany.com"

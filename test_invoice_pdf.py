@@ -9,7 +9,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://jobhubai.preview.emergentagent.com/api"
+BACKEND_URL = "https://upshift-jobs.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {

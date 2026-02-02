@@ -427,6 +427,195 @@ const ContractDetails = () => {
     }
   };
 
+  // Work Report Functions
+  const openWorkReportModal = (milestone) => {
+    setSelectedMilestoneForReport(milestone);
+    setWorkReportForm({
+      work_summary: '',
+      deliverables_completed: [],
+      hours_worked: '',
+      challenges_faced: '',
+      next_steps: '',
+      attachments: []
+    });
+    setShowWorkReportModal(true);
+  };
+
+  const handleSubmitWorkReport = async () => {
+    if (!workReportForm.work_summary.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Work summary is required',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setWorkReportLoading(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/api/contracts/${contractId}/milestones/${selectedMilestoneForReport.id}/submit`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            ...workReportForm,
+            hours_worked: workReportForm.hours_worked ? parseFloat(workReportForm.hours_worked) : null
+          })
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: 'Work Report Submitted',
+          description: 'Your work report has been submitted for employer review'
+        });
+        setShowWorkReportModal(false);
+        fetchContract();
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to submit work report');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setWorkReportLoading(false);
+    }
+  };
+
+  const viewWorkReport = async (milestone) => {
+    setWorkReportLoading(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/api/contracts/${contractId}/milestones/${milestone.id}/work-report`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.has_report) {
+          setViewingWorkReport({
+            milestone: data.milestone,
+            report: data.work_report
+          });
+          setShowViewReportModal(true);
+        } else {
+          toast({
+            title: 'No Report',
+            description: 'No work report has been submitted for this milestone yet'
+          });
+        }
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to fetch work report');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setWorkReportLoading(false);
+    }
+  };
+
+  const openRevisionModal = (milestone) => {
+    setSelectedMilestoneForReport(milestone);
+    setRevisionForm({ feedback: '', specific_issues: [] });
+    setShowRevisionModal(true);
+  };
+
+  const handleRequestRevision = async () => {
+    if (!revisionForm.feedback.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please provide feedback for the revision request',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setWorkReportLoading(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/api/contracts/${contractId}/milestones/${selectedMilestoneForReport.id}/request-revision`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(revisionForm)
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: 'Revision Requested',
+          description: 'The contractor has been notified to revise their work'
+        });
+        setShowRevisionModal(false);
+        setShowViewReportModal(false);
+        fetchContract();
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to request revision');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setWorkReportLoading(false);
+    }
+  };
+
+  const addDeliverable = () => {
+    if (newDeliverable.trim()) {
+      setWorkReportForm(prev => ({
+        ...prev,
+        deliverables_completed: [...prev.deliverables_completed, newDeliverable.trim()]
+      }));
+      setNewDeliverable('');
+    }
+  };
+
+  const removeDeliverable = (index) => {
+    setWorkReportForm(prev => ({
+      ...prev,
+      deliverables_completed: prev.deliverables_completed.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addIssue = () => {
+    if (newIssue.trim()) {
+      setRevisionForm(prev => ({
+        ...prev,
+        specific_issues: [...prev.specific_issues, newIssue.trim()]
+      }));
+      setNewIssue('');
+    }
+  };
+
+  const removeIssue = (index) => {
+    setRevisionForm(prev => ({
+      ...prev,
+      specific_issues: prev.specific_issues.filter((_, i) => i !== index)
+    }));
+  };
+
   const getEscrowBadge = (escrowStatus) => {
     switch (escrowStatus) {
       case 'funded':

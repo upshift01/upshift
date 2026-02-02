@@ -356,8 +356,12 @@ const PostJob = () => {
         budget_max: formData.budget_max ? parseFloat(formData.budget_max) : null
       };
 
-      const response = await fetch(`${API_URL}/api/remote-jobs/jobs`, {
-        method: 'POST',
+      const url = isEditMode 
+        ? `${API_URL}/api/remote-jobs/jobs/${jobId}`
+        : `${API_URL}/api/remote-jobs/jobs`;
+      
+      const response = await fetch(url, {
+        method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
@@ -368,18 +372,18 @@ const PostJob = () => {
       if (response.ok) {
         const data = await response.json();
         toast({
-          title: 'Job Posted!',
-          description: 'Your job listing is now live'
+          title: isEditMode ? 'Job Updated!' : 'Job Posted!',
+          description: isEditMode ? 'Your job listing has been updated' : 'Your job listing is now live'
         });
-        navigate(`/remote-jobs/${data.job.id}`);
+        navigate(`/remote-jobs/${isEditMode ? jobId : data.job.id}`);
       } else {
         const error = await response.json();
-        throw new Error(error.detail || 'Failed to post job');
+        throw new Error(error.detail || `Failed to ${isEditMode ? 'update' : 'post'} job`);
       }
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to post job',
+        description: error.message || `Failed to ${isEditMode ? 'update' : 'post'} job`,
         variant: 'destructive'
       });
     } finally {
@@ -388,7 +392,7 @@ const PostJob = () => {
   };
 
   // Loading state
-  if (checkingAccess || !options) {
+  if (checkingAccess || !options || loadingJob) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -396,8 +400,8 @@ const PostJob = () => {
     );
   }
 
-  // Access blocked - show upgrade prompt
-  if (!canPost) {
+  // Access blocked - show upgrade prompt (only for new jobs, not edits)
+  if (!canPost && !isEditMode) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-2xl mx-auto px-4">

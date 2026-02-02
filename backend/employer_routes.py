@@ -796,6 +796,205 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
             logger.error(f"Error deleting company logo: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    # ==================== EMPLOYER SIGNATURE MANAGEMENT ====================
+    
+    @employer_router.post("/signature")
+    async def upload_employer_signature(
+        file: UploadFile = File(None),
+        current_user = Depends(get_current_user)
+    ):
+        """Upload signature image for employer"""
+        try:
+            if current_user.role != "employer":
+                raise HTTPException(status_code=403, detail="Only employers can upload signatures")
+            
+            if not file:
+                raise HTTPException(status_code=400, detail="No file provided")
+            
+            # Validate file type
+            allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"]
+            if file.content_type not in allowed_types:
+                raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, JPEG, SVG")
+            
+            # Generate unique filename
+            ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+            filename = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{ext}"
+            file_path = os.path.join(EMPLOYER_SIGNATURE_PATH, filename)
+            
+            # Remove old signature if exists
+            old_user = await db.users.find_one(
+                {"id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            if old_user and old_user.get("signature_url"):
+                old_filename = old_user["signature_url"].split("/")[-1]
+                old_path = os.path.join(EMPLOYER_SIGNATURE_PATH, old_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            
+            # Save new signature
+            contents = await file.read()
+            with open(file_path, "wb") as f:
+                f.write(contents)
+            
+            signature_url = f"/api/employer/signature/{filename}"
+            
+            # Update user record with signature
+            await db.users.update_one(
+                {"id": current_user.id},
+                {"$set": {
+                    "signature_url": signature_url,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            logger.info(f"Signature uploaded for employer {current_user.id}")
+            
+            return {
+                "success": True,
+                "signature_url": signature_url,
+                "message": "Signature uploaded successfully"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error uploading employer signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @employer_router.post("/signature/draw")
+    async def save_employer_drawn_signature(
+        data: dict,
+        current_user = Depends(get_current_user)
+    ):
+        """Save a drawn signature (base64 data URL) for employer"""
+        try:
+            if current_user.role != "employer":
+                raise HTTPException(status_code=403, detail="Only employers can save signatures")
+            
+            signature_data = data.get("signature_data")
+            if not signature_data:
+                raise HTTPException(status_code=400, detail="No signature data provided")
+            
+            # Parse base64 data URL
+            if "," in signature_data:
+                header, encoded = signature_data.split(",", 1)
+            else:
+                encoded = signature_data
+            
+            # Decode and save
+            image_data = base64.b64decode(encoded)
+            filename = f"{current_user.id}_{uuid.uuid4().hex[:8]}.png"
+            file_path = os.path.join(EMPLOYER_SIGNATURE_PATH, filename)
+            
+            # Remove old signature if exists
+            old_user = await db.users.find_one(
+                {"id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            if old_user and old_user.get("signature_url"):
+                old_filename = old_user["signature_url"].split("/")[-1]
+                old_path = os.path.join(EMPLOYER_SIGNATURE_PATH, old_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            
+            with open(file_path, "wb") as f:
+                f.write(image_data)
+            
+            signature_url = f"/api/employer/signature/{filename}"
+            
+            # Update user record with signature
+            await db.users.update_one(
+                {"id": current_user.id},
+                {"$set": {
+                    "signature_url": signature_url,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            logger.info(f"Drawn signature saved for employer {current_user.id}")
+            
+            return {
+                "success": True,
+                "signature_url": signature_url,
+                "message": "Signature saved successfully"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error saving employer drawn signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @employer_router.get("/signature/{filename}")
+    async def get_employer_signature(filename: str):
+        """Serve employer signature image file"""
+        import mimetypes
+        file_path = os.path.join(EMPLOYER_SIGNATURE_PATH, filename)
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Signature not found")
+        
+        mime_type, _ = mimetypes.guess_type(filename)
+        if mime_type is None:
+            mime_type = "image/png"
+        
+        return FileResponse(file_path, media_type=mime_type)
+    
+    @employer_router.delete("/signature")
+    async def delete_employer_signature(current_user = Depends(get_current_user)):
+        """Delete employer's signature"""
+        try:
+            if current_user.role != "employer":
+                raise HTTPException(status_code=403, detail="Only employers can manage signatures")
+            
+            user = await db.users.find_one(
+                {"id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            
+            if user and user.get("signature_url"):
+                filename = user["signature_url"].split("/")[-1]
+                file_path = os.path.join(EMPLOYER_SIGNATURE_PATH, filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                
+                await db.users.update_one(
+                    {"id": current_user.id},
+                    {"$set": {
+                        "signature_url": None,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+            
+            return {"success": True, "message": "Signature deleted"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error deleting employer signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @employer_router.get("/my-signature")
+    async def get_my_employer_signature(current_user = Depends(get_current_user)):
+        """Get current employer's signature URL"""
+        try:
+            if current_user.role != "employer":
+                raise HTTPException(status_code=403, detail="Only employers can access this")
+            
+            user = await db.users.find_one(
+                {"id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            
+            return {
+                "success": True,
+                "signature_url": user.get("signature_url") if user else None
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting employer signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return employer_router
 
 

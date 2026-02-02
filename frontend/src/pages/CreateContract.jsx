@@ -72,6 +72,27 @@ const CreateContract = () => {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Check if contract already exists for this proposal
+        const contractCheckResponse = await fetch(`${API_URL}/api/contracts?proposal_id=${proposalId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (contractCheckResponse.ok) {
+          const contractData = await contractCheckResponse.json();
+          // Look for a contract linked to this proposal
+          const existingContract = contractData.contracts?.find(c => c.proposal_id === proposalId);
+          if (existingContract) {
+            toast({
+              title: 'Contract Already Exists',
+              description: 'A contract has already been created for this proposal. Redirecting...',
+              variant: 'default'
+            });
+            navigate(`/contracts/${existingContract.id}`);
+            return;
+          }
+        }
+        
         setProposal(data.proposal);
         
         // Pre-fill form data from proposal

@@ -14,10 +14,13 @@ import uuid
 import logging
 import os
 import shutil
+import base64
 
 logger = logging.getLogger(__name__)
 
 COMPANY_LOGO_PATH = "/app/public/uploads/company_logos"
+EMPLOYER_SIGNATURE_PATH = "/app/public/uploads/employer_signatures"
+os.makedirs(EMPLOYER_SIGNATURE_PATH, exist_ok=True)
 
 employer_router = APIRouter(prefix="/api/employer", tags=["Employer"])
 

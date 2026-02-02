@@ -2063,6 +2063,9 @@ async def startup_event():
             email_service.configure(email_settings)
             logger.info("Email service configured from database settings")
         
+        # Set database reference for email template lookups
+        email_service.set_db(db)
+        
         # Start the scheduler
         scheduler.add_job(
             auto_generate_monthly_invoices,

@@ -712,6 +712,76 @@ const EmployerSettings = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Signature Tab */}
+          <TabsContent value="signature" data-testid="signature-tab-content">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PenTool className="h-5 w-5" />
+                    Electronic Signature
+                  </CardTitle>
+                  <CardDescription>
+                    Create and save your electronic signature. This will be used when you countersign contracts with contractors.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {signature ? (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2 text-green-700 mb-3">
+                          <CheckCircle className="h-5 w-5" />
+                          <span className="font-medium">Signature Saved</span>
+                        </div>
+                        <p className="text-sm text-green-600 mb-4">
+                          Your signature is saved and ready to use when signing contracts.
+                        </p>
+                        <div className="bg-white border rounded-lg p-4 inline-block">
+                          <img 
+                            src={`${API_URL}${signature}`}
+                            alt="Your signature"
+                            className="max-h-20"
+                            data-testid="employer-signature-preview"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={handleDeleteSignature}
+                          data-testid="delete-signature-btn"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Signature
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-center gap-2 text-yellow-700 mb-2">
+                          <AlertCircle className="h-5 w-5" />
+                          <span className="font-medium">No Signature Saved</span>
+                        </div>
+                        <p className="text-sm text-yellow-600">
+                          You need to save a signature before you can countersign contracts. Draw your signature below or upload an image.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <SignatureCanvas
+                onSave={handleSaveSignature}
+                existingSignature={signature ? `${API_URL}${signature}` : null}
+                loading={savingSignature}
+                title={signature ? "Update Your Signature" : "Create Your Signature"}
+                description="Draw your signature using your mouse or finger, or upload a signature image"
+              />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>

@@ -130,7 +130,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db = None) -> Us
         tier_activation_date=user.get("tier_activation_date"),
         subscription_expires_at=user.get("subscription_expires_at"),
         status=user.get("status", "active"),
-        created_at=user["created_at"]
+        created_at=user["created_at"],
+        # Employer-specific fields
+        company_logo=user.get("company_logo"),
+        company_name=user.get("company_name"),
+        company_description=user.get("company_description"),
+        company_website=user.get("company_website"),
+        company_size=user.get("company_size"),
+        industry=user.get("industry")
     )
 
 async def get_current_active_user(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:

@@ -243,8 +243,16 @@ const JobDetails = () => {
         <Card>
           <CardHeader className="border-b">
             <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
-                {job.company_name?.charAt(0)?.toUpperCase() || 'C'}
+              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 overflow-hidden">
+                {job.company_logo ? (
+                  <img 
+                    src={`${API_URL}${job.company_logo}`} 
+                    alt={job.company_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  job.company_name?.charAt(0)?.toUpperCase() || 'C'
+                )}
               </div>
               <div className="flex-1">
                 <CardTitle className="text-2xl mb-1">{job.title}</CardTitle>

@@ -144,6 +144,7 @@ import InterviewPrep from "./pages/customer/InterviewPrep";
 import CustomerStrategyCall from "./pages/customer/CustomerStrategyCall";
 import HelpCenter from "./pages/HelpCenter";
 import AccountSuspended from "./pages/AccountSuspended";
+import EscrowDashboard from "./pages/EscrowDashboard";
 
 // Wrapper to conditionally show Navbar and Footer
 const AppContent = () => {

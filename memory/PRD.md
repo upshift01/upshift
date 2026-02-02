@@ -258,7 +258,12 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
    - Added new contract fields: scope_of_work, deliverables, payment_terms, confidentiality_clause, termination_conditions, dispute_resolution, intellectual_property
    - Contracts now include employer and contractor signatures with timestamps
    - Contract signing requires saved signature from talent pool profile
-6. **Employer Access to Talent Pool** - FIXED
+6. **Contract PDF Export** - NEW
+   - Generate professional PDF for signed/active contracts
+   - Includes all contract details, milestones, legal clauses, and signatures
+   - Download button available on Contract Details page
+   - API endpoint: `/api/contracts/{contract_id}/pdf`
+7. **Employer Access to Talent Pool** - FIXED
    - Employers can now view candidate profiles from AI Matches
    - Employers can send contact requests to candidates
    - Profile lookup works with both profile_id and user_id

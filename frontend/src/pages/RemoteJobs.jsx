@@ -57,9 +57,9 @@ const RemoteJobs = () => {
     try {
       const params = new URLSearchParams({ page: page.toString(), limit: '12' });
       if (searchQuery) params.append('search', searchQuery);
-      if (jobType) params.append('job_type', jobType);
-      if (experienceLevel) params.append('experience_level', experienceLevel);
-      if (currency) params.append('currency', currency);
+      if (jobType && jobType !== 'all') params.append('job_type', jobType);
+      if (experienceLevel && experienceLevel !== 'all') params.append('experience_level', experienceLevel);
+      if (currency && currency !== 'all') params.append('currency', currency);
       
       // If employer, fetch only their own jobs
       let endpoint = `${API_URL}/api/remote-jobs/jobs?${params}`;

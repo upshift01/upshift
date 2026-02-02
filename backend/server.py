@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel
 import os
 import logging
 from pathlib import Path

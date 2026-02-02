@@ -413,6 +413,21 @@ Return ONLY the improved proposal text."""
                 {"_id": 0}
             ).sort("created_at", -1).to_list(length=100)
             
+            # Enrich proposals with contract info
+            for proposal in proposals:
+                contract = await db.contracts.find_one(
+                    {"proposal_id": proposal.get("id")},
+                    {"_id": 0, "id": 1, "status": 1}
+                )
+                if contract:
+                    proposal["has_contract"] = True
+                    proposal["contract_id"] = contract.get("id")
+                    proposal["contract_status"] = contract.get("status")
+                else:
+                    proposal["has_contract"] = False
+                    proposal["contract_id"] = None
+                    proposal["contract_status"] = None
+            
             # Get counts by status
             status_counts = {
                 "total": len(proposals),

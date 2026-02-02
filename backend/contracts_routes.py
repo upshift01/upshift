@@ -1518,6 +1518,63 @@ def get_contracts_routes(db, get_current_user):
             logger.error(f"Error marking milestone paid: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    @contracts_router.get("/{contract_id}/milestones/{milestone_id}/work-report")
+    async def get_milestone_work_report(
+        contract_id: str,
+        milestone_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Get work report for a milestone"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id}, {"_id": 0})
+            
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            # Only parties to the contract can view work reports
+            if contract.get("employer_id") != current_user.id and contract.get("contractor_id") != current_user.id:
+                if current_user.role != "super_admin":
+                    raise HTTPException(status_code=403, detail="Access denied")
+            
+            milestones = contract.get("milestones", [])
+            milestone = next((m for m in milestones if m.get("id") == milestone_id), None)
+            
+            if not milestone:
+                raise HTTPException(status_code=404, detail="Milestone not found")
+            
+            work_report = milestone.get("work_report")
+            
+            if not work_report:
+                return {
+                    "success": True,
+                    "has_report": False,
+                    "milestone": {
+                        "id": milestone.get("id"),
+                        "title": milestone.get("title"),
+                        "status": milestone.get("status")
+                    }
+                }
+            
+            return {
+                "success": True,
+                "has_report": True,
+                "milestone": {
+                    "id": milestone.get("id"),
+                    "title": milestone.get("title"),
+                    "description": milestone.get("description"),
+                    "amount": milestone.get("amount"),
+                    "status": milestone.get("status"),
+                    "due_date": milestone.get("due_date")
+                },
+                "work_report": work_report
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting work report: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     # ==================== STATS ====================
     
     @contracts_router.get("/stats/overview")

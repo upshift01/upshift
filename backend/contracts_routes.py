@@ -602,9 +602,14 @@ def get_contracts_routes(db, get_current_user):
                 logo_url = employer.get("company_logo")
                 if logo_url.startswith('/api/employer/logo/'):
                     filename = logo_url.split('/')[-1]
-                    company_logo_path = f"/app/public/uploads/company_logos/{filename}"
-                    if not os.path.exists(company_logo_path):
-                        company_logo_path = None
+                    potential_path = f"/app/public/uploads/company_logos/{filename}"
+                    # Only use non-SVG images (ReportLab doesn't support SVG)
+                    if os.path.exists(potential_path):
+                        ext = filename.lower().split('.')[-1] if '.' in filename else ''
+                        if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp']:
+                            company_logo_path = potential_path
+                        else:
+                            logger.info(f"Skipping unsupported logo format: {ext}")
             
             # Create PDF buffer
             buffer = io.BytesIO()

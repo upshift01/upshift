@@ -632,13 +632,13 @@ const ContractDetails = () => {
           </Card>
         )}
 
-        {/* Milestones */}
+        {/* Payment Milestones */}
         {contract.has_milestones && contract.milestones?.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Milestone className="h-5 w-5" />
-                Milestones
+                Payment Milestones
               </CardTitle>
               <CardDescription>
                 {contract.milestones.filter(m => m.status === 'paid').length} of {contract.milestones.length} completed

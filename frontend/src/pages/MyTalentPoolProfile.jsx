@@ -123,6 +123,17 @@ const MyTalentPoolProfile = () => {
         setContactRequests(data.requests || []);
       }
 
+      // Fetch signature
+      const signatureRes = await fetch(`${API_URL}/api/talent-pool/my-signature`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (signatureRes.ok) {
+        const data = await signatureRes.json();
+        if (data.signature_url) {
+          setSignature(data.signature_url);
+        }
+      }
+
       // Fetch user's CVs for selection
       const cvsRes = await fetch(`${API_URL}/api/cv/documents`, {
         headers: { Authorization: `Bearer ${token}` }

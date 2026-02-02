@@ -238,6 +238,18 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 10. **Remote Worker Checkbox** - Added "Remote Worker" checkbox to Talent Pool profile
 11. **Remote Work Space (Phase 5.1)** - Complete job posting portal with AI-assisted descriptions
 
+## Recent Changes (Feb 2025)
+1. **Company Logo Upload for Employers** - NEW
+   - Employers can upload company logo via Settings page
+   - Logos displayed on Remote Jobs listing and Job Details pages
+   - Supported formats: JPEG, PNG, GIF, WebP, SVG (max 5MB)
+   - API endpoint: `/api/employer/upload-logo` (POST), `/api/employer/logo/{filename}` (GET)
+   - Logos served with correct MIME types
+2. **Employer Profile Update** - NEW
+   - Added `/api/auth/profile` endpoint for profile updates
+   - Supports: full_name, phone, company_name, company_description, company_website, company_size, industry
+3. **UserResponse Model Enhanced** - Added employer-specific fields (company_logo, company_name, etc.)
+
 ## Recent Fixes (Dec 2025)
 1. **Hardcoded Phone Number** - Fixed to use dynamic settings
 2. **Certifications Tab** - Added to CV Builder with .docx export

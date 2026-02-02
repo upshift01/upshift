@@ -578,6 +578,61 @@ async def update_user_profile(
         raise HTTPException(status_code=500, detail="Failed to update profile")
 
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@api_router.post("/auth/change-password")
+async def change_password(
+    data: PasswordChangeRequest,
+    current_user: UserResponse = Depends(get_current_user_dep)
+):
+    """Change user password"""
+    import bcrypt
+    
+    try:
+        # Get user with password hash
+        user = await db.users.find_one({"id": current_user.id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check for password_hash or hashed_password field
+        password_hash = user.get("password_hash") or user.get("hashed_password")
+        if not password_hash:
+            raise HTTPException(status_code=400, detail="Password not set for this account")
+        
+        # Verify current password
+        if not bcrypt.checkpw(data.current_password.encode('utf-8'), password_hash.encode('utf-8')):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
+        
+        # Validate new password
+        if len(data.new_password) < 6:
+            raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+        
+        # Hash new password
+        new_hash = bcrypt.hashpw(data.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Update password in database (update both fields for compatibility)
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$set": {
+                "password_hash": new_hash,
+                "hashed_password": new_hash,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        logger.info(f"Password changed for user {current_user.email}")
+        return {"success": True, "message": "Password changed successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error changing password for {current_user.email}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to change password")
+
+
 # ==================== Password Reset Endpoints ====================
 
 @api_router.post("/auth/forgot-password")

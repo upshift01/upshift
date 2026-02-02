@@ -244,7 +244,13 @@ Return ONLY the improved proposal text."""
                 "applicant_id": current_user.id
             })
             if existing:
-                raise HTTPException(status_code=400, detail="You have already submitted a proposal for this job")
+                # Allow re-submission only if the previous proposal was rejected
+                if existing.get("status") == "rejected":
+                    # Delete the old rejected proposal to allow new submission
+                    await db.proposals.delete_one({"id": existing["id"]})
+                    logger.info(f"Deleted rejected proposal {existing['id']} to allow re-submission")
+                else:
+                    raise HTTPException(status_code=400, detail="You have already submitted a proposal for this job")
             
             # Check if user is trying to apply to their own job
             if job.get("poster_id") == current_user.id:

@@ -629,6 +629,193 @@ Write ONLY the summary text, no explanations or quotes."""
             logger.error(f"Error browsing talent pool: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    # ==================== SIGNATURE MANAGEMENT ====================
+    
+    @talent_pool_router.post("/signature")
+    async def upload_signature(
+        file: UploadFile = File(None),
+        current_user = Depends(get_current_user)
+    ):
+        """Upload or save signature image for talent pool profile"""
+        try:
+            if not file:
+                raise HTTPException(status_code=400, detail="No file provided")
+            
+            # Validate file type
+            allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"]
+            if file.content_type not in allowed_types:
+                raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, JPEG, SVG")
+            
+            # Generate unique filename
+            ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+            filename = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{ext}"
+            file_path = os.path.join(SIGNATURE_PATH, filename)
+            
+            # Remove old signature if exists
+            old_profile = await db.talent_pool_profiles.find_one(
+                {"user_id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            if old_profile and old_profile.get("signature_url"):
+                old_filename = old_profile["signature_url"].split("/")[-1]
+                old_path = os.path.join(SIGNATURE_PATH, old_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            
+            # Save new signature
+            contents = await file.read()
+            with open(file_path, "wb") as f:
+                f.write(contents)
+            
+            signature_url = f"/api/talent-pool/signature/{filename}"
+            
+            # Update talent pool profile with signature
+            await db.talent_pool_profiles.update_one(
+                {"user_id": current_user.id},
+                {"$set": {
+                    "signature_url": signature_url,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            logger.info(f"Signature uploaded for user {current_user.id}")
+            
+            return {
+                "success": True,
+                "signature_url": signature_url,
+                "message": "Signature uploaded successfully"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error uploading signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.post("/signature/draw")
+    async def save_drawn_signature(
+        data: dict,
+        current_user = Depends(get_current_user)
+    ):
+        """Save a drawn signature (base64 data URL)"""
+        try:
+            import base64
+            
+            signature_data = data.get("signature_data")
+            if not signature_data:
+                raise HTTPException(status_code=400, detail="No signature data provided")
+            
+            # Parse base64 data URL
+            if "," in signature_data:
+                header, encoded = signature_data.split(",", 1)
+            else:
+                encoded = signature_data
+            
+            # Decode and save
+            image_data = base64.b64decode(encoded)
+            filename = f"{current_user.id}_{uuid.uuid4().hex[:8]}.png"
+            file_path = os.path.join(SIGNATURE_PATH, filename)
+            
+            # Remove old signature if exists
+            old_profile = await db.talent_pool_profiles.find_one(
+                {"user_id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            if old_profile and old_profile.get("signature_url"):
+                old_filename = old_profile["signature_url"].split("/")[-1]
+                old_path = os.path.join(SIGNATURE_PATH, old_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            
+            with open(file_path, "wb") as f:
+                f.write(image_data)
+            
+            signature_url = f"/api/talent-pool/signature/{filename}"
+            
+            # Update talent pool profile with signature
+            await db.talent_pool_profiles.update_one(
+                {"user_id": current_user.id},
+                {"$set": {
+                    "signature_url": signature_url,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            logger.info(f"Drawn signature saved for user {current_user.id}")
+            
+            return {
+                "success": True,
+                "signature_url": signature_url,
+                "message": "Signature saved successfully"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error saving drawn signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.get("/signature/{filename}")
+    async def get_signature(filename: str):
+        """Serve signature image file"""
+        import mimetypes
+        file_path = os.path.join(SIGNATURE_PATH, filename)
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Signature not found")
+        
+        mime_type, _ = mimetypes.guess_type(filename)
+        if mime_type is None:
+            mime_type = "image/png"
+        
+        return FileResponse(file_path, media_type=mime_type)
+    
+    @talent_pool_router.delete("/signature")
+    async def delete_signature(current_user = Depends(get_current_user)):
+        """Delete user's signature"""
+        try:
+            profile = await db.talent_pool_profiles.find_one(
+                {"user_id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            
+            if profile and profile.get("signature_url"):
+                filename = profile["signature_url"].split("/")[-1]
+                file_path = os.path.join(SIGNATURE_PATH, filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                
+                await db.talent_pool_profiles.update_one(
+                    {"user_id": current_user.id},
+                    {"$set": {
+                        "signature_url": None,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+            
+            return {"success": True, "message": "Signature deleted"}
+            
+        except Exception as e:
+            logger.error(f"Error deleting signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @talent_pool_router.get("/my-signature")
+    async def get_my_signature(current_user = Depends(get_current_user)):
+        """Get current user's signature URL"""
+        try:
+            profile = await db.talent_pool_profiles.find_one(
+                {"user_id": current_user.id},
+                {"_id": 0, "signature_url": 1}
+            )
+            
+            return {
+                "success": True,
+                "signature_url": profile.get("signature_url") if profile else None
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting signature: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     @talent_pool_router.get("/candidate/{profile_id}")
     async def get_candidate_profile(profile_id: str, current_user = Depends(get_current_user)):
         """Get single candidate profile - requires recruiter access or employer access"""

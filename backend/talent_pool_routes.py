@@ -669,8 +669,6 @@ Write ONLY the summary text, no explanations or quotes."""
                     {"user_id": profile_id, "is_visible": True},
                     {"_id": 0, "contact_email": 0, "contact_phone": 0}
                 )
-                {"_id": 0, "contact_email": 0, "contact_phone": 0}
-            )
             
             if not profile:
                 raise HTTPException(status_code=404, detail="Candidate not found")

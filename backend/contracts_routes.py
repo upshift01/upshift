@@ -796,8 +796,6 @@ def get_contracts_routes(db, get_current_user):
             content.append(Spacer(1, 20))
             
             # ===== CONTRACT REFERENCE INFO =====
-            contract_date = contract.get("created_at", "")[:10] if contract.get("created_at") else "N/A"
-            
             ref_data = [
                 [
                     Paragraph("<b>Contract Reference</b>", label_style),

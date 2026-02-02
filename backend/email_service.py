@@ -9,6 +9,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
+
 class EmailService:
     def __init__(self):
         self.smtp_host = None
@@ -19,6 +20,13 @@ class EmailService:
         self.from_name = None
         self.encryption = 'tls'  # tls, ssl, or none
         self.is_configured = False
+        self.platform_name = "UpShift"
+        self._db = None  # Database reference for template lookups
+    
+    def set_db(self, db):
+        """Set the database reference for template lookups"""
+        self._db = db
+        logger.info("Email service database reference set")
     
     def configure(self, settings: Dict):
         """Configure SMTP settings"""
@@ -28,6 +36,7 @@ class EmailService:
         self.smtp_password = settings.get('smtp_password')
         self.from_email = settings.get('from_email', self.smtp_user)
         self.from_name = settings.get('from_name', 'UpShift')
+        self.platform_name = settings.get('platform_name', 'UpShift')
         self.encryption = settings.get('encryption', 'tls')  # tls, ssl, or none
         self.is_configured = bool(self.smtp_user and self.smtp_password)
         
@@ -35,6 +44,29 @@ class EmailService:
             logger.info(f"Email service configured with {self.smtp_host}:{self.smtp_port} (encryption: {self.encryption})")
         else:
             logger.warning("Email service not fully configured")
+    
+    async def get_custom_template(self, template_id: str) -> Optional[Dict]:
+        """Fetch a custom email template from the database"""
+        if not self._db:
+            return None
+        
+        try:
+            template = await self._db.email_templates.find_one(
+                {"template_id": template_id, "is_active": {"$ne": False}},
+                {"_id": 0}
+            )
+            return template
+        except Exception as e:
+            logger.error(f"Error fetching email template {template_id}: {e}")
+            return None
+    
+    def replace_variables(self, text: str, variables: Dict) -> str:
+        """Replace {{variable}} placeholders in text with actual values"""
+        if not text:
+            return text
+        for key, value in variables.items():
+            text = text.replace(f"{{{{{key}}}}}", str(value) if value else "")
+        return text
     
     async def send_email(
         self,

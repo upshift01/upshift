@@ -920,14 +920,18 @@ const MyTalentPoolProfile = () => {
         ) : (
           // Opted-in View with Tabs
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="profile" className="gap-2">
                 <Eye className="h-4 w-4" />
                 My Profile
               </TabsTrigger>
+              <TabsTrigger value="signature" className="gap-2">
+                <PenTool className="h-4 w-4" />
+                Signature
+              </TabsTrigger>
               <TabsTrigger value="requests" className="gap-2">
                 <MessageSquare className="h-4 w-4" />
-                Contact Requests
+                Requests
                 {pendingRequests.length > 0 && (
                   <Badge variant="destructive" className="ml-1">{pendingRequests.length}</Badge>
                 )}

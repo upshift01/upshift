@@ -27,9 +27,9 @@ const RemoteJobs = () => {
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [jobType, setJobType] = useState('');
-  const [experienceLevel, setExperienceLevel] = useState('');
-  const [currency, setCurrency] = useState('');
+  const [jobType, setJobType] = useState('all');
+  const [experienceLevel, setExperienceLevel] = useState('all');
+  const [currency, setCurrency] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
   // Check if user is employer - they should only see their own jobs

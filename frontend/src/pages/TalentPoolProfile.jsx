@@ -171,20 +171,43 @@ const TalentPoolProfile = () => {
           <Button
             variant="ghost"
             className="text-white hover:bg-white/10 mb-4"
-            onClick={() => navigate('/talent-pool')}
+            onClick={() => navigate(-1)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Talent Pool
+            Back
           </Button>
           
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{candidate.full_name}</h1>
-              <p className="text-xl text-white/80">{candidate.job_title}</p>
+          <div className="flex flex-col md:flex-row md:items-center gap-6">
+            {/* Profile Picture */}
+            <div className="flex-shrink-0">
+              {candidate.profile_picture_url ? (
+                <img 
+                  src={`${API_URL}${candidate.profile_picture_url}`}
+                  alt={candidate.full_name}
+                  className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                />
+              ) : (
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold">
+                  {candidate.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
+              )}
             </div>
-            <Badge className={`${getExperienceBadgeColor(candidate.experience_level)} text-sm px-3 py-1`}>
-              {formatExperienceLevel(candidate.experience_level)}
-            </Badge>
+            
+            {/* Name and Title */}
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold">{candidate.full_name}</h1>
+                {candidate.is_remote_worker && (
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    🌍 Remote Worker
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xl text-white/80 mb-3">{candidate.job_title}</p>
+              <Badge className={`${getExperienceBadgeColor(candidate.experience_level)} text-sm px-3 py-1`}>
+                {formatExperienceLevel(candidate.experience_level)}
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
@@ -194,18 +217,35 @@ const TalentPoolProfile = () => {
         <div className="grid md:grid-cols-3 gap-6">
           {/* Left Column - Main Info */}
           <div className="md:col-span-2 space-y-6">
-            {/* Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  About
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 whitespace-pre-wrap">{candidate.summary}</p>
-              </CardContent>
-            </Card>
+            {/* Professional Summary */}
+            {candidate.summary && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Professional Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 whitespace-pre-wrap">{candidate.summary}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Bio / About */}
+            {candidate.bio && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    About Me
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 whitespace-pre-wrap">{candidate.bio}</p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Skills */}
             <Card>
@@ -216,13 +256,17 @@ const TalentPoolProfile = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {candidate.skills.map((skill, i) => (
-                    <Badge key={i} variant="secondary" className="text-sm">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
+                {candidate.skills && candidate.skills.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {candidate.skills.map((skill, i) => (
+                      <Badge key={i} variant="secondary" className="text-sm">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No skills listed</p>
+                )}
               </CardContent>
             </Card>
 
@@ -252,14 +296,17 @@ const TalentPoolProfile = () => {
           <div className="space-y-6">
             {/* Quick Info */}
             <Card>
-              <CardContent className="p-4 space-y-4">
+              <CardHeader>
+                <CardTitle>Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                     <Briefcase className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Industry</p>
-                    <p className="font-medium">{candidate.industry}</p>
+                    <p className="font-medium">{candidate.industry || 'Not specified'}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -268,9 +315,29 @@ const TalentPoolProfile = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Location</p>
-                    <p className="font-medium">{candidate.location}</p>
+                    <p className="font-medium">{candidate.location || 'Not specified'}</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <Award className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Experience Level</p>
+                    <p className="font-medium">{formatExperienceLevel(candidate.experience_level)}</p>
+                  </div>
+                </div>
+                {candidate.is_remote_worker && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <Globe className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Work Preference</p>
+                      <p className="font-medium text-indigo-600">Available for Remote Work</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

@@ -627,18 +627,33 @@ Write ONLY the summary text, no explanations or quotes."""
     
     @talent_pool_router.get("/candidate/{profile_id}")
     async def get_candidate_profile(profile_id: str, current_user = Depends(get_current_user)):
-        """Get single candidate profile - requires recruiter access"""
+        """Get single candidate profile - requires recruiter access or employer access"""
         try:
             user_id = current_user.id
+            user_role = current_user.role
             
-            # Check recruiter access
-            recruiter_access = await db.recruiter_subscriptions.find_one({
-                "user_id": user_id,
-                "status": "active",
-                "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
-            })
+            # Check access - allow recruiters with subscription, employers, and super_admin
+            has_access = False
             
-            if not recruiter_access and current_user.role != "super_admin":
+            # Super admin always has access
+            if user_role == "super_admin":
+                has_access = True
+            
+            # Employers have access (to view candidates who applied to their jobs or AI matches)
+            elif user_role == "employer":
+                has_access = True
+            
+            # Recruiters need active subscription
+            else:
+                recruiter_access = await db.recruiter_subscriptions.find_one({
+                    "user_id": user_id,
+                    "status": "active",
+                    "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
+                })
+                if recruiter_access:
+                    has_access = True
+            
+            if not has_access:
                 raise HTTPException(status_code=403, detail="Recruiter subscription required")
             
             profile = await db.talent_pool_profiles.find_one(

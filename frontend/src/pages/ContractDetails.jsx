@@ -613,17 +613,16 @@ const ContractDetails = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 pt-4 border-t">
-              {/* Download PDF - Available for active/completed contracts */}
-              {(contract.status === 'active' || contract.status === 'completed') && (
-                <Button
-                  variant="outline"
-                  onClick={handleDownloadPdf}
-                  disabled={downloadingPdf}
-                >
-                  {downloadingPdf ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-                  Download PDF
-                </Button>
-              )}
+              {/* Download PDF - Available for all contracts */}
+              <Button
+                variant="outline"
+                onClick={handleDownloadPdf}
+                disabled={downloadingPdf}
+                data-testid="download-pdf-btn"
+              >
+                {downloadingPdf ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+                Download PDF
+              </Button>
 
               {/* Contractor: Sign draft contract */}
               {isContractor && contract.status === 'draft' && !contract.contractor_signed && (

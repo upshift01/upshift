@@ -282,6 +282,57 @@ const AdminRecruiters = () => {
     }
   };
 
+  const openSubscriptionModal = (recruiter) => {
+    setSelectedRecruiter(recruiter);
+    setSubscriptionForm({
+      plan_id: recruiter.subscription?.plan_id || 'recruiter-monthly',
+      duration_days: 30,
+      status: recruiter.subscription?.status || 'active'
+    });
+    setShowSubscriptionModal(true);
+  };
+
+  const handleAllocateSubscription = async () => {
+    if (!selectedRecruiter) return;
+    
+    setSaving(true);
+    try {
+      const response = await fetch(`${API_URL}/api/talent-pool/admin/allocate-subscription`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          recruiter_id: selectedRecruiter.id,
+          ...subscriptionForm
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({ title: 'Success', description: data.message || 'Subscription allocated' });
+        setShowSubscriptionModal(false);
+        fetchRecruiters();
+      } else {
+        toast({
+          title: 'Error',
+          description: data.detail || 'Failed to allocate subscription',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to allocate subscription',
+        variant: 'destructive'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Filter recruiters
   const filteredRecruiters = recruiters.filter(r => {
     if (statusFilter !== 'all' && r.status !== statusFilter) return false;

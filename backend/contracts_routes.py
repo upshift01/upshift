@@ -623,7 +623,7 @@ def get_contracts_routes(db, get_current_user):
                                 png_path = potential_path.replace('.svg', '_converted.png')
                                 cairosvg.svg2png(url=potential_path, write_to=png_path, output_width=200, output_height=200)
                                 company_logo_path = png_path
-                                logger.info(f"Converted SVG logo to PNG for PDF")
+                                logger.info("Converted SVG logo to PNG for PDF")
                             except Exception as svg_err:
                                 logger.warning(f"Could not convert SVG logo: {svg_err}")
                         else:

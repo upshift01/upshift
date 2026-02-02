@@ -140,6 +140,42 @@ const ContractDetails = () => {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    setDownloadingPdf(true);
+    try {
+      const response = await fetch(`${API_URL}/api/contracts/${contractId}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Contract_${contract?.title?.replace(/\s+/g, '_') || 'document'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        toast({
+          title: 'Download Started',
+          description: 'Your contract PDF is downloading'
+        });
+      } else {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to generate PDF');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const handleAction = async (action, milestoneId = null) => {
     setActionLoading(true);
     try {

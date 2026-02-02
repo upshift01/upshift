@@ -177,7 +177,7 @@ class TestFundContract:
             headers={"Authorization": f"Bearer {employer_token}"},
             json={
                 "contract_id": CONTRACT_ID,
-                "origin_url": "https://jobmatch-pro-45.preview.emergentagent.com",
+                "origin_url": "https://jobhubai.preview.emergentagent.com",
                 "provider": "stripe"
             }
         )
@@ -197,7 +197,7 @@ class TestFundContract:
             headers={"Authorization": f"Bearer {employer_token}"},
             json={
                 "contract_id": CONTRACT_ID,
-                "origin_url": "https://jobmatch-pro-45.preview.emergentagent.com",
+                "origin_url": "https://jobhubai.preview.emergentagent.com",
                 "provider": "yoco"
             }
         )

@@ -2,22 +2,33 @@
 
 **PRODUCT REQUIREMENTS:**
 1.  **Role-Based System**: Separate dashboards and features for Job Seekers, Employers, and Recruiters.
-2.  **Employer Subscriptions**: Employers must subscribe to post jobs, with different tiers (Starter, Professional, Enterprise), a 2-day free trial, and job posting limits.
-3.  **Full Job Lifecycle**: Employers post jobs, job seekers submit proposals, employers accept proposals to create contracts with fundable milestones.
+2.  **Employer Subscriptions**: Employers must subscribe to post jobs, with different tiers (Starter, Professional, Enterprise), a 1-day free trial, and job posting limits.
+3.  **Full Job Lifecycle**: Employers post jobs, job seekers submit proposals, employers accept proposals to create contracts with fundable milestones. Job status is updated to filled when a contract is awarded.
 4.  **Dual Payment Gateways**: Integrate both Stripe (for international USD payments) and Yoco (for South African ZAR payments) for both subscriptions and contract funding.
-5.  **Admin/Reseller Configuration**: Provide a UI for super admins and resellers to manage their own payment gateway API keys.
+5.  **Admin/Reseller Configuration**: Provide a UI for super admins and resellers to manage their own payment gateway API keys and allocate subscriptions to employers and recruiters.
 6.  **Event-Driven Notifications**: Send email and real-time notifications for key events in the contract and proposal lifecycle.
 7.  **Advanced Features**: Implement Stripe Connect for contractor payouts and provide job analytics for employers.
+8.  **Company Branding**: Employers can upload a company logo to be displayed on job postings.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack React/FastAPI/MongoDB platform with distinct user roles (Job Seeker, Employer, Recruiter, Super Admin, Reseller). It features a full job lifecycle, employer subscriptions with job limits, and a dual payment gateway system (Stripe/Yoco). A complete real-time notification system using WebSockets has been implemented for new proposals, contract updates, and milestones, accessible via a notification bell in a newly redesigned, uncluttered navbar. The platform also includes a job analytics dashboard for employers, and provides interfaces for admins and resellers to manage employer accounts. Initial backend and frontend files for Stripe Connect, browser push notifications, and email template customization have been created.
+The application is a full-stack React/FastAPI/MongoDB platform with mature role-based access for Job Seekers, Employers, Recruiters, Resellers, and Super Admins. The UI/UX has been significantly refined with numerous bug fixes and feature enhancements.
+
+Key functionalities include:
+-   A complete job lifecycle (post, apply, contract, close).
+-   Employer subscriptions with a free trial limit (now 1 job post).
+-   Admin/Reseller dashboards for managing employers and recruiters, including subscription allocation.
+-   A real-time WebSocket notification system.
+-   An employer-specific dashboard with quick actions and job analytics.
+-   A dedicated My Job Postings page for employers with advanced filters and stats.
+-   Role-specific navigation and settings pages. Employers now have a dedicated settings page.
+-   A feature for employers to upload a company logo, which is displayed on job listings.
 
 **Last working item**:
--   **Last item agent was working**: The user requested to change the dark theme of the newly created Employer Management and Email Template Management pages to a light theme. The agent had just acknowledged this request and was preparing to modify the frontend components.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
+-   **Last item agent was working**: Implementing a feature for employers to upload their company logo. The agent created the backend endpoint, updated the database schema, and added the UI to the Employer Settings page. It also updated the  and  pages to display the uploaded logo.
+-   **Status**: USER VERIFICATION PENDING
+-   **Agent Testing Done**: Y
 -   **Which testing method agent to use?**: screenshot tool
 -   **User Testing Done**: N
 
@@ -25,12 +36,13 @@ The application is a full-stack React/FastAPI/MongoDB platform with distinct use
 -   **Issue 1: Stripe Payments Failing (P1)**
     -   **Description**: All Stripe payment flows are failing because the configured test API key () is invalid.
     -   **Status**: BLOCKED (on user providing a valid Stripe test key via the admin UI).
+    -   **Is recurring issue?**: Y
 -   **Issue 2: Yoco Payment Flow Fragility (P1)**
-    -   **Description**: A recurring bug related to Yoco payment failures. The integration has proven to be fragile, although the last reported instance was fixed.
+    -   **Description**: A recurring bug related to Yoco payment failures. The integration has proven to be fragile, although no new instances were reported in this session.
     -   **Status**: USER VERIFICATION PENDING
     -   **Is recurring issue?**: Y
 -   **Issue 3: Admin Login Fragility (P2)**
-    -   **Description**: A known recurring issue where admin login is sometimes unstable. While a specific login failure was fixed during this session (by correcting the password and identifying the  field in the DB), the root cause has not been investigated.
+    -   **Description**: A known recurring issue where admin login is sometimes unstable. The root cause has not been investigated.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
 -   **Issue 4: Screenshot Tool Login Failures (P2)**
@@ -39,21 +51,13 @@ The application is a full-stack React/FastAPI/MongoDB platform with distinct use
     -   **Is recurring issue?**: Y
 
 **In progress Task List**:
--   **Task 1: Theme Change for Admin Pages (P0)**
-    -   **Where to resume**: Modify the following files to replace dark theme classes (e.g., , ) with light theme classes (e.g., , ).
-        1.  
-        2.  
-        3.  
-    -   **What will be achieved with this?**: The new admin and reseller pages will have a consistent light theme as requested.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on something**: None
+None. The last working item is complete from the agent's side, pending user verification.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **(P1) Implement Email Template Customization**: The backend routes and frontend page exist. The next steps are to implement the full CRUD logic on the frontend and update the  to use templates from the database instead of hardcoded HTML.
+    -   **(P1) Implement Email Template Customization**: The backend routes and frontend page exist. The next steps are to implement the full CRUD logic on the frontend and update the  to use templates from the database.
     -   **(P1) Implement Browser Push Notifications**: The initial files (, , ) are created. The agent needs to implement the service worker logic, backend subscription management, and frontend permission/subscription flow.
-    -   **(P1) Finalize Stripe Connect for Contractor Payouts**: The boilerplate is in place. The full onboarding flow (creating account links via the Stripe API, handling redirects, and updating the user's status in the DB) needs to be implemented.
+    -   **(P1) Finalize Stripe Connect for Contractor Payouts**: The boilerplate is in place. The full onboarding flow (creating account links via the Stripe API, handling redirects, and updating the user's status in the DB) needs to be implemented. This is blocked by the invalid Stripe key.
 -   **Future Tasks**:
     -   Odoo Integration
     -   Refactor Partner Pages
@@ -62,13 +66,30 @@ The application is a full-stack React/FastAPI/MongoDB platform with distinct use
     -   Address remaining linting errors.
 
 **Completed work in this session**
--   **Real-time WebSocket Notifications**: Implemented a full real-time notification system for new proposals, contract creation/signing, and milestone updates, complete with a frontend  component.
--   **Job Analytics for Employers**: Created a new backend endpoint and a dedicated frontend page () showing job performance statistics.
--   **Employer Management for Admins/Resellers**: Built a feature for super admins and resellers to manage employers (list, create, reset password, suspend, etc.), including email notifications for these actions.
--   **Navbar Redesign**: Fixed a congested navbar by implementing a user dropdown menu containing dashboard/settings links and a clearly visible logout button.
--   **Email Notifications for Admin Actions**: Added email notifications that are sent to employers when an admin creates, modifies, or resets a password for their account.
--   **Bug Fix - SMTP Configuration**: Diagnosed and fixed an SSL/TLS mismatch in the SMTP settings stored in the database, which was preventing emails from being sent.
--   **Bug Fix - Broken Post Job Link**: Corrected a navigation link on the Job Analytics page.
+-   **UI Theme Update**: Changed the theme of  and  pages from dark to light.
+-   **Role-Based Access Control (RBAC) Hardening**:
+    -   Fixed bug where Employers saw a My Proposals link (now correctly hidden).
+    -   Fixed bug preventing Resellers ( role) from managing employers.
+    -   Prevented Employers from applying for jobs (backend and frontend).
+    -   Hid Join Talent Pool link for Employers.
+    -   Redirected Employers clicking Browse Jobs to a view showing only their own postings.
+-   **Employer Features & UX**:
+    -   Implemented Edit Job functionality by adapting the  component.
+    -   Implemented company logo upload and display on job listings.
+    -   Created a dedicated Employer Settings page, fixing a bug that sent them to a job-seeker layout.
+    -   Enhanced the My Job Postings page with more status filters and stats cards.
+    -   Moved the My Posted Jobs link from the main navbar to the Employer Dashboard for a cleaner UX.
+    -   Set the default currency for new job posts to ZAR.
+-   **Admin Features**:
+    -   Added functionality for admins/resellers to allocate subscriptions to Recruiters (backend and frontend).
+    -   Changed the free trial job posting limit from 3 to 1.
+-   **Bug Fixes**:
+    -   Fixed talent pool opt-in error by correcting a field name mismatch ( -> ).
+    -   Locked jobs by setting status to  when a contract is created.
+    -   Renamed all instances of Milestones to Payment Milestones.
+    -   Removed the Share button from saved job posts.
+    -   Fixed a layout issue with buttons on the job proposals page.
+    -   Fixed a runtime error on the My Job Postings filter button by handling empty select values correctly.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Admin Login Fragility**: This known recurring issue was mentioned and a specific instance was fixed, but it was not deeply investigated or permanently resolved.
@@ -82,44 +103,53 @@ The application is a full-stack React/FastAPI/MongoDB platform with distinct use
 
 
 **Key Technical Concepts**
--   **WebSockets for Real-Time UI**: Implemented a real-time notification system using FastAPI's WebSockets to push updates to the client without page reloads.
--   **Service Worker for Push Notifications**: Initial setup for using a browser service worker to enable native push notifications.
--   **Admin/Reseller Employer Management**: Extended the multi-tenant architecture to allow both super admins and resellers to manage their respective sets of employer accounts.
--   **Dynamic SMTP Configuration**: Discovered and fixed a bug where the SMTP  setting ( vs. ) in the database was mismatched with the , causing email failures.
--   **Composable UI Redesign**: Refactored a cluttered navigation bar into a clean layout with a user dropdown menu, improving UX and scalability.
+-   **Role-Based UI Rendering**: Extensively used the  from  to conditionally render UI elements (e.g., navbar links, buttons, page content) for different user types.
+-   **Component Reusability for CRUD**: Refactored the  component to handle both 'create' (POST) and 'edit' (PUT) operations by fetching initial data based on a URL parameter ().
+-   **File Uploads**: Implemented backend logic using  and  to handle company logo uploads, storing files in a dedicated directory and saving the path to the user's document in MongoDB.
+-   **State Management for Filters**: Fixed a common bug with UI libraries (Radix UI) by replacing empty string  state values with a specific keyword () for default/unselected filter options.
+-   **Dynamic Routing**: Added role-specific navigation logic in the  to direct users to the correct settings page (e.g.,  for employers).
 
 **key DB schema**
--   **users**: The  field is used for password verification. A  field will be needed for Stripe payouts.
--   **platform_settings**: Contains the SMTP configuration. The agent corrected the  field from  to  to match port 587.
--   **notifications**: New collection to store user notifications for the real-time system. Fields include , , , , .
--   **email_templates**: New collection to store customizable email templates.
--   **push_subscriptions**: New collection to store user push notification subscription objects.
+-   **users**:
+    -   A  field (string, path to file) has been added to user documents with the  role.
+    -    field is used for password verification. Passwords for  and  were reset.
+-   **jobs**:
+    -   The  can now be , which prevents new proposals from being submitted.
+-   **recruiter_subscriptions**:
+    -   Collection is now managed via the admin panel, allowing admins to create/update subscriptions for recruiters.
 
 **All files of reference**
--   
--   
--   
--   
--   
--   
--   
+-    (New settings page)
+-    (Now supports editing)
+-    (Now filters for employers)
+-    (Heavily modified for RBAC)
+-    (New logo upload endpoint)
+-    (New recruiter subscription endpoint)
+-    (New business logic for applications)
 
 **Critical Info for New Agent**
--   **Immediate Task**: The user's first priority is to change the theme of the , , and  pages to a light theme. Start with this.
--   **Stripe is BLOCKED**: All Stripe payments are non-functional due to an invalid test key. Do not spend time debugging Stripe payments. The user must provide a valid key to unblock this functionality and properly test the Stripe Connect integration.
--   **Admin Login**: Be aware that admin login can be unstable. The last fix involved resetting the password in the correct database field (). The screenshot tool seems to have particular trouble maintaining login state, so API testing via  may be more reliable for auth-gated routes.
--   **Database Name**: The correct database name is .
+-   **Stripe is BLOCKED**: All Stripe payments are non-functional due to an invalid test key. Do not spend time debugging Stripe payments. The user must provide a valid key to unblock this functionality.
+-   **Admin/Reseller Role Name**: The correct role for resellers in the database is . The codebase was fixed to reflect this, but be aware of this distinction.
+-   **Screenshot Tool Instability**: The screenshot tool consistently loses session state, especially after logging in. For verifying authenticated routes, direct navigation in a single command or API testing via  is more reliable.
+-   **Updated Credentials**: Note the new passwords for the employer and reseller accounts in the credentials table.
 
 **documents and test reports created in this job**
--    (updated multiple times)
+-    (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks to implement Stripe Connect, Analytics, and Email Notifications. (Status: Completed/In Progress)
-2.  **User**: Asks to add real-time WebSocket notifications. (Status: Completed)
-3.  **User**: Reports a broken link on the analytics page and requests employer management features for admins/resellers. (Status: Completed)
-4.  **User**: Reports a congested navbar and requests more real-time notification types for contracts. (Status: Completed)
-5.  **User**: Requests three new features: 1) Email notifications for admin actions on employers, 2) Email template customization, 3) Browser push notifications. (Status: In Progress)
-6.  **User**: Can you please change the dark theme in the new template management function you just added to a light theme and also change the manage employee to a light theme. (Status: **Pending - This is the immediate next action**)
+1.  **User**: Reported 6 issues (profile upload fail, lock job on contract, rename milestones, talent pool preview, remove share button, proposal button layout). (Status: Completed)
+2.  **User**: Asked why employers can apply for jobs. (Status: Addressed)
+3.  **User**: Confirmed that role restrictions should be added to prevent employers from applying. (Status: Completed)
+4.  **User**: Asked for a function for employers to list their posted jobs with status. (Status: Completed - feature already existed and was enhanced)
+5.  **User**: Asked to move My posted jobs from the navbar to the employer dashboard. (Status: Completed)
+6.  **User**: Requested that employers only see their own jobs under Browse Jobs. (Status: Completed)
+7.  **User**: Requested an admin function to allocate subscriptions and to change the free job post limit to 1. (Status: Completed)
+8.  **User**: Reported that the employer Settings link goes to the wrong dashboard. (Status: Completed)
+9.  **User**: Reported a runtime error on the My Job Postings filter button. (Status: Completed)
+10. **User**: Requested to hide the Join Talent Pool option for employers. (Status: Completed)
+11. **User**: Requested to make ZAR the default currency for job posts. (Status: Completed)
+12. **User**: Reported that the Edit job button was not working. (Status: Completed)
+13. **User**: Requested a function to upload a company logo. (Status: Completed)
 
 **Project Health Check:**
 -   **Broken**: Stripe payments are non-functional due to an invalid API key.
@@ -131,7 +161,7 @@ The application is a full-stack React/FastAPI/MongoDB platform with distinct use
 -   **Stripe Connect**: In progress for contractor payouts. Will require User API Key.
 -   **OpenAI GPT-4o**: Uses Emergent LLM Key.
 -   **SMTP (Custom)**: Used for sending emails. Requires User SMTP credentials.
--   **pywebpush**: New dependency installed for browser push notifications.
+-   **pywebpush**: Dependency for browser push notifications.
 
 **Testing status**
 -   **Testing agent used after significant changes**: NO
@@ -139,15 +169,14 @@ The application is a full-stack React/FastAPI/MongoDB platform with distinct use
 -   **Known regressions**: None
 
 **Credentials to test flow:**
-| User Type | Email | Password |
-| :--- | :--- | :--- |
-| Super Admin |  |  |
-| Recruiter |  |  |
-| Job Seeker |  |  |
-| Reseller |  |  |
-| Employer (Trial) |  |  |
+| User Type | Email | Password | Notes |
+| :--- | :--- | :--- | :--- |
+| Super Admin |  |  | |
+| Reseller |  |  | Password was reset. |
+| Employer |  | | Password was reset. |
+| Job Seeker |  |  | |
+| Recruiter |  |  | |
 
 **What agent forgot to execute**
--   The agent has not prompted the user to provide a valid Stripe test key, which is currently blocking all Stripe payment functionality.
--   The agent has not performed a root cause analysis on the recurring Admin Login Fragility or Yoco Payment Flow Fragility issues.
--   The agent noted but did not fix minor linting warnings in new frontend components (e.g., missing dependencies in  arrays).</analysis>
+-   The agent has not prompted the user to provide a valid Stripe test key, which is a critical blocker for all Stripe-related functionality, including the upcoming Stripe Connect task.
+-   The agent has not performed a root cause analysis on the recurring Admin Login Fragility or Yoco Payment Flow Fragility issues.</analysis>

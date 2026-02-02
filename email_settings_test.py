@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 
 # Backend URL
-BACKEND_URL = "https://jobmatch-pro-45.preview.emergentagent.com/api"
+BACKEND_URL = "https://jobhubai.preview.emergentagent.com/api"
 
 # Test credentials
 SUPER_ADMIN_CREDS = {

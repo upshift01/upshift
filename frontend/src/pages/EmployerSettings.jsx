@@ -71,11 +71,104 @@ const EmployerSettings = () => {
           company_size: data.company_size || '',
           industry: data.industry || ''
         });
+        setCompanyLogo(data.company_logo || null);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid File',
+        description: 'Please upload a JPEG, PNG, GIF, WebP, or SVG image',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File Too Large',
+        description: 'Maximum file size is 5MB',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch(`${API_URL}/api/employer/upload-logo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setCompanyLogo(data.logo_url);
+        toast({ title: 'Success', description: 'Company logo uploaded successfully' });
+        if (refreshUser) refreshUser();
+      } else {
+        toast({
+          title: 'Error',
+          description: data.detail || 'Failed to upload logo',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to upload logo',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteLogo = async () => {
+    setUploadingLogo(true);
+    try {
+      const response = await fetch(`${API_URL}/api/employer/logo`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        setCompanyLogo(null);
+        toast({ title: 'Success', description: 'Company logo deleted' });
+        if (refreshUser) refreshUser();
+      } else {
+        const data = await response.json();
+        toast({
+          title: 'Error',
+          description: data.detail || 'Failed to delete logo',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete logo',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploadingLogo(false);
     }
   };
 

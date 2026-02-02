@@ -186,6 +186,14 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
 - `POST /api/employer/subscribe/{plan_id}` - Subscribe to plan (Yoco checkout)
 - `POST /api/employer/verify-payment` - Verify payment and activate subscription
 - `GET /api/employer/can-post-job` - Check if employer can post more jobs
+- `POST /api/employer/upload-logo` - Upload company logo
+- `GET /api/employer/logo/{filename}` - Serve company logo
+- `DELETE /api/employer/logo` - Delete company logo
+- `GET /api/employer/my-signature` - Get employer's saved signature URL
+- `POST /api/employer/signature` - Upload signature file (NEW - Feb 2025)
+- `POST /api/employer/signature/draw` - Save drawn signature as base64 (NEW - Feb 2025)
+- `DELETE /api/employer/signature` - Delete employer's signature (NEW - Feb 2025)
+- `GET /api/employer/signature/{filename}` - Serve employer signature image (NEW - Feb 2025)
 
 ### Remote Jobs (Phase 5)
 - `GET /api/remote-jobs/options` - Get form options (job types, currencies, etc.)

@@ -966,30 +966,65 @@ const ContractDetails = () => {
                           </Button>
                         )}
 
-                        {/* Contractor: Submit for review */}
+                        {/* Contractor: Submit work report for review */}
                         {isContractor && contract.status === 'active' && 
                           (milestone.status === 'pending' || milestone.status === 'in_progress') && (
                           <Button
                             size="sm"
-                            onClick={() => handleAction('submit_milestone', milestone.id)}
+                            onClick={() => openWorkReportModal(milestone)}
                             disabled={actionLoading}
+                            data-testid={`submit-work-report-btn-${milestone.id}`}
                           >
-                            <Send className="h-4 w-4 mr-1" />
-                            Submit
+                            <ClipboardList className="h-4 w-4 mr-1" />
+                            Submit Work Report
+                          </Button>
+                        )}
+
+                        {/* Show revision feedback if any */}
+                        {milestone.status === 'in_progress' && milestone.work_report?.status === 'revision_requested' && (
+                          <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded max-w-xs">
+                            <p className="font-medium">Revision Requested:</p>
+                            <p>{milestone.work_report.revision_feedback}</p>
+                          </div>
+                        )}
+
+                        {/* Employer: View work report when submitted */}
+                        {isEmployer && milestone.status === 'submitted' && milestone.work_report && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => viewWorkReport(milestone)}
+                            disabled={workReportLoading}
+                            data-testid={`view-work-report-btn-${milestone.id}`}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Report
                           </Button>
                         )}
 
                         {/* Employer: Approve submitted milestone */}
                         {isEmployer && milestone.status === 'submitted' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleAction('approve_milestone', milestone.id)}
-                            disabled={actionLoading}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <ThumbsUp className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleAction('approve_milestone', milestone.id)}
+                              disabled={actionLoading}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <ThumbsUp className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openRevisionModal(milestone)}
+                              disabled={workReportLoading}
+                              className="text-amber-600 hover:text-amber-700"
+                            >
+                              <RotateCcw className="h-4 w-4 mr-1" />
+                              Request Revision
+                            </Button>
+                          </>
                         )}
 
                         {/* Employer: Release payment for approved milestone */}
@@ -1015,6 +1050,19 @@ const ContractDetails = () => {
                           >
                             <CreditCard className="h-4 w-4 mr-1" />
                             Mark Paid
+                          </Button>
+                        )}
+
+                        {/* Anyone: View work report for completed milestones */}
+                        {(milestone.status === 'approved' || milestone.status === 'paid') && milestone.work_report && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => viewWorkReport(milestone)}
+                            disabled={workReportLoading}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Report
                           </Button>
                         )}
                       </div>

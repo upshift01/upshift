@@ -398,9 +398,6 @@ const JobDetails = () => {
                   <Bookmark className="h-4 w-4 mr-2" />
                   Save
                 </Button>
-                <Button variant="outline" size="lg">
-                  <Share2 className="h-4 w-4" />
-                </Button>
               </div>
             )}
 

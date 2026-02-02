@@ -185,6 +185,14 @@ Return ONLY the improved proposal text."""
     ):
         """Submit a proposal for a job"""
         try:
+            # Only job seekers (customers) can submit proposals
+            allowed_roles = ['customer', 'job_seeker', None]  # None is default for regular users
+            if current_user.role not in allowed_roles:
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Only job seekers can submit proposals. Employers and recruiters cannot apply for jobs."
+                )
+            
             # Check if job exists and is active
             job = await db.remote_jobs.find_one({"id": data.job_id, "status": "active"})
             if not job:

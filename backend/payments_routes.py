@@ -198,7 +198,9 @@ def get_payments_routes(db, get_current_user):
             raise HTTPException(status_code=500, detail=str(e))
     
     async def fund_contract_yoco(request, data, current_user, settings, db):
-        """Fund contract using Yoco - returns payment details for frontend SDK"""
+        """Fund contract using Yoco - creates checkout session"""
+        import httpx
+        
         YOCO_SECRET_KEY = settings.get("yoco_secret_key")
         YOCO_PUBLIC_KEY = settings.get("yoco_public_key")
         
@@ -218,7 +220,7 @@ def get_payments_routes(db, get_current_user):
             
             # Yoco only supports ZAR
             if contract.get("payment_currency", "USD").upper() != "ZAR":
-                raise HTTPException(status_code=400, detail="Yoco only supports ZAR currency")
+                raise HTTPException(status_code=400, detail="Yoco only supports ZAR currency. Please use Stripe for USD payments.")
             
             total_amount = contract.get("payment_amount", 0)
             already_funded = contract.get("escrow_funded", 0)
@@ -227,12 +229,59 @@ def get_payments_routes(db, get_current_user):
             if amount_to_fund <= 0:
                 raise HTTPException(status_code=400, detail="Contract is already fully funded")
             
-            # Create payment record for Yoco
+            # Create payment record
             payment_id = str(uuid.uuid4())
+            amount_cents = int(amount_to_fund * 100)  # Yoco uses cents
             
+            # Build return URLs
+            origin_url = data.origin_url or str(request.base_url).rstrip('/')
+            success_url = f"{origin_url}/contracts/{data.contract_id}?payment=success&session_id={payment_id}"
+            cancel_url = f"{origin_url}/contracts/{data.contract_id}?payment=cancelled"
+            failure_url = f"{origin_url}/contracts/{data.contract_id}?payment=failed"
+            
+            # Create Yoco checkout session
+            async with httpx.AsyncClient() as client:
+                yoco_response = await client.post(
+                    "https://payments.yoco.com/api/checkouts",
+                    headers={
+                        "Authorization": f"Bearer {YOCO_SECRET_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "amount": amount_cents,
+                        "currency": "ZAR",
+                        "successUrl": success_url,
+                        "cancelUrl": cancel_url,
+                        "failureUrl": failure_url,
+                        "metadata": {
+                            "payment_id": payment_id,
+                            "contract_id": data.contract_id,
+                            "type": "contract_funding",
+                            "user_id": current_user.id
+                        }
+                    },
+                    timeout=30
+                )
+                
+                logger.info(f"Yoco checkout response: {yoco_response.status_code}")
+                
+                if yoco_response.status_code not in [200, 201]:
+                    error_data = yoco_response.json() if yoco_response.content else {}
+                    error_msg = error_data.get("message", error_data.get("error", "Unknown error"))
+                    logger.error(f"Yoco checkout error: {error_msg}")
+                    raise HTTPException(status_code=500, detail=f"Yoco payment error: {error_msg}")
+                
+                yoco_data = yoco_response.json()
+                checkout_id = yoco_data.get("id")
+                checkout_url = yoco_data.get("redirectUrl")
+                
+                if not checkout_url:
+                    raise HTTPException(status_code=500, detail="Yoco did not return a checkout URL")
+            
+            # Save transaction record
             transaction = {
                 "id": payment_id,
-                "session_id": payment_id,  # Use payment_id as session_id for Yoco
+                "session_id": checkout_id,
                 "type": "contract_funding",
                 "provider": "yoco",
                 "contract_id": data.contract_id,
@@ -240,24 +289,28 @@ def get_payments_routes(db, get_current_user):
                 "user_id": current_user.id,
                 "user_email": current_user.email,
                 "amount": amount_to_fund,
-                "amount_cents": int(amount_to_fund * 100),  # Yoco uses cents
+                "amount_cents": amount_cents,
                 "currency": "ZAR",
                 "payment_status": "pending",
                 "status": "initiated",
-                "idempotency_key": str(uuid.uuid4()),
+                "checkout_id": checkout_id,
+                "checkout_url": checkout_url,
+                "success_url": success_url,
+                "cancel_url": cancel_url,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }
             
             await db.payment_transactions.insert_one(transaction)
             
-            # Return payment details for frontend to use with Yoco SDK
             return {
                 "success": True,
                 "provider": "yoco",
                 "payment_id": payment_id,
+                "checkout_id": checkout_id,
+                "checkout_url": checkout_url,
                 "public_key": YOCO_PUBLIC_KEY,
-                "amount_cents": int(amount_to_fund * 100),
+                "amount_cents": amount_cents,
                 "currency": "ZAR",
                 "description": f"Contract funding: {contract.get('title', 'Contract')}"
             }

@@ -7,7 +7,7 @@ import { Badge } from '../components/ui/badge';
 import {
   Briefcase, MapPin, Clock, DollarSign, ArrowLeft,
   Globe, Building2, Calendar, Eye, Users, Languages,
-  Share2, Bookmark, Send, Loader2, Edit, Trash2, Pause, Play
+  Bookmark, Send, Loader2, Edit, Trash2, Pause, Play
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

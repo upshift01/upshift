@@ -241,6 +241,7 @@ const AppContent = () => {
         {/* Employer Dashboard */}
         <Route path="/employer" element={<PrivateRoute><EmployerDashboard /></PrivateRoute>} />
         <Route path="/employer/analytics" element={<PrivateRoute><JobAnalytics /></PrivateRoute>} />
+        <Route path="/employer/settings" element={<PrivateRoute><EmployerSettings /></PrivateRoute>} />
 
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<AdminLayout />}>

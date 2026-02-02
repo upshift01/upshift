@@ -5,18 +5,23 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
+import { Textarea } from '../components/ui/textarea';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '../components/ui/dialog';
 import {
   FileText, Loader2, ArrowLeft, DollarSign, Calendar, CheckCircle,
   Clock, AlertCircle, Building2, User, XCircle, Milestone, Play,
   Send, ThumbsUp, CreditCard, Edit, Trash2, FileSignature, Wallet,
-  BanknoteIcon, Shield, Globe, Download
+  BanknoteIcon, Shield, Globe, Download, ClipboardList, MessageSquare,
+  Eye, RotateCcw, Plus, X
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
@@ -34,6 +39,28 @@ const ContractDetails = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  
+  // Work report modal states
+  const [showWorkReportModal, setShowWorkReportModal] = useState(false);
+  const [showViewReportModal, setShowViewReportModal] = useState(false);
+  const [showRevisionModal, setShowRevisionModal] = useState(false);
+  const [selectedMilestoneForReport, setSelectedMilestoneForReport] = useState(null);
+  const [viewingWorkReport, setViewingWorkReport] = useState(null);
+  const [workReportLoading, setWorkReportLoading] = useState(false);
+  const [workReportForm, setWorkReportForm] = useState({
+    work_summary: '',
+    deliverables_completed: [],
+    hours_worked: '',
+    challenges_faced: '',
+    next_steps: '',
+    attachments: []
+  });
+  const [revisionForm, setRevisionForm] = useState({
+    feedback: '',
+    specific_issues: []
+  });
+  const [newDeliverable, setNewDeliverable] = useState('');
+  const [newIssue, setNewIssue] = useState('');
   
   // Payment provider selection
   const [paymentProviders, setPaymentProviders] = useState([]);

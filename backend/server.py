@@ -539,6 +539,45 @@ async def get_current_user_info(current_user: UserResponse = Depends(get_current
     return current_user
 
 
+@api_router.put("/auth/profile")
+async def update_user_profile(
+    data: dict,
+    current_user: UserResponse = Depends(get_current_user_dep)
+):
+    """Update user profile information"""
+    try:
+        # Fields that can be updated
+        allowed_fields = [
+            "full_name", "phone", 
+            # Employer-specific fields
+            "company_name", "company_description", "company_website", 
+            "company_size", "industry"
+        ]
+        
+        update_data = {}
+        for field in allowed_fields:
+            if field in data and data[field] is not None:
+                update_data[field] = data[field]
+        
+        if not update_data:
+            return {"success": True, "message": "No changes to save"}
+        
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"Profile updated for user {current_user.email}")
+        
+        return {"success": True, "message": "Profile updated successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error updating profile for {current_user.email}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update profile")
+
+
 # ==================== Password Reset Endpoints ====================
 
 @api_router.post("/auth/forgot-password")

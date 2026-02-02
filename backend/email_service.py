@@ -758,56 +758,87 @@ If you have any questions, feel free to reach out to our support team.
         platform_name: str = "UpShift"
     ) -> bool:
         """Send email when a milestone is funded"""
+        platform_name = self.platform_name or platform_name
+        
+        # Check for custom template
+        custom_template = await self.get_custom_template("milestone_funded")
+        
+        # Determine currency from amount string or default
+        currency = "USD"
+        if "R" in amount or "ZAR" in amount:
+            currency = "ZAR"
+        
+        variables = {
+            "platform_name": platform_name,
+            "recipient_name": recipient_name,
+            "milestone_title": milestone_title,
+            "contract_title": contract_title,
+            "amount": amount,
+            "currency": currency,
+            "contract_url": contract_url
+        }
+        
         if is_contractor:
-            subject = f"💰 Milestone Funded: {milestone_title}"
             message = f"Great news! The milestone <strong>'{milestone_title}'</strong> has been funded. The funds are now held in escrow and will be released upon approval of your work."
         else:
-            subject = f"✅ Payment Successful: {milestone_title}"
             message = f"Your payment for milestone <strong>'{milestone_title}'</strong> was successful. The funds are now held in escrow and will be released when you approve the contractor's work."
         
-        html_body = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
-                .header h1 {{ color: white; margin: 0; font-size: 24px; }}
-                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
-                .amount {{ font-size: 28px; font-weight: bold; color: #059669; text-align: center; margin: 20px 0; }}
-                .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
-                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>💰 Milestone Funded</h1>
+        # Use custom subject if available
+        if custom_template and custom_template.get("subject"):
+            subject = self.replace_variables(custom_template["subject"], variables)
+        else:
+            if is_contractor:
+                subject = f"💰 Milestone Funded: {milestone_title}"
+            else:
+                subject = f"✅ Payment Successful: {milestone_title}"
+        
+        # Use custom body if available
+        if custom_template and custom_template.get("body_html"):
+            html_body = self.replace_variables(custom_template["body_html"], variables)
+        else:
+            html_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                    .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+                    .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }}
+                    .amount {{ font-size: 28px; font-weight: bold; color: #059669; text-align: center; margin: 20px 0; }}
+                    .btn {{ display: inline-block; background: #1e40af; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                    .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>💰 Milestone Funded</h1>
+                    </div>
+                    <div class="content">
+                        <p>Dear {recipient_name},</p>
+                        
+                        <p>{message}</p>
+                        
+                        <p class="amount">{amount}</p>
+                        
+                        <p><strong>Contract:</strong> {contract_title}<br>
+                        <strong>Milestone:</strong> {milestone_title}</p>
+                        
+                        <p style="text-align: center;">
+                            <a href="{contract_url}" class="btn">View Contract</a>
+                        </p>
+                        
+                        <p>Best regards,<br>The {platform_name} Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated notification from {platform_name}.</p>
+                    </div>
                 </div>
-                <div class="content">
-                    <p>Dear {recipient_name},</p>
-                    
-                    <p>{message}</p>
-                    
-                    <p class="amount">{amount}</p>
-                    
-                    <p><strong>Contract:</strong> {contract_title}<br>
-                    <strong>Milestone:</strong> {milestone_title}</p>
-                    
-                    <p style="text-align: center;">
-                        <a href="{contract_url}" class="btn">View Contract</a>
-                    </p>
-                    
-                    <p>Best regards,<br>The {platform_name} Team</p>
-                </div>
-                <div class="footer">
-                    <p>This is an automated notification from {platform_name}.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
+            </body>
+            </html>
+            """
         
         return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
     

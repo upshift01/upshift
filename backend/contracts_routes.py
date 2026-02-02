@@ -155,6 +155,16 @@ def get_contracts_routes(db, get_current_user):
             await db.contracts.insert_one(contract)
             contract.pop("_id", None)
             
+            # Update job status to 'filled' when contract is created
+            await db.remote_jobs.update_one(
+                {"id": proposal.get("job_id")},
+                {"$set": {
+                    "status": "filled",
+                    "filled_at": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
             logger.info(f"Contract created: {contract['id']} for proposal {data.proposal_id}")
             
             # Send email notification to contractor

@@ -492,7 +492,7 @@ const AdminRecruiters = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       size="sm"
                       variant="outline"
@@ -501,6 +501,16 @@ const AdminRecruiters = () => {
                     >
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openSubscriptionModal(recruiter)}
+                      data-testid="manage-subscription-btn"
+                      className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                    >
+                      <Crown className="h-4 w-4 mr-1" />
+                      Subscription
                     </Button>
                     <Button
                       size="sm"

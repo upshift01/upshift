@@ -147,6 +147,8 @@ const MyJobs = () => {
     total: jobs.length,
     active: jobs.filter(j => j.status === 'active').length,
     paused: jobs.filter(j => j.status === 'paused').length,
+    filled: jobs.filter(j => j.status === 'filled').length,
+    closed: jobs.filter(j => j.status === 'closed').length,
     totalViews: jobs.reduce((sum, j) => sum + (j.views || 0), 0),
     totalApplications: jobs.reduce((sum, j) => sum + (j.applications_count || 0), 0)
   };

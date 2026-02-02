@@ -361,6 +361,21 @@ Return as JSON in this exact format:
             
             total = await db.remote_jobs.count_documents(query)
             
+            # Fetch company logos for jobs that don't have them stored
+            # This handles older jobs created before the logo feature
+            jobs_without_logos = [j for j in jobs if not j.get("company_logo")]
+            if jobs_without_logos:
+                poster_ids = list(set(j.get("poster_id") for j in jobs_without_logos if j.get("poster_id")))
+                if poster_ids:
+                    employers = await db.users.find(
+                        {"id": {"$in": poster_ids}},
+                        {"_id": 0, "id": 1, "company_logo": 1}
+                    ).to_list(length=100)
+                    logo_map = {e["id"]: e.get("company_logo") for e in employers}
+                    for job in jobs:
+                        if not job.get("company_logo") and job.get("poster_id") in logo_map:
+                            job["company_logo"] = logo_map[job["poster_id"]]
+            
             return {
                 "success": True,
                 "jobs": jobs,

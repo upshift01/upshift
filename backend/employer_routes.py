@@ -657,6 +657,125 @@ def get_employer_routes(db, get_current_user, yoco_client=None):
             logger.error(f"Error getting job analytics: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    # ==============================================
+    # COMPANY LOGO UPLOAD
+    # ==============================================
+    
+    @employer_router.post("/upload-logo")
+    async def upload_company_logo(
+        file: UploadFile = File(...),
+        current_user = Depends(get_current_user)
+    ):
+        """Upload company logo for employer"""
+        try:
+            if current_user.role != "employer":
+                raise HTTPException(status_code=403, detail="Only employers can upload company logos")
+            
+            # Validate file type
+            allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"]
+            if file.content_type not in allowed_types:
+                raise HTTPException(status_code=400, detail="Invalid file type. Allowed: JPEG, PNG, GIF, WebP, SVG")
+            
+            # Validate file size (max 5MB)
+            contents = await file.read()
+            if len(contents) > 5 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+            
+            # Create directory if it doesn't exist
+            os.makedirs(COMPANY_LOGO_PATH, exist_ok=True)
+            
+            # Generate unique filename
+            file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+            filename = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+            file_path = os.path.join(COMPANY_LOGO_PATH, filename)
+            
+            # Delete old logo if exists
+            old_logo = await db.users.find_one({"id": current_user.id}, {"company_logo": 1})
+            if old_logo and old_logo.get("company_logo"):
+                old_path = os.path.join(COMPANY_LOGO_PATH, old_logo["company_logo"].split("/")[-1])
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            
+            # Save new file
+            with open(file_path, "wb") as f:
+                f.write(contents)
+            
+            # Update user record with logo path
+            logo_url = f"/uploads/company_logos/{filename}"
+            await db.users.update_one(
+                {"id": current_user.id},
+                {"$set": {
+                    "company_logo": logo_url,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Also update any jobs posted by this employer
+            await db.remote_jobs.update_many(
+                {"poster_id": current_user.id},
+                {"$set": {"company_logo": logo_url}}
+            )
+            
+            logger.info(f"Company logo uploaded for user {current_user.id}")
+            
+            return {
+                "success": True,
+                "logo_url": logo_url,
+                "message": "Company logo uploaded successfully"
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error uploading company logo: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @employer_router.get("/logo/{filename}")
+    async def get_company_logo(filename: str):
+        """Serve company logo file"""
+        file_path = os.path.join(COMPANY_LOGO_PATH, filename)
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Logo not found")
+        return FileResponse(file_path)
+    
+    @employer_router.delete("/logo")
+    async def delete_company_logo(current_user = Depends(get_current_user)):
+        """Delete company logo for employer"""
+        try:
+            if current_user.role != "employer":
+                raise HTTPException(status_code=403, detail="Only employers can manage company logos")
+            
+            # Get current logo
+            user = await db.users.find_one({"id": current_user.id}, {"company_logo": 1})
+            if user and user.get("company_logo"):
+                # Delete file
+                old_path = os.path.join(COMPANY_LOGO_PATH, user["company_logo"].split("/")[-1])
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                
+                # Update user record
+                await db.users.update_one(
+                    {"id": current_user.id},
+                    {"$set": {
+                        "company_logo": None,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+                # Update jobs
+                await db.remote_jobs.update_many(
+                    {"poster_id": current_user.id},
+                    {"$set": {"company_logo": None}}
+                )
+            
+            return {"success": True, "message": "Company logo deleted"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error deleting company logo: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return employer_router
 
 

@@ -44,7 +44,7 @@ const PostJob = () => {
     experience_level: 'mid',
     budget_min: '',
     budget_max: '',
-    currency: 'USD',
+    currency: 'ZAR',
     budget_type: 'monthly',
     timeline: 'ongoing',
     location_preference: 'worldwide',

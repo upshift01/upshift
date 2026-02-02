@@ -128,19 +128,22 @@ const Navbar = () => {
                       <div className="text-xs text-gray-500">Browse & hire talent</div>
                     </div>
                   </Link>
-                  <Link
-                    to={isAuthenticated ? "/dashboard/talent-pool" : "/register?redirect=/dashboard/talent-pool"}
-                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
-                    onClick={() => setTalentDropdownOpen(false)}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <UserPlus className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">Join Talent Pool</div>
-                      <div className="text-xs text-gray-500">Get discovered by employers</div>
-                    </div>
-                  </Link>
+                  {/* Hide "Join Talent Pool" for employers - they hire, not join */}
+                  {user?.role !== 'employer' && (
+                    <Link
+                      to={isAuthenticated ? "/dashboard/talent-pool" : "/register?redirect=/dashboard/talent-pool"}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                      onClick={() => setTalentDropdownOpen(false)}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <UserPlus className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">Join Talent Pool</div>
+                        <div className="text-xs text-gray-500">Get discovered by employers</div>
+                      </div>
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

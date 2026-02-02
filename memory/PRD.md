@@ -269,6 +269,8 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
    - Contract signing requires saved signature from talent pool profile
    - **Contract duplication prevention** - Only one contract can be created per proposal (Feb 2025)
    - **Smart UI buttons** - Shows "View Contract" instead of "Create Contract" when contract exists
+   - **Milestone Work Reports** - Job seekers submit detailed work reports with payment requests (Feb 2025)
+   - **Revision Requests** - Employers can request revisions with feedback before approving milestones
 6. **Contract PDF Export** - ENHANCED
    - Download contracts as professional PDF documents
    - **Company logo in header** (SVG auto-converted to PNG)

@@ -68,8 +68,11 @@ const PostJob = () => {
       return;
     }
     
+    // Wait for user to be loaded
+    if (!user) return;
+    
     // Check if user is employer
-    if (user?.role !== 'employer') {
+    if (user.role !== 'employer') {
       toast({
         title: 'Access Denied',
         description: 'Only employers can post jobs. Please register as an employer.',
@@ -86,7 +89,7 @@ const PostJob = () => {
     if (isEditMode && jobId) {
       fetchJobData();
     }
-  }, [isAuthenticated, user, navigate, jobId]);
+  }, [isAuthenticated, user, jobId]);
 
   const fetchJobData = async () => {
     setLoadingJob(true);

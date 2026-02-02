@@ -459,12 +459,35 @@ const EmployerSettings = () => {
                   </div>
                   <div>
                     <Label htmlFor="industry">Industry</Label>
-                    <Input
+                    <select
                       id="industry"
                       value={profile.industry}
                       onChange={(e) => setProfile({ ...profile, industry: e.target.value })}
-                      placeholder="Technology, Finance, etc."
-                    />
+                      className="w-full h-10 px-3 py-2 border rounded-md bg-white"
+                    >
+                      <option value="">Select industry</option>
+                      <option value="Technology">Technology</option>
+                      <option value="Finance & Banking">Finance & Banking</option>
+                      <option value="Healthcare">Healthcare</option>
+                      <option value="Education">Education</option>
+                      <option value="Retail & E-commerce">Retail & E-commerce</option>
+                      <option value="Manufacturing">Manufacturing</option>
+                      <option value="Construction">Construction</option>
+                      <option value="Real Estate">Real Estate</option>
+                      <option value="Marketing & Advertising">Marketing & Advertising</option>
+                      <option value="Media & Entertainment">Media & Entertainment</option>
+                      <option value="Hospitality & Tourism">Hospitality & Tourism</option>
+                      <option value="Transportation & Logistics">Transportation & Logistics</option>
+                      <option value="Energy & Utilities">Energy & Utilities</option>
+                      <option value="Agriculture">Agriculture</option>
+                      <option value="Mining">Mining</option>
+                      <option value="Telecommunications">Telecommunications</option>
+                      <option value="Legal Services">Legal Services</option>
+                      <option value="Consulting">Consulting</option>
+                      <option value="Non-Profit">Non-Profit</option>
+                      <option value="Government">Government</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div>
                     <Label htmlFor="company_size">Company Size</Label>

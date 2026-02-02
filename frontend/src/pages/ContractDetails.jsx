@@ -1053,6 +1053,19 @@ const ContractDetails = () => {
                           </Button>
                         )}
 
+                        {/* Contractor: View their own submitted work report */}
+                        {isContractor && milestone.status === 'submitted' && milestone.work_report && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => viewWorkReport(milestone)}
+                            disabled={workReportLoading}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View My Report
+                          </Button>
+                        )}
+
                         {/* Anyone: View work report for completed milestones */}
                         {(milestone.status === 'approved' || milestone.status === 'paid') && milestone.work_report && (
                           <Button

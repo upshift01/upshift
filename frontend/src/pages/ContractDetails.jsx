@@ -314,18 +314,16 @@ const ContractDetails = () => {
         const data = await response.json();
         
         if (data.provider === 'yoco' && data.payment_id) {
-          // Yoco uses inline SDK - for now, show instructions
-          toast({
-            title: 'Yoco Payment',
-            description: 'Yoco payment integration. Please complete the payment.'
-          });
-          // In a full implementation, we'd load Yoco SDK and process inline
-          // For now, redirect to a Yoco checkout if available
+          // Yoco - redirect to checkout URL
           if (data.checkout_url) {
             window.location.href = data.checkout_url;
           } else {
+            toast({
+              title: 'Payment Error',
+              description: 'Yoco checkout URL not received. Please try again.',
+              variant: 'destructive'
+            });
             setPaymentLoading(false);
-            fetchContract();
           }
         } else {
           // Stripe - redirect to checkout

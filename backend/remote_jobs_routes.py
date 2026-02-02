@@ -260,6 +260,9 @@ Return as JSON in this exact format:
                     detail=f"You've reached your limit of {jobs_limit} job postings on the {plan_name}. Please upgrade your plan to post more jobs."
                 )
             
+            # Get company logo from user profile
+            company_logo = user.get("company_logo")
+            
             # Create the job posting
             job = {
                 "id": str(uuid.uuid4()),
@@ -269,6 +272,7 @@ Return as JSON in this exact format:
                 "poster_name": current_user.full_name or current_user.email,
                 "title": data.title,
                 "company_name": data.company_name,
+                "company_logo": company_logo,  # Include company logo in job posting
                 "description": data.description,
                 "job_type": data.job_type,
                 "required_skills": data.required_skills,

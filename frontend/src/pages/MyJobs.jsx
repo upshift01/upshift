@@ -255,10 +255,12 @@ const MyJobs = () => {
 
         {/* Filter Tabs */}
         <Tabs value={filter} onValueChange={setFilter} className="mb-6">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
             <TabsTrigger value="active">Active ({stats.active})</TabsTrigger>
             <TabsTrigger value="paused">Paused ({stats.paused})</TabsTrigger>
+            <TabsTrigger value="filled">Filled ({stats.filled})</TabsTrigger>
+            <TabsTrigger value="closed">Closed ({stats.closed})</TabsTrigger>
           </TabsList>
         </Tabs>
 

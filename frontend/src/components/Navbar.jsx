@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Zap, LogOut, User, ChevronDown, Users, UserPlus, Briefcase, CreditCard, Settings, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Zap, LogOut, User, ChevronDown, Users, UserPlus, Briefcase, CreditCard, Settings, LayoutDashboard, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';

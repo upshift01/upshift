@@ -1329,6 +1329,12 @@ def get_contracts_routes(db, get_current_user):
             milestones[milestone_idx]["status"] = "approved"
             milestones[milestone_idx]["approved_at"] = datetime.now(timezone.utc).isoformat()
             
+            # Update work report status if exists
+            if milestones[milestone_idx].get("work_report"):
+                milestones[milestone_idx]["work_report"]["status"] = "approved"
+                milestones[milestone_idx]["work_report"]["reviewed_at"] = datetime.now(timezone.utc).isoformat()
+                milestones[milestone_idx]["work_report"]["reviewed_by"] = current_user.id
+            
             await db.contracts.update_one(
                 {"id": contract_id},
                 {"$set": {
@@ -1362,6 +1368,85 @@ def get_contracts_routes(db, get_current_user):
             raise
         except Exception as e:
             logger.error(f"Error approving milestone: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    class RevisionRequest(BaseModel):
+        feedback: str
+        specific_issues: List[str] = []
+    
+    @contracts_router.post("/{contract_id}/milestones/{milestone_id}/request-revision")
+    async def request_milestone_revision(
+        contract_id: str,
+        milestone_id: str,
+        data: RevisionRequest,
+        current_user = Depends(get_current_user)
+    ):
+        """Request revision on submitted milestone (employer only)"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id})
+            
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            if contract.get("employer_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Only employer can request revisions")
+            
+            milestones = contract.get("milestones", [])
+            milestone_idx = next((i for i, m in enumerate(milestones) if m.get("id") == milestone_id), None)
+            
+            if milestone_idx is None:
+                raise HTTPException(status_code=404, detail="Milestone not found")
+            
+            if milestones[milestone_idx].get("status") != "submitted":
+                raise HTTPException(status_code=400, detail="Can only request revision for submitted milestones")
+            
+            # Update milestone status back to in_progress
+            milestones[milestone_idx]["status"] = "in_progress"
+            
+            # Add revision request to work report
+            if milestones[milestone_idx].get("work_report"):
+                milestones[milestone_idx]["work_report"]["status"] = "revision_requested"
+                milestones[milestone_idx]["work_report"]["revision_feedback"] = data.feedback
+                milestones[milestone_idx]["work_report"]["revision_issues"] = data.specific_issues
+                milestones[milestone_idx]["work_report"]["revision_requested_at"] = datetime.now(timezone.utc).isoformat()
+                milestones[milestone_idx]["work_report"]["revision_requested_by"] = current_user.id
+            else:
+                # Create a basic work report with revision info
+                milestones[milestone_idx]["revision_feedback"] = data.feedback
+                milestones[milestone_idx]["revision_issues"] = data.specific_issues
+            
+            await db.contracts.update_one(
+                {"id": contract_id},
+                {"$set": {
+                    "milestones": milestones,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Send notification to contractor
+            try:
+                await create_notification(
+                    db=db,
+                    user_id=contract.get("contractor_id"),
+                    notification_type="revision_requested",
+                    title="Revision Requested",
+                    message=f"{contract.get('employer_name')} requested changes to '{milestones[milestone_idx].get('title')}'",
+                    link=f"/contracts/{contract_id}",
+                    metadata={
+                        "contract_id": contract_id,
+                        "milestone_id": milestone_id,
+                        "feedback": data.feedback
+                    }
+                )
+            except Exception as notif_err:
+                logger.warning(f"Failed to send revision notification: {notif_err}")
+            
+            return {"success": True, "message": "Revision requested"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error requesting revision: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
     @contracts_router.post("/{contract_id}/milestones/{milestone_id}/pay")

@@ -279,7 +279,21 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
    - Status badge (Draft/Active/Completed)
    - Contract ID and page numbers in footer
    - Available for all contract statuses (draft, active, completed)
-7. **Employer Access to Talent Pool** - FIXED
+
+7. **Escrow Protection System** - ENHANCED (Feb 2025)
+   - **Escrow Dashboard** - Comprehensive view of all escrow funds (`/escrow` route)
+     - Stats cards: Total funded, Released, Pending release
+     - As Employer/As Contractor breakdown
+     - Pending approvals and unfunded milestones tracking
+   - **Escrow Protection Policies**:
+     - Dispute creation (contractor) and resolution (employer/admin)
+     - Refund capability for employers (before work starts)
+     - Auto-release settings (configurable days after submission)
+   - **Escrow Statements** - Transaction history with running balance
+   - **Contract Escrow Details** - Per-milestone breakdown
+   - New APIs: `/api/payments/escrow/dashboard`, `/api/payments/escrow/dispute/*`, `/api/payments/escrow/refund/*`
+
+8. **Employer Access to Talent Pool** - FIXED
    - Employers can now view candidate profiles from AI Matches
    - Employers can send contact requests to candidates
    - Profile lookup works with both profile_id and user_id

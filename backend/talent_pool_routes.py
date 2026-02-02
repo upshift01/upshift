@@ -656,8 +656,19 @@ Write ONLY the summary text, no explanations or quotes."""
             if not has_access:
                 raise HTTPException(status_code=403, detail="Recruiter subscription required")
             
+            # Try to find profile by profile ID first, then by user_id
+            # This allows linking from proposals (which have user_id) and from talent pool (which has profile_id)
             profile = await db.talent_pool_profiles.find_one(
                 {"id": profile_id, "is_visible": True},
+                {"_id": 0, "contact_email": 0, "contact_phone": 0}
+            )
+            
+            # If not found by profile ID, try finding by user_id
+            if not profile:
+                profile = await db.talent_pool_profiles.find_one(
+                    {"user_id": profile_id, "is_visible": True},
+                    {"_id": 0, "contact_email": 0, "contact_phone": 0}
+                )
                 {"_id": 0, "contact_email": 0, "contact_phone": 0}
             )
             

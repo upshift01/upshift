@@ -390,6 +390,10 @@ const EmployerSettings = () => {
               <Shield className="h-4 w-4" />
               Security
             </TabsTrigger>
+            <TabsTrigger value="signature" className="flex items-center gap-2" data-testid="signature-tab">
+              <PenTool className="h-4 w-4" />
+              Signature
+            </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}

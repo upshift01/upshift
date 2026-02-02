@@ -81,7 +81,82 @@ const PostJob = () => {
     
     checkPostingAccess();
     fetchOptions();
-  }, [isAuthenticated, user, navigate]);
+    
+    // If editing, load the job data
+    if (isEditMode && jobId) {
+      fetchJobData();
+    }
+  }, [isAuthenticated, user, navigate, jobId]);
+
+  const fetchJobData = async () => {
+    setLoadingJob(true);
+    try {
+      const response = await fetch(`${API_URL}/api/remote-jobs/jobs/${jobId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const job = await response.json();
+        
+        // Check if user owns this job
+        if (job.poster_id !== user?.id) {
+          toast({
+            title: 'Access Denied',
+            description: 'You can only edit your own job postings.',
+            variant: 'destructive'
+          });
+          navigate('/remote-jobs/my-jobs');
+          return;
+        }
+        
+        // Populate form with job data
+        setFormData({
+          title: job.title || '',
+          company_name: job.company_name || '',
+          description: job.description || '',
+          job_type: job.job_type || 'full-time',
+          required_skills: job.required_skills || [],
+          preferred_skills: job.preferred_skills || [],
+          experience_level: job.experience_level || 'mid',
+          budget_min: job.budget_min?.toString() || '',
+          budget_max: job.budget_max?.toString() || '',
+          currency: job.currency || 'ZAR',
+          budget_type: job.budget_type || 'monthly',
+          timeline: job.timeline || 'ongoing',
+          location_preference: job.location_preference || 'worldwide',
+          preferred_regions: job.preferred_regions || [],
+          timezone_overlap: job.timezone_overlap || '',
+          language_requirements: job.language_requirements || ['English'],
+          remote_type: job.remote_type || 'fully-remote',
+          application_deadline: job.application_deadline ? job.application_deadline.split('T')[0] : ''
+        });
+        
+        // Set bullet points if description has them
+        if (job.description) {
+          const lines = job.description.split('\n').filter(line => line.trim().startsWith('•') || line.trim().startsWith('-'));
+          if (lines.length > 0) {
+            setBulletPoints(lines.map(l => l.replace(/^[•-]\s*/, '')));
+          }
+        }
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to load job data',
+          variant: 'destructive'
+        });
+        navigate('/remote-jobs/my-jobs');
+      }
+    } catch (error) {
+      console.error('Error fetching job:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load job data',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingJob(false);
+    }
+  };
 
   const checkPostingAccess = async () => {
     try {
@@ -91,7 +166,7 @@ const PostJob = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setCanPost(data.can_post);
+        setCanPost(isEditMode ? true : data.can_post); // Always allow editing existing jobs
         setAccessMessage(data.message);
         setJobsPosted(data.jobs_posted);
         setJobsLimit(data.jobs_limit);

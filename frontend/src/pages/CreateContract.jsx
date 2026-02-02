@@ -43,8 +43,18 @@ const CreateContract = () => {
     payment_type: 'fixed',
     payment_schedule: 'on_completion',
     terms: '',
-    milestones: []
+    milestones: [],
+    // Comprehensive contract fields
+    scope_of_work: '',
+    deliverables: [],
+    payment_terms: '',
+    confidentiality_clause: 'Both parties agree to keep all project details, business information, and communications confidential. This obligation survives the termination of this contract.',
+    termination_conditions: 'Either party may terminate this contract with 14 days written notice. In case of termination, payment will be made for all completed and approved work.',
+    dispute_resolution: 'Any disputes arising from this contract will first be addressed through good-faith negotiation. If unresolved, disputes will be submitted to mediation before any legal proceedings.',
+    intellectual_property: 'All work product created under this contract shall become the property of the Employer upon full payment. The Contractor retains rights to general knowledge and skills gained.'
   });
+
+  const [newDeliverable, setNewDeliverable] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated) {

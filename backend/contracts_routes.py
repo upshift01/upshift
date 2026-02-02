@@ -1222,10 +1222,10 @@ def get_contracts_routes(db, get_current_user):
     async def submit_milestone(
         contract_id: str,
         milestone_id: str,
-        data: dict,
+        data: MilestoneSubmission,
         current_user = Depends(get_current_user)
     ):
-        """Submit milestone for review (contractor only)"""
+        """Submit milestone with work report for review (contractor only)"""
         try:
             contract = await db.contracts.find_one({"id": contract_id})
             
@@ -1247,9 +1247,24 @@ def get_contracts_routes(db, get_current_user):
             if milestones[milestone_idx].get("status") not in ["pending", "in_progress"]:
                 raise HTTPException(status_code=400, detail="Milestone cannot be submitted")
             
+            # Create work report
+            work_report = {
+                "id": str(uuid.uuid4()),
+                "submitted_by": current_user.id,
+                "submitted_by_name": current_user.full_name,
+                "submitted_at": datetime.now(timezone.utc).isoformat(),
+                "work_summary": data.work_summary,
+                "deliverables_completed": data.deliverables_completed,
+                "hours_worked": data.hours_worked,
+                "challenges_faced": data.challenges_faced,
+                "next_steps": data.next_steps,
+                "attachments": data.attachments,
+                "status": "pending_review"  # pending_review, approved, revision_requested
+            }
+            
             milestones[milestone_idx]["status"] = "submitted"
             milestones[milestone_idx]["submitted_at"] = datetime.now(timezone.utc).isoformat()
-            milestones[milestone_idx]["submission_notes"] = data.get("notes", "")
+            milestones[milestone_idx]["work_report"] = work_report
             
             await db.contracts.update_one(
                 {"id": contract_id},

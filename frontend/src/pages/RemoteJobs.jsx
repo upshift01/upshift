@@ -276,13 +276,15 @@ const RemoteJobs = () => {
         {/* Results Count */}
         <div className="flex justify-between items-center mb-6">
           <p className="text-gray-600">
-            {pagination.total} remote {pagination.total === 1 ? 'job' : 'jobs'} found
+            {isEmployer 
+              ? `You have ${pagination.total} job ${pagination.total === 1 ? 'posting' : 'postings'}`
+              : `${pagination.total} remote ${pagination.total === 1 ? 'job' : 'jobs'} found`}
           </p>
-          {isAuthenticated && (
-            <Link to="/remote-jobs/my-jobs">
+          {isAuthenticated && !isEmployer && (
+            <Link to="/remote-jobs/my-proposals">
               <Button variant="outline" size="sm">
                 <Briefcase className="h-4 w-4 mr-2" />
-                My Posted Jobs
+                My Proposals
               </Button>
             </Link>
           )}
@@ -296,12 +298,18 @@ const RemoteJobs = () => {
           <Card className="text-center py-12">
             <CardContent>
               <Briefcase className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">No jobs found</h3>
-              <p className="text-gray-500 mb-4">Try adjusting your search or filters</p>
-              {isAuthenticated && (
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                {isEmployer ? 'No job postings yet' : 'No jobs found'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {isEmployer 
+                  ? 'Create your first job posting to start receiving applications'
+                  : 'Try adjusting your search or filters'}
+              </p>
+              {isEmployer && (
                 <Button onClick={() => navigate('/remote-jobs/post')}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Post the First Job
+                  Post Your First Job
                 </Button>
               )}
             </CardContent>

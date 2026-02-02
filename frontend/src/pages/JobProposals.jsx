@@ -397,14 +397,33 @@ const JobProposals = () => {
                         </>
                       )}
                       {proposal.status === 'accepted' && (
-                        <Button
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
-                          onClick={() => navigate(`/contracts/create/${proposal.id}`)}
-                        >
-                          <FileSignature className="h-4 w-4 mr-1" />
-                          Create Contract
-                        </Button>
+                        proposal.has_contract ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-green-600 border-green-200 hover:bg-green-50"
+                            onClick={() => navigate(`/contracts/${proposal.contract_id}`)}
+                            data-testid={`view-contract-btn-${proposal.id}`}
+                          >
+                            <FileCheck className="h-4 w-4 mr-1" />
+                            View Contract
+                            {proposal.contract_status && (
+                              <Badge variant="secondary" className="ml-2 text-xs">
+                                {proposal.contract_status}
+                              </Badge>
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => navigate(`/contracts/create/${proposal.id}`)}
+                            data-testid={`create-contract-btn-${proposal.id}`}
+                          >
+                            <FileSignature className="h-4 w-4 mr-1" />
+                            Create Contract
+                          </Button>
+                        )
                       )}
                     </div>
 

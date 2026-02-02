@@ -16,7 +16,7 @@ import {
   FileText, Loader2, ArrowLeft, DollarSign, Calendar, CheckCircle,
   Clock, AlertCircle, Building2, User, XCircle, Milestone, Play,
   Send, ThumbsUp, CreditCard, Edit, Trash2, FileSignature, Wallet,
-  BanknoteIcon, Shield, Globe
+  BanknoteIcon, Shield, Globe, Download
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

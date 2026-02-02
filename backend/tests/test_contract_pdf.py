@@ -150,7 +150,8 @@ class TestContractPDF:
         """Test employer profile has company logo for PDF"""
         self.get_auth_token()
         
-        response = self.session.get(f"{BASE_URL}/api/employer/profile")
+        # Use /api/auth/me endpoint for profile
+        response = self.session.get(f"{BASE_URL}/api/auth/me")
         
         assert response.status_code == 200, f"Profile fetch failed: {response.text}"
         profile = response.json()

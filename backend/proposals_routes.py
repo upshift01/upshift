@@ -190,6 +190,22 @@ Return ONLY the improved proposal text."""
             if not job:
                 raise HTTPException(status_code=404, detail="Job not found or no longer active")
             
+            # Check if the job already has an awarded contract
+            existing_contract = await db.contracts.find_one({
+                "job_id": data.job_id,
+                "status": {"$in": ["draft", "active"]}
+            })
+            if existing_contract:
+                raise HTTPException(status_code=400, detail="This job has already been awarded to another candidate")
+            
+            # Check if there's already an accepted proposal for this job
+            accepted_proposal = await db.proposals.find_one({
+                "job_id": data.job_id,
+                "status": "accepted"
+            })
+            if accepted_proposal:
+                raise HTTPException(status_code=400, detail="This job has already been awarded to another candidate")
+            
             # Check if user already submitted a proposal for this job
             existing = await db.proposals.find_one({
                 "job_id": data.job_id,

@@ -269,7 +269,14 @@ def get_payments_routes(db, get_current_user):
                 if yoco_response.status_code not in [200, 201]:
                     error_data = yoco_response.json() if yoco_response.content else {}
                     error_msg = error_data.get("message", error_data.get("error", "Unknown error"))
-                    logger.error(f"Yoco checkout error: {error_msg}")
+                    logger.error(f"Yoco checkout error: {error_msg} - Response: {error_data}")
+                    
+                    # Provide more helpful error messages
+                    if "key" in error_msg.lower() or yoco_response.status_code == 403:
+                        raise HTTPException(
+                            status_code=500, 
+                            detail="Yoco API key is invalid or expired. Please update your Yoco API keys in the admin settings."
+                        )
                     raise HTTPException(status_code=500, detail=f"Yoco payment error: {error_msg}")
                 
                 yoco_data = yoco_response.json()

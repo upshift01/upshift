@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 PROFILE_PICTURE_PATH = "/app/public/uploads/profile_pictures"
 os.makedirs(PROFILE_PICTURE_PATH, exist_ok=True)
 
+# Signature storage path
+SIGNATURE_PATH = "/app/public/uploads/signatures"
+os.makedirs(SIGNATURE_PATH, exist_ok=True)
+
 talent_pool_router = APIRouter(prefix="/api/talent-pool", tags=["Talent Pool"])
 
 # Pydantic Models

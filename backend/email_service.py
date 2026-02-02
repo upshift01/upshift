@@ -944,75 +944,95 @@ If you have any questions, feel free to reach out to our support team.
         platform_name = self.platform_name or "UpShift"
         login_url = login_url or "https://upshift.works/login"
         
-        subject = f"Welcome to {platform_name} - Your Employer Account"
+        # Check for custom template
+        custom_template = await self.get_custom_template("employer_welcome")
         
-        html_body = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
-                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
-                .credentials {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }}
-                .credential-row {{ margin: 10px 0; }}
-                .label {{ color: #6b7280; font-size: 12px; text-transform: uppercase; }}
-                .value {{ font-family: monospace; font-size: 16px; color: #1f2937; background: #f3f4f6; padding: 8px 12px; border-radius: 4px; margin-top: 4px; display: block; }}
-                .btn {{ display: inline-block; background: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
-                .warning {{ background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; }}
-                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🎉 Welcome to {platform_name}!</h1>
-                </div>
-                <div class="content">
-                    <p>Dear {employer_name},</p>
-                    
-                    <p>Your employer account has been created by {created_by}. You can now post jobs, review proposals, and hire talented professionals.</p>
-                    
-                    <div class="credentials">
-                        <h3 style="margin-top: 0;">Your Login Credentials</h3>
-                        <div class="credential-row">
-                            <span class="label">Email</span>
-                            <span class="value">{to_email}</span>
-                        </div>
-                        <div class="credential-row">
-                            <span class="label">Password</span>
-                            <span class="value">{password}</span>
-                        </div>
+        variables = {
+            "platform_name": platform_name,
+            "employer_name": employer_name,
+            "email": to_email,
+            "password": password,
+            "login_url": login_url,
+            "created_by": created_by
+        }
+        
+        # Use custom subject if available
+        if custom_template and custom_template.get("subject"):
+            subject = self.replace_variables(custom_template["subject"], variables)
+        else:
+            subject = f"Welcome to {platform_name} - Your Employer Account"
+        
+        # Use custom body if available
+        if custom_template and custom_template.get("body_html"):
+            html_body = self.replace_variables(custom_template["body_html"], variables)
+        else:
+            html_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+                    .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
+                    .credentials {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }}
+                    .credential-row {{ margin: 10px 0; }}
+                    .label {{ color: #6b7280; font-size: 12px; text-transform: uppercase; }}
+                    .value {{ font-family: monospace; font-size: 16px; color: #1f2937; background: #f3f4f6; padding: 8px 12px; border-radius: 4px; margin-top: 4px; display: block; }}
+                    .btn {{ display: inline-block; background: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; }}
+                    .warning {{ background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; }}
+                    .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🎉 Welcome to {platform_name}!</h1>
                     </div>
-                    
-                    <div class="warning">
-                        ⚠️ <strong>Important:</strong> Please change your password after your first login for security purposes.
+                    <div class="content">
+                        <p>Dear {employer_name},</p>
+                        
+                        <p>Your employer account has been created by {created_by}. You can now post jobs, review proposals, and hire talented professionals.</p>
+                        
+                        <div class="credentials">
+                            <h3 style="margin-top: 0;">Your Login Credentials</h3>
+                            <div class="credential-row">
+                                <span class="label">Email</span>
+                                <span class="value">{to_email}</span>
+                            </div>
+                            <div class="credential-row">
+                                <span class="label">Password</span>
+                                <span class="value">{password}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="warning">
+                            ⚠️ <strong>Important:</strong> Please change your password after your first login for security purposes.
+                        </div>
+                        
+                        <p style="text-align: center;">
+                            <a href="{login_url}" class="btn">Login to Your Account</a>
+                        </p>
+                        
+                        <h3>What's Next?</h3>
+                        <ul>
+                            <li>Complete your company profile</li>
+                            <li>Post your first job listing</li>
+                            <li>Browse our talent pool</li>
+                            <li>Start receiving proposals</li>
+                        </ul>
+                        
+                        <p>If you have any questions, feel free to reach out to our support team.</p>
+                        
+                        <p>Best regards,<br>The {platform_name} Team</p>
                     </div>
-                    
-                    <p style="text-align: center;">
-                        <a href="{login_url}" class="btn">Login to Your Account</a>
-                    </p>
-                    
-                    <h3>What's Next?</h3>
-                    <ul>
-                        <li>Complete your company profile</li>
-                        <li>Post your first job listing</li>
-                        <li>Browse our talent pool</li>
-                        <li>Start receiving proposals</li>
-                    </ul>
-                    
-                    <p>If you have any questions, feel free to reach out to our support team.</p>
-                    
-                    <p>Best regards,<br>The {platform_name} Team</p>
+                    <div class="footer">
+                        <p>This email was sent because an account was created for you on {platform_name}.</p>
+                    </div>
                 </div>
-                <div class="footer">
-                    <p>This email was sent because an account was created for you on {platform_name}.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
+            </body>
+            </html>
+            """
         
         return await self.send_email(to_email, subject, html_body, raise_exceptions=False)
 

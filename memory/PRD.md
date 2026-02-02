@@ -267,6 +267,8 @@ Build "UpShift," an AI-driven, white-label SaaS resume and career services platf
    - Added new contract fields: scope_of_work, deliverables, payment_terms, confidentiality_clause, termination_conditions, dispute_resolution, intellectual_property
    - Contracts now include employer and contractor signatures with timestamps
    - Contract signing requires saved signature from talent pool profile
+   - **Contract duplication prevention** - Only one contract can be created per proposal (Feb 2025)
+   - **Smart UI buttons** - Shows "View Contract" instead of "Create Contract" when contract exists
 6. **Contract PDF Export** - NEW
    - Generate professional PDF for signed/active contracts
    - Includes all contract details, milestones, legal clauses, and signatures

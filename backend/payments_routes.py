@@ -201,11 +201,12 @@ def get_payments_routes(db, get_current_user):
         """Fund contract using Yoco - creates checkout session"""
         import httpx
         
-        YOCO_SECRET_KEY = settings.get("yoco_secret_key")
-        YOCO_PUBLIC_KEY = settings.get("yoco_public_key")
+        # Try admin settings first, then fall back to env vars
+        YOCO_SECRET_KEY = settings.get("yoco_secret_key") or os.environ.get("YOCO_SECRET_KEY")
+        YOCO_PUBLIC_KEY = settings.get("yoco_public_key") or os.environ.get("YOCO_PUBLIC_KEY")
         
         if not YOCO_SECRET_KEY:
-            raise HTTPException(status_code=500, detail="Yoco not configured")
+            raise HTTPException(status_code=500, detail="Yoco not configured. Please add Yoco API keys in admin settings.")
         
         try:
             contract = await db.contracts.find_one({"id": data.contract_id})

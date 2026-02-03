@@ -9,6 +9,13 @@ import { Textarea } from '../components/ui/textarea';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,7 +28,7 @@ import {
   Clock, AlertCircle, Building2, User, XCircle, Milestone, Play,
   Send, ThumbsUp, CreditCard, Edit, Trash2, FileSignature, Wallet,
   BanknoteIcon, Shield, Globe, Download, ClipboardList, MessageSquare,
-  Eye, RotateCcw, Plus, X
+  Eye, RotateCcw, Plus, X, Landmark, Mail, Lock
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 

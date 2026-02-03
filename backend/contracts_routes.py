@@ -80,6 +80,22 @@ class MilestoneSubmission(BaseModel):
     next_steps: Optional[str] = None  # What's next (if applicable)
     attachments: List[str] = []  # URLs to uploaded files/screenshots
 
+class BankDetailsRequest(BaseModel):
+    """Request for contractor to submit bank details"""
+    message: Optional[str] = None  # Optional message to contractor
+    milestone_id: Optional[str] = None  # Specific milestone this is for
+
+class BankDetailsSubmission(BaseModel):
+    """Bank details submitted by contractor - NOT STORED, sent directly to employer"""
+    request_id: str  # The bank details request ID
+    account_holder_name: str
+    bank_name: str
+    account_number: str
+    branch_code: Optional[str] = None
+    account_type: str = "checking"  # checking, savings
+    swift_code: Optional[str] = None  # For international transfers
+    additional_info: Optional[str] = None
+
 
 def get_contracts_routes(db, get_current_user):
     """Factory function to create contracts routes with database dependency"""

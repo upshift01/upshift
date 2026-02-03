@@ -1634,4 +1634,378 @@ def get_contracts_routes(db, get_current_user):
             logger.error(f"Error getting contract stats: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    # ==================== BANK DETAILS WORKFLOW ====================
+    # Security: Bank details are NEVER stored in the database
+    # They are sent directly to the employer via email
+    
+    @contracts_router.post("/{contract_id}/request-bank-details")
+    async def request_bank_details(
+        contract_id: str,
+        data: BankDetailsRequest,
+        current_user = Depends(get_current_user)
+    ):
+        """Employer requests bank details from contractor for payment"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id}, {"_id": 0})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            # Only employer can request bank details
+            if contract.get("employer_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Only the employer can request bank details")
+            
+            if contract.get("status") != "active":
+                raise HTTPException(status_code=400, detail="Contract must be active")
+            
+            # Create bank details request record (stores only request metadata, not bank details)
+            request_id = str(uuid.uuid4())
+            bank_request = {
+                "id": request_id,
+                "contract_id": contract_id,
+                "milestone_id": data.milestone_id,
+                "employer_id": current_user.id,
+                "employer_name": current_user.full_name,
+                "employer_email": current_user.email,
+                "contractor_id": contract.get("contractor_id"),
+                "contractor_name": contract.get("contractor_name"),
+                "contractor_email": contract.get("contractor_email"),
+                "message": data.message,
+                "status": "pending",  # pending, submitted, expired
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+            }
+            
+            await db.bank_details_requests.insert_one(bank_request)
+            
+            # Update contract with pending bank details request
+            await db.contracts.update_one(
+                {"id": contract_id},
+                {"$set": {
+                    "bank_details_requested": True,
+                    "bank_details_request_id": request_id,
+                    "bank_details_request_date": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Get milestone info if specified
+            milestone_info = ""
+            if data.milestone_id:
+                milestone = next((m for m in contract.get("milestones", []) if m.get("id") == data.milestone_id), None)
+                if milestone:
+                    milestone_info = f"<p><strong>For Milestone:</strong> {milestone.get('title')} - {contract.get('payment_currency', 'USD')} {milestone.get('amount', 0):,.2f}</p>"
+            
+            # Send email notification to contractor
+            try:
+                email_html = f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #1e40af;">Bank Details Required for Payment</h2>
+                    <p>Hello {contract.get('contractor_name')},</p>
+                    <p><strong>{current_user.full_name}</strong> from <strong>{contract.get('company_name', 'the employer')}</strong> is ready to process your payment for the contract:</p>
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0;"><strong>Contract:</strong> {contract.get('title')}</p>
+                        <p style="margin: 8px 0 0;"><strong>Total Value:</strong> {contract.get('payment_currency', 'USD')} {contract.get('payment_amount', 0):,.2f}</p>
+                        {milestone_info}
+                    </div>
+                    {f'<p><strong>Message from employer:</strong> {data.message}</p>' if data.message else ''}
+                    <p>Please log in to submit your bank account details securely. Your banking information will be sent directly to the employer and <strong>will not be stored</strong> in our system for your security.</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/contracts/{contract_id}?bank_request={request_id}" 
+                           style="background: #1e40af; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                            Submit Bank Details
+                        </a>
+                    </div>
+                    <p style="color: #6b7280; font-size: 12px;">This request expires in 7 days. If you have any questions, please contact the employer directly.</p>
+                </div>
+                """
+                
+                await email_service.send_generic_email(
+                    to_email=contract.get("contractor_email"),
+                    subject=f"Bank Details Required - {contract.get('title')}",
+                    message=email_html
+                )
+            except Exception as email_err:
+                logger.warning(f"Failed to send bank details request email: {email_err}")
+            
+            # Send in-app notification
+            try:
+                await create_notification(
+                    db=db,
+                    user_id=contract.get("contractor_id"),
+                    notification_type="bank_details_requested",
+                    title="Bank Details Required",
+                    message=f"{current_user.full_name} needs your bank details for payment",
+                    link=f"/contracts/{contract_id}?bank_request={request_id}",
+                    metadata={
+                        "contract_id": contract_id,
+                        "request_id": request_id,
+                        "employer_name": current_user.full_name
+                    }
+                )
+            except Exception as notif_err:
+                logger.warning(f"Failed to send notification: {notif_err}")
+            
+            return {
+                "success": True,
+                "message": "Bank details request sent to contractor",
+                "request_id": request_id
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error requesting bank details: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @contracts_router.get("/{contract_id}/bank-details-request")
+    async def get_bank_details_request(
+        contract_id: str,
+        current_user = Depends(get_current_user)
+    ):
+        """Get the current bank details request for a contract"""
+        try:
+            contract = await db.contracts.find_one({"id": contract_id}, {"_id": 0})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            # Only parties to the contract can view
+            if contract.get("employer_id") != current_user.id and contract.get("contractor_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Access denied")
+            
+            # Get the latest pending request
+            request = await db.bank_details_requests.find_one(
+                {"contract_id": contract_id, "status": "pending"},
+                {"_id": 0}
+            )
+            
+            if not request:
+                return {"success": True, "has_request": False, "request": None}
+            
+            # Check if expired
+            if request.get("expires_at"):
+                expires_at = datetime.fromisoformat(request["expires_at"].replace("Z", "+00:00"))
+                if datetime.now(timezone.utc) > expires_at:
+                    await db.bank_details_requests.update_one(
+                        {"id": request["id"]},
+                        {"$set": {"status": "expired"}}
+                    )
+                    return {"success": True, "has_request": False, "request": None, "message": "Request expired"}
+            
+            return {
+                "success": True,
+                "has_request": True,
+                "request": request,
+                "is_contractor": contract.get("contractor_id") == current_user.id
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting bank details request: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @contracts_router.post("/{contract_id}/submit-bank-details")
+    async def submit_bank_details(
+        contract_id: str,
+        data: BankDetailsSubmission,
+        current_user = Depends(get_current_user)
+    ):
+        """
+        Contractor submits bank details - SECURITY: Details are sent directly to employer
+        via email and are NOT stored in the database.
+        """
+        try:
+            contract = await db.contracts.find_one({"id": contract_id}, {"_id": 0})
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            
+            # Only contractor can submit bank details
+            if contract.get("contractor_id") != current_user.id:
+                raise HTTPException(status_code=403, detail="Only the contractor can submit bank details")
+            
+            # Verify the request exists and is valid
+            request = await db.bank_details_requests.find_one(
+                {"id": data.request_id, "contract_id": contract_id, "status": "pending"},
+                {"_id": 0}
+            )
+            
+            if not request:
+                raise HTTPException(status_code=404, detail="Bank details request not found or already submitted")
+            
+            # Check if expired
+            if request.get("expires_at"):
+                expires_at = datetime.fromisoformat(request["expires_at"].replace("Z", "+00:00"))
+                if datetime.now(timezone.utc) > expires_at:
+                    raise HTTPException(status_code=400, detail="Bank details request has expired")
+            
+            # Get milestone info if applicable
+            milestone_info = ""
+            if request.get("milestone_id"):
+                milestone = next((m for m in contract.get("milestones", []) if m.get("id") == request.get("milestone_id")), None)
+                if milestone:
+                    milestone_info = f"""
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>For Milestone</strong></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">{milestone.get('title')} - {contract.get('payment_currency', 'USD')} {milestone.get('amount', 0):,.2f}</td>
+                    </tr>
+                    """
+            
+            # Send bank details to employer via email (NOT STORED)
+            bank_confirmation_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: #1e40af; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                    <h2 style="margin: 0;">Bank Account Confirmation</h2>
+                </div>
+                
+                <div style="border: 1px solid #e5e7eb; border-top: none; padding: 20px; border-radius: 0 0 8px 8px;">
+                    <p style="color: #dc2626; font-weight: bold; background: #fef2f2; padding: 10px; border-radius: 4px; text-align: center;">
+                        ⚠️ CONFIDENTIAL - For payment purposes only
+                    </p>
+                    
+                    <h3 style="color: #1f2937; margin-top: 20px;">Contractor Information</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; width: 40%;"><strong>Name</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">{current_user.full_name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Email</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">{current_user.email}</td>
+                        </tr>
+                    </table>
+                    
+                    <h3 style="color: #1f2937; margin-top: 20px;">Contract Details</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; width: 40%;"><strong>Contract</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">{contract.get('title')}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Total Value</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">{contract.get('payment_currency', 'USD')} {contract.get('payment_amount', 0):,.2f}</td>
+                        </tr>
+                        {milestone_info}
+                    </table>
+                    
+                    <h3 style="color: #1e40af; margin-top: 20px; padding: 10px; background: #eff6ff; border-radius: 4px;">
+                        💳 Bank Account Details
+                    </h3>
+                    <table style="width: 100%; border-collapse: collapse; background: #f9fafb; border-radius: 8px;">
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; width: 40%;"><strong>Account Holder</strong></td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-family: monospace;">{data.account_holder_name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong>Bank Name</strong></td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-family: monospace;">{data.bank_name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong>Account Number</strong></td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-family: monospace; font-size: 16px; font-weight: bold;">{data.account_number}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong>Account Type</strong></td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{data.account_type.title()}</td>
+                        </tr>
+                        {f'<tr><td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong>Branch Code</strong></td><td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-family: monospace;">{data.branch_code}</td></tr>' if data.branch_code else ''}
+                        {f'<tr><td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong>SWIFT Code</strong></td><td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-family: monospace;">{data.swift_code}</td></tr>' if data.swift_code else ''}
+                        {f'<tr><td style="padding: 12px;"><strong>Additional Info</strong></td><td style="padding: 12px;">{data.additional_info}</td></tr>' if data.additional_info else ''}
+                    </table>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+                        <p style="margin: 0; color: #166534;">
+                            ✓ Bank details submitted on {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC')}
+                        </p>
+                    </div>
+                    
+                    <p style="color: #6b7280; font-size: 12px; margin-top: 20px; text-align: center;">
+                        This information was submitted by the contractor through the UpShift platform.<br>
+                        For security, these details are not stored in our system.
+                    </p>
+                </div>
+            </div>
+            """
+            
+            # Send to employer
+            try:
+                await email_service.send_generic_email(
+                    to_email=contract.get("employer_email"),
+                    subject=f"Bank Account Confirmation - {contract.get('contractor_name')} - {contract.get('title')}",
+                    message=bank_confirmation_html
+                )
+            except Exception as email_err:
+                logger.error(f"Failed to send bank details email to employer: {email_err}")
+                raise HTTPException(status_code=500, detail="Failed to send bank details to employer. Please try again.")
+            
+            # Send confirmation to contractor
+            try:
+                await email_service.send_generic_email(
+                    to_email=current_user.email,
+                    subject=f"Bank Details Sent - {contract.get('title')}",
+                    message=f"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #10b981;">✓ Bank Details Submitted Successfully</h2>
+                        <p>Hello {current_user.full_name},</p>
+                        <p>Your bank account details have been securely sent to <strong>{contract.get('employer_name')}</strong> for the contract:</p>
+                        <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p style="margin: 0;"><strong>Contract:</strong> {contract.get('title')}</p>
+                        </div>
+                        <p>The employer will process your payment using the details you provided.</p>
+                        <p style="color: #6b7280; font-size: 12px; margin-top: 20px;">
+                            For your security, your bank details are not stored in our system.
+                        </p>
+                    </div>
+                    """
+                )
+            except Exception as email_err:
+                logger.warning(f"Failed to send confirmation email to contractor: {email_err}")
+            
+            # Update request status (only store that it was submitted, NOT the details)
+            await db.bank_details_requests.update_one(
+                {"id": data.request_id},
+                {"$set": {
+                    "status": "submitted",
+                    "submitted_at": datetime.now(timezone.utc).isoformat()
+                    # NOTE: Bank details are NOT stored here for security
+                }}
+            )
+            
+            # Update contract
+            await db.contracts.update_one(
+                {"id": contract_id},
+                {"$set": {
+                    "bank_details_submitted": True,
+                    "bank_details_submitted_at": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Notify employer in-app
+            try:
+                await create_notification(
+                    db=db,
+                    user_id=contract.get("employer_id"),
+                    notification_type="bank_details_received",
+                    title="Bank Details Received",
+                    message=f"{current_user.full_name} has submitted their bank details - check your email",
+                    link=f"/contracts/{contract_id}",
+                    metadata={
+                        "contract_id": contract_id,
+                        "contractor_name": current_user.full_name
+                    }
+                )
+            except Exception as notif_err:
+                logger.warning(f"Failed to send notification: {notif_err}")
+            
+            return {
+                "success": True,
+                "message": "Bank details sent to employer successfully. Check your email for confirmation."
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error submitting bank details: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return contracts_router
